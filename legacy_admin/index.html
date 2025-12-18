@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - Hand Embroidery by Sana</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://use.typekit.net/yjp3aho.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            'sofia': ['sofia-pro', 'sans-serif'],
+          },
+          colors: {
+            'rose-gold': '#E8B4A0',
+            'deep-rose': '#D4847C',
+            'sage': '#A8B5A0',
+            'warm-beige': '#F5F1EB',
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="font-sofia bg-gray-50">
+  <!-- Admin Navigation -->
+  <nav class="bg-white shadow-lg border-b border-gray-200" data-id="admin-nav">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center h-16">
+        <div class="flex items-center">
+          <h1 class="text-2xl font-bold text-deep-rose" data-id="admin-title">Admin Panel</h1>
+          <span class="ml-4 text-gray-500">Hand Embroidery by Sana</span>
+        </div>
+        
+        <div class="flex items-center space-x-4">
+          <div class="relative" data-id="admin-profile">
+            <button class="flex items-center text-gray-700 hover:text-deep-rose transition-colors">
+              <i data-lucide="user" class="w-5 h-5 mr-2"></i>
+              <span>Admin</span>
+              <i data-lucide="chevron-down" class="w-4 h-4 ml-1"></i>
+            </button>
+          </div>
+          
+          <a href="../index.html" target="_blank" 
+             class="flex items-center text-gray-600 hover:text-deep-rose transition-colors" data-id="view-site">
+            <i data-lucide="external-link" class="w-5 h-5 mr-2"></i>
+            View Site
+          </a>
+          
+          <button id="logout-btn" 
+                  class="flex items-center text-red-600 hover:text-red-700 transition-colors" data-id="logout-btn">
+            <i data-lucide="log-out" class="w-5 h-5 mr-2"></i>
+            Logout
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <div class="flex min-h-screen">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-white shadow-lg" data-id="admin-sidebar">
+      <div class="p-6">
+        <nav class="space-y-2">
+          <a href="#" data-section="dashboard" 
+             class="nav-item active flex items-center px-4 py-3 text-deep-rose bg-rose-gold/20 rounded-lg font-medium">
+            <i data-lucide="layout-dashboard" class="w-5 h-5 mr-3"></i>
+            Dashboard
+          </a>
+          
+          <a href="#" data-section="products" 
+             class="nav-item flex items-center px-4 py-3 text-gray-600 hover:text-deep-rose hover:bg-rose-gold/10 rounded-lg font-medium transition-colors">
+            <i data-lucide="package" class="w-5 h-5 mr-3"></i>
+            Products
+          </a>
+          
+          <a href="#" data-section="orders" 
+             class="nav-item flex items-center px-4 py-3 text-gray-600 hover:text-deep-rose hover:bg-rose-gold/10 rounded-lg font-medium transition-colors">
+            <i data-lucide="shopping-cart" class="w-5 h-5 mr-3"></i>
+            Orders
+          </a>
+          
+          <a href="#" data-section="custom-requests" 
+             class="nav-item flex items-center px-4 py-3 text-gray-600 hover:text-deep-rose hover:bg-rose-gold/10 rounded-lg font-medium transition-colors">
+            <i data-lucide="palette" class="w-5 h-5 mr-3"></i>
+            Custom Requests
+          </a>
+          
+          <a href="#" data-section="mehndi-bookings" 
+             class="nav-item flex items-center px-4 py-3 text-gray-600 hover:text-deep-rose hover:bg-rose-gold/10 rounded-lg font-medium transition-colors">
+            <i data-lucide="calendar" class="w-5 h-5 mr-3"></i>
+            Mehndi Bookings
+          </a>
+          
+          <a href="#" data-section="messages" 
+             class="nav-item flex items-center px-4 py-3 text-gray-600 hover:text-deep-rose hover:bg-rose-gold/10 rounded-lg font-medium transition-colors">
+            <i data-lucide="mail" class="w-5 h-5 mr-3"></i>
+            Messages
+          </a>
+          
+          <a href="#" data-section="gallery" 
+             class="nav-item flex items-center px-4 py-3 text-gray-600 hover:text-deep-rose hover:bg-rose-gold/10 rounded-lg font-medium transition-colors">
+            <i data-lucide="image" class="w-5 h-5 mr-3"></i>
+            Gallery
+          </a>
+          
+          <a href="#" data-section="settings" 
+             class="nav-item flex items-center px-4 py-3 text-gray-600 hover:text-deep-rose hover:bg-rose-gold/10 rounded-lg font-medium transition-colors">
+            <i data-lucide="settings" class="w-5 h-5 mr-3"></i>
+            Settings
+          </a>
+        </nav>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 p-6" data-id="admin-main">
+      <div id="admin-content">
+        <!-- Content sections will be loaded here -->
+      </div>
+    </main>
+  </div>
+
+  <script type="module">
+    import { db, subscribeToOrders, subscribeToMessages } from '../config/supabase.js';
+    
+    // Admin Panel Manager
+    class AdminPanel {
+      constructor() {
+        this.currentSection = 'dashboard';
+        this.init();
+      }
+
+      init() {
+        this.connectDatabase();
+        this.checkAuth();
+        this.setupNavigation();
+        this.loadSection('dashboard');
+        this.setupEventListeners();
+        
+        // Initialize icons
+        lucide.createIcons();
+      }
+
+      async connectDatabase() {
+        try {
+          // Test database connection
+          await db.getProducts();
+          console.log('Database connected successfully');
+          this.isDatabaseConnected = true;
+        } catch (error) {
+          console.log('Database not connected, using mock data');
+          this.isDatabaseConnected = false;
+        }
+      }
+
+      checkAuth() {
+        // Simple auth check - in production, this should be more secure
+        const isLoggedIn = localStorage.getItem('adminLoggedIn');
+        if (!isLoggedIn) {
+          window.location.href = 'login.html';
+        }
+      }
+
+      setupNavigation() {
+        document.querySelectorAll('.nav-item').forEach(item => {
+          item.addEventListener('click', (e) => {
+            e.preventDefault();
+            const section = e.currentTarget.dataset.section;
+            this.loadSection(section);
+            this.updateActiveNav(section);
+          });
+        });
+      }
+
+      updateActiveNav(section) {
+        document.querySelectorAll('.nav-item').forEach(item => {
+          item.classList.remove('active', 'text-deep-rose', 'bg-rose-gold/20');
+          item.classList.add('text-gray-600');
+        });
+        
+        const activeItem = document.querySelector(`[data-section="${section}"]`);
+        if (activeItem) {
+          activeItem.classList.add('active', 'text-deep-rose', 'bg-rose-gold/20');
+          activeItem.classList.remove('text-gray-600');
+        }
+      }
+
+      setupEventListeners() {
+        // Logout functionality
+        document.getElementById('logout-btn').addEventListener('click', () => {
+          if (confirm('Are you sure you want to logout?')) {
+            localStorage.removeItem('adminLoggedIn');
+            window.location.href = 'login.html';
+          }
+        });
+      }
+
+      loadSection(section) {
+        const content = document.getElementById('admin-content');
+        this.currentSection = section;
+        
+        switch (section) {
+          case 'dashboard':
+            content.innerHTML = this.renderDashboard();
+            break;
+          case 'products':
+            content.innerHTML = this.renderProducts();
+            break;
+          case 'orders':
+            content.innerHTML = this.renderOrders();
+            break;
+          case 'custom-requests':
+            content.innerHTML = this.renderCustomRequests();
+            break;
+          case 'mehndi-bookings':
+            content.innerHTML = this.renderMehndiBookings();
+            break;
+          case 'messages':
+            content.innerHTML = this.renderMessages();
+            break;
+          case 'gallery':
+            content.innerHTML = this.renderGallery();
+            break;
+          case 'settings':
+            content.innerHTML = this.renderSettings();
+            break;
+          default:
+            content.innerHTML = this.renderDashboard();
+        }
+        
+        // Re-initialize icons after content change
+        setTimeout(() => lucide.createIcons(), 100);
+      }
+
+      renderDashboard() {
+        return this.isDatabaseConnected ? this.renderDatabaseDashboard() : this.renderMockDashboard();
+      }
+      
+      async renderDatabaseDashboard() {
+        try {
+          const [orders, products, customRequests, bookings] = await Promise.all([
+            db.getOrders(),
+            db.getProducts(),
+            db.getCustomRequests(),
+            db.getMehndiBookings()
+          ]);
+          
+          const stats = {
+            totalOrders: orders.data?.length || 0,
+            totalRevenue: orders.data?.reduce((sum, order) => sum + parseFloat(order.total), 0) || 0,
+            totalProducts: products.data?.length || 0,
+            totalBookings: bookings.data?.length || 0
+          };
+        
+          return this.renderDashboardContent(stats, orders.data?.slice(0, 4) || []);
+        } catch (error) {
+          console.error('Database error, falling back to mock data');
+          return this.renderMockDashboard();
+        }
+      }
+
+      renderMockDashboard() {
+        const stats = this.getMockStats();
+        const recentOrders = this.getMockRecentOrders();
+        return this.renderDashboardContent(stats, recentOrders);
+      }
+
+      renderDashboardContent(stats, recentOrders) {
+        return `
+          <div class="space-y-6">
+            <div class="flex justify-between items-center">
+              <h2 class="text-3xl font-bold text-gray-800">Dashboard</h2>
+              <div class="text-gray-500">${new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
+            </div>
+
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                  <div class="p-3 bg-blue-100 rounded-lg">
+                    <i data-lucide="shopping-cart" class="w-6 h-6 text-blue-600"></i>
+                  </div>
+                  <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500">Total Orders</p>
+                    <p class="text-2xl font-semibold text-gray-900">${stats.totalOrders}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                  <div class="p-3 bg-green-100 rounded-lg">
+                    <i data-lucide="indian-rupee" class="w-6 h-6 text-green-600"></i>
+                  </div>
+                  <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500">Revenue</p>
+                    <p class="text-2xl font-semibold text-gray-900">₹${stats.totalRevenue.toLocaleString()}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                  <div class="p-3 bg-purple-100 rounded-lg">
+                    <i data-lucide="package" class="w-6 h-6 text-purple-600"></i>
+                  </div>
+                  <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500">Products</p>
+                    <p class="text-2xl font-semibold text-gray-900">${stats.totalProducts}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                  <div class="p-3 bg-pink-100 rounded-lg">
+                    <i data-lucide="calendar" class="w-6 h-6 text-pink-600"></i>
+                  </div>
+                  <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500">Bookings</p>
+                    <p class="text-2xl font-semibold text-gray-900">${stats.totalBookings}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recent Activity & Quick Actions -->
+            <div class="grid lg:grid-cols-2 gap-6">
+              <!-- Recent Orders -->
+              <div class="bg-white rounded-lg shadow">
+                <div class="p-6">
+                  <h3 class="text-lg font-semibold text-gray-800 mb-4">Recent Orders</h3>
+                  <div class="space-y-4">
+                    ${recentOrders.map(order => `
+                      <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div>
+                          <p class="font-medium">${order.customer_name || order.customerName}</p>
+                          <p class="text-sm text-gray-500">${Array.isArray(order.items) ? order.items.length : order.items} items • ₹${order.total}</p>
+                        </div>
+                        <span class="px-2 py-1 text-xs font-semibold rounded-full ${this.getStatusColor(order.status)}">
+                          ${order.status}
+                        </span>
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Quick Actions -->
+              <div class="bg-white rounded-lg shadow">
+                <div class="p-6">
+                  <h3 class="text-lg font-semibold text-gray-800 mb-4">Quick Actions</h3>
+                  <div class="grid grid-cols-2 gap-4">
+                    <button class="quick-action-btn p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-rose-gold hover:bg-rose-gold/10 transition-colors" data-action="add-product">
+                      <i data-lucide="plus" class="w-8 h-8 text-gray-400 mx-auto mb-2"></i>
+                      <p class="text-sm font-medium text-gray-600">Add Product</p>
+                    </button>
+                    
+                    <button class="quick-action-btn p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-rose-gold hover:bg-rose-gold/10 transition-colors" data-action="view-orders">
+                      <i data-lucide="list" class="w-8 h-8 text-gray-400 mx-auto mb-2"></i>
+                      <p class="text-sm font-medium text-gray-600">View Orders</p>
+                    </button>
+                    
+                    <button class="quick-action-btn p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-rose-gold hover:bg-rose-gold/10 transition-colors" data-action="manage-gallery">
+                      <i data-lucide="image" class="w-8 h-8 text-gray-400 mx-auto mb-2"></i>
+                      <p class="text-sm font-medium text-gray-600">Manage Gallery</p>
+                    </button>
+                    
+                    <button class="quick-action-btn p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-rose-gold hover:bg-rose-gold/10 transition-colors" data-action="check-messages">
+                      <i data-lucide="mail" class="w-8 h-8 text-gray-400 mx-auto mb-2"></i>
+                      <p class="text-sm font-medium text-gray-600">Check Messages</p>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      renderProducts() {
+        return this.isDatabaseConnected ? this.renderDatabaseProducts() : this.renderMockProducts();
+      }
+      
+      async renderDatabaseProducts() {
+        try {
+          const { data: products, error } = await db.getProducts();
+          return this.renderProductsContent(products || []);
+        } catch (error) {
+          return this.renderMockProducts();
+        }
+      }
+
+      renderMockProducts() {
+        const products = this.getSampleProducts();
+        return this.renderProductsContent(products);
+      }
+
+      renderProductsContent(products) {
+        return `
+          <div class="space-y-6">
+            <div class="flex justify-between items-center">
+              <h2 class="text-3xl font-bold text-gray-800">Products Management</h2>
+              <button id="add-product-btn" class="bg-gradient-to-r from-rose-gold to-deep-rose text-white px-6 py-2 rounded-lg font-semibold hover:shadow-lg transition-all">
+                <i data-lucide="plus" class="w-5 h-5 inline mr-2"></i>
+                Add New Product
+              </button>
+            </div>
+
+            <!-- Products Table -->
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Product</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                  ${products.map(product => `
+                    <tr>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                          <div class="flex-shrink-0 h-10 w-10">
+                            <img class="h-10 w-10 rounded-lg object-cover" src="${product.images?.[0] || product.image}" alt="${product.name}">
+                          </div>
+                          <div class="ml-4">
+                            <div class="text-sm font-medium text-gray-900">${product.name}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${product.category}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">₹${product.price}</td>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${(product.active !== false) ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
+                          ${(product.active !== false) ? 'active' : 'inactive'}
+                        </span>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button class="text-indigo-600 hover:text-indigo-900 mr-4">Edit</button>
+                        <button class="text-red-600 hover:text-red-900">Delete</button>
+                      </td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `;
+      }
+
+      renderOrders() {
+        return this.isDatabaseConnected ? this.renderDatabaseOrders() : this.renderMockOrders();
+      }
+      
+      async renderDatabaseOrders() {
+        try {
+          const { data: orders, error } = await db.getOrders();
+          return this.renderOrdersContent(orders || []);
+        } catch (error) {
+          return this.renderMockOrders();
+        }
+      }
+
+      renderMockOrders() {
+        const orders = this.getSampleOrders();
+        return this.renderOrdersContent(orders);
+      }
+
+      renderOrdersContent(orders) {
+        return `
+          <div class="space-y-6">
+            <div class="flex justify-between items-center">
+              <h2 class="text-3xl font-bold text-gray-800">Orders Management</h2>
+              <div class="flex space-x-4">
+                <select class="border border-gray-300 rounded-lg px-3 py-2 text-sm">
+                  <option>All Orders</option>
+                  <option>Pending</option>
+                  <option>Processing</option>
+                  <option>Shipped</option>
+                  <option>Delivered</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Orders Table -->
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                  ${orders.map(order => `
+                    <tr>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">#${order.id.toString().slice(0, 8)}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${order.customer_name || order.customerName}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${new Date(order.created_at || order.date).toLocaleDateString()}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">₹${order.total}</td>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <select class="text-sm border-0 bg-transparent ${this.getStatusColor(order.status)} rounded px-2 py-1">
+                          <option>Pending</option>
+                          <option>Processing</option>
+                          <option>Shipped</option>
+                          <option>Delivered</option>
+                        </select>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button class="text-indigo-600 hover:text-indigo-900 mr-4">View</button>
+                        <button class="text-green-600 hover:text-green-900">Update</button>
+                      </td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        `;
+      }
+
+      renderCustomRequests() {
+        return this.isDatabaseConnected ? this.renderDatabaseCustomRequests() : this.renderMockCustomRequests();
+      }
+      
+      async renderDatabaseCustomRequests() {
+        try {
+          const { data: requests, error } = await db.getCustomRequests();
+          return this.renderCustomRequestsContent(requests || []);
+        } catch (error) {
+          return this.renderMockCustomRequests();
+        }
+      }
+
+      renderMockCustomRequests() {
+        const requests = this.getSampleCustomRequests();
+        return this.renderCustomRequestsContent(requests);
+      }
+
+      renderCustomRequestsContent(requests) {
+        return `
+          <div class="space-y-6">
+            <h2 class="text-3xl font-bold text-gray-800">Custom Design Requests</h2>
+            
+            <div class="grid gap-6">
+              ${requests.map(request => `
+                <div class="bg-white rounded-lg shadow p-6">
+                  <div class="flex justify-between items-start mb-4">
+                    <div>
+                      <h3 class="text-lg font-semibold text-gray-800">${request.name}</h3>
+                      <p class="text-gray-600">${request.email} • ${request.phone}</p>
+                    </div>
+                    <span class="px-3 py-1 text-sm font-semibold rounded-full ${this.getRequestStatusColor(request.status)}">
+                      ${request.status}
+                    </span>
+                  </div>
+                  
+                  <div class="grid md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <p class="text-sm text-gray-600"><strong>Occasion:</strong> ${request.occasion}</p>
+                      <p class="text-sm text-gray-600"><strong>Budget:</strong> ${request.budget}</p>
+                      <p class="text-sm text-gray-600"><strong>Timeline:</strong> ${request.timeline}</p>
+                    </div>
+                    <div>
+                      <p class="text-sm text-gray-600"><strong>Colors:</strong> ${request.color_preferences || request.colors}</p>
+                      <p class="text-sm text-gray-600"><strong>Style:</strong> ${request.style_preferences || request.style}</p>
+                    </div>
+                  </div>
+                  
+                  <div class="mb-4">
+                    <p class="text-sm text-gray-600 font-medium mb-2">Description:</p>
+                    <p class="text-sm text-gray-800">${request.description}</p>
+                  </div>
+                  
+                  <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-500">Received: ${new Date(request.created_at || request.date).toLocaleDateString()}</span>
+                    <div class="space-x-2">
+                      <button class="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600">Reply</button>
+                      <button class="px-4 py-2 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600">Accept</button>
+                      <button class="px-4 py-2 bg-gray-500 text-white rounded-lg text-sm hover:bg-gray-600">Archive</button>
+                    </div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      renderMehndiBookings() {
+        return this.isDatabaseConnected ? this.renderDatabaseBookings() : this.renderMockBookings();
+      }
+      
+      async renderDatabaseBookings() {
+        try {
+          const { data: bookings, error } = await db.getMehndiBookings();
+          return this.renderBookingsContent(bookings || []);
+        } catch (error) {
+          return this.renderMockBookings();
+        }
+      }
+
+      renderMockBookings() {
+        const bookings = this.getSampleBookings();
+        return this.renderBookingsContent(bookings);
+      }
+
+      renderBookingsContent(bookings) {
+        return `
+          <div class="space-y-6">
+            <h2 class="text-3xl font-bold text-gray-800">Mehndi Bookings</h2>
+            
+            <div class="grid gap-6">
+              ${bookings.map(booking => `
+                <div class="bg-white rounded-lg shadow p-6">
+                  <div class="flex justify-between items-start mb-4">
+                    <div>
+                      <h3 class="text-lg font-semibold text-gray-800">${booking.name}</h3>
+                      <p class="text-gray-600">${booking.email} • ${booking.phone}</p>
+                    </div>
+                    <span class="px-3 py-1 text-sm font-semibold rounded-full ${this.getBookingStatusColor(booking.status)}">
+                      ${booking.status}
+                    </span>
+                  </div>
+                  
+                  <div class="grid md:grid-cols-3 gap-4 mb-4">
+                    <div>
+                      <p class="text-sm text-gray-600"><strong>Service:</strong> ${booking.service_type || booking.service}</p>
+                      <p class="text-sm text-gray-600"><strong>Date:</strong> ${booking.date}</p>
+                    </div>
+                    <div>
+                      <p class="text-sm text-gray-600"><strong>Time:</strong> ${booking.time}</p>
+                      <p class="text-sm text-gray-600"><strong>Duration:</strong> ${booking.duration}</p>
+                    </div>
+                    <div>
+                      <p class="text-sm text-gray-600"><strong>Location:</strong> ${booking.location}</p>
+                      <p class="text-sm text-gray-600"><strong>Guests:</strong> ${booking.guest_count || booking.guests}</p>
+                    </div>
+                  </div>
+                  
+                  <div class="flex justify-between items-center">
+                    <span class="text-sm text-gray-500">Booked: ${new Date(booking.created_at || booking.bookedDate).toLocaleDateString()}</span>
+                    <div class="space-x-2">
+                      <button class="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600">Contact</button>
+                      <button class="px-4 py-2 bg-green-500 text-white rounded-lg text-sm hover:bg-green-600">Confirm</button>
+                      <button class="px-4 py-2 bg-yellow-500 text-white rounded-lg text-sm hover:bg-yellow-600">Reschedule</button>
+                    </div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      renderMessages() {
+        return this.isDatabaseConnected ? this.renderDatabaseMessages() : this.renderMockMessages();
+      }
+      
+      async renderDatabaseMessages() {
+        try {
+          const { data: messages, error } = await db.getMessages();
+          return this.renderMessagesContent(messages || []);
+        } catch (error) {
+          return this.renderMockMessages();
+        }
+      }
+
+      renderMockMessages() {
+        const messages = this.getSampleMessages();
+        return this.renderMessagesContent(messages);
+      }
+
+      renderMessagesContent(messages) {
+        return `
+          <div class="space-y-6">
+            <h2 class="text-3xl font-bold text-gray-800">Messages & Inquiries</h2>
+            
+            <div class="grid gap-6">
+              ${messages.map(message => `
+                <div class="bg-white rounded-lg shadow p-6 ${!message.read ? 'border-l-4 border-blue-500' : ''}">
+                  <div class="flex justify-between items-start mb-4">
+                    <div>
+                      <h3 class="text-lg font-semibold text-gray-800">${message.name}</h3>
+                      <p class="text-gray-600">${message.email} • ${message.phone}</p>
+                      <p class="text-sm text-gray-500">Subject: ${message.subject}</p>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                      ${!message.read ? '<span class="w-2 h-2 bg-blue-500 rounded-full"></span>' : ''}
+                      <span class="text-sm text-gray-500">${new Date(message.created_at || message.date).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                  
+                  <div class="mb-4">
+                    <p class="text-gray-800">${message.message}</p>
+                  </div>
+                  
+                  <div class="flex justify-between items-center">
+                    <span class="text-sm ${message.read ? 'text-gray-500' : 'text-blue-600 font-medium'}">
+                      ${message.read ? 'Read' : 'Unread'}
+                    </span>
+                    <div class="space-x-2">
+                      <button class="px-4 py-2 bg-blue-500 text-white rounded-lg text-sm hover:bg-blue-600">Reply</button>
+                      <button class="px-4 py-2 bg-gray-500 text-white rounded-lg text-sm hover:bg-gray-600">Mark as Read</button>
+                      <button class="px-4 py-2 bg-red-500 text-white rounded-lg text-sm hover:bg-red-600">Delete</button>
+                    </div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      renderGallery() {
+        return `
+          <div class="space-y-6">
+            <div class="flex justify-between items-center">
+              <h2 class="text-3xl font-bold text-gray-800">Gallery Management</h2>
+              <button id="upload-images-btn" class="bg-gradient-to-r from-rose-gold to-deep-rose text-white px-6 py-2 rounded-lg font-semibold hover:shadow-lg transition-all">
+                <i data-lucide="upload" class="w-5 h-5 inline mr-2"></i>
+                Upload Images
+              </button>
+            </div>
+
+            <!-- Image Grid -->
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+              ${this.getSampleGalleryImages().map(image => `
+                <div class="relative group bg-white rounded-lg shadow-sm overflow-hidden">
+                  <img src="${image.url}" alt="${image.title}" class="w-full h-40 object-cover">
+                  <div class="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                    <div class="space-x-2">
+                      <button class="p-2 bg-white rounded-full text-gray-700 hover:text-blue-600">
+                        <i data-lucide="eye" class="w-4 h-4"></i>
+                      </button>
+                      <button class="p-2 bg-white rounded-full text-gray-700 hover:text-green-600">
+                        <i data-lucide="edit" class="w-4 h-4"></i>
+                      </button>
+                      <button class="p-2 bg-white rounded-full text-gray-700 hover:text-red-600">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                      </button>
+                    </div>
+                  </div>
+                  <div class="p-2">
+                    <p class="text-sm font-medium text-gray-800 truncate">${image.title}</p>
+                    <p class="text-xs text-gray-500">${image.category}</p>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      renderSettings() {
+        return `
+          <div class="space-y-6">
+            <h2 class="text-3xl font-bold text-gray-800">Settings</h2>
+            
+            <div class="grid lg:grid-cols-2 gap-6">
+              <!-- Site Settings -->
+              <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">Site Settings</h3>
+                <div class="space-y-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Site Title</label>
+                    <input type="text" value="Hand Embroidery by Sana" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-gold focus:border-transparent">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Site Description</label>
+                    <textarea rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-gold focus:border-transparent">Beautiful handmade embroidery and mehndi art by Sana</textarea>
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Contact Email</label>
+                    <input type="email" value="hello@embroideryart.com" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-gold focus:border-transparent">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Contact Phone</label>
+                    <input type="tel" value="+91 98765 43210" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-gold focus:border-transparent">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Social Media -->
+              <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">Social Media Links</h3>
+                <div class="space-y-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Instagram</label>
+                    <input type="url" value="https://instagram.com/embroidery_art" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-gold focus:border-transparent">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Facebook</label>
+                    <input type="url" value="https://facebook.com/embroideryart" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-gold focus:border-transparent">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">WhatsApp</label>
+                    <input type="tel" value="+91 98765 43210" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-gold focus:border-transparent">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Pinterest</label>
+                    <input type="url" value="https://pinterest.com/embroideryart" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-gold focus:border-transparent">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Payment Settings -->
+              <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">Payment Settings</h3>
+                <div class="space-y-4">
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Free Shipping Threshold</label>
+                    <input type="number" value="699" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-gold focus:border-transparent">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Shipping Rate</label>
+                    <input type="number" value="99" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-gold focus:border-transparent">
+                  </div>
+                  <div>
+                    <label class="flex items-center">
+                      <input type="checkbox" checked class="rounded border-gray-300 text-rose-gold focus:ring-rose-gold">
+                      <span class="ml-2 text-sm text-gray-700">Enable Cash on Delivery</span>
+                    </label>
+                  </div>
+                  <div>
+                    <label class="flex items-center">
+                      <input type="checkbox" checked class="rounded border-gray-300 text-rose-gold focus:ring-rose-gold">
+                      <span class="ml-2 text-sm text-gray-700">Enable UPI Payments</span>
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Security -->
+              <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">Security</h3>
+                <div class="space-y-4">
+                  <div>
+                    <button class="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 transition-colors">
+                      Change Password
+                    </button>
+                  </div>
+                  <div>
+                    <button class="w-full bg-green-500 text-white py-2 px-4 rounded-lg hover:bg-green-600 transition-colors">
+                      Enable Two-Factor Auth
+                    </button>
+                  </div>
+                  <div>
+                    <button class="w-full bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600 transition-colors">
+                      Download Data Backup
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Save Settings -->
+            <div class="flex justify-end">
+              <button class="bg-gradient-to-r from-rose-gold to-deep-rose text-white px-8 py-3 rounded-lg font-semibold hover:shadow-lg transition-all">
+                Save All Settings
+              </button>
+            </div>
+          </div>
+        `;
+      }
+
+      // Data Methods
+      getMockStats() {
+        return {
+          totalOrders: 245,
+          totalRevenue: 125000,
+          totalProducts: 32,
+          totalBookings: 18
+        };
+      }
+
+      getMockRecentOrders() {
+        return [
+          { customerName: 'Priya Sharma', items: 2, total: 2400, status: 'Pending' },
+          { customerName: 'Anita Gupta', items: 1, total: 1200, status: 'Processing' },
+          { customerName: 'Meera Jain', items: 3, total: 4500, status: 'Shipped' },
+          { customerName: 'Kavya Reddy', items: 1, total: 800, status: 'Delivered' }
+        ];
+      }
+
+      getSampleProducts() {
+        return [
+          { id: 1, name: 'Floral Embroidered Earrings', category: 'Earrings', price: 899, status: 'active', image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=100' },
+          { id: 2, name: 'Traditional Hoop Design', category: 'Hoops', price: 1299, status: 'active', image: 'https://images.unsplash.com/photo-1506630448388-4e683c67ddb0?w=100' },
+          { id: 3, name: 'Custom Wall Art', category: 'Decor', price: 2499, status: 'active', image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=100' },
+          { id: 4, name: 'Bridal Set', category: 'Jewelry', price: 3999, status: 'inactive', image: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=100' }
+        ];
+      }
+
+      getSampleOrders() {
+        return [
+          { id: 'ORD001', customerName: 'Priya Sharma', date: '2024-01-15', total: 2400, status: 'Pending' },
+          { id: 'ORD002', customerName: 'Anita Gupta', date: '2024-01-14', total: 1200, status: 'Processing' },
+          { id: 'ORD003', customerName: 'Meera Jain', date: '2024-01-13', total: 4500, status: 'Shipped' },
+          { id: 'ORD004', customerName: 'Kavya Reddy', date: '2024-01-12', total: 800, status: 'Delivered' }
+        ];
+      }
+
+      getSampleCustomRequests() {
+        return [
+          {
+            name: 'Shreya Patel',
+            email: 'shreya@email.com',
+            phone: '+91 98765 43210',
+            occasion: 'Wedding',
+            budget: '₹5000-₹8000',
+            timeline: '2 weeks',
+            colors: 'Gold, Red, Maroon',
+            style: 'Traditional',
+            description: 'I need custom embroidered earrings for my wedding. Looking for traditional Indian designs with gold thread work.',
+            status: 'New',
+            date: '2024-01-15'
+          },
+          {
+            name: 'Ravi Kumar',
+            email: 'ravi@email.com',
+            phone: '+91 87654 32109',
+            occasion: 'Anniversary Gift',
+            budget: '₹2000-₹3000',
+            timeline: '1 week',
+            colors: 'Pink, White',
+            style: 'Modern',
+            description: 'Want to gift custom embroidered wall art to my wife for our anniversary.',
+            status: 'In Progress',
+            date: '2024-01-12'
+          }
+        ];
+      }
+
+      getSampleBookings() {
+        return [
+          {
+            name: 'Neha Agarwal',
+            email: 'neha@email.com',
+            phone: '+91 98765 43210',
+            service: 'Bridal Mehndi',
+            date: '2024-02-15',
+            time: '10:00 AM',
+            duration: '4-6 hours',
+            location: 'Bride\'s Home',
+            guests: '15',
+            status: 'Confirmed',
+            bookedDate: '2024-01-10'
+          },
+          {
+            name: 'Pooja Singh',
+            email: 'pooja@email.com',
+            phone: '+91 87654 32109',
+            service: 'Party Mehndi',
+            date: '2024-01-25',
+            time: '3:00 PM',
+            duration: '2-3 hours',
+            location: 'Event Venue',
+            guests: '8',
+            status: 'Pending',
+            bookedDate: '2024-01-14'
+          }
+        ];
+      }
+
+      getSampleMessages() {
+        return [
+          {
+            name: 'Priya Sharma',
+            email: 'priya@email.com',
+            phone: '+91 98765 43210',
+            subject: 'Product Inquiry',
+            message: 'Hi, I saw your beautiful earrings on Instagram. Can you tell me more about the custom options available?',
+            date: '2024-01-15',
+            read: false
+          },
+          {
+            name: 'Ankit Gupta',
+            email: 'ankit@email.com',
+            phone: '+91 87654 32109',
+            subject: 'Bulk Order',
+            message: 'I run a boutique and would like to discuss bulk orders for your embroidered items. Please let me know your wholesale rates.',
+            date: '2024-01-14',
+            read: true
+          }
+        ];
+      }
+
+      getSampleGalleryImages() {
+        return [
+          { url: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=300', title: 'Floral Earrings', category: 'Earrings' },
+          { url: 'https://images.unsplash.com/photo-1583391733956-6c78276477e3?w=300', title: 'Bridal Mehndi', category: 'Mehndi' },
+          { url: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=300', title: 'Wall Art', category: 'Decor' },
+          { url: 'https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=300', title: 'Jewelry Set', category: 'Jewelry' },
+          { url: 'https://images.unsplash.com/photo-1582650625119-3a31f8fa2699?w=300', title: 'Arabic Mehndi', category: 'Mehndi' },
+          { url: 'https://images.unsplash.com/photo-1506630448388-4e683c67ddb0?w=300', title: 'Hoop Design', category: 'Hoops' }
+        ];
+      }
+
+      // Utility Methods
+      getStatusColor(status) {
+        const colors = {
+          'Pending': 'bg-yellow-100 text-yellow-800',
+          'Processing': 'bg-blue-100 text-blue-800',
+          'Shipped': 'bg-purple-100 text-purple-800',
+          'Delivered': 'bg-green-100 text-green-800'
+        };
+        return colors[status] || 'bg-gray-100 text-gray-800';
+      }
+
+      getRequestStatusColor(status) {
+        const colors = {
+          'New': 'bg-blue-100 text-blue-800',
+          'In Progress': 'bg-yellow-100 text-yellow-800',
+          'Completed': 'bg-green-100 text-green-800',
+          'Cancelled': 'bg-red-100 text-red-800'
+        };
+        return colors[status] || 'bg-gray-100 text-gray-800';
+      }
+
+      getBookingStatusColor(status) {
+        const colors = {
+          'Pending': 'bg-yellow-100 text-yellow-800',
+          'Confirmed': 'bg-green-100 text-green-800',
+          'Completed': 'bg-blue-100 text-blue-800',
+          'Cancelled': 'bg-red-100 text-red-800'
+        };
+        return colors[status] || 'bg-gray-100 text-gray-800';
+      }
+    }
+
+    // Initialize Admin Panel
+    new AdminPanel();
+  </script>
+</body>
+</html>

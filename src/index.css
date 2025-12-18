@@ -1,0 +1,60 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Primary Paradigm: Elegant & Earthy */
+    --color-primary: #881337; /* Rose 900 - Deep Red/Burgundy */
+    --color-primary-light: #be123c; /* Rose 700 */
+    
+    --color-secondary: #fdfbf7; /* Warm Paper / Off-White */
+    --color-secondary-dark: #f5f5f4; /* Stone 100 */
+
+    --color-accent: #b45309; /* Amber 700 - Gold-ish */
+    --color-accent-light: #d97706; /* Amber 600 */
+
+    --color-text-main: #1c1917; /* Stone 900 */
+    --color-text-muted: #57534e; /* Stone 600 */
+    --color-text-light: #a8a29e; /* Stone 400 */
+
+    --font-heading: 'Playfair Display', serif;
+    --font-body: 'Inter', sans-serif;
+  }
+
+  body {
+    @apply antialiased text-stone-900 bg-[#fdfbf7];
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    @apply font-semibold tracking-tight;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-rose-900 text-white px-6 py-2.5 rounded-full hover:bg-rose-800 transition-all duration-300 shadow-md hover:shadow-lg text-sm font-medium tracking-wide uppercase;
+  }
+  
+  .btn-outline {
+    @apply border border-rose-900 text-rose-900 px-6 py-2.5 rounded-full hover:bg-rose-50 transition-all duration-300 text-sm font-medium tracking-wide uppercase;
+  }
+
+  .card-premium {
+    @apply bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden border border-stone-100;
+  }
+
+  .container-custom {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .heading-serif {
+    font-family: var(--font-heading);
+  }
+}
+

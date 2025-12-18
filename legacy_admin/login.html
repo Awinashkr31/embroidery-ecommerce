@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login - Hand Embroidery by Sana</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://use.typekit.net/yjp3aho.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            'sofia': ['sofia-pro', 'sans-serif'],
+          },
+          colors: {
+            'rose-gold': '#E8B4A0',
+            'deep-rose': '#D4847C',
+            'sage': '#A8B5A0',
+            'warm-beige': '#F5F1EB',
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="font-sofia bg-gradient-to-br from-warm-beige via-rose-gold/20 to-sage/20 min-h-screen">
+  <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full space-y-8">
+      <!-- Header -->
+      <div class="text-center">
+        <div class="mx-auto h-20 w-20 bg-gradient-to-br from-rose-gold to-deep-rose rounded-full flex items-center justify-center mb-6">
+          <i data-lucide="palette" class="w-10 h-10 text-white"></i>
+        </div>
+        <h2 class="text-3xl font-bold text-gray-800">Admin Panel</h2>
+        <p class="mt-2 text-gray-600">Hand Embroidery by Sana</p>
+      </div>
+
+      <!-- Login Form -->
+      <div class="bg-white rounded-2xl shadow-lg p-8">
+        <form id="login-form" class="space-y-6">
+          <div>
+            <label for="username" class="block text-sm font-medium text-gray-700 mb-2">
+              Username
+            </label>
+            <div class="relative">
+              <input id="username" name="username" type="text" required
+                     class="w-full px-4 py-3 pl-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-gold focus:border-transparent transition-all"
+                     placeholder="Enter your username">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center">
+                <i data-lucide="user" class="w-5 h-5 text-gray-400"></i>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+              Password
+            </label>
+            <div class="relative">
+              <input id="password" name="password" type="password" required
+                     class="w-full px-4 py-3 pl-12 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-gold focus:border-transparent transition-all"
+                     placeholder="Enter your password">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center">
+                <i data-lucide="lock" class="w-5 h-5 text-gray-400"></i>
+              </div>
+              <button type="button" id="toggle-password" 
+                      class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                <i data-lucide="eye" class="w-5 h-5 text-gray-400 hover:text-gray-600"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between">
+            <div class="flex items-center">
+              <input id="remember-me" name="remember-me" type="checkbox"
+                     class="h-4 w-4 text-rose-gold focus:ring-rose-gold border-gray-300 rounded">
+              <label for="remember-me" class="ml-2 block text-sm text-gray-700">
+                Remember me
+              </label>
+            </div>
+
+            <div class="text-sm">
+              <a href="#" class="font-medium text-deep-rose hover:text-deep-rose/80 transition-colors">
+                Forgot password?
+              </a>
+            </div>
+          </div>
+
+          <div>
+            <button type="submit" id="login-btn"
+                    class="w-full bg-gradient-to-r from-rose-gold to-deep-rose text-white py-3 px-6 rounded-lg font-semibold text-lg hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-300">
+              <span class="flex items-center justify-center gap-2">
+                <i data-lucide="log-in" class="w-5 h-5"></i>
+                Sign In
+              </span>
+            </button>
+          </div>
+        </form>
+
+        <!-- Demo Credentials -->
+        <div class="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <div class="flex items-start">
+            <i data-lucide="info" class="w-5 h-5 text-yellow-600 mr-2 mt-0.5"></i>
+            <div>
+              <h3 class="text-sm font-medium text-yellow-800">Demo Credentials</h3>
+              <p class="mt-1 text-sm text-yellow-700">
+                <strong>Username:</strong> admin<br>
+                <strong>Password:</strong> password123
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Security Info -->
+      <div class="text-center text-sm text-gray-500">
+        <div class="flex items-center justify-center mb-2">
+          <i data-lucide="shield-check" class="w-4 h-4 mr-1"></i>
+          Your connection is secure and encrypted
+        </div>
+        <a href="../index.html" class="text-deep-rose hover:text-deep-rose/80 transition-colors">
+          ← Back to Website
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Initialize Lucide icons
+    lucide.createIcons();
+
+    // Password toggle functionality
+    document.getElementById('toggle-password').addEventListener('click', function() {
+      const passwordInput = document.getElementById('password');
+      const icon = this.querySelector('[data-lucide]');
+      
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        icon.setAttribute('data-lucide', 'eye-off');
+      } else {
+        passwordInput.type = 'password';
+        icon.setAttribute('data-lucide', 'eye');
+      }
+      
+      // Re-render the icon
+      lucide.createIcons();
+    });
+
+    // Login form handler
+    document.getElementById('login-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const loginBtn = document.getElementById('login-btn');
+      
+      // Show loading state
+      const originalContent = loginBtn.innerHTML;
+      loginBtn.innerHTML = '<span class="flex items-center justify-center gap-2"><i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i>Signing in...</span>';
+      loginBtn.disabled = true;
+      
+      // Re-create icons for the loading spinner
+      lucide.createIcons();
+      
+      // Simulate authentication delay
+      setTimeout(() => {
+        // Simple credential check (in production, this should be server-side)
+        if (username === 'admin' && password === 'password123') {
+          // Success
+          localStorage.setItem('adminLoggedIn', 'true');
+          loginBtn.innerHTML = '<span class="flex items-center justify-center gap-2"><i data-lucide="check" class="w-5 h-5"></i>Success!</span>';
+          loginBtn.className = loginBtn.className.replace('from-rose-gold to-deep-rose', 'from-green-500 to-green-600');
+          
+          // Redirect to admin panel
+          setTimeout(() => {
+            window.location.href = 'index.html';
+          }, 1000);
+          
+        } else {
+          // Error
+          loginBtn.innerHTML = '<span class="flex items-center justify-center gap-2"><i data-lucide="alert-circle" class="w-5 h-5"></i>Invalid Credentials</span>';
+          loginBtn.className = loginBtn.className.replace('from-rose-gold to-deep-rose', 'from-red-500 to-red-600');
+          
+          // Show error message
+          showError('Invalid username or password. Please try again.');
+          
+          // Reset button after 3 seconds
+          setTimeout(() => {
+            loginBtn.innerHTML = originalContent;
+            loginBtn.className = loginBtn.className.replace('from-red-500 to-red-600', 'from-rose-gold to-deep-rose');
+            loginBtn.disabled = false;
+            lucide.createIcons();
+          }, 3000);
+        }
+      }, 2000);
+    });
+
+    function showError(message) {
+      // Remove any existing error message
+      const existingError = document.querySelector('.error-message');
+      if (existingError) {
+        existingError.remove();
+      }
+      
+      // Create and show error message
+      const errorDiv = document.createElement('div');
+      errorDiv.className = 'error-message mt-4 p-3 bg-red-100 border border-red-300 text-red-700 rounded-lg text-sm';
+      errorDiv.innerHTML = `
+        <div class="flex items-center">
+          <i data-lucide="alert-circle" class="w-4 h-4 mr-2"></i>
+          ${message}
+        </div>
+      `;
+      
+      document.getElementById('login-form').appendChild(errorDiv);
+      lucide.createIcons();
+      
+      // Auto-remove after 5 seconds
+      setTimeout(() => {
+        errorDiv.remove();
+      }, 5000);
+    }
+
+    // Check if already logged in
+    if (localStorage.getItem('adminLoggedIn')) {
+      window.location.href = 'index.html';
+    }
+
+    // Auto-fill demo credentials on page load for demo purposes
+    window.addEventListener('load', () => {
+      // Uncomment these lines to auto-fill for demo
+      // document.getElementById('username').value = 'admin';
+      // document.getElementById('password').value = 'password123';
+    });
+  </script>
+</body>
+</html>
