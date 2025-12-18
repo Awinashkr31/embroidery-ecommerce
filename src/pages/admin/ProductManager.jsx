@@ -192,115 +192,191 @@ const ProductManager = () => {
                 </div>
             </div>
 
-            {/* Modal */}
+            {/* Professional Modal */}
             {isModalOpen && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-stone-900/40 backdrop-blur-sm animate-in fade-in duration-200">
-                    <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
-                        <div className="px-8 py-6 border-b border-stone-100 flex justify-between items-center bg-stone-50">
-                            <h2 className="text-xl font-heading font-bold text-stone-800">
-                                {editingProduct ? 'Edit Product' : 'Add New Product'}
-                            </h2>
-                            <button onClick={() => setIsModalOpen(false)} className="text-stone-400 hover:text-stone-600">
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+                    {/* Backdrop */}
+                    <div 
+                        className="absolute inset-0 bg-stone-900/40 backdrop-blur-md animate-in fade-in duration-300"
+                        onClick={() => setIsModalOpen(false)}
+                    />
+                    
+                    {/* Modal Content */}
+                    <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-4xl overflow-hidden animate-in zoom-in-95 duration-300 flex flex-col max-h-[90vh]">
+                        {/* Header */}
+                        <div className="px-8 py-6 border-b border-stone-100 flex justify-between items-center bg-white z-10">
+                            <div>
+                                <h2 className="text-2xl font-heading font-bold text-stone-800">
+                                    {editingProduct ? 'Edit Product' : 'Add New Product'}
+                                </h2>
+                                <p className="text-stone-500 text-sm mt-1">Fill in the details to update your inventory</p>
+                            </div>
+                            <button 
+                                onClick={() => setIsModalOpen(false)} 
+                                className="p-2 bg-stone-50 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-600"
+                            >
                                 <X className="w-6 h-6" />
                             </button>
                         </div>
                         
-                        <form onSubmit={handleSubmit} className="p-8 space-y-5">
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold text-stone-500 uppercase tracking-widest">Product Name</label>
-                                <input 
-                                    type="text" required
-                                    className="w-full px-4 py-3 rounded-xl bg-stone-50 border-2 border-stone-100 focus:border-rose-900 focus:bg-white focus:ring-0 outline-none transition-all font-medium"
-                                    value={formData.name}
-                                    onChange={(e) => setFormData({...formData, name: e.target.value})}
-                                />
-                            </div>
+                        <div className="overflow-y-auto p-8">
+                            <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                                {/* Left Col: Image Preview */}
+                                <div className="lg:col-span-5 space-y-6">
+                                    <div className="group relative aspect-[4/5] bg-stone-50 rounded-2xl border-2 border-dashed border-stone-200 overflow-hidden flex items-center justify-center transition-all hover:border-rose-200">
+                                        {formData.image ? (
+                                            <>
+                                                <img 
+                                                    src={formData.image} 
+                                                    alt="Preview" 
+                                                    className="w-full h-full object-cover"
+                                                    onError={(e) => {
+                                                        e.target.onerror = null; 
+                                                        e.target.src = 'https://placehold.co/400x500?text=Invalid+Image+URL';
+                                                    }}
+                                                />
+                                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors" />
+                                            </>
+                                        ) : (
+                                            <div className="text-center p-6">
+                                                <div className="w-16 h-16 bg-stone-100 rounded-full flex items-center justify-center mx-auto mb-4 text-stone-400">
+                                                    <ImageIcon className="w-8 h-8" />
+                                                </div>
+                                                <p className="text-stone-500 font-medium">No image URL provided</p>
+                                                <p className="text-stone-400 text-xs mt-1">Enter a secure URL below to preview</p>
+                                            </div>
+                                        )}
+                                    </div>
 
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold text-stone-500 uppercase tracking-widest">Description</label>
-                                <textarea
-                                    value={formData.description}
-                                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                    className="w-full px-4 py-3 rounded-xl bg-stone-50 border-2 border-stone-100 focus:border-rose-900 focus:bg-white focus:ring-0 outline-none transition-all font-medium"
-                                    rows="3"
-                                    required
-                                />
-                            </div>
-
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold text-stone-500 uppercase tracking-widest">Product Details / Specifications</label>
-                                <textarea
-                                    value={formData.specifications}
-                                    onChange={(e) => setFormData({ ...formData, specifications: e.target.value })}
-                                    className="w-full px-4 py-3 rounded-xl bg-stone-50 border-2 border-stone-100 focus:border-rose-900 focus:bg-white focus:ring-0 outline-none transition-all font-medium"
-                                    rows="4"
-                                    placeholder="Enter detailed specifications (one per line)..."
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-5">
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-stone-500 uppercase tracking-widest">Price (₹)</label>
-                                    <input 
-                                        type="number" required
-                                        className="w-full px-4 py-3 rounded-xl bg-stone-50 border-2 border-stone-100 focus:border-rose-900 focus:bg-white focus:ring-0 outline-none transition-all font-medium"
-                                        value={formData.price}
-                                        onChange={(e) => setFormData({...formData, price: e.target.value})}
-                                    />
+                                    <div className="space-y-3">
+                                        <label className="text-xs font-bold text-stone-500 uppercase tracking-widest flex items-center gap-2">
+                                            <ImageIcon className="w-4 h-4" />
+                                            Image URL
+                                        </label>
+                                        <input 
+                                            type="url"
+                                            className="w-full px-4 py-3 rounded-xl bg-stone-50 border-2 border-stone-100 focus:border-rose-900 focus:bg-white focus:ring-0 outline-none transition-all font-medium text-sm"
+                                            value={formData.image}
+                                            onChange={(e) => setFormData({...formData, image: e.target.value})}
+                                            placeholder="https://example.com/image.jpg"
+                                        />
+                                        <p className="text-[10px] text-stone-400">
+                                            Supported: JPG, PNG, WEBP. Make sure the link is publicly accessible.
+                                        </p>
+                                    </div>
+                                    
+                                     {/* Featured Toggle */}
+                                    <div className="bg-amber-50 rounded-xl p-4 border border-amber-100">
+                                        <label className="flex items-center gap-3 cursor-pointer">
+                                            <input 
+                                                type="checkbox" 
+                                                checked={formData.featured}
+                                                onChange={(e) => setFormData({...formData, featured: e.target.checked})}
+                                                className="w-5 h-5 rounded border-amber-300 text-amber-600 focus:ring-amber-500"
+                                            />
+                                            <div>
+                                                <span className="block text-sm font-bold text-amber-800">Featured Product</span>
+                                                <span className="block text-xs text-amber-700/70">Pin this product to the top of the shop</span>
+                                            </div>
+                                        </label>
+                                    </div>
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-stone-500 uppercase tracking-widest">Original Price (MRP)</label>
-                                    <input 
-                                        type="number" required
-                                        className="w-full px-4 py-3 rounded-xl bg-stone-50 border-2 border-stone-100 focus:border-rose-900 focus:bg-white focus:ring-0 outline-none transition-all font-medium"
-                                        value={formData.originalPrice || ''}
-                                        onChange={(e) => setFormData({...formData, originalPrice: e.target.value})}
-                                    />
+
+                                {/* Right Col: Form Fields */}
+                                <div className="lg:col-span-7 space-y-6">
+                                    <div className="space-y-3">
+                                        <label className="text-xs font-bold text-stone-500 uppercase tracking-widest">Product Name</label>
+                                        <input 
+                                            type="text" required
+                                            className="w-full px-4 py-3 rounded-xl bg-stone-50 border-2 border-stone-100 focus:border-rose-900 focus:bg-white focus:ring-0 outline-none transition-all font-medium text-lg placeholder:text-stone-300"
+                                            placeholder="e.g. Vintage Floral Embroidery Hoop"
+                                            value={formData.name}
+                                            onChange={(e) => setFormData({...formData, name: e.target.value})}
+                                        />
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-5">
+                                        <div className="space-y-3">
+                                            <label className="text-xs font-bold text-stone-500 uppercase tracking-widest">Price (₹)</label>
+                                            <div className="relative">
+                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 font-bold">₹</span>
+                                                <input 
+                                                    type="number" required
+                                                    className="w-full pl-8 pr-4 py-3 rounded-xl bg-stone-50 border-2 border-stone-100 focus:border-rose-900 focus:bg-white focus:ring-0 outline-none transition-all font-medium"
+                                                    value={formData.price}
+                                                    onChange={(e) => setFormData({...formData, price: e.target.value})}
+                                                    placeholder="0.00"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-3">
+                                            <label className="text-xs font-bold text-stone-500 uppercase tracking-widest">MRP (Optional)</label>
+                                            <div className="relative">
+                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 font-bold">₹</span>
+                                                <input 
+                                                    type="number" 
+                                                    className="w-full pl-8 pr-4 py-3 rounded-xl bg-stone-50 border-2 border-stone-100 focus:border-rose-900 focus:bg-white focus:ring-0 outline-none transition-all font-medium"
+                                                    value={formData.originalPrice || ''}
+                                                    onChange={(e) => setFormData({...formData, originalPrice: e.target.value})}
+                                                    placeholder="0.00"
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <label className="text-xs font-bold text-stone-500 uppercase tracking-widest">Category</label>
+                                        <select 
+                                            className="w-full px-4 py-3 rounded-xl bg-stone-50 border-2 border-stone-100 focus:border-rose-900 focus:bg-white focus:ring-0 outline-none transition-all font-medium appearance-none"
+                                            value={formData.category}
+                                            onChange={(e) => setFormData({...formData, category: e.target.value})}
+                                        >
+                                            {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                                        </select>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <label className="text-xs font-bold text-stone-500 uppercase tracking-widest">Description</label>
+                                        <textarea
+                                            value={formData.description}
+                                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                                            className="w-full px-4 py-3 rounded-xl bg-stone-50 border-2 border-stone-100 focus:border-rose-900 focus:bg-white focus:ring-0 outline-none transition-all font-medium min-h-[100px]"
+                                            placeholder="Write a compelling description for your product..."
+                                            required
+                                        />
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <label className="text-xs font-bold text-stone-500 uppercase tracking-widest">
+                                            Specifications <span className="text-stone-300 font-normal normal-case">(Optional)</span>
+                                        </label>
+                                        <textarea
+                                            value={formData.specifications}
+                                            onChange={(e) => setFormData({ ...formData, specifications: e.target.value })}
+                                            className="w-full px-4 py-3 rounded-xl bg-stone-50 border-2 border-stone-100 focus:border-rose-900 focus:bg-white focus:ring-0 outline-none transition-all font-medium text-sm min-h-[80px]"
+                                            placeholder="• Size: 10 inches&#10;• Material: Cotton thread, Wooden hoop&#10;• Care: Dry clean only"
+                                        />
+                                    </div>
                                 </div>
+                            </form>
+                        </div>
 
-                                <div className="space-y-2">
-                                    <label className="text-xs font-bold text-stone-500 uppercase tracking-widest">Category</label>
-                                    <select 
-                                        className="w-full px-4 py-3 rounded-xl bg-stone-50 border-2 border-stone-100 focus:border-rose-900 focus:bg-white focus:ring-0 outline-none transition-all font-medium"
-                                        value={formData.category}
-                                        onChange={(e) => setFormData({...formData, category: e.target.value})}
-                                    >
-                                        {categories.map(c => <option key={c} value={c}>{c}</option>)}
-                                    </select>
-                                </div>
-                            </div>
-                            
-                             <div className="flex items-center gap-3">
-                                <input 
-                                    type="checkbox" 
-                                    id="featured"
-                                    checked={formData.featured}
-                                    onChange={(e) => setFormData({...formData, featured: e.target.checked})}
-                                    className="w-5 h-5 rounded border-stone-300 text-rose-900 focus:ring-rose-900"
-                                />
-                                <label htmlFor="featured" className="text-sm font-bold text-stone-700 cursor-pointer select-none">Mark as Featured Product</label>
-                            </div>
-
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold text-stone-500 uppercase tracking-widest">Image URL</label>
-                                <input 
-                                    type="url"
-                                    className="w-full px-4 py-3 rounded-xl bg-stone-50 border-2 border-stone-100 focus:border-rose-900 focus:bg-white focus:ring-0 outline-none transition-all font-medium text-sm"
-                                    value={formData.image}
-                                    onChange={(e) => setFormData({...formData, image: e.target.value})}
-                                    placeholder="https://..."
-                                />
-                            </div>
-
-                            <div className="pt-4 flex gap-3">
-                                <button type="button" onClick={() => setIsModalOpen(false)} className="flex-1 px-6 py-3.5 rounded-xl border-2 border-stone-200 text-stone-600 font-bold hover:bg-stone-50 transition-colors">
-                                    Cancel
-                                </button>
-                                <button type="submit" className="flex-1 px-6 py-3.5 rounded-xl bg-rose-900 text-white font-bold hover:bg-rose-800 transition-colors shadow-lg shadow-rose-900/20">
-                                    {editingProduct ? 'Update Product' : 'Create Product'}
-                                </button>
-                            </div>
-                        </form>
+                        {/* Footer */}
+                        <div className="px-8 py-6 border-t border-stone-100 bg-stone-50 flex justify-end gap-4">
+                             <button 
+                                type="button" 
+                                onClick={() => setIsModalOpen(false)} 
+                                className="px-6 py-3 rounded-xl border-2 border-stone-200 text-stone-600 font-bold hover:bg-stone-100 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                onClick={handleSubmit} 
+                                className="px-8 py-3 rounded-xl bg-rose-900 text-white font-bold hover:bg-rose-800 transition-colors shadow-lg shadow-rose-900/20 flex items-center"
+                            >
+                                {editingProduct ? 'Update Product' : 'Create Product'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
