@@ -59,6 +59,31 @@ const Checkout = () => {
         }
     };
 
+    if (!currentUser) {
+        return (
+            <div className="min-h-screen bg-[#fdfbf7] flex items-center justify-center font-body pt-20">
+                <div className="text-center bg-white p-10 rounded-2xl shadow-lg border border-stone-100 max-w-md mx-4">
+                    <h2 className="text-2xl font-heading font-bold text-stone-900 mb-4">Please Log In</h2>
+                    <p className="text-stone-600 mb-8">You must be logged in to complete your purchase.</p>
+                    <div className="space-y-4">
+                        <Link 
+                            to="/login" 
+                            className="block w-full bg-rose-900 text-white py-3 rounded-xl font-bold uppercase hover:bg-rose-800 transition-colors"
+                        >
+                            Log In
+                        </Link>
+                        <Link 
+                            to="/register" 
+                            className="block w-full bg-stone-100 text-stone-900 py-3 rounded-xl font-bold uppercase hover:bg-stone-200 transition-colors"
+                        >
+                            Create Account
+                        </Link>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     if (cart.length === 0 && !isSubmitting) {
         return (
             <div className="min-h-screen bg-[#fdfbf7] flex items-center justify-center font-body pt-20">
