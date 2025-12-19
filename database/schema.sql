@@ -140,6 +140,42 @@ CREATE TABLE website_settings (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+
+
+-- Cart Items Table
+CREATE TABLE cart_items (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id VARCHAR(255) NOT NULL,
+  product_id UUID REFERENCES products(id) ON DELETE CASCADE,
+  quantity INTEGER DEFAULT 1,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(user_id, product_id)
+);
+
+-- Wishlist Items Table
+CREATE TABLE wishlist_items (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id VARCHAR(255) NOT NULL,
+  product_id UUID REFERENCES products(id) ON DELETE CASCADE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(user_id, product_id)
+);
+
+-- Addresses Table
+CREATE TABLE addresses (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id VARCHAR(255) NOT NULL, -- Firebase UID is a string
+  first_name VARCHAR(100) NOT NULL,
+  last_name VARCHAR(100) NOT NULL,
+  phone VARCHAR(20) NOT NULL,
+  address TEXT NOT NULL,
+  city VARCHAR(100) NOT NULL,
+  state VARCHAR(100) NOT NULL,
+  zip_code VARCHAR(20) NOT NULL,
+  is_default BOOLEAN DEFAULT false,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- Reviews Table
 CREATE TABLE reviews (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
@@ -211,6 +247,10 @@ ALTER TABLE newsletter_subscriptions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE reviews ENABLE ROW LEVEL SECURITY;
 ALTER TABLE admin_users ENABLE ROW LEVEL SECURITY; -- Security Fix
 ALTER TABLE website_settings ENABLE ROW LEVEL SECURITY; -- Security Fix
+ALTER TABLE addresses ENABLE ROW LEVEL SECURITY;
+
+ALTER TABLE cart_items ENABLE ROW LEVEL SECURITY;
+ALTER TABLE wishlist_items ENABLE ROW LEVEL SECURITY;
 
 -- Create policies for public access to products and gallery
 CREATE POLICY "Public can view active products" ON products FOR SELECT USING (active = true);
@@ -236,3 +276,10 @@ CREATE POLICY "Anyone can delete orders" ON orders FOR DELETE USING (true);
 CREATE POLICY "Anyone can create reviews" ON reviews FOR INSERT WITH CHECK (true);
 CREATE POLICY "Admin can update reviews" ON reviews FOR UPDATE USING (true);
 CREATE POLICY "Admin can delete reviews" ON reviews FOR DELETE USING (true);
+
+-- Address Policies (Simplified for Firebase Auth)
+CREATE POLICY "Allow app access to addresses" ON addresses USING (true) WITH CHECK (true);
+
+-- Cart/Wishlist Policies
+CREATE POLICY "Allow app access to cart" ON cart_items USING (true) WITH CHECK (true);
+CREATE POLICY "Allow app access to wishlist" ON wishlist_items USING (true) WITH CHECK (true);
