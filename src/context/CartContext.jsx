@@ -28,6 +28,46 @@ export const CartProvider = ({ children }) => {
         if (!currentUser?.uid) return;
         
         try {
+            // Check for local items to merge
+            const localCartStr = localStorage.getItem('cart');
+            if (localCartStr) {
+                const localCart = JSON.parse(localCartStr);
+                if (localCart.length > 0) {
+                    // Merge logic: Add local items to Supabase
+                    for (const item of localCart) {
+                        try {
+                             // Check if item already exists in DB to update quantity
+                             const { data: existing } = await supabase
+                                .from('cart_items')
+                                .select('quantity')
+                                .eq('user_id', currentUser.uid)
+                                .eq('product_id', item.id)
+                                .single();
+
+                             if (existing) {
+                                 await supabase
+                                    .from('cart_items')
+                                    .update({ quantity: existing.quantity + item.quantity })
+                                    .eq('user_id', currentUser.uid)
+                                    .eq('product_id', item.id);
+                             } else {
+                                 await supabase
+                                    .from('cart_items')
+                                    .insert({ 
+                                        user_id: currentUser.uid, 
+                                        product_id: item.id, 
+                                        quantity: item.quantity 
+                                    });
+                             }
+                        } catch (err) {
+                            console.error(`Failed to merge item ${item.id}`, err);
+                        }
+                    }
+                    // Clear local cart after merging
+                    localStorage.removeItem('cart');
+                }
+            }
+
             const { data, error } = await supabase
                 .from('cart_items')
                 .select('*, products(*)')
