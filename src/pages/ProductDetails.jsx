@@ -35,7 +35,7 @@ const ProductDetails = () => {
 
     const fetchReviews = async (productId) => {
         try {
-            const { data, error } = await supabase
+            const { data } = await supabase
                 .from('reviews')
                 .select('*')
                 .eq('product_id', productId)
@@ -192,9 +192,9 @@ const ProductDetails = () => {
 
                         <div className="flex flex-col sm:flex-row gap-4 mb-8">
                             <button
-                                onClick={() => {
-                                    addToCart(product);
-                                    addToast(`Added ${product.name} to cart`, 'success');
+                                onClick={async () => {
+                                    const success = await addToCart(product);
+                                    if (success) addToast(`Added ${product.name} to cart`, 'success');
                                 }}
                                 disabled={!product.inStock}
                                 className={`flex-1 py-4 px-8 rounded-xl font-bold uppercase tracking-widest text-sm flex items-center justify-center gap-3 transition-all ${

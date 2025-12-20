@@ -1,9 +1,23 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ShoppingBag, Menu, X, User, LogOut, Heart, Bell, Trash2 } from 'lucide-react';
+import { 
+  ShoppingCart, 
+  Menu, 
+  X, 
+  User, 
+  LogOut, 
+  Heart,
+  ShoppingBag,
+  Bell,
+  Trash2,
+  CheckCircle,
+  AlertCircle,
+  Search
+} from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../config/supabase';
+import { useToast } from '../context/ToastContext';
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -18,6 +32,7 @@ const Navbar = () => {
 
   const { cartCount } = useCart();
   const { currentUser, logout } = useAuth();
+  const { addToast } = useToast();
   const userMenuRef = useRef(null);
   const location = useLocation();
 
@@ -70,12 +85,32 @@ const Navbar = () => {
   };
 
   // Delete Notification
+  // Delete Notification
   const handleDeleteNotification = async (id, e) => {
     e.stopPropagation(); // Prevent triggering mark read
-    setNotifications(prev => prev.filter(n => n.id !== id));
-    setUnreadCount(prev => Math.max(0, prev - (notifications.find(n => n.id === id && !n.is_read) ? 1 : 0)));
-
-    await supabase.from('notifications').delete().eq('id', id);
+    
+    try {
+        // Use RPC to ensure safe deletion regardless of RLS quirks
+        const { data, error } = await supabase.rpc('delete_notification', { notification_id: id });
+        
+        if (error) throw error;
+        
+        // If data is false, it means nothing was deleted (mismatch or not found)
+        if (data === false) {
+             console.warn("Notification delete failed: Permission denied or not found");
+             // We could throw here, but let's just show error.
+             throw new Error("Could not delete notification.");
+        }
+        
+        // Optimistic Update
+        setNotifications(prev => prev.filter(n => n.id !== id));
+        setUnreadCount(prev => Math.max(0, prev - (notifications.find(n => n.id === id && !n.is_read) ? 1 : 0)));
+        addToast('Notification deleted', 'success');
+        
+    } catch (err) {
+        console.error("Error deleting notification:", err);
+        addToast("Failed to delete notification", 'error');
+    }
   };
 
   // Close notif menu when clicking outside

@@ -121,7 +121,7 @@ const Checkout = () => {
             navigate('/order-success');
         } catch (error) {
             console.error('Order placement failed:', error);
-            addToast('Failed to place order. Please try again.', 'error');
+            addToast(error.message || 'Failed to place order. Please try again.', 'error');
             setIsSubmitting(false);
         }
     };
