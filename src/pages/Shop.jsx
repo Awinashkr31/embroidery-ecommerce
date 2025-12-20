@@ -211,10 +211,10 @@ const Shop = () => {
                                         {/* Quick Add Overlay */}
                                         <div className="absolute inset-x-6 bottom-6 translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 z-20">
                                             <button 
-                                                onClick={(e) => {
+                                                onClick={async (e) => {
                                                     e.preventDefault();
-                                                    addToCart(product);
-                                                    addToast(`Added ${product.name} to cart`, 'success');
+                                                    const success = await addToCart(product);
+                                                    if (success) addToast(`Added ${product.name} to cart`, 'success');
                                                 }}
                                                 disabled={!product.inStock}
                                                 className={`w-full py-3.5 rounded-xl font-bold text-sm shadow-xl transition-colors flex items-center justify-center gap-2 transform active:scale-95 ${

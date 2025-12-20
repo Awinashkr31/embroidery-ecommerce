@@ -80,6 +80,17 @@ const Orders = () => {
 
         if (error) throw error;
 
+        // Send Notification to User
+        if (selectedOrder?.customer?.email) {
+            await supabase.from('notifications').insert([{
+                user_email: selectedOrder.customer.email,
+                title: 'Order Status Updated',
+                message: `Your order #${selectedOrder.id.slice(0,8)} is now ${newStatus}.`,
+                type: 'info',
+                is_read: false
+            }]);
+        }
+
         // Optimistic update
         const updatedOrders = orders.map(order => 
           order.id === orderId ? { ...order, status: dbStatus } : order

@@ -84,7 +84,12 @@ const Cart = () => {
                                         <span className="w-10 text-center text-stone-900 font-medium text-sm">{item.quantity}</span>
                                         <button
                                             onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                                            className="px-3 py-1 hover:bg-stone-200 transition-colors text-stone-600 font-bold"
+                                            disabled={item.quantity >= (item.stock ?? item.stock_quantity ?? 100)}
+                                            className={`px-3 py-1 transition-colors font-bold ${
+                                                item.quantity >= (item.stock ?? item.stock_quantity ?? 100)
+                                                ? 'text-stone-300 cursor-not-allowed'
+                                                : 'text-stone-600 hover:bg-stone-200'
+                                            }`}
                                         >
                                             +
                                         </button>

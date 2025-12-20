@@ -57,7 +57,7 @@ export const ProductProvider = ({ children }) => {
                 category: product.category,
                 images: [product.image], // Convert single image to array
                 featured: product.featured,
-                stock_quantity: 10, // Default stock for new items
+                stock_quantity: parseInt(product.stockQuantity) || 10, // Use input or default
                 active: true
             };
 
@@ -100,6 +100,7 @@ export const ProductProvider = ({ children }) => {
             if (updatedData.description) updates.description = updatedData.description;
             if (updatedData.image) updates.images = [updatedData.image];
             if (updatedData.featured !== undefined) updates.featured = updatedData.featured;
+            if (updatedData.stockQuantity !== undefined) updates.stock_quantity = parseInt(updatedData.stockQuantity);
 
             const { data, error } = await supabase
                 .from('products')
@@ -144,7 +145,7 @@ export const ProductProvider = ({ children }) => {
             // Logic: If in stock (qty > 0), set to 0. If 0, set to 10.
             const newQuantity = product.stock > 0 ? 0 : 10;
 
-            const { data, error } = await supabase
+            const { error } = await supabase
                 .from('products')
                 .update({ stock_quantity: newQuantity })
                 .eq('id', id)

@@ -20,6 +20,7 @@ const ProductManager = () => {
         description: '',
         specifications: '', // New field
         image: '',
+        stockQuantity: 10, // Default stock
         featured: false
     };
     const [formData, setFormData] = useState(initialProductState);
@@ -39,7 +40,7 @@ const ProductManager = () => {
             setFormData(product);
         } else {
             setEditingProduct(null);
-            setFormData({ name: '', price: '', originalPrice: '', category: 'Home Decor', description: '', image: '', featured: false });
+            setFormData({ name: '', price: '', originalPrice: '', category: 'Home Decor', description: '', image: '', stockQuantity: 10, featured: false });
         }
         setIsModalOpen(true);
     };
@@ -49,7 +50,8 @@ const ProductManager = () => {
         const dataToSubmit = { 
             ...formData, 
             price: Number(formData.price),
-            originalPrice: formData.originalPrice ? Number(formData.originalPrice) : null
+            originalPrice: formData.originalPrice ? Number(formData.originalPrice) : null,
+            stockQuantity: Number(formData.stockQuantity)
         };
         try {
             if (editingProduct) {
@@ -122,6 +124,7 @@ const ProductManager = () => {
                                 <th className="px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider">Product</th>
                                 <th className="px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider">Category</th>
                                 <th className="px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider">Price</th>
+                                <th className="px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider">Stock Qty</th>
                                 <th className="px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider">Stock Status</th>
                                 <th className="px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider text-right">Actions</th>
                             </tr>
@@ -147,6 +150,7 @@ const ProductManager = () => {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 text-sm font-bold text-stone-900">₹{product.price.toLocaleString()}</td>
+                                        <td className="px-6 py-4 text-sm font-medium text-stone-600">{product.stock}</td>
                                         <td className="px-6 py-4">
                                             <button 
                                                 onClick={() => toggleStock(product.id)}
@@ -295,7 +299,7 @@ const ProductManager = () => {
                                         />
                                     </div>
 
-                                    <div className="grid grid-cols-2 gap-5">
+                                    <div className="grid grid-cols-3 gap-5">
                                         <div className="space-y-3">
                                             <label className="text-xs font-bold text-stone-500 uppercase tracking-widest">Price (₹)</label>
                                             <div className="relative">
@@ -310,7 +314,7 @@ const ProductManager = () => {
                                             </div>
                                         </div>
                                         <div className="space-y-3">
-                                            <label className="text-xs font-bold text-stone-500 uppercase tracking-widest">MRP (Optional)</label>
+                                            <label className="text-xs font-bold text-stone-500 uppercase tracking-widest">MRP</label>
                                             <div className="relative">
                                                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 font-bold">₹</span>
                                                 <input 
@@ -321,6 +325,16 @@ const ProductManager = () => {
                                                     placeholder="0.00"
                                                 />
                                             </div>
+                                        </div>
+                                        <div className="space-y-3">
+                                            <label className="text-xs font-bold text-stone-500 uppercase tracking-widest">Stock Qty</label>
+                                            <input 
+                                                type="number" required min="0"
+                                                className="w-full px-4 py-3 rounded-xl bg-stone-50 border-2 border-stone-100 focus:border-rose-900 focus:bg-white focus:ring-0 outline-none transition-all font-medium"
+                                                value={formData.stockQuantity}
+                                                onChange={(e) => setFormData({...formData, stockQuantity: e.target.value})}
+                                                placeholder="10"
+                                            />
                                         </div>
                                     </div>
 

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../../config/supabase';
 import { useAuth } from './AuthContext';
+import { useToast } from './ToastContext';
 
 const CartContext = createContext();
 
@@ -8,6 +9,7 @@ export const useCart = () => useContext(CartContext);
 
 export const CartProvider = ({ children }) => {
   const { currentUser } = useAuth();
+  const { addToast } = useToast();
 
   // Initialize cart from local storage for initial render
   const [cart, setCart] = useState(() => {
@@ -114,6 +116,16 @@ export const CartProvider = ({ children }) => {
   }, [cart, currentUser]);
 
   const addToCart = async (product) => {
+    // Check Stock
+    const currentItem = cart.find(item => item.id === product.id);
+    const currentQty = currentItem ? currentItem.quantity : 0;
+    const availableStock = product.stock !== undefined ? product.stock : (product.stock_quantity !== undefined ? product.stock_quantity : 100); // Fallback if property missing
+
+    if (currentQty + 1 > availableStock) {
+        addToast(`Cannot add more. Only ${availableStock} items in stock.`, 'error');
+        return false;
+    }
+
     // Optimistic Update
     setCart(prevCart => {
       const existingItem = prevCart.find(item => item.id === product.id);
@@ -147,6 +159,7 @@ export const CartProvider = ({ children }) => {
             console.error("Error syncing cart add:", error);
         }
     }
+    return true;
   };
 
   const removeFromCart = async (productId) => {
@@ -169,6 +182,16 @@ export const CartProvider = ({ children }) => {
     if (quantity < 1) {
       removeFromCart(productId);
       return;
+    }
+
+    // Check Stock for increase
+    const item = cart.find(i => i.id === productId);
+    if (item && quantity > item.quantity) { // Only check if increasing
+        const availableStock = item.stock !== undefined ? item.stock : (item.stock_quantity !== undefined ? item.stock_quantity : 100);
+        if (quantity > availableStock) {
+            addToast(`Cannot add more. Only ${availableStock} items in stock.`, 'error');
+            return;
+        }
     }
     
     setCart(prevCart =>
@@ -227,10 +250,7 @@ export const CartProvider = ({ children }) => {
 
     try {
       const { data, error } = await supabase
-        .from('orders')
-        .insert([newOrder])
-        .select()
-        .single();
+        .rpc('place_order', { order_data: newOrder });
         
       if (error) throw error;
       
