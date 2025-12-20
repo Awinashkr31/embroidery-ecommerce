@@ -39,6 +39,7 @@ import AdminUsers from './pages/admin/Users'
 import AdminNotifications from './pages/admin/AdminNotifications'
 import Reviews from './pages/admin/Reviews'
 import AdminBookings from './pages/admin/Bookings'
+import Settings from './pages/admin/Settings'
 
 import ProtectedRoute from './components/admin/ProtectedRoute'
 
@@ -67,6 +68,7 @@ function App() {
                 <Route path="messages" element={<AdminMessages />} />
                 <Route path="bookings" element={<AdminBookings />} />
                 <Route path="coupons" element={<AdminCoupons />} />
+                <Route path="settings" element={<Settings />} />
               </Route>
             </Route>
 
@@ -83,7 +85,7 @@ function App() {
                     <Route path="/custom-design" element={<CustomDesign />} />
                     <Route path="/mehndi-booking" element={<MehndiBooking />} />
                     <Route path="/gallery" element={<Gallery />} />
-                    <Route path="/contact" element={<Contact />} />
+                    <Route path="/support" element={<Contact />} />
                     <Route path="/cart" element={<Cart />} />
                     <Route path="/checkout" element={<Checkout />} />
                     <Route path="/login" element={<Login />} />

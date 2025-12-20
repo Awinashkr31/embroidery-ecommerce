@@ -42,7 +42,7 @@ const Contact = () => {
     <div className="bg-[#fdfbf7] min-h-screen font-body pt-24 pb-20">
       <div className="container-custom">
         <div className="text-center mb-16 max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700">
-          <span className="text-xs font-bold text-rose-900 uppercase tracking-[0.2em] mb-3 block">Get Connected</span>
+          <span className="text-xs font-bold text-rose-900 uppercase tracking-[0.2em] mb-3 block">Customer Support</span>
           <h1 className="text-4xl lg:text-6xl font-heading font-bold text-stone-900 mb-6">
             We'd love to <span className="text-rose-900 italic">hear from you</span>
           </h1>

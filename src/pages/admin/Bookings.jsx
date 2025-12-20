@@ -15,7 +15,7 @@ const AdminBookings = () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
-        .from('bookings')
+        .from('mehndi_bookings')
         .select('*')
         .order('created_at', { ascending: false });
 
@@ -31,7 +31,7 @@ const AdminBookings = () => {
   const updateStatus = async (id, newStatus) => {
     try {
       const { error } = await supabase
-        .from('bookings')
+        .from('mehndi_bookings')
         .update({ status: newStatus })
         .eq('id', id);
 
@@ -109,10 +109,10 @@ const AdminBookings = () => {
                     <td className="px-6 py-4">
                       <div className="flex items-start space-x-3">
                         <div className="w-8 h-8 rounded-full bg-rose-50 flex items-center justify-center text-rose-900 font-bold text-xs flex-shrink-0">
-                          {booking.customer_name.charAt(0)}
+                          {booking.name.charAt(0)}
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900">{booking.customer_name}</p>
+                          <p className="font-medium text-gray-900">{booking.name}</p>
                           <div className="flex flex-col text-xs text-gray-500 mt-1 space-y-0.5">
                             <span className="flex items-center"><Mail className="w-3 h-3 mr-1" /> {booking.email}</span>
                             <span className="flex items-center"><Phone className="w-3 h-3 mr-1" /> {booking.phone}</span>
@@ -121,11 +121,11 @@ const AdminBookings = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <p className="text-sm font-medium text-gray-800 bg-gray-100 inline-block px-2 py-1 rounded text-xs">{booking.package_name}</p>
-                      {booking.notes && (
+                      <p className="text-sm font-medium text-gray-800 bg-gray-100 inline-block px-2 py-1 rounded text-xs">{booking.service_type}</p>
+                      {booking.special_requests && (
                         <div className="mt-2 text-xs text-gray-500 max-w-xs flex items-start bg-yellow-50 p-2 rounded border border-yellow-100">
                           <FileText className="w-3 h-3 mr-1 mt-0.5 flex-shrink-0 text-yellow-600" />
-                          <span className="italic">"{booking.notes}"</span>
+                          <span className="italic">"{booking.special_requests}"</span>
                         </div>
                       )}
                     </td>
@@ -133,11 +133,11 @@ const AdminBookings = () => {
                       <div className="text-sm text-gray-800">
                         <div className="flex items-center font-medium mb-1">
                           <Calendar className="w-3.5 h-3.5 mr-1.5 text-gray-400" />
-                          {new Date(booking.booking_date).toLocaleDateString()}
+                          {new Date(booking.date).toLocaleDateString()}
                         </div>
                         <div className="flex items-center text-gray-500">
                           <Clock className="w-3.5 h-3.5 mr-1.5 text-gray-400" />
-                          {booking.time_slot}
+                          {booking.time}
                         </div>
                       </div>
                     </td>

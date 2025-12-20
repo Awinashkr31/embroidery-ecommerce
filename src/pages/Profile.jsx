@@ -207,8 +207,8 @@ const Profile = () => {
                                                     <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider border ${getStatusStyle(order.status)}`}>
                                                         {order.status.toLowerCase() === 'completed' && <CheckCircle className="w-3.5 h-3.5" />}
                                                         {order.status.toLowerCase() === 'cancelled' && <AlertTriangle className="w-3.5 h-3.5" />}
-                                                        {order.status.toLowerCase() === 'pending' && <Clock className="w-3.5 h-3.5" />}
-                                                        {order.status}
+                                                        {order.status.toLowerCase() === 'pending' && <CheckCircle className="w-3.5 h-3.5" />}
+                                                        {order.status.toLowerCase() === 'pending' ? 'Order Confirmed' : order.status}
                                                     </span>
                                                 </div>
                                             </div>

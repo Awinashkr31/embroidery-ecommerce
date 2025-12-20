@@ -28,13 +28,19 @@ const BookingForm = ({ selectedPackage, onClose, onSuccess }) => {
 
     try {
       const { error } = await supabase
-        .from('bookings')
+        .from('mehndi_bookings')
         .insert([
           {
-            ...formData,
-            package_id: selectedPackage?.id,
-            package_name: selectedPackage?.name,
-            booking_date: formData.date // mapping date to booking_date matching DB
+            name: formData.customer_name,
+            email: formData.email,
+            phone: formData.phone,
+            date: formData.date,
+            time: formData.time_slot,
+            service_type: selectedPackage?.name,
+            special_requests: formData.notes,
+            total_cost: selectedPackage?.price,
+            duration: selectedPackage?.duration,
+            guest_count: 1 // Default to 1 or could be added to form if needed
           }
         ]);
 
