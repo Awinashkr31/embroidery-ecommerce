@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { 
   LayoutDashboard, 
@@ -12,7 +12,9 @@ import {
   Mail,
   ShoppingBag,
   Star,
-  Settings
+  Settings,
+  Calendar,
+  Bell
 } from 'lucide-react';
 
 const AdminLayout = () => {
@@ -33,10 +35,13 @@ const AdminLayout = () => {
     { icon: LayoutDashboard, label: 'Dashboard', path: '/admin/dashboard' },
     { icon: ShoppingBag, label: 'Products', path: '/admin/products' },
     { icon: ShoppingCart, label: 'Orders', path: '/admin/orders' },
+    { icon: User, label: 'Users', path: '/admin/users' },
     { icon: Star, label: 'Reviews', path: '/admin/reviews' },
     { icon: Mail, label: 'Messages', path: '/admin/messages' },
+    { icon: Calendar, label: 'Bookings', path: '/admin/bookings' },
     { icon: Tag, label: 'Coupons', path: '/admin/coupons' },
-    { icon: Settings, label: 'Settings', path: '/admin/settings' },
+    { icon: Bell, label: 'Notifications', path: '/admin/notifications' },
+  { icon: Settings, label: 'Settings', path: '/admin/settings' },
   ];
 
   return (

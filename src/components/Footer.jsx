@@ -65,7 +65,7 @@ const Footer = () => {
                                 <MapPin className="w-5 h-5 text-rose-500 mt-0.5" />
                                 <div className="flex flex-col">
                                      <span className="text-xs text-stone-500 uppercase font-bold">Location</span>
-                                    <span>Mumbai, India</span>
+                                    <span>New Delhi, India</span>
                                 </div>
                             </div>
                         </div>
