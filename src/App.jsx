@@ -35,7 +35,10 @@ import ProductManager from './pages/admin/ProductManager'
 import AdminOrders from './pages/admin/Orders'
 import AdminCoupons from './pages/admin/AdminCoupons'
 import AdminMessages from './pages/admin/Messages'
+import AdminUsers from './pages/admin/Users'
+import AdminNotifications from './pages/admin/AdminNotifications'
 import Reviews from './pages/admin/Reviews'
+import AdminBookings from './pages/admin/Bookings'
 
 import ProtectedRoute from './components/admin/ProtectedRoute'
 
@@ -59,7 +62,10 @@ function App() {
                 <Route path="products" element={<ProductManager />} />
                 <Route path="orders" element={<AdminOrders />} />
                 <Route path="reviews" element={<Reviews />} />
+                <Route path="users" element={<AdminUsers />} />
+          <Route path="notifications" element={<AdminNotifications />} />
                 <Route path="messages" element={<AdminMessages />} />
+                <Route path="bookings" element={<AdminBookings />} />
                 <Route path="coupons" element={<AdminCoupons />} />
               </Route>
             </Route>

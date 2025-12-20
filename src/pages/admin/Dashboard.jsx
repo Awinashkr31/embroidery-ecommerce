@@ -1,5 +1,5 @@
 import React, { useMemo, useEffect, useState } from 'react';
-// import { Package, ShoppingCart, DollarSign, Calendar, TrendingUp, AlertTriangle, ArrowUpRight, Clock, RefreshCw } from 'lucide-react';
+import { Package, ShoppingCart, DollarSign, Calendar, TrendingUp, AlertTriangle, ArrowUpRight, Clock, RefreshCw } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../../config/supabase';
 
@@ -119,11 +119,11 @@ const Dashboard = () => {
                         onClick={fetchData} 
                         className="px-4 py-2 bg-white border border-stone-200 rounded-lg text-sm font-medium text-stone-600 flex items-center gap-2 hover:bg-stone-50 transition-colors"
                     >
-                        {/* <RefreshCw className="w-4 h-4" /> */}
+                        <RefreshCw className="w-4 h-4" />
                         Refresh
                     </button>
                      <span className="px-4 py-2 bg-white border border-stone-200 rounded-lg text-sm font-medium text-stone-600 flex items-center gap-2">
-                        {/* <Calendar className="w-4 h-4" /> */}
+                        <Calendar className="w-4 h-4" />
                         {new Date().toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}
                      </span>
                 </div>
@@ -136,7 +136,7 @@ const Dashboard = () => {
                         title: 'Total Revenue', 
                         value: formatCurrency(stats.revenue), 
                         trend: '+12.5%', 
-                        icon: null, // DollarSign 
+                        icon: DollarSign, 
                         color: 'bg-emerald-50 text-emerald-600',
                         trendColor: 'text-emerald-600'
                     },
@@ -144,7 +144,7 @@ const Dashboard = () => {
                         title: 'Total Orders', 
                         value: stats.orders, 
                         trend: '+5.2%', 
-                        icon: null, // ShoppingCart 
+                        icon: ShoppingCart, 
                         color: 'bg-blue-50 text-blue-600',
                          trendColor: 'text-blue-600'
                     },
@@ -152,7 +152,7 @@ const Dashboard = () => {
                         title: 'Pending Orders', 
                         value: stats.pending, 
                         trend: 'Action needed', 
-                        icon: null, // Clock 
+                        icon: Clock, 
                         color: 'bg-amber-50 text-amber-600',
                          trendColor: 'text-amber-600'
                     },
@@ -160,7 +160,7 @@ const Dashboard = () => {
                         title: 'Avg. Order Value', 
                         value: formatCurrency(stats.avgOrder), 
                         trend: 'Stable', 
-                        icon: null, // TrendingUp 
+                        icon: TrendingUp, 
                         color: 'bg-violet-50 text-violet-600',
                          trendColor: 'text-stone-500'
                     },
@@ -168,7 +168,7 @@ const Dashboard = () => {
                     <div key={index} className="bg-white p-6 rounded-2xl shadow-sm border border-stone-100 hover:shadow-md transition-shadow group">
                         <div className="flex justify-between items-start mb-4">
                             <div className={`p-3 rounded-xl ${stat.color} group-hover:scale-110 transition-transform`}>
-                                {stat.Icon && <stat.Icon className="w-6 h-6" />}
+                                {stat.icon && <stat.icon className="w-6 h-6" />}
                             </div>
                             <span className={`text-xs font-bold px-2 py-1 rounded-full bg-stone-50 ${stat.trendColor}`}>
                                 {stat.trend}
@@ -217,7 +217,7 @@ const Dashboard = () => {
                 {/* Alerts / Low Stock */}
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-stone-100 flex flex-col">
                     <h2 className="text-lg font-bold text-stone-900 mb-4 flex items-center gap-2">
-                        {/* <AlertTriangle className="w-5 h-5 text-amber-500" /> */}
+                        <AlertTriangle className="w-5 h-5 text-amber-500" />
                         Attention Needed
                     </h2>
                     
@@ -236,14 +236,14 @@ const Dashboard = () => {
                                         <p className="text-xs text-red-600 font-medium">Low Stock: {p.stock_quantity}</p>
                                     </div>
                                     <Link to="/admin/products" className="p-1.5 bg-white rounded-lg text-stone-400 hover:text-rose-900 shadow-sm border border-stone-100">
-                                        {/* <ArrowUpRight className="w-4 h-4" /> */}
+                                        <ArrowUpRight className="w-4 h-4" />
                                         View
                                     </Link>
                                 </div>
                             ))
                         ) : (
                             <div className="text-center py-8 text-stone-400 bg-stone-50 rounded-xl border-dashed border-2 border-stone-200">
-                                {/* <Package className="w-8 h-8 mx-auto mb-2 opacity-50" /> */}
+                                <Package className="w-8 h-8 mx-auto mb-2 opacity-50" />
                                 <p className="text-sm">No low stock alerts</p>
                             </div>
                         )}
@@ -252,7 +252,7 @@ const Dashboard = () => {
                              <div className="p-3 rounded-xl bg-amber-50/50 border border-amber-100">
                                 <div className="flex items-center gap-3">
                                     <div className="w-10 h-10 rounded-lg bg-amber-100 flex items-center justify-center shrink-0">
-                                        {/* <Clock className="w-5 h-5 text-amber-600" /> */}
+                                        <Clock className="w-5 h-5 text-amber-600" />
                                     </div>
                                     <div className="flex-1">
                                         <p className="text-sm font-bold text-stone-900">{stats.pending} Orders Pending</p>

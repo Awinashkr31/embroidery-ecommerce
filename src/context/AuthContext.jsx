@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { auth, googleProvider } from '../config/firebase';
+import { supabase } from '../config/supabase';
 import { 
   createUserWithEmailAndPassword, 
   signInWithEmailAndPassword, 
@@ -37,12 +38,7 @@ export function AuthProvider({ children }) {
     return signOut(auth);
   }
 
-  function updateUser(name, photoURL) {
-      return updateProfile(auth.currentUser, {
-          displayName: name,
-          photoURL: photoURL
-      });
-  }
+
 
   function setupRecaptcha(containerId) {
     if (!window.recaptchaVerifier) {
@@ -60,9 +56,30 @@ export function AuthProvider({ children }) {
     return signInWithPhoneNumber(auth, phoneNumber, window.recaptchaVerifier);
   }
 
+  const syncUserToSupabase = async (user) => {
+    if (!user) return;
+    try {
+        const { error } = await supabase
+            .from('users')
+            .upsert({ 
+                firebase_uid: user.uid,
+                email: user.email,
+                display_name: user.displayName,
+                photo_url: user.photoURL,
+                provider: user.providerData[0]?.providerId || 'email',
+                last_login: new Date().toISOString()
+            }, { onConflict: 'email' });
+        
+        if (error) console.error('Error syncing user to Supabase:', error);
+    } catch (err) {
+        console.error('Error in user sync:', err);
+    }
+  };
+
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
+      if (user) await syncUserToSupabase(user);
       setLoading(false);
     });
 
@@ -75,7 +92,14 @@ export function AuthProvider({ children }) {
     login,
     signup,
     logout,
-    updateUser,
+    updateUser: async (name, photoURL) => {
+        await updateProfile(auth.currentUser, {
+            displayName: name,
+            photoURL: photoURL
+        });
+        // Sync again after update
+        await syncUserToSupabase(auth.currentUser);
+    },
     setupRecaptcha,
     sendOtp
   };

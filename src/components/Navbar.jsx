@@ -1,18 +1,84 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ShoppingBag, Menu, X, User, LogOut, Heart } from 'lucide-react';
+import { ShoppingBag, Menu, X, User, LogOut, Heart, Bell } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { supabase } from '../config/supabase';
 
 const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   
+  // Notification State
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const notifRef = useRef(null);
+
   const { cartCount } = useCart();
   const { currentUser, logout } = useAuth();
   const userMenuRef = useRef(null);
   const location = useLocation();
+
+  // Fetch Notifications
+  useEffect(() => {
+    if (!currentUser?.email) return;
+
+    const fetchNotifications = async () => {
+      const { data } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_email', currentUser.email)
+        .order('created_at', { ascending: false })
+        .limit(10);
+      
+      if (data) {
+        setNotifications(data);
+        setUnreadCount(data.filter(n => !n.is_read).length);
+      }
+    };
+
+    fetchNotifications();
+
+    // Real-time subscription
+    const channel = supabase
+      .channel('public:notifications')
+      .on('postgres_changes', { 
+        event: 'INSERT', 
+        schema: 'public', 
+        table: 'notifications', 
+        filter: `user_email=eq.${currentUser.email}` 
+      }, (payload) => {
+        setNotifications(prev => [payload.new, ...prev]);
+        setUnreadCount(prev => prev + 1);
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [currentUser]);
+
+  // Mark as Read
+  const handleMarkRead = async (id) => {
+    // Optimistic update
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
+    setUnreadCount(prev => Math.max(0, prev - 1));
+
+    await supabase.from('notifications').update({ is_read: true }).eq('id', id);
+  };
+
+  // Close notif menu when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+        if (notifRef.current && !notifRef.current.contains(event.target)) {
+            setIsNotifOpen(false);
+        }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [notifRef]);
 
   // Handle scroll effect
   useEffect(() => {
@@ -104,6 +170,54 @@ const Navbar = () => {
 
           {/* Icons & Actions */}
           <div className="flex items-center space-x-5">
+            {/* Notifications */}
+            {currentUser && (
+                <div className="relative hidden md:block" ref={notifRef}>
+                    <button 
+                        onClick={() => setIsNotifOpen(!isNotifOpen)}
+                        className="relative text-stone-600 hover:text-[#881337] transition-colors p-1"
+                    >
+                        <Bell className="w-5 h-5" />
+                        {unreadCount > 0 && (
+                            <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center animate-pulse">
+                                {unreadCount}
+                            </span>
+                        )}
+                    </button>
+
+                    {isNotifOpen && (
+                        <div className="absolute right-0 mt-3 w-80 bg-white rounded-xl shadow-xl py-2 ring-1 ring-black ring-opacity-5 origin-top-right transform transition-all duration-200 z-50 overflow-hidden">
+                            <div className="px-4 py-2 border-b border-gray-50 flex justify-between items-center bg-stone-50">
+                                <h3 className="font-bold text-sm text-stone-900">Notifications</h3>
+                                <span className="text-xs text-stone-500">{unreadCount} unread</span>
+                            </div>
+                            <div className="max-h-80 overflow-y-auto">
+                                {notifications.length > 0 ? (
+                                    notifications.map(notif => (
+                                        <div 
+                                            key={notif.id} 
+                                            onClick={() => !notif.is_read && handleMarkRead(notif.id)}
+                                            className={`px-4 py-3 border-b border-gray-50 hover:bg-stone-50 cursor-pointer transition-colors ${!notif.is_read ? 'bg-orange-50/50' : ''}`}
+                                        >
+                                            <div className="flex justify-between items-start mb-1">
+                                                <h4 className={`text-sm ${!notif.is_read ? 'font-bold text-stone-900' : 'font-medium text-stone-600'}`}>{notif.title}</h4>
+                                                {!notif.is_read && <span className="w-2 h-2 rounded-full bg-[#881337] shrink-0 mt-1"></span>}
+                                            </div>
+                                            <p className="text-xs text-stone-500 line-clamp-2">{notif.message}</p>
+                                            <span className="text-[10px] text-stone-400 mt-1 block">{new Date(notif.created_at).toLocaleDateString()}</span>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="px-4 py-8 text-center text-stone-500 text-sm">
+                                        No notifications yet
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
+
             {/* Wishlist */}
             <Link to="/wishlist" className="hidden md:block text-stone-600 hover:text-[#881337] transition-colors">
                <Heart className="w-5 h-5" />
