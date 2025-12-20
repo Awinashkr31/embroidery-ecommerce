@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ShoppingBag, Menu, X, User, LogOut, Heart, Bell } from 'lucide-react';
+import { ShoppingBag, Menu, X, User, LogOut, Heart, Bell, Trash2 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../config/supabase';
@@ -69,6 +69,15 @@ const Navbar = () => {
     await supabase.from('notifications').update({ is_read: true }).eq('id', id);
   };
 
+  // Delete Notification
+  const handleDeleteNotification = async (id, e) => {
+    e.stopPropagation(); // Prevent triggering mark read
+    setNotifications(prev => prev.filter(n => n.id !== id));
+    setUnreadCount(prev => Math.max(0, prev - (notifications.find(n => n.id === id && !n.is_read) ? 1 : 0)));
+
+    await supabase.from('notifications').delete().eq('id', id);
+  };
+
   // Close notif menu when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
@@ -123,7 +132,7 @@ const Navbar = () => {
     { name: 'Mehndi', path: '/mehndi-booking' },
     { name: 'Gallery', path: '/gallery' },
     { name: 'About', path: '/about' },
-    { name: 'Contact', path: '/contact' },
+    { name: 'Support', path: '/support' },
   ];
 
   const isActive = (path) => location.pathname === path;
@@ -199,11 +208,20 @@ const Navbar = () => {
                                             onClick={() => !notif.is_read && handleMarkRead(notif.id)}
                                             className={`px-4 py-3 border-b border-gray-50 hover:bg-stone-50 cursor-pointer transition-colors ${!notif.is_read ? 'bg-orange-50/50' : ''}`}
                                         >
-                                            <div className="flex justify-between items-start mb-1">
-                                                <h4 className={`text-sm ${!notif.is_read ? 'font-bold text-stone-900' : 'font-medium text-stone-600'}`}>{notif.title}</h4>
-                                                {!notif.is_read && <span className="w-2 h-2 rounded-full bg-[#881337] shrink-0 mt-1"></span>}
+                                            <div className="flex justify-between items-start mb-1 gap-2">
+                                                <h4 className={`text-sm flex-1 ${!notif.is_read ? 'font-bold text-stone-900' : 'font-medium text-stone-600'}`}>{notif.title}</h4>
+                                                <div className="flex items-center gap-2 shrink-0">
+                                                    {!notif.is_read && <span className="w-2 h-2 rounded-full bg-[#881337]"></span>}
+                                                    <button 
+                                                        onClick={(e) => handleDeleteNotification(notif.id, e)}
+                                                        className="text-stone-400 hover:text-red-600 transition-colors p-1 rounded-full hover:bg-red-50"
+                                                        title="Delete"
+                                                    >
+                                                        <Trash2 className="w-3.5 h-3.5" />
+                                                    </button>
+                                                </div>
                                             </div>
-                                            <p className="text-xs text-stone-500 line-clamp-2">{notif.message}</p>
+                                            <p className="text-xs text-stone-500 line-clamp-2 mr-6">{notif.message}</p>
                                             <span className="text-[10px] text-stone-400 mt-1 block">{new Date(notif.created_at).toLocaleDateString()}</span>
                                         </div>
                                     ))

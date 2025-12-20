@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../../config/supabase';
 import { Star, Check, X, Search, Filter } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
@@ -9,17 +9,13 @@ const Reviews = () => {
     const [filter, setFilter] = useState('pending'); // pending, approved
     const { addToast } = useToast();
 
-    useEffect(() => {
-        fetchReviews();
-    }, [filter]);
-
-    const fetchReviews = async () => {
+    const fetchReviews = useCallback(async () => {
         setLoading(true);
         try {
             const { data, error } = await supabase
                 .from('reviews')
-                .select('*, products(name, image)')
-                .eq('status', filter)
+                .select('*, products(name, images)')
+                .eq('status', filter) // filter is a dependency
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
@@ -30,7 +26,11 @@ const Reviews = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [filter, addToast]);
+
+    useEffect(() => {
+        fetchReviews();
+    }, [fetchReviews]);
 
     const handleUpdateStatus = async (id, newStatus) => {
         try {
@@ -103,8 +103,8 @@ const Reviews = () => {
                             {/* Product Info */}
                             <div className="flex items-center gap-4 md:w-1/4">
                                 <div className="w-16 h-16 rounded-lg bg-stone-50 overflow-hidden flex-shrink-0">
-                                    {review.products?.image && (
-                                        <img src={JSON.parse(review.products.image)[0]} alt={review.products.name} className="w-full h-full object-cover" />
+                                    {review.products?.images?.[0] && (
+                                        <img src={review.products.images[0]} alt={review.products.name} className="w-full h-full object-cover" />
                                     )}
                                 </div>
                                 <div className="min-w-0">
