@@ -9,6 +9,7 @@ import { AuthProvider } from './context/AuthContext'
 import { ToastProvider } from './context/ToastContext'
 import { WishlistProvider } from './context/WishlistContext'
 import Login from './pages/Login'
+import ForgotPassword from './pages/ForgotPassword'
 
 import Register from './pages/Register'
 import Profile from './pages/Profile'
@@ -91,6 +92,7 @@ function App() {
                     <Route path="/cart" element={<Cart />} />
                     <Route path="/checkout" element={<Checkout />} />
                     <Route path="/login" element={<Login />} />
+                    <Route path="/forgot-password" element={<ForgotPassword />} />
 
                     <Route path="/register" element={<Register />} />
                     <Route path="/profile" element={<Profile />} />

@@ -1,24 +1,51 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, Sparkles, Scissors, Flower, Palette, ArrowRight, Star, ShoppingBag } from 'lucide-react';
 import { useProducts } from '../context/ProductContext';
 import { useCart } from '../context/CartContext';
+import { supabase } from '../config/supabase';
+import { useToast } from '../context/ToastContext';
+import { Star, ArrowRight, Flower, Sparkles, ShoppingBag, Scissors } from 'lucide-react';
+import SEO from '../components/SEO';
 
 const Home = () => {
     const { products } = useProducts();
     const { addToCart } = useCart();
+    const { addToast } = useToast();
     
     // Get top 3 featured products
     const featuredProducts = products.slice(0, 3);
 
-    const handleNewsletterSubmit = (e) => {
+    const handleNewsletterSubmit = async (e) => {
         e.preventDefault();
-        alert("Thank you for subscribing! We'll keep you updated.");
-        e.target.reset();
+        const email = e.target.elements[0].value;
+        
+        try {
+            const { error } = await supabase
+                .from('newsletter_subscribers')
+                .insert([{ email }]);
+                
+            if (error) {
+                if (error.code === '23505') { // Unique violation
+                    addToast('You are already subscribed!', 'info');
+                } else {
+                    throw error;
+                }
+            } else {
+                addToast('Thank you for subscribing! We\'ll keep you updated.', 'success');
+                e.target.reset();
+            }
+        } catch (err) {
+            console.error('Newsletter error:', err);
+            addToast('Failed to subscribe. Please try again.', 'error');
+        }
     };
 
     return (
         <div className="bg-stone-50/50 font-body">
+            <SEO 
+                title="Home" 
+                description="Welcome to Sana's Hand Embroidery. Explore our collection of handcrafted designs and traditional Mehndi art." 
+            />
             {/* Hero Section - Magazine Style */}
             <section className="relative min-h-[90vh] flex items-center overflow-hidden py-24" data-id="hero-section">
                  {/* Background Elements */}

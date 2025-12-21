@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useProducts } from '../context/ProductContext';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
@@ -9,7 +9,7 @@ import { Heart, ShoppingBag, ArrowLeft, Truck, Shield, Share2, Star, ChevronRigh
 
 const ProductDetails = () => {
     const { id } = useParams();
-    const navigate = useNavigate();
+
     const { products } = useProducts();
     const { addToCart } = useCart();
     const { toggleWishlist, isInWishlist } = useWishlist();
@@ -17,12 +17,10 @@ const ProductDetails = () => {
     
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [activeImage, setActiveImage] = useState(0);
+
     
     // Reviews State
     const [reviews, setReviews] = useState([]);
-    const [newReview, setNewReview] = useState({ user_name: '', rating: 5, comment: '' });
-    const [submittingReview, setSubmittingReview] = useState(false);
 
     useEffect(() => {
         if (products.length > 0) {
@@ -45,27 +43,6 @@ const ProductDetails = () => {
             if (data) setReviews(data);
         } catch (error) {
             console.error('Error fetching reviews:', error);
-        }
-    };
-
-    const handleSubmitReview = async (e) => {
-        e.preventDefault();
-        setSubmittingReview(true);
-        try {
-            const { error } = await supabase.from('reviews').insert([{
-                product_id: product.id,
-                ...newReview,
-                status: 'pending'
-            }]);
-
-            if (error) throw error;
-            addToast('Review submitted for approval!', 'success');
-            setNewReview({ user_name: '', rating: 5, comment: '' });
-        } catch (error) {
-            console.error('Error submitting review:', error);
-            addToast('Failed to submit review', 'error');
-        } finally {
-            setSubmittingReview(false);
         }
     };
 
@@ -239,93 +216,40 @@ const ProductDetails = () => {
                 <div className="mb-20">
                     <h2 className="text-2xl font-heading font-bold text-stone-900 mb-8 border-b border-stone-100 pb-4">Customer Reviews</h2>
                     
-                    <div className="grid md:grid-cols-2 gap-12">
-                        {/* Write Review */}
-                        <div className="bg-white p-8 rounded-2xl border border-stone-100 shadow-sm h-fit">
-                            <h3 className="text-lg font-bold text-stone-900 mb-4">Write a Review</h3>
-                            <form onSubmit={handleSubmitReview} className="space-y-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-stone-700 mb-1">Your Name</label>
-                                    <input 
-                                        type="text" 
-                                        required
-                                        value={newReview.user_name}
-                                        onChange={e => setNewReview({...newReview, user_name: e.target.value})}
-                                        className="w-full px-4 py-2 rounded-lg border border-stone-200 focus:ring-2 focus:ring-rose-900 outline-none"
-                                        placeholder="John Doe"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-stone-700 mb-1">Rating</label>
-                                    <div className="flex gap-2">
-                                        {[1, 2, 3, 4, 5].map(star => (
-                                            <button
-                                                key={star}
-                                                type="button"
-                                                onClick={() => setNewReview({...newReview, rating: star})}
-                                                className="focus:outline-none transition-transform hover:scale-110"
-                                            >
-                                                <Star className={`w-6 h-6 ${star <= newReview.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} />
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-stone-700 mb-1">Your Review</label>
-                                    <textarea 
-                                        required
-                                        value={newReview.comment}
-                                        onChange={e => setNewReview({...newReview, comment: e.target.value})}
-                                        className="w-full px-4 py-2 rounded-lg border border-stone-200 focus:ring-2 focus:ring-rose-900 outline-none"
-                                        rows="4"
-                                        placeholder="Tell us what you like regarding this product..."
-                                    ></textarea>
-                                </div>
-                                <button 
-                                    type="submit" 
-                                    disabled={submittingReview}
-                                    className="w-full py-3 bg-stone-900 text-white rounded-lg font-bold uppercase tracking-wide hover:bg-rose-900 transition-colors disabled:opacity-70"
-                                >
-                                    {submittingReview ? 'Submitting...' : 'Submit Review'}
-                                </button>
-                            </form>
-                        </div>
-
-                        {/* Reviews List */}
-                        <div className="space-y-6 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-                            {reviews.length === 0 ? (
-                                <div className="text-center py-12 bg-stone-50 rounded-xl border border-dashed border-stone-200">
-                                    <MessageSquare className="w-10 h-10 text-stone-300 mx-auto mb-3" />
-                                    <p className="text-stone-500 font-medium">No reviews yet. Be the first to write one!</p>
-                                </div>
-                            ) : (
-                                reviews.map(review => (
-                                    <div key={review.id} className="bg-white p-6 rounded-xl border border-stone-100 shadow-sm">
-                                        <div className="flex items-center justify-between mb-3">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center text-rose-900 font-bold">
-                                                    {review.user_name.charAt(0).toUpperCase()}
-                                                </div>
-                                                <div>
-                                                    <h4 className="font-bold text-stone-900 text-sm">{review.user_name}</h4>
-                                                    <div className="flex text-yellow-400">
-                                                        {[...Array(5)].map((_, i) => (
-                                                            <Star key={i} className={`w-3 h-3 ${i < review.rating ? 'fill-current' : 'text-gray-300'}`} />
-                                                        ))}
-                                                    </div>
+                    {/* Reviews List */}
+                    <div className="space-y-6 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+                        {reviews.length === 0 ? (
+                            <div className="text-center py-12 bg-stone-50 rounded-xl border border-dashed border-stone-200">
+                                <MessageSquare className="w-10 h-10 text-stone-300 mx-auto mb-3" />
+                                <p className="text-stone-500 font-medium">No reviews yet.</p>
+                            </div>
+                        ) : (
+                            reviews.map(review => (
+                                <div key={review.id} className="bg-white p-6 rounded-xl border border-stone-100 shadow-sm">
+                                    <div className="flex items-center justify-between mb-3">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-full bg-rose-100 flex items-center justify-center text-rose-900 font-bold">
+                                                {review.user_name.charAt(0).toUpperCase()}
+                                            </div>
+                                            <div>
+                                                <h4 className="font-bold text-stone-900 text-sm">{review.user_name}</h4>
+                                                <div className="flex text-yellow-400">
+                                                    {[...Array(5)].map((_, i) => (
+                                                        <Star key={i} className={`w-3 h-3 ${i < review.rating ? 'fill-current' : 'text-gray-300'}`} />
+                                                    ))}
                                                 </div>
                                             </div>
-                                            <span className="text-xs text-stone-400">
-                                                {new Date(review.created_at).toLocaleDateString()}
-                                            </span>
                                         </div>
-                                        <p className="text-stone-600 text-sm leading-relaxed">
-                                            {review.comment}
-                                        </p>
+                                        <span className="text-xs text-stone-400">
+                                            {new Date(review.created_at).toLocaleDateString()}
+                                        </span>
                                     </div>
-                                ))
-                            )}
-                        </div>
+                                    <p className="text-stone-600 text-sm leading-relaxed">
+                                        {review.comment}
+                                    </p>
+                                </div>
+                            ))
+                        )}
                     </div>
                 </div>
 

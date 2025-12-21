@@ -67,6 +67,7 @@ const Navbar = () => {
       }, (payload) => {
         setNotifications(prev => [payload.new, ...prev]);
         setUnreadCount(prev => prev + 1);
+        addToast(`New Notification: ${payload.new.title}`, 'info');
       })
       .subscribe();
 
