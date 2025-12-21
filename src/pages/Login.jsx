@@ -1,16 +1,27 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useNavigate, Link } from 'react-router-dom';
-import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { Mail, Lock, Eye, EyeOff, ArrowRight, CheckCircle } from 'lucide-react';
+import { getAuthErrorMessage } from '../utils/authErrors';
 
 export default function Login() {
   const { signInWithGoogle, login, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (location.state?.message) {
+      setSuccessMessage(location.state.message);
+      // Clear state so message doesn't persist on refresh (optional but good UX)
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -30,7 +41,7 @@ export default function Login() {
 
       navigate('/');
     } catch (err) {
-      setError('Failed to sign in: ' + err.message);
+      setError(getAuthErrorMessage(err));
     }
     setLoading(false);
   }
@@ -42,7 +53,7 @@ export default function Login() {
       navigate('/');
     } catch (err) {
       console.error(err);
-      setError('Failed to sign in: ' + err.message);
+      setError(getAuthErrorMessage(err));
     }
   }
 
@@ -75,6 +86,17 @@ export default function Login() {
             </p>
           </div>
           
+          {successMessage && <div className="bg-green-50 border-l-4 border-green-400 p-4 rounded-md mb-4">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <CheckCircle className="h-5 w-5 text-green-400" aria-hidden="true" />
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-green-700">{successMessage}</p>
+              </div>
+            </div>
+          </div>}
+
           {error && <div className="bg-red-50 border-l-4 border-red-400 p-4 rounded-md">
             <p className="text-sm text-red-700">{error}</p>
           </div>}
