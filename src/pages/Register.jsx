@@ -2,10 +2,13 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link, useNavigate } from 'react-router-dom';
 import { UserPlus, Mail, Lock, User, Phone, Eye, EyeOff, ArrowRight } from 'lucide-react';
+import { getAuthErrorMessage } from '../utils/authErrors';
+import { useToast } from '../context/ToastContext';
 
 export default function Register() {
   const { signup, updateUser, verifyEmail, logout } = useAuth();
   const navigate = useNavigate();
+  const { addToast } = useToast();
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -42,11 +45,17 @@ export default function Register() {
       // Logout the user immediately so they can't access the app without verifying
       await logout();
       
-      // Show success and redirect to login
-      alert("Account created! We've sent a verification link to your email. Please verify your email before logging in.");
-      navigate('/login');
+      // Show success toast
+      addToast('Account created! Verification email sent.', 'success');
+      
+      // Redirect to login with success message
+      navigate('/login', { 
+        state: { 
+          message: "Account created! We've sent a verification link to your email. Please verify your email before logging in." 
+        } 
+      });
     } catch (err) {
-      setError('Failed to create an account: ' + err.message);
+      setError(getAuthErrorMessage(err));
     }
     setLoading(false);
   }

@@ -27,7 +27,9 @@ export const ProductProvider = ({ children }) => {
                 ...p,
                 image: p.images?.[0] || 'https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=500',
                 inStock: (p.stock_quantity || 0) > 0,
+                inStock: (p.stock_quantity || 0) > 0,
                 stock: p.stock_quantity, // Keep raw value too
+                clothingInformation: p.clothing_information,
                 originalPrice: p.original_price,
                 discountPercentage: (p.original_price && p.original_price > p.price)
                     ? Math.round(((p.original_price - p.price) / p.original_price) * 100)
@@ -55,9 +57,11 @@ export const ProductProvider = ({ children }) => {
                 price: parseFloat(product.price),
                 original_price: product.originalPrice ? parseFloat(product.originalPrice) : null,
                 category: product.category,
-                images: [product.image], // Convert single image to array
+                images: Array.isArray(product.images) ? product.images : [product.image], // Handle multiple images
                 featured: product.featured,
                 stock_quantity: parseInt(product.stockQuantity) || 10, // Use input or default
+                fabric: product.fabric, // Legacy field support (optional)
+                clothing_information: product.clothingInformation || null, // New JSONB field
                 active: true
             };
 
@@ -73,9 +77,12 @@ export const ProductProvider = ({ children }) => {
             // For simplicity, we just refetch or append mapped product
             const newProduct = {
                 ...data,
-                image: data.images?.[0],
+                image: data.images?.[0], // Main image
+                images: data.images, // All images
                 inStock: data.stock_quantity > 0,
                 stock: data.stock_quantity,
+                fabric: data.fabric,
+                clothingInformation: data.clothing_information,
                 originalPrice: data.original_price,
                 discountPercentage: (data.original_price && data.original_price > data.price)
                     ? Math.round(((data.original_price - data.price) / data.original_price) * 100)
@@ -98,9 +105,13 @@ export const ProductProvider = ({ children }) => {
             if (updatedData.originalPrice !== undefined) updates.original_price = updatedData.originalPrice ? parseFloat(updatedData.originalPrice) : null;
             if (updatedData.category) updates.category = updatedData.category;
             if (updatedData.description) updates.description = updatedData.description;
-            if (updatedData.image) updates.images = [updatedData.image];
+            if (updatedData.images) updates.images = updatedData.images;
+            else if (updatedData.image) updates.images = [updatedData.image];
+            
             if (updatedData.featured !== undefined) updates.featured = updatedData.featured;
             if (updatedData.stockQuantity !== undefined) updates.stock_quantity = parseInt(updatedData.stockQuantity);
+            if (updatedData.fabric) updates.fabric = updatedData.fabric;
+            if (updatedData.clothingInformation !== undefined) updates.clothing_information = updatedData.clothingInformation;
 
             const { data, error } = await supabase
                 .from('products')

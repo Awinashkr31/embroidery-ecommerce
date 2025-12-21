@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import { Mail, ArrowLeft, Send } from 'lucide-react';
+import { getAuthErrorMessage } from '../utils/authErrors';
 
 export default function ForgotPassword() {
   const { resetPassword } = useAuth();
@@ -20,7 +21,7 @@ export default function ForgotPassword() {
       await resetPassword(email);
       setMessage('Check your inbox for password reset instructions');
     } catch (err) {
-      setError('Failed to reset password: ' + err.message);
+      setError(getAuthErrorMessage(err));
     }
     setLoading(false);
   }

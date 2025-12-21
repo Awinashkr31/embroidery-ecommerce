@@ -5,100 +5,126 @@ import { User, Package, MapPin, LogOut, Trash2, ChevronRight, Clock, CheckCircle
 import { Link } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
 import { useToast } from '../context/ToastContext';
+import { uploadImage, deleteImage } from '../utils/uploadUtils';
+
 
 const Profile = () => {
-    const { currentUser, logout } = useAuth();
+    const { currentUser, logout, updateUser } = useAuth(); // Added updateUser to destructuring
     const { savedAddresses, deleteAddress, saveAddress } = useCart(); 
     const { addToast } = useToast();
     const [activeTab, setActiveTab] = useState('orders');
     
+    // ... existing state ...
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [uploadingImage, setUploadingImage] = useState(false);
 
+
+    // State for Address Book
     const [isAddingAddress, setIsAddingAddress] = useState(false);
     const [submittingAddress, setSubmittingAddress] = useState(false);
     const [addressForm, setAddressForm] = useState({
-        firstName: '', lastName: '', phone: '', address: '', city: '', state: '', zipCode: ''
+        firstName: '', lastName: '', phone: '', zipCode: '', address: '', city: '', state: ''
     });
 
-    // Review State
-    const [userReviews, setUserReviews] = useState(new Set());
-    const [reviewModal, setReviewModal] = useState({ isOpen: false, productId: null, productName: null, productImage: null });
+    // State for Reviews
+    const [reviewModal, setReviewModal] = useState({ isOpen: false, productId: null, productName: '', productImage: '' });
     const [newReview, setNewReview] = useState({ rating: 5, comment: '' });
     const [submittingReview, setSubmittingReview] = useState(false);
-
-    const handleSaveAddress = async (e) => {
-        e.preventDefault();
-        setSubmittingAddress(true);
-        try {
-            await saveAddress(addressForm, currentUser.uid);
-            setIsAddingAddress(false);
-            setAddressForm({ firstName: '', lastName: '', phone: '', address: '', city: '', state: '', zipCode: '' });
-        } catch (error) {
-            addToast('Failed to save address.', 'error');
-        } finally {
-            setSubmittingAddress(false);
-        }
-    };
+    const [userReviews, setUserReviews] = useState(new Set());
 
     useEffect(() => {
-        if (currentUser?.email) {
-            fetchUserOrders();
+        if (currentUser) {
+            fetchOrders();
             fetchUserReviews();
         }
     }, [currentUser]);
 
-    const fetchUserReviews = async () => {
-        try {
-            const { data, error } = await supabase
-                .from('reviews')
-                .select('product_id')
-                .eq('user_email', currentUser.email);
-            
-            if (error) throw error;
-            
-            const reviewedIds = new Set(data.map(r => r.product_id));
-            setUserReviews(reviewedIds);
-        } catch (err) {
-            console.error("Error fetching reviews", err);
-        }
-    };
-
-    const fetchUserOrders = async () => {
-        setLoading(true);
+    const fetchOrders = async () => {
         try {
             const { data, error } = await supabase
                 .from('orders')
                 .select('*')
                 .eq('customer_email', currentUser.email)
                 .order('created_at', { ascending: false });
-
-            if (error) throw error;
             
+            if (error) throw error;
             setOrders(data || []);
         } catch (error) {
-            console.error('Error fetching user orders:', error);
+            console.error('Error fetching orders:', error);
         } finally {
             setLoading(false);
         }
     };
 
+    const fetchUserReviews = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('reviews')
+                .select('product_id')
+                .eq('user_id', currentUser.uid);
+            
+            if (error) throw error;
+            const reviewedProductIds = new Set(data.map(r => r.product_id));
+            setUserReviews(reviewedProductIds);
+        } catch (error) {
+            console.error('Error fetching reviews:', error);
+        }
+    };
+
+    const handleImageUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        try {
+            setUploadingImage(true);
+            const publicUrl = await uploadImage(file, 'images', 'profiles');
+            
+            // If upload successful, delete old image if it exists and is from our Supabase
+            if (currentUser.photoURL && currentUser.photoURL.includes('supabase')) {
+                await deleteImage(currentUser.photoURL);
+            }
+
+            await updateUser(currentUser.displayName, publicUrl);
+            addToast('Profile picture updated!', 'success');
+        } catch (error) {
+            console.error(error);
+            addToast('Failed to update image: ' + error.message, 'error');
+        } finally {
+            setUploadingImage(false);
+        }
+    };
+
+    const handleSaveAddress = async (e) => {
+        e.preventDefault();
+        setSubmittingAddress(true);
+        try {
+            await saveAddress(addressForm);
+            setIsAddingAddress(false);
+            setAddressForm({ firstName: '', lastName: '', phone: '', zipCode: '', address: '', city: '', state: '' });
+            addToast('Address saved successfully!', 'success');
+        } catch (error) {
+            addToast('Failed to save address', 'error');
+        } finally {
+            setSubmittingAddress(false);
+        }
+    };
+
     const handleCancelOrder = async (orderId) => {
         if (!window.confirm('Are you sure you want to cancel this order?')) return;
-
+        
         try {
             const { error } = await supabase
                 .from('orders')
-                .update({ status: 'cancelled' }) 
+                .update({ status: 'Cancelled' })
                 .eq('id', orderId);
-
+                
             if (error) throw error;
-
-            setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'cancelled' } : o));
+            
+            setOrders(orders.map(o => o.id === orderId ? { ...o, status: 'Cancelled' } : o));
             addToast('Order cancelled successfully', 'success');
         } catch (error) {
-            console.error('Error cancelling order:', error);
-            addToast('Failed to cancel order. Please try again.', 'error');
+            addToast('Failed to cancel order', 'error');
         }
     };
 
@@ -109,70 +135,50 @@ const Profile = () => {
             productName: item.name,
             productImage: item.image
         });
-        setNewReview({ rating: 5, comment: '' });
     };
 
     const closeReviewModal = () => {
-        setReviewModal({ isOpen: false, productId: null, productName: null, productImage: null });
-        setSubmittingReview(false);
+        setReviewModal({ isOpen: false, productId: null, productName: '', productImage: '' });
+        setNewReview({ rating: 5, comment: '' });
     };
 
     const handleSubmitReview = async (e) => {
         e.preventDefault();
         setSubmittingReview(true);
-        
         try {
             const { error } = await supabase
                 .from('reviews')
                 .insert([{
+                    user_id: currentUser.uid,
+                    user_name: currentUser.displayName,
                     product_id: reviewModal.productId,
-                    user_email: currentUser.email,
-                    user_name: currentUser.displayName || 'Anonymous',
                     rating: newReview.rating,
                     comment: newReview.comment,
-                    status: 'pending' 
+                    created_at: new Date().toISOString()
                 }]);
 
-            if (error) {
-                if (error.code === '23505') throw new Error("You have already reviewed this product.");
-                throw error;
-            }
+            if (error) throw error;
 
             addToast('Review submitted successfully!', 'success');
-            setUserReviews(prev => new Set(prev).add(reviewModal.productId));
+            setUserReviews(prev => new Set([...prev, reviewModal.productId]));
             closeReviewModal();
-            
-        } catch (err) {
-            console.error("Review submit error:", err);
-            addToast(err.message || 'Failed to submit review.', 'error');
+        } catch (error) {
+            console.error(error);
+            addToast('Failed to submit review', 'error');
         } finally {
             setSubmittingReview(false);
         }
     };
 
-    // Helper to normalize status display
     const getStatusStyle = (status) => {
-        const s = (status || '').toLowerCase();
-        if (s === 'completed' || s === 'delivered') return 'bg-green-50 text-green-700 border-green-200';
-        if (s === 'cancelled') return 'bg-red-50 text-red-700 border-red-200';
-        return 'bg-amber-50 text-amber-700 border-amber-200';
+        switch(status.toLowerCase()) {
+            case 'completed': return 'bg-green-100 text-green-700 border-green-200';
+            case 'cancelled': return 'bg-red-100 text-red-700 border-red-200';
+            default: return 'bg-blue-100 text-blue-700 border-blue-200';
+        }
     };
 
-    if (!currentUser) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-[#fdfbf7] font-body">
-                <div className="text-center p-8 bg-white rounded-2xl shadow-xl border border-stone-100 max-w-md w-full mx-4">
-                    <div className="w-16 h-16 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                        <User className="w-8 h-8 text-rose-900" />
-                    </div>
-                    <h2 className="text-2xl font-heading font-bold text-stone-900 mb-2">Welcome Back</h2>
-                    <p className="text-stone-500 mb-8">Please log in to access your dashboard and order history.</p>
-                    <Link to="/login" className="btn-primary w-full block text-center py-3">Sign In to Continue</Link>
-                </div>
-            </div>
-        );
-    }
-
+    // ... existing return ...
     return (
         <div className="min-h-screen bg-[#fdfbf7] py-12 lg:py-20 font-body">
             <div className="container-custom">
@@ -180,7 +186,18 @@ const Profile = () => {
                 <div className="bg-white rounded-2xl shadow-sm border border-stone-100 p-8 mb-8 flex flex-col md:flex-row items-center gap-8 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-rose-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 opacity-50 pointer-events-none"></div>
                     
-                    <div className="relative z-10 w-28 h-28 rounded-full bg-rose-50 flex items-center justify-center border-4 border-white shadow-lg overflow-hidden shrink-0">
+                    <div className="relative z-10 w-28 h-28 rounded-full bg-rose-50 flex items-center justify-center border-4 border-white shadow-lg overflow-hidden shrink-0 group">
+                        {uploadingImage ? (
+                            <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-20">
+                                <Loader className="w-8 h-8 text-white animate-spin" />
+                            </div>
+                        ) : (
+                            <label className="absolute inset-0 bg-black/0 group-hover:bg-black/30 cursor-pointer flex items-center justify-center transition-all z-20">
+                                <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
+                                <span className="text-white text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity">Change</span>
+                            </label>
+                        )}
+                        
                         {currentUser.photoURL ? (
                             <img src={currentUser.photoURL} alt={currentUser.displayName} className="w-full h-full object-cover" />
                         ) : (
