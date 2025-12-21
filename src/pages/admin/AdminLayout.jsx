@@ -14,7 +14,8 @@ import {
   Star,
   Settings,
   Calendar,
-  Bell
+  Bell,
+  Palette
 } from 'lucide-react';
 
 const AdminLayout = () => {
@@ -35,10 +36,11 @@ const AdminLayout = () => {
     { icon: LayoutDashboard, label: 'Dashboard', path: '/admin/dashboard' },
     { icon: ShoppingBag, label: 'Products', path: '/admin/products' },
     { icon: ShoppingCart, label: 'Orders', path: '/admin/orders' },
-    { icon: User, label: 'Users', path: '/admin/users' },
+    { icon: User, label: 'User Analytics', path: '/admin/users' },
+    { icon: Palette, label: 'Design Requests', path: '/admin/design-requests' },
     { icon: Star, label: 'Reviews', path: '/admin/reviews' },
-    { icon: Mail, label: 'Messages', path: '/admin/messages' },
-    { icon: Calendar, label: 'Bookings', path: '/admin/bookings' },
+    { icon: Mail, label: 'Support Messages', path: '/admin/messages' },
+    { icon: Calendar, label: 'Mehndi Bookings', path: '/admin/bookings' },
     { icon: Tag, label: 'Coupons', path: '/admin/coupons' },
     { icon: Bell, label: 'Notifications', path: '/admin/notifications' },
   { icon: Settings, label: 'Settings', path: '/admin/settings' },
