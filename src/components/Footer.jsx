@@ -19,13 +19,14 @@ const Footer = () => {
                             Creating beautiful handcrafted embroidery and intricate mehndi designs with passion, precision, and artistic heritage. Join us in celebrating the art of slow fashion.
                         </p>
                         <div className="flex space-x-4 pt-2" data-id="social-links">
-                            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="bg-stone-800 p-2 rounded-full hover:bg-rose-900 hover:text-white transition-all transform hover:scale-110">
+                            <a href="https://www.instagram.com/embroidery_by__sana?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" rel="noopener noreferrer" className="bg-stone-800 p-2 rounded-full hover:bg-rose-900 hover:text-white transition-all transform hover:scale-110">
                                 <Instagram className="w-5 h-5" />
                             </a>
+                            {/* Removed Facebook for cleaner look if not active, or kept as generic. User only gave Insta. Keeping FB generic for now but updating WhatsApp */}
                             <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="bg-stone-800 p-2 rounded-full hover:bg-rose-900 hover:text-white transition-all transform hover:scale-110">
                                 <Facebook className="w-5 h-5" />
                             </a>
-                            <a href="https://whatsapp.com" target="_blank" rel="noopener noreferrer" className="bg-stone-800 p-2 rounded-full hover:bg-rose-900 hover:text-white transition-all transform hover:scale-110">
+                            <a href="https://wa.me/917428013214" target="_blank" rel="noopener noreferrer" className="bg-stone-800 p-2 rounded-full hover:bg-rose-900 hover:text-white transition-all transform hover:scale-110">
                                 <MessageCircle className="w-5 h-5" />
                             </a>
                         </div>

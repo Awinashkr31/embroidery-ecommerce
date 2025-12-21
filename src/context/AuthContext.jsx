@@ -9,7 +9,9 @@ import {
   onAuthStateChanged,
   updateProfile,
   RecaptchaVerifier,
-  signInWithPhoneNumber
+  signInWithPhoneNumber,
+  sendPasswordResetEmail,
+  sendEmailVerification
 } from 'firebase/auth';
 
 const AuthContext = createContext();
@@ -38,6 +40,14 @@ export function AuthProvider({ children }) {
     return signOut(auth);
   }
 
+  function resetPassword(email) {
+    return sendPasswordResetEmail(auth, email);
+  }
+
+  function verifyEmail(user) {
+    return sendEmailVerification(user);
+  }
+
 
 
   function setupRecaptcha(containerId) {
@@ -56,7 +66,7 @@ export function AuthProvider({ children }) {
     return signInWithPhoneNumber(auth, phoneNumber, window.recaptchaVerifier);
   }
 
-  const syncUserToSupabase = async (user) => {
+  const syncUserToSupabase = async (user, additionalData = {}) => {
     if (!user) return;
     try {
         const { error } = await supabase
@@ -66,6 +76,7 @@ export function AuthProvider({ children }) {
                 email: user.email,
                 display_name: user.displayName,
                 photo_url: user.photoURL,
+                phone_number: additionalData.phone || null,
                 provider: user.providerData[0]?.providerId || 'email',
                 last_login: new Date().toISOString()
             }, { onConflict: 'email' });
@@ -92,13 +103,15 @@ export function AuthProvider({ children }) {
     login,
     signup,
     logout,
-    updateUser: async (name, photoURL) => {
+    resetPassword,
+    verifyEmail,
+    updateUser: async (name, photoURL, phone) => {
         await updateProfile(auth.currentUser, {
             displayName: name,
             photoURL: photoURL
         });
         // Sync again after update
-        await syncUserToSupabase(auth.currentUser);
+        await syncUserToSupabase(auth.currentUser, { phone });
     },
     setupRecaptcha,
     sendOtp

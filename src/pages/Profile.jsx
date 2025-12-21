@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-import { User, Package, MapPin, LogOut, Trash2, ChevronRight, Clock, CheckCircle, AlertTriangle, Loader } from 'lucide-react';
+import { User, Package, MapPin, LogOut, Trash2, ChevronRight, Clock, CheckCircle, AlertTriangle, Loader, Star, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
+import { useToast } from '../context/ToastContext';
 
 const Profile = () => {
     const { currentUser, logout } = useAuth();
     const { savedAddresses, deleteAddress, saveAddress } = useCart(); 
+    const { addToast } = useToast();
     const [activeTab, setActiveTab] = useState('orders');
     
     const [orders, setOrders] = useState([]);
@@ -19,6 +21,12 @@ const Profile = () => {
         firstName: '', lastName: '', phone: '', address: '', city: '', state: '', zipCode: ''
     });
 
+    // Review State
+    const [userReviews, setUserReviews] = useState(new Set());
+    const [reviewModal, setReviewModal] = useState({ isOpen: false, productId: null, productName: null, productImage: null });
+    const [newReview, setNewReview] = useState({ rating: 5, comment: '' });
+    const [submittingReview, setSubmittingReview] = useState(false);
+
     const handleSaveAddress = async (e) => {
         e.preventDefault();
         setSubmittingAddress(true);
@@ -27,7 +35,7 @@ const Profile = () => {
             setIsAddingAddress(false);
             setAddressForm({ firstName: '', lastName: '', phone: '', address: '', city: '', state: '', zipCode: '' });
         } catch (error) {
-            alert('Failed to save address.');
+            addToast('Failed to save address.', 'error');
         } finally {
             setSubmittingAddress(false);
         }
@@ -36,8 +44,25 @@ const Profile = () => {
     useEffect(() => {
         if (currentUser?.email) {
             fetchUserOrders();
+            fetchUserReviews();
         }
     }, [currentUser]);
+
+    const fetchUserReviews = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('reviews')
+                .select('product_id')
+                .eq('user_email', currentUser.email);
+            
+            if (error) throw error;
+            
+            const reviewedIds = new Set(data.map(r => r.product_id));
+            setUserReviews(reviewedIds);
+        } catch (err) {
+            console.error("Error fetching reviews", err);
+        }
+    };
 
     const fetchUserOrders = async () => {
         setLoading(true);
@@ -50,9 +75,6 @@ const Profile = () => {
 
             if (error) throw error;
             
-            // Transform data if necessary (ensure consistent shape with UI)
-            // The DB 'items' column is distinct from how local storage might have stored it, 
-            // but normally it's JSONB and should map directly if structure preserved.
             setOrders(data || []);
         } catch (error) {
             console.error('Error fetching user orders:', error);
@@ -67,17 +89,64 @@ const Profile = () => {
         try {
             const { error } = await supabase
                 .from('orders')
-                .update({ status: 'cancelled' }) // Ensure lowercase 'cancelled' matches DB constraint if any
+                .update({ status: 'cancelled' }) 
                 .eq('id', orderId);
 
             if (error) throw error;
 
-            // Optimistic update
             setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: 'cancelled' } : o));
-            
+            addToast('Order cancelled successfully', 'success');
         } catch (error) {
             console.error('Error cancelling order:', error);
-            alert('Failed to cancel order. Please try again.');
+            addToast('Failed to cancel order. Please try again.', 'error');
+        }
+    };
+
+    const openReviewModal = (item) => {
+        setReviewModal({
+            isOpen: true,
+            productId: item.id,
+            productName: item.name,
+            productImage: item.image
+        });
+        setNewReview({ rating: 5, comment: '' });
+    };
+
+    const closeReviewModal = () => {
+        setReviewModal({ isOpen: false, productId: null, productName: null, productImage: null });
+        setSubmittingReview(false);
+    };
+
+    const handleSubmitReview = async (e) => {
+        e.preventDefault();
+        setSubmittingReview(true);
+        
+        try {
+            const { error } = await supabase
+                .from('reviews')
+                .insert([{
+                    product_id: reviewModal.productId,
+                    user_email: currentUser.email,
+                    user_name: currentUser.displayName || 'Anonymous',
+                    rating: newReview.rating,
+                    comment: newReview.comment,
+                    status: 'pending' 
+                }]);
+
+            if (error) {
+                if (error.code === '23505') throw new Error("You have already reviewed this product.");
+                throw error;
+            }
+
+            addToast('Review submitted successfully!', 'success');
+            setUserReviews(prev => new Set(prev).add(reviewModal.productId));
+            closeReviewModal();
+            
+        } catch (err) {
+            console.error("Review submit error:", err);
+            addToast(err.message || 'Failed to submit review.', 'error');
+        } finally {
+            setSubmittingReview(false);
         }
     };
 
@@ -134,6 +203,8 @@ const Profile = () => {
                         Sign Out
                     </button>
                 </div>
+
+
 
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
                     {/* Sidebar Tabs */}
@@ -230,7 +301,24 @@ const Profile = () => {
                                                                     </div>
                                                             </div>
                                                             <div className="text-right">
-                                                                <p className="font-bold text-stone-900">₹{(item.price * item.quantity).toLocaleString()}</p>
+                                                                <p className="font-bold text-stone-900 mb-2">₹{(item.price * item.quantity).toLocaleString()}</p>
+                                                                
+                                                                {/* Write Review Button */}
+                                                                {/* Only show if active (not cancelled) - assuming 'pending' or 'completed' allows review */}
+                                                                {order.status !== 'cancelled' && (
+                                                                    userReviews.has(item.id) ? (
+                                                                        <span className="inline-flex items-center text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full border border-green-100">
+                                                                            <CheckCircle className="w-3 h-3 mr-1" /> Reviewed
+                                                                        </span>
+                                                                    ) : (
+                                                                        <button 
+                                                                            onClick={() => openReviewModal(item)}
+                                                                            className="inline-flex items-center text-xs font-bold text-rose-900 hover:text-white border border-rose-200 hover:bg-rose-900 px-3 py-1.5 rounded-full transition-colors"
+                                                                        >
+                                                                            <Star className="w-3 h-3 mr-1" /> Write Review
+                                                                        </button>
+                                                                    )
+                                                                )}
                                                             </div>
                                                         </div>
                                                     ))}
@@ -352,8 +440,83 @@ const Profile = () => {
                             </div>
                         )}
                     </div>
+                    </div>
                 </div>
-            </div>
+
+
+            {/* Review Modal */}
+            {reviewModal.isOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/50 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="p-6 bg-stone-50 border-b border-stone-100 flex justify-between items-center">
+                            <h3 className="text-xl font-heading font-bold text-stone-900">Write a Review</h3>
+                            <button onClick={closeReviewModal} className="text-stone-400 hover:text-stone-600 transition-colors">
+                                <X className="w-6 h-6" />
+                            </button>
+                        </div>
+                        
+                        <form onSubmit={handleSubmitReview} className="p-6 space-y-6">
+                            <div className="flex items-center gap-4">
+                                <div className="w-16 h-16 rounded-lg bg-stone-100 border border-stone-200 overflow-hidden shrink-0">
+                                    <img src={reviewModal.productImage} alt={reviewModal.productName} className="w-full h-full object-cover" />
+                                </div>
+                                <div>
+                                    <p className="text-xs font-bold text-stone-500 uppercase tracking-widest mb-1">Product</p>
+                                    <h4 className="font-bold text-stone-900">{reviewModal.productName}</h4>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-bold text-stone-700 mb-2">Rating</label>
+                                <div className="flex gap-2">
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                        <button
+                                            key={star}
+                                            type="button"
+                                            onClick={() => setNewReview({ ...newReview, rating: star })}
+                                            className="focus:outline-none transition-transform hover:scale-110"
+                                        >
+                                            <Star 
+                                                className={`w-8 h-8 ${star <= newReview.rating ? 'fill-yellow-400 text-yellow-400' : 'text-stone-300'}`} 
+                                            />
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-bold text-stone-700 mb-2">Review</label>
+                                <textarea
+                                    value={newReview.comment}
+                                    onChange={e => setNewReview({ ...newReview, comment: e.target.value })}
+                                    placeholder="Share your experience with this product..."
+                                    rows="4"
+                                    className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:ring-2 focus:ring-rose-900/20 outline-none resize-none"
+                                    required
+                                ></textarea>
+                            </div>
+
+                            <div className="flex justify-end gap-3 pt-2">
+                                <button 
+                                    type="button" 
+                                    onClick={closeReviewModal}
+                                    className="px-6 py-2.5 font-bold text-stone-600 hover:bg-stone-50 rounded-xl transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button 
+                                    type="submit" 
+                                    disabled={submittingReview}
+                                    className="px-6 py-2.5 bg-rose-900 text-white font-bold rounded-xl hover:bg-rose-800 transition-colors disabled:opacity-70 disabled:cursor-not-allowed flex items-center"
+                                >
+                                    {submittingReview && <Loader className="w-4 h-4 mr-2 animate-spin" />}
+                                    Submit Review
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

@@ -1,20 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Search, 
-  Filter, 
-  ChevronDown, 
-  MoreVertical, 
-  X, 
-  Check, 
-  Clock, 
-  FileText, 
-  Calendar,
-  DollarSign,
-  Palette,
-  Image as ImageIcon
-} from 'lucide-react';
+import { Search, Filter, Eye, Trash2, X, Check, FileText, ImageIcon, Loader, Download } from 'lucide-react';
 import { supabase } from '../../config/supabase';
 import { useToast } from '../../context/ToastContext';
+import { exportToCSV } from '../../utils/exportUtils';
 
 const AdminDesignRequests = () => {
     const [requests, setRequests] = useState([]);
@@ -107,12 +95,39 @@ const AdminDesignRequests = () => {
         }
     };
 
+    const handleExport = () => {
+        if (!requests.length) return;
+        
+        // Format data for export
+        const dataToExport = requests.map(r => ({
+            Date: new Date(r.created_at).toLocaleDateString(),
+            Name: r.name,
+            Email: r.email,
+            Phone: r.phone || '',
+            Status: r.status,
+            Project_Type: 'Custom Design',
+            Budget: r.budget,
+            Description: r.description ? r.description.replace(/\n/g, ' ') : ''
+        }));
+        
+        exportToCSV(dataToExport, `design_requests_${new Date().toISOString().split('T')[0]}`);
+    };
+
     return (
         <div className="space-y-8">
             {/* Header */}
-            <div>
-                <h1 className="text-3xl font-heading font-bold text-stone-800">Design Requests</h1>
-                <p className="text-stone-500 mt-2">Manage custom embroidery and artwork requests</p>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-3xl font-heading font-bold text-stone-800">Design Requests</h1>
+                    <p className="text-stone-500 mt-2">Manage custom embroidery and artwork requests</p>
+                </div>
+                 <button 
+                  onClick={handleExport}
+                  className="inline-flex items-center px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-700 rounded-lg transition-colors font-medium text-sm self-start sm:self-auto"
+                >
+                    <Download className="w-4 h-4 mr-2" />
+                    Export CSV
+                </button>
             </div>
 
             {/* Filters */}
