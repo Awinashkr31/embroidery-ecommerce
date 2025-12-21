@@ -38,6 +38,7 @@ import AdminMessages from './pages/admin/Messages'
 import AdminUsers from './pages/admin/Users'
 import AdminNotifications from './pages/admin/AdminNotifications'
 import Reviews from './pages/admin/Reviews'
+import AdminDesignRequests from './pages/admin/AdminDesignRequests'
 import AdminBookings from './pages/admin/Bookings'
 import Settings from './pages/admin/Settings'
 
@@ -64,7 +65,8 @@ function App() {
                 <Route path="orders" element={<AdminOrders />} />
                 <Route path="reviews" element={<Reviews />} />
                 <Route path="users" element={<AdminUsers />} />
-          <Route path="notifications" element={<AdminNotifications />} />
+                <Route path="design-requests" element={<AdminDesignRequests />} />
+                <Route path="notifications" element={<AdminNotifications />} />
                 <Route path="messages" element={<AdminMessages />} />
                 <Route path="bookings" element={<AdminBookings />} />
                 <Route path="coupons" element={<AdminCoupons />} />
