@@ -10,9 +10,8 @@ import {
   ShoppingBag,
   Bell,
   Trash2,
-  CheckCircle,
-  AlertCircle,
-  Search
+  Search,
+  ChevronDown
 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -29,11 +28,11 @@ const Navbar = () => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const notifRef = useRef(null);
+  const userMenuRef = useRef(null);
 
   const { cartCount } = useCart();
   const { currentUser, logout } = useAuth();
   const { addToast } = useToast();
-  const userMenuRef = useRef(null);
   const location = useLocation();
 
   // Fetch Notifications
@@ -78,74 +77,49 @@ const Navbar = () => {
 
   // Mark as Read
   const handleMarkRead = async (id) => {
-    // Optimistic update
     setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
     setUnreadCount(prev => Math.max(0, prev - 1));
-
     await supabase.from('notifications').update({ is_read: true }).eq('id', id);
   };
 
   // Delete Notification
-  // Delete Notification
   const handleDeleteNotification = async (id, e) => {
-    e.stopPropagation(); // Prevent triggering mark read
-    
+    e.stopPropagation();
     try {
-        // Use RPC to ensure safe deletion regardless of RLS quirks
         const { data, error } = await supabase.rpc('delete_notification', { notification_id: id });
-        
         if (error) throw error;
         
-        // If data is false, it means nothing was deleted (mismatch or not found)
-        if (data === false) {
-             console.warn("Notification delete failed: Permission denied or not found");
-             // We could throw here, but let's just show error.
-             throw new Error("Could not delete notification.");
-        }
-        
-        // Optimistic Update
         setNotifications(prev => prev.filter(n => n.id !== id));
         setUnreadCount(prev => Math.max(0, prev - (notifications.find(n => n.id === id && !n.is_read) ? 1 : 0)));
         addToast('Notification deleted', 'success');
-        
     } catch (err) {
         console.error("Error deleting notification:", err);
         addToast("Failed to delete notification", 'error');
     }
   };
 
-  // Close notif menu when clicking outside
+  // Click Outside Handlers
   useEffect(() => {
     function handleClickOutside(event) {
         if (notifRef.current && !notifRef.current.contains(event.target)) {
             setIsNotifOpen(false);
         }
+        if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+          setIsUserMenuOpen(false);
+        }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [notifRef]);
+  }, [notifRef, userMenuRef]);
 
-  // Handle scroll effect
+  // Scroll Effect
   useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10);
+      setIsScrolled(window.scrollY > 20);
     };
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  // Close user menu when clicking outside
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
-        setIsUserMenuOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [userMenuRef]);
 
   // Close mobile menu on route change
   useEffect(() => {
@@ -174,67 +148,99 @@ const Navbar = () => {
   const isActive = (path) => location.pathname === path;
 
   return (
-    <nav 
-      className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-        isScrolled ? 'bg-white/95 backdrop-blur-sm shadow-md py-2' : 'bg-white py-4'
-      }`}
-      data-id="main-navbar"
+    <>
+    <nav
+  className={`fixed top-0 w-full z-50 transition-all duration-500 ease-in-out
+    ${isScrolled
+      ? 'bg-white/80 backdrop-blur-xl shadow-sm py-3 px-6 md:px-12 lg:px-20'
+      : 'bg-transparent py-4 px-6 md:px-12 lg:px-20'
+    }`}
     >
       <div className="container-custom">
         <div className="flex items-center justify-between">
-          {/* Logo */}
-          <div className="flex-shrink-0" data-id="navbar-logo">
-            <Link to="/" className="flex flex-col">
-              <span className="font-heading text-xl lg:text-2xl font-bold text-stone-900 leading-tight">
-                Hand Embroidery
+          
+          {/* 1. Left: Mobile Menu Trigger (hidden on desktop) */}
+          <div className="lg:hidden">
+            <button
+              type="button"
+              className="p-2 text-stone-800 hover:text-rose-900 transition-colors rounded-full hover:bg-stone-100"
+              onClick={() => setIsMobileMenuOpen(true)}
+            >
+              <Menu className="w-6 h-6" />
+            </button>
+          </div>
+
+          {/* 2. Left: Logo (Desktop: Center/Left balanced) */}
+           <div className="flex-shrink-0 flex items-center gap-2 lg:w-1/4">
+            <Link to="/" className="flex flex-col group">
+              <span className="font-heading text-2xl lg:text-3xl font-bold text-stone-900 leading-none group-hover:text-rose-900 transition-colors">
+                Enbroidery.
               </span>
-              <span className="text-xs uppercase tracking-widest text-[#881337] font-medium">
-                by Sana
+              <span className="text-[10px] uppercase tracking-[0.3em] text-stone-500 font-medium group-hover:tracking-[0.4em] transition-all">
+                By Sana
               </span>
             </Link>
           </div>
 
-          {/* Desktop Menu */}
-          <div className="hidden lg:block">
-            <div className="flex items-center space-x-8">
-              {navLinks.map((link) => (
+          {/* 3. Center: Desktop Navigation */}
+          <div className="hidden lg:flex items-center justify-center space-x-8 lg:w-2/4">
+             {navLinks.map((link) => (
                 <Link 
                   key={link.path}
                   to={link.path} 
-                  className={`text-sm font-medium tracking-wide uppercase transition-colors duration-200 ${
-                    isActive(link.path) 
-                      ? 'text-[#881337]' 
-                      : 'text-stone-600 hover:text-[#881337]'
+                  className={`relative text-xs font-bold tracking-widest uppercase transition-colors duration-300 py-2 hover:text-rose-900 ${
+                    isActive(link.path) ? 'text-rose-900' : 'text-stone-600'
                   }`}
                 >
                   {link.name}
+                  {isActive(link.path) && (
+                    <span className="absolute -bottom-1 left-1/2 w-1 h-1 bg-rose-900 rounded-full transform -translate-x-1/2"></span>
+                  )}
                 </Link>
               ))}
-            </div>
           </div>
 
-          {/* Icons & Actions */}
-          <div className="flex items-center space-x-5">
-            {/* Notifications */}
-            {currentUser && (
+          {/* 4. Right: Icons & Actions */}
+          <div className="flex items-center justify-end space-x-2 lg:space-x-4 lg:w-1/4">
+             
+             {/* Search */}
+            <button className="p-2 text-stone-600 hover:text-rose-900 transition-colors rounded-full hover:bg-stone-100 hidden sm:block">
+               <Search className="w-5 h-5" />
+            </button>
+
+             {/* Wishlist */}
+            <Link to="/wishlist" className="p-2 text-stone-600 hover:text-rose-900 transition-colors rounded-full hover:bg-stone-100 hidden sm:block">
+               <Heart className="w-5 h-5" />
+            </Link>
+            
+            {/* Cart */}
+            <Link to="/cart" className="relative p-2 text-stone-600 hover:text-rose-900 transition-colors rounded-full hover:bg-stone-100 group">
+              <ShoppingBag className="w-5 h-5 group-hover:scale-110 transition-transform" />
+              {cartCount > 0 && (
+                <span className="absolute top-1 right-0.5 bg-rose-900 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center shadow-lg border-2 border-white">
+                  {cartCount}
+                </span>
+              )}
+            </Link>
+
+             {/* Notifications */}
+             {currentUser && (
                 <div className="relative hidden md:block" ref={notifRef}>
                     <button 
                         onClick={() => setIsNotifOpen(!isNotifOpen)}
-                        className="relative text-stone-600 hover:text-[#881337] transition-colors p-1"
+                        className="relative p-2 text-stone-600 hover:text-rose-900 transition-colors rounded-full hover:bg-stone-100"
                     >
                         <Bell className="w-5 h-5" />
                         {unreadCount > 0 && (
-                            <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center animate-pulse">
-                                {unreadCount}
-                            </span>
+                            <span className="absolute top-1.5 right-1.5 bg-rose-500 text-white text-[8px] font-bold rounded-full h-2.5 w-2.5 animate-pulse"></span>
                         )}
                     </button>
 
                     {isNotifOpen && (
-                        <div className="absolute right-0 mt-3 w-80 bg-white rounded-xl shadow-xl py-2 ring-1 ring-black ring-opacity-5 origin-top-right transform transition-all duration-200 z-50 overflow-hidden">
-                            <div className="px-4 py-2 border-b border-gray-50 flex justify-between items-center bg-stone-50">
-                                <h3 className="font-bold text-sm text-stone-900">Notifications</h3>
-                                <span className="text-xs text-stone-500">{unreadCount} unread</span>
+                        <div className="absolute right-0 mt-4 w-80 bg-white rounded-2xl shadow-xl py-2 ring-1 ring-black ring-opacity-5 origin-top-right transform transition-all duration-300 z-50 overflow-hidden border border-stone-100">
+                           <div className="px-5 py-3 border-b border-stone-50 flex justify-between items-center bg-stone-50/50">
+                                <h3 className="font-heading font-bold text-sm text-stone-900">Notifications</h3>
+                                <span className="px-2 py-0.5 bg-rose-100 text-rose-800 text-[10px] rounded-full font-bold">{unreadCount} New</span>
                             </div>
                             <div className="max-h-80 overflow-y-auto">
                                 {notifications.length > 0 ? (
@@ -242,28 +248,23 @@ const Navbar = () => {
                                         <div 
                                             key={notif.id} 
                                             onClick={() => !notif.is_read && handleMarkRead(notif.id)}
-                                            className={`px-4 py-3 border-b border-gray-50 hover:bg-stone-50 cursor-pointer transition-colors ${!notif.is_read ? 'bg-orange-50/50' : ''}`}
+                                            className={`px-5 py-3 border-b border-stone-50 hover:bg-stone-50 cursor-pointer transition-colors ${!notif.is_read ? 'bg-orange-50/30' : ''}`}
                                         >
                                             <div className="flex justify-between items-start mb-1 gap-2">
-                                                <h4 className={`text-sm flex-1 ${!notif.is_read ? 'font-bold text-stone-900' : 'font-medium text-stone-600'}`}>{notif.title}</h4>
-                                                <div className="flex items-center gap-2 shrink-0">
-                                                    {!notif.is_read && <span className="w-2 h-2 rounded-full bg-[#881337]"></span>}
-                                                    <button 
-                                                        onClick={(e) => handleDeleteNotification(notif.id, e)}
-                                                        className="text-stone-400 hover:text-red-600 transition-colors p-1 rounded-full hover:bg-red-50"
-                                                        title="Delete"
-                                                    >
-                                                        <Trash2 className="w-3.5 h-3.5" />
-                                                    </button>
-                                                </div>
+                                                <h4 className={`text-xs flex-1 ${!notif.is_read ? 'font-bold text-stone-900' : 'font-medium text-stone-600'}`}>{notif.title}</h4>
+                                                <button 
+                                                    onClick={(e) => handleDeleteNotification(notif.id, e)}
+                                                    className="text-stone-300 hover:text-rose-600 transition-colors p-1"
+                                                >
+                                                    <Trash2 className="w-3 h-3" />
+                                                </button>
                                             </div>
-                                            <p className="text-xs text-stone-500 line-clamp-2 mr-6">{notif.message}</p>
-                                            <span className="text-[10px] text-stone-400 mt-1 block">{new Date(notif.created_at).toLocaleDateString()}</span>
+                                            <p className="text-xs text-stone-500 line-clamp-2 leading-relaxed">{notif.message}</p>
                                         </div>
                                     ))
                                 ) : (
-                                    <div className="px-4 py-8 text-center text-stone-500 text-sm">
-                                        No notifications yet
+                                    <div className="px-4 py-8 text-center text-stone-400 text-xs">
+                                        No recent notifications
                                     </div>
                                 )}
                             </div>
@@ -272,110 +273,139 @@ const Navbar = () => {
                 </div>
             )}
 
-            {/* Wishlist */}
-            <Link to="/wishlist" className="hidden md:block text-stone-600 hover:text-[#881337] transition-colors">
-               <Heart className="w-5 h-5" />
-            </Link>
-
-            {/* Cart */}
-            <Link to="/cart" className="relative text-stone-600 hover:text-[#881337] transition-colors" data-id="cart-button">
-              <ShoppingBag className="w-5 h-5" />
-              {cartCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 bg-[#881337] text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center">
-                  {cartCount}
-                </span>
-              )}
-            </Link>
-
-            {/* User Menu */}
+            {/* Auth / User Menu */}
             <div className="relative hidden md:block" ref={userMenuRef}>
               {currentUser ? (
                 <button 
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex items-center space-x-2 focus:outline-none"
+                  className="flex items-center space-x-2 pl-2 focus:outline-none group"
                 >
-                  {currentUser.photoURL ? (
-                    <img src={currentUser.photoURL} alt="User" className="w-8 h-8 rounded-full border border-stone-200" />
-                  ) : (
-                    <div className="p-1 rounded-full border border-stone-200 hover:border-[#881337] transition-colors">
-                      <User className="w-5 h-5 text-stone-600" />
-                    </div>
-                  )}
+                  <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-stone-200 group-hover:border-rose-900 transition-all p-0.5">
+                     {currentUser.photoURL ? (
+                        <img src={currentUser.photoURL} alt="User" className="w-full h-full rounded-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full bg-stone-100 flex items-center justify-center rounded-full text-stone-500">
+                            <User className="w-4 h-4" />
+                        </div>
+                      )}
+                  </div>
                 </button>
               ) : (
-                <Link to="/login" className="btn-primary py-2 px-5 text-xs">
+                <Link to="/login" className="ml-2 btn-primary !px-6 !py-2 !text-xs">
                   Login
                 </Link>
               )}
 
-              {/* Dropdown */}
+              {/* User Dropdown */}
               {isUserMenuOpen && currentUser && (
-                <div className="absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-xl py-2 ring-1 ring-black ring-opacity-5 origin-top-right transform transition-all duration-200">
-                  <div className="px-4 py-3 border-b border-gray-50">
-                    <p className="text-sm font-medium text-stone-900 truncate">{currentUser.displayName || 'User'}</p>
+                <div className="absolute right-0 mt-4 w-60 bg-white rounded-2xl shadow-xl py-2 ring-1 ring-black ring-opacity-5 origin-top-right transform transition-all duration-300 border border-stone-100">
+                  <div className="px-5 py-4 border-b border-stone-50 bg-stone-50/30">
+                    <p className="text-sm font-bold text-stone-900 truncate font-heading">{currentUser.displayName || 'User'}</p>
                     <p className="text-xs text-stone-500 truncate">{currentUser.email}</p>
                   </div>
-                  <Link
-                    to="/profile"
-                    className="flex items-center w-full px-4 py-2.5 text-sm text-stone-700 hover:bg-stone-50"
-                  >
-                    <User className="w-4 h-4 mr-2.5 text-stone-400" />
-                    My Profile
-                  </Link>
-                  <button
-                    onClick={handleLogout}
-                    className="flex items-center w-full px-4 py-2.5 text-sm text-red-600 hover:bg-red-50"
-                  >
-                    <LogOut className="w-4 h-4 mr-2.5" />
-                    Sign out
-                  </button>
+                  <div className="py-2">
+                    <Link
+                        to="/profile"
+                        className="flex items-center w-full px-5 py-2.5 text-xs font-medium text-stone-600 hover:bg-stone-50 hover:text-rose-900 transition-colors"
+                        onClick={() => setIsUserMenuOpen(false)}
+                    >
+                        <User className="w-4 h-4 mr-3" />
+                        My Profile
+                    </Link>
+                     <Link
+                        to="/admin"
+                        className="flex items-center w-full px-5 py-2.5 text-xs font-medium text-stone-600 hover:bg-stone-50 hover:text-rose-900 transition-colors"
+                        onClick={() => setIsUserMenuOpen(false)}
+                    >
+                        <Search className="w-4 h-4 mr-3" />
+                        Admin Panel
+                    </Link>
+                  </div>
+                  <div className="border-t border-stone-50 py-2">
+                     <button
+                        onClick={handleLogout}
+                        className="flex items-center w-full px-5 py-2.5 text-xs font-medium text-rose-600 hover:bg-rose-50 transition-colors"
+                    >
+                        <LogOut className="w-4 h-4 mr-3" />
+                        Sign out
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
 
-            {/* Mobile Toggle */}
-            <div className="lg:hidden">
-              <button
-                type="button"
-                className="p-1 text-stone-800 hover:text-[#881337] transition-colors"
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              >
-                {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-              </button>
-            </div>
           </div>
         </div>
-
-        {/* Mobile Menu Overlay */}
-        {isMobileMenuOpen && (
-          <div className="lg:hidden fixed inset-x-0 top-[60px] bg-white border-t border-gray-100 shadow-lg p-4 animate-in slide-in-from-top-2 duration-200">
-            <div className="space-y-4">
-              {navLinks.map((link) => (
-                <Link 
-                  key={link.path}
-                  to={link.path}
-                  className="block text-base font-medium text-stone-800 hover:text-[#881337] py-2 border-b border-gray-50 last:border-0"
-                >
-                  {link.name}
-                </Link>
-              ))}
-              <div className="pt-4 flex items-center justify-between">
-                {currentUser ? (
-                   <div className="flex items-center gap-3">
-                     <span className="text-sm font-medium text-stone-900">Hi, {currentUser.displayName || 'User'}</span>
-                     <button onClick={handleLogout} className="text-xs text-red-600 font-medium border px-2 py-1 rounded">Sign Out</button>
-                   </div>
-                ) : (
-                  <Link to="/login" className="btn-primary w-full text-center py-3">Login / Signup</Link>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </nav>
+
+    {/* Mobile Side Drawer */}
+    <div className={`fixed inset-0 z-[60] lg:hidden transition-all duration-500 ${isMobileMenuOpen ? 'visible' : 'invisible'}`}>
+        {/* Backdrop */}
+        <div 
+            className={`absolute inset-0 bg-stone-900/40 backdrop-blur-sm transition-opacity duration-500 ${isMobileMenuOpen ? 'opacity-100' : 'opacity-0'}`}
+            onClick={() => setIsMobileMenuOpen(false)}
+        />
+        
+        {/* Drawer */}
+        <div className={`absolute top-0 left-0 w-[80%] max-w-[300px] h-full bg-white shadow-2xl transition-transform duration-500 ease-out ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+            <div className="p-6 h-full flex flex-col">
+                <div className="flex items-center justify-between mb-10">
+                    <Link to="/" className="flex flex-col" onClick={() => setIsMobileMenuOpen(false)}>
+                        <span className="font-heading text-2xl font-bold text-stone-900">
+                          Enbroidery.
+                        </span>
+                        <span className="text-[10px] uppercase tracking-[0.3em] text-rose-900 font-medium">
+                          By Sana
+                        </span>
+                    </Link>
+                    <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-stone-500 hover:text-rose-900 rounded-full hover:bg-stone-100">
+                        <X className="w-6 h-6" />
+                    </button>
+                </div>
+
+                <div className="space-y-6 flex-1">
+                    {navLinks.map((link) => (
+                        <Link 
+                            key={link.path}
+                            to={link.path}
+                            className={`block text-xl font-heading font-medium transition-colors ${
+                                isActive(link.path) ? 'text-rose-900 pl-4 border-l-2 border-rose-900' : 'text-stone-600 hover:text-rose-900'
+                            }`}
+                            onClick={() => setIsMobileMenuOpen(false)}
+                        >
+                            {link.name}
+                        </Link>
+                    ))}
+                </div>
+
+                <div className="border-t border-stone-100 pt-6 space-y-4">
+                     {currentUser ? (
+                        <>
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="w-10 h-10 rounded-full bg-stone-100 flex items-center justify-center text-stone-500">
+                                    <User className="w-5 h-5" />
+                                </div>
+                                <div>
+                                    <p className="text-sm font-bold text-stone-900">{currentUser.displayName || 'User'}</p>
+                                    <p className="text-xs text-stone-500 truncate w-32">{currentUser.email}</p>
+                                </div>
+                            </div>
+                            <Link to="/profile" className="block text-sm font-medium text-stone-600 hover:text-rose-900 py-2">Account Settings</Link>
+                            <button onClick={handleLogout} className="block w-full text-left text-sm font-medium text-red-600 hover:text-red-700 py-2">Sign Out</button>
+                        </>
+                     ) : (
+                         <div className="grid grid-cols-2 gap-4">
+                            <Link to="/login" className="btn-primary flex items-center justify-center !px-0 text-xs">Login</Link>
+                            <Link to="/register" className="btn-outline flex items-center justify-center !px-0 text-xs">Sign Up</Link>
+                         </div>
+                     )}
+                </div>
+            </div>
+        </div>
+    </div>
+    </>
   );
 };
 
 export default Navbar;
-
