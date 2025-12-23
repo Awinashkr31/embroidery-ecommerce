@@ -22,6 +22,7 @@ CREATE TABLE products (
   featured BOOLEAN DEFAULT false,
   active BOOLEAN DEFAULT true,
   stock_quantity INTEGER DEFAULT 0,
+  clothing_information JSONB, -- Stores size, fit, fabric, etc.
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -188,17 +189,39 @@ CREATE TABLE reviews (
 );
 
 -- Create indexes for better performance
+-- 1. PRODUCTS (Shop & Filtering)
 CREATE INDEX idx_products_category ON products(category);
 CREATE INDEX idx_products_featured ON products(featured);
+CREATE INDEX idx_products_price ON products(price);
+CREATE INDEX idx_products_active ON products(active);
+CREATE INDEX idx_products_created_at_desc ON products(created_at DESC);
+CREATE INDEX idx_products_shop_composite ON products(active, category, price);
+
+-- 2. ORDERS & TRANSACTIONS
 CREATE INDEX idx_orders_status ON orders(status);
 CREATE INDEX idx_orders_created_at ON orders(created_at);
+CREATE INDEX idx_orders_customer_email ON orders(customer_email);
+CREATE INDEX idx_orders_customer_phone ON orders(customer_phone);
+
+-- 3. REQUESTS & BOOKINGS
 CREATE INDEX idx_custom_requests_status ON custom_requests(status);
+CREATE INDEX idx_custom_requests_email ON custom_requests(email);
 CREATE INDEX idx_mehndi_bookings_date ON mehndi_bookings(date);
 CREATE INDEX idx_mehndi_bookings_status ON mehndi_bookings(status);
+CREATE INDEX idx_mehndi_bookings_email ON mehndi_bookings(email);
+
+-- 4. OTHER
 CREATE INDEX idx_messages_read ON messages(read);
 CREATE INDEX idx_gallery_category ON gallery(category);
 CREATE INDEX idx_reviews_product_id ON reviews(product_id);
 CREATE INDEX idx_reviews_status ON reviews(status);
+
+-- 5. RELATIONSHIPS (Foreign Keys)
+CREATE INDEX idx_cart_items_user_id ON cart_items(user_id);
+CREATE INDEX idx_cart_items_product_id ON cart_items(product_id);
+CREATE INDEX idx_wishlist_items_user_id ON wishlist_items(user_id);
+CREATE INDEX idx_wishlist_items_product_id ON wishlist_items(product_id);
+CREATE INDEX idx_addresses_user_id ON addresses(user_id);
 
 -- Create updated_at triggers
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -218,23 +241,8 @@ CREATE TRIGGER update_custom_requests_updated_at BEFORE UPDATE ON custom_request
 CREATE TRIGGER update_mehndi_bookings_updated_at BEFORE UPDATE ON mehndi_bookings FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_website_settings_updated_at BEFORE UPDATE ON website_settings FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
--- Insert sample data
-INSERT INTO products (name, description, price, category, images, featured, stock_quantity, specifications) VALUES
-('Floral Embroidered Earrings', 'Beautiful handcrafted earrings with intricate floral embroidery', 1299.00, 'Accessories', ARRAY['https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=400'], true, 10, 'Material: Cotton threads, gold-plated wire'),
-('Traditional Hoop Design', 'Classic embroidery hoop with traditional patterns', 899.00, 'Home Decor', ARRAY['https://images.unsplash.com/photo-1506630448388-4e683c67ddb0?w=400'], true, 15, 'Size: 10 inch diameter'),
-('Botanical Wall Art', 'Custom embroidered botanical wall art piece', 2499.00, 'Art', ARRAY['https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400'], true, 5, 'Frame: Wooden frame included'),
-('Vintage Cushion Cover', 'Embroidered cushion cover with vintage motifs', 899.00, 'Home Decor', ARRAY['https://images.unsplash.com/photo-1574180566232-aaad1b5b8450?w=400'], false, 20, 'Fabric: Linen blend'),
-('Bridal Jewelry Set', 'Complete bridal set with embroidered elements', 3999.00, 'Accessories', ARRAY['https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=400'], true, 3, 'Includes: Necklace, Earrings, Maang Tikka'),
-('Modern Table Runner', 'Contemporary embroidered table runner', 1599.00, 'Home Decor', ARRAY['https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400'], false, 8, 'Dimensions: 14x72 inches');
+-- Sample data sections removed as per user request
 
--- Insert sample gallery images
-INSERT INTO gallery (title, description, image_url, category, featured) VALUES
-('Bridal Mehndi Design', 'Intricate bridal mehndi pattern for wedding ceremony', 'https://images.unsplash.com/photo-1583391733956-6c78276477e3?w=400', 'mehndi', true),
-('Arabic Style Mehndi', 'Beautiful Arabic mehndi design for special occasions', 'https://images.unsplash.com/photo-1582650625119-3a31f8fa2699?w=400', 'mehndi', true),
-('Floral Embroidery Work', 'Detailed floral embroidery on fabric', 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400', 'embroidery', true),
-('Traditional Hoop Art', 'Classic embroidery hoop with traditional motifs', 'https://images.unsplash.com/photo-1506630448388-4e683c67ddb0?w=400', 'embroidery', false),
-('Minimalist Mehndi', 'Simple and elegant mehndi design', 'https://images.unsplash.com/photo-1595348016382-4e6b0e33c7fd?w=400', 'mehndi', false),
-('Custom Wall Art', 'Personalized embroidered wall art piece', 'https://images.unsplash.com/photo-1574180566232-aaad1b5b8450?w=400', 'embroidery', true);
 
 -- Enable Row Level Security (RLS)
 ALTER TABLE products ENABLE ROW LEVEL SECURITY;
