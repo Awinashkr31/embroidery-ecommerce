@@ -1,8 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@200;300;400;500;600&display=swap');
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 @layer base {
   :root {
@@ -21,7 +19,7 @@
     --color-text-light: #a8a29e; /* Stone 400 */
 
     --font-heading: 'Playfair Display', serif;
-    --font-body: 'Inter', sans-serif;
+    --font-body: 'Outfit', 'Inter', sans-serif;
   }
 
   body {
@@ -38,22 +36,26 @@
 
 @layer components {
   .btn-primary {
-    @apply bg-rose-900 text-white px-6 py-2.5 rounded-full hover:bg-rose-800 transition-all duration-300 shadow-md hover:shadow-lg text-sm font-medium tracking-wide uppercase;
+    @apply bg-rose-900 text-white px-8 py-3 rounded-full hover:bg-rose-800 transition-all duration-300 shadow-lg hover:shadow-rose-900/30 text-sm font-medium tracking-widest uppercase transform hover:-translate-y-0.5;
   }
   
   .btn-outline {
-    @apply border border-rose-900 text-rose-900 px-6 py-2.5 rounded-full hover:bg-rose-50 transition-all duration-300 text-sm font-medium tracking-wide uppercase;
+    @apply border border-rose-900 text-rose-900 px-8 py-3 rounded-full hover:bg-rose-50 transition-all duration-300 text-sm font-medium tracking-widest uppercase;
   }
 
   .card-premium {
-    @apply bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden border border-stone-100;
+    @apply bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-500 overflow-hidden border border-stone-100;
   }
 
   .container-custom {
-    @apply max-w-[1536px] mx-auto px-6 sm:px-8 lg:px-12 xl:px-20;
+    @apply w-full max-w-[1920px] mx-auto px-4 lg:px-8;
   }
 
   .heading-serif {
     font-family: var(--font-heading);
+  }
+  
+  .glass-panel {
+    @apply bg-white/70 backdrop-blur-xl border border-white/50 shadow-sm;
   }
 }

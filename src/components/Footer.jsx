@@ -1,92 +1,142 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Instagram, Facebook, MessageCircle, Phone, Mail, MapPin } from 'lucide-react';
+import {
+  Instagram,
+  MessageCircle,
+  Phone,
+  Mail,
+  Heart,
+  ArrowUpRight
+} from 'lucide-react';
 
 const Footer = () => {
-    return (
-        <footer className="bg-stone-900 text-stone-300 text-sm" data-id="main-footer">
-            <div className="container-custom py-16">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
-                    {/* Brand */}
-                    <div className="col-span-1 md:col-span-2 space-y-6" data-id="footer-brand">
-                        <Link to="/" className="inline-block">
-                             <h3 className="font-heading text-2xl font-bold text-white mb-2" data-id="footer-logo">
-                                Hand Embroidery
-                                <span className="block text-rose-500 text-sm font-sans tracking-widest uppercase mt-1">by Sana</span>
-                            </h3>
-                        </Link>
-                        <p className="text-stone-400 max-w-md leading-relaxed" data-id="footer-description">
-                            Creating beautiful handcrafted embroidery and intricate mehndi designs with passion, precision, and artistic heritage. Join us in celebrating the art of slow fashion.
-                        </p>
-                        <div className="flex space-x-4 pt-2" data-id="social-links">
-                            <a href="https://www.instagram.com/embroidery_by__sana?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" rel="noopener noreferrer" className="bg-stone-800 p-2 rounded-full hover:bg-rose-900 hover:text-white transition-all transform hover:scale-110">
-                                <Instagram className="w-5 h-5" />
-                            </a>
-                            {/* Removed Facebook for cleaner look if not active, or kept as generic. User only gave Insta. Keeping FB generic for now but updating WhatsApp */}
-                            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="bg-stone-800 p-2 rounded-full hover:bg-rose-900 hover:text-white transition-all transform hover:scale-110">
-                                <Facebook className="w-5 h-5" />
-                            </a>
-                            <a href="https://wa.me/917428013214" target="_blank" rel="noopener noreferrer" className="bg-stone-800 p-2 rounded-full hover:bg-rose-900 hover:text-white transition-all transform hover:scale-110">
-                                <MessageCircle className="w-5 h-5" />
-                            </a>
-                        </div>
-                    </div>
+  const currentYear = new Date().getFullYear();
 
-                    {/* Quick Links */}
-                    <div data-id="footer-links" className="space-y-6">
-                        <h4 className="text-white font-semibold tracking-wide uppercase text-xs" data-id="quick-links-title">Navigation</h4>
-                        <ul className="space-y-3" data-id="quick-links-list">
-                            <li><Link to="/about" className="hover:text-rose-400 transition-colors">About Us</Link></li>
-                            <li><Link to="/shop" className="hover:text-rose-400 transition-colors">Shop Collection</Link></li>
-                            <li><Link to="/custom-design" className="hover:text-rose-400 transition-colors">Custom Orders</Link></li>
-                            <li><Link to="/mehndi-booking" className="hover:text-rose-400 transition-colors">Mehndi Services</Link></li>
-                            <li><Link to="/contact" className="hover:text-rose-400 transition-colors">Contact</Link></li>
-                        </ul>
-                    </div>
+  return (
+    <footer className="relative bg-[#141312] text-stone-300 overflow-hidden">
+      {/* Top Accent */}
+      <div className="h-px w-full bg-gradient-to-r from-transparent via-rose-800/60 to-transparent" />
 
-                    {/* Contact Info */}
-                    <div data-id="footer-contact" className="space-y-6">
-                        <h4 className="text-white font-semibold tracking-wide uppercase text-xs" data-id="contact-info-title">Contact Us</h4>
-                        <div className="space-y-4" data-id="contact-info-list">
-                            <div className="flex items-start space-x-3" data-id="phone-info">
-                                <Phone className="w-5 h-5 text-rose-500 mt-0.5" />
-                                <div className="flex flex-col">
-                                    <span className="text-xs text-stone-500 uppercase font-bold">Call / WhatsApp</span>
-                                    <a href="https://wa.me/917428013214" className="hover:text-white transition-colors">+91 74280 13214</a>
-                                </div>
-                            </div>
-                            <div className="flex items-start space-x-3" data-id="email-info">
-                                <Mail className="w-5 h-5 text-rose-500 mt-0.5" />
-                                <div className="flex flex-col">
-                                    <span className="text-xs text-stone-500 uppercase font-bold">Email</span>
-                                    <span className="hover:text-white cursor-pointer transition-colors">hello@sanaembroidery.com</span>
-                                </div>
-                            </div>
-                            <div className="flex items-start space-x-3" data-id="location-info">
-                                <MapPin className="w-5 h-5 text-rose-500 mt-0.5" />
-                                <div className="flex flex-col">
-                                     <span className="text-xs text-stone-500 uppercase font-bold">Location</span>
-                                    <span>New Delhi, India</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+      <div className="container-custom py-12 lg:py-14">
+        {/* Main Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-y-12 lg:gap-x-10">
 
-                {/* Bottom Bar */}
-                <div className="border-t border-stone-800 mt-16 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-stone-500" data-id="footer-bottom">
-                    <p data-id="copyright">
-                        © {new Date().getFullYear()} Hand Embroidery by Sana. All rights reserved.
-                    </p>
-                    <div className="flex space-x-6">
-                        <Link to="#" className="hover:text-stone-300">Privacy Policy</Link>
-                        <Link to="#" className="hover:text-stone-300">Terms of Service</Link>
-                        <Link to="#" className="hover:text-stone-300">Shipping Policy</Link>
-                    </div>
-                </div>
+          {/* Brand */}
+          <div className="lg:col-span-4 space-y-6">
+            <Link to="/" className="inline-block">
+              <h3 className="font-heading text-4xl font-bold text-white tracking-tight">
+                Embroidery<span className="text-rose-500">.</span>
+              </h3>
+              <span className="block mt-1 text-[11px] tracking-[0.35em] uppercase font-semibold text-rose-500">
+                By Sana
+              </span>
+            </Link>
+
+            <p className="text-sm leading-relaxed text-stone-400 max-w-sm">
+              Celebrating the timeless art of hand embroidery. Every piece is
+              thoughtfully handcrafted to bring elegance, heritage, and warmth
+              into your everyday life.
+            </p>
+
+            <div className="flex items-center gap-4 pt-2">
+              <a
+                href="https://www.instagram.com/embroidery_by__sana"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-rose-700 transition"
+              >
+                <Instagram className="w-5 h-5" />
+              </a>
+              <a
+                href="https://wa.me/917428013214"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-green-600 transition"
+              >
+                <MessageCircle className="w-5 h-5" />
+              </a>
             </div>
-        </footer>
-    );
+          </div>
+
+          {/* Shop */}
+          <div className="lg:col-span-2 space-y-5">
+            <h4 className="text-white font-heading font-semibold text-lg">
+              Shop
+            </h4>
+            <ul className="space-y-3 text-sm">
+              {[
+                ['Shop All', '/shop'],
+                ['Bridal Collection', '/shop?category=Bridal'],
+                ['Hoop Art', '/shop?category=Hoop Art'],
+                ['Accessories', '/shop?category=Accessories'],
+              ].map(([label, path]) => (
+                <li key={label}>
+                  <Link
+                    to={path}
+                    className="group inline-flex items-center gap-1 text-stone-400 hover:text-white transition"
+                  >
+                    {label}
+                    <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition" />
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Company */}
+          <div className="lg:col-span-2 space-y-5">
+            <h4 className="text-white font-heading font-semibold text-lg">
+              Company
+            </h4>
+            <ul className="space-y-3 text-sm text-stone-400">
+              <li><Link to="/about" className="hover:text-white">Our Story</Link></li>
+              <li><Link to="/gallery" className="hover:text-white">Gallery</Link></li>
+              <li><Link to="/support" className="hover:text-white">Contact Us</Link></li>
+              <li><Link to="/mehndi-booking" className="hover:text-white">Mehndi Services</Link></li>
+            </ul>
+          </div>
+
+          {/* Contact Card */}
+          <div className="lg:col-span-4">
+            <div className="relative bg-gradient-to-br from-stone-800/60 to-stone-900/60 border border-stone-700 rounded-2xl p-8 space-y-6">
+              <h4 className="text-white font-heading font-semibold text-xl">
+                Contact Us
+              </h4>
+
+              <div className="space-y-4 text-sm">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-lg bg-rose-900/20 flex items-center justify-center">
+                    <Phone className="w-4 h-4 text-rose-500" />
+                  </div>
+                  <span className="text-stone-200 font-medium">
+                    +91 74280 13214
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-lg bg-rose-900/20 flex items-center justify-center">
+                    <Mail className="w-4 h-4 text-rose-500" />
+                  </div>
+                  <span className="text-stone-200 font-medium">
+                    hello@sanaembroidery.com
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        {/* Bottom Bar */}
+        <div className="mt-14 pt-6 border-t border-stone-800 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-stone-500">
+          <p>© {currentYear} Hand Embroidery by Sana</p>
+          <p className="flex items-center gap-1">
+            Made with <Heart className="w-3 h-3 text-rose-500" /> in India
+          </p>
+        </div>
+      </div>
+    </footer>
+  );
 };
 
 export default Footer;
