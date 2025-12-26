@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { User, Package, MapPin, LogOut, Trash2, ChevronRight, Clock, CheckCircle, AlertTriangle, Loader, Star, X } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
 import { useToast } from '../context/ToastContext';
 import { uploadImage, deleteImage } from '../utils/uploadUtils';
@@ -12,7 +12,16 @@ const Profile = () => {
     const { currentUser, logout, updateUser } = useAuth(); // Added updateUser to destructuring
     const { savedAddresses, deleteAddress, saveAddress } = useCart(); 
     const { addToast } = useToast();
+    const location = useLocation();
     const [activeTab, setActiveTab] = useState('orders');
+
+    useEffect(() => {
+        if (location.hash === '#addresses') {
+            setActiveTab('addresses');
+        } else {
+            setActiveTab('orders');
+        }
+    }, [location.hash]);
     
     // ... existing state ...
     const [orders, setOrders] = useState([]);
@@ -290,6 +299,12 @@ const Profile = () => {
                                                 <div className="space-y-1">
                                                     <p className="text-xs font-bold uppercase tracking-wider text-stone-500">Total Amount</p>
                                                     <p className="font-bold text-rose-900">₹{order.total.toLocaleString()}</p>
+                                                </div>
+                                                <div className="space-y-1">
+                                                     <p className="text-xs font-bold uppercase tracking-wider text-stone-500">Payment</p>
+                                                     <span className={`text-xs font-bold uppercase ${order.payment_status === 'paid' ? 'text-emerald-600' : 'text-stone-500'}`}>
+                                                         {order.payment_method === 'cod' ? 'COD' : (order.payment_status || 'pending')}
+                                                     </span>
                                                 </div>
                                                 <div>
                                                     <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider border ${getStatusStyle(order.status)}`}>
