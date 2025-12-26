@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar, CheckCircle, Clock, MapPin } from 'lucide-react';
 import BookingForm from '../components/BookingForm';
+import { fetchSetting } from '../utils/settingsUtils';
 
 const PACKAGES = [
   {
@@ -45,6 +46,23 @@ const PACKAGES = [
 const MehndiBooking = () => {
   const [selectedPackage, setSelectedPackage] = useState(null);
   const [showBookingForm, setShowBookingForm] = useState(false);
+  const [featureImage, setFeatureImage] = useState("https://images.unsplash.com/photo-1594736797933-d0f9dd8b4d40?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80");
+  const [pageTitle, setPageTitle] = useState("Mehndi Booking");
+  const [pageSubtitle, setPageSubtitle] = useState("Professional mehndi artistry for your special occasions.");
+
+  useEffect(() => {
+    const loadSettings = async () => {
+      const image = await fetchSetting('mehndi_feature_image');
+      if (image) setFeatureImage(image);
+
+      const title = await fetchSetting('mehndi_title');
+      if (title) setPageTitle(title);
+
+      const subtitle = await fetchSetting('mehndi_subtitle');
+      if (subtitle) setPageSubtitle(subtitle);
+    };
+    loadSettings();
+  }, []);
 
   const handlePackageSelect = (pkg) => {
     setSelectedPackage(pkg);
@@ -72,10 +90,10 @@ const MehndiBooking = () => {
             <MapPin className="w-3 h-3" /> Service Available in Delhi Only
           </div>
           <h1 className="text-4xl lg:text-5xl font-light text-gray-800 mb-6 font-heading">
-            Mehndi <span className="text-sage text-rose-900">Booking</span>
+            {pageTitle}
           </h1>
           <p className="text-xl text-stone-600 max-w-3xl mx-auto leading-relaxed">
-            Book your session for weddings, festivals, or special occasions. We use 100% organic, chemical-free henna for creating deep, rich stains.
+            {pageSubtitle}
           </p>
         </div>
 
@@ -175,7 +193,7 @@ const MehndiBooking = () => {
             
             <div className="relative h-80 lg:h-96 rounded-3xl overflow-hidden shadow-lg rotate-1 hover:rotate-0 transition-transform duration-700">
                <img 
-                 src="https://images.unsplash.com/photo-1594736797933-d0f9dd8b4d40?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" 
+                 src={featureImage} 
                  alt="Mehndi Application" 
                  className="absolute inset-0 w-full h-full object-cover"
                />

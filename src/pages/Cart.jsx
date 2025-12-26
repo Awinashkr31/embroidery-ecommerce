@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Trash2, ArrowRight, Tag, X, User } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import SEO from '../components/SEO';
 
 const Cart = () => {
     const { cart, removeFromCart, updateQuantity, cartTotal, subtotal, shippingCharge, applyCoupon, removeCoupon, appliedCoupon, discountAmount } = useCart();
@@ -24,6 +25,7 @@ const Cart = () => {
     if (cart.length === 0) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-[#fdfbf7] font-body p-4 pt-20">
+                <SEO title="Shopping Cart" description="Your shopping cart is empty. Explore our collection of handcrafted embroidery." />
                 <div className="bg-rose-50 p-8 rounded-full mb-6 animate-in zoom-in-50 duration-500">
                     <Trash2 className="w-12 h-12 text-rose-900" />
                 </div>
@@ -38,6 +40,7 @@ const Cart = () => {
 
     return (
         <div className="bg-[#fdfbf7] min-h-screen font-body pt-32 pb-24">
+            <SEO title="Shopping Cart" description="Review your selected items and proceed to checkout." />
             <div className="container-custom">
                 <h1 className="text-3xl lg:text-4xl font-heading font-bold text-stone-900 mb-8">Shopping Cart</h1>
 

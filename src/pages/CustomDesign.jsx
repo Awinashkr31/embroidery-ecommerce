@@ -1,11 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Send, Loader } from 'lucide-react';
 import { supabase } from '../config/supabase';
 import { useToast } from '../context/ToastContext';
+import { fetchSetting } from '../utils/settingsUtils';
 
 const CustomDesign = () => {
   const { addToast } = useToast();
   const [loading, setLoading] = useState(false);
+  const [bannerImage, setBannerImage] = useState(null);
+  const [pageTitle, setPageTitle] = useState("Custom Design Request");
+  const [pageSubtitle, setPageSubtitle] = useState("Let's bring your unique vision to life.");
+  
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -15,6 +20,20 @@ const CustomDesign = () => {
     budget: '',
     date: ''
   });
+
+  useEffect(() => {
+    const loadSettings = async () => {
+        const image = await fetchSetting('custom_design_banner_image');
+        if (image) setBannerImage(image);
+
+        const title = await fetchSetting('custom_design_title');
+        if (title) setPageTitle(title);
+
+        const subtitle = await fetchSetting('custom_design_subtitle');
+        if (subtitle) setPageSubtitle(subtitle);
+    };
+    loadSettings();
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -72,16 +91,34 @@ const CustomDesign = () => {
   };
 
   return (
-    <div className="bg-warm-beige min-h-screen font-sofia py-12 lg:py-20">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl lg:text-5xl font-light text-gray-800 mb-6">
-            Custom <span className="text-deep-rose">Design Request</span>
-          </h1>
-          <p className="text-xl text-gray-600">
-            Let's bring your unique vision to life. Fill out the form below to start the creative process.
-          </p>
+    <div className="bg-warm-beige min-h-screen font-sofia pb-12 lg:pb-20">
+      {/* Banner */}
+      {bannerImage ? (
+         <div className="w-full h-64 md:h-80 lg:h-96 relative mb-12">
+            <img src={bannerImage} alt="Custom Design" className="w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                <div className="text-center text-white">
+                    <h1 className="text-4xl lg:text-5xl font-light mb-4 text-shadow-sm">
+                        {pageTitle}
+                    </h1>
+                     <p className="text-xl max-w-2xl mx-auto px-4 opacity-90 text-shadow-sm">
+                        {pageSubtitle}
+                    </p>
+                </div>
+            </div>
+         </div>
+      ) : (
+        <div className="pt-12 lg:pt-20 text-center mb-12 px-4">
+            <h1 className="text-4xl lg:text-5xl font-light text-gray-800 mb-6">
+                Custom <span className="text-deep-rose">Design Request</span>
+            </h1>
+            <p className="text-xl text-gray-600">
+                Let's bring your unique vision to life. Fill out the form below to start the creative process.
+            </p>
         </div>
+      )}
+
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
 
         <div className="bg-white rounded-2xl shadow-xl p-8 lg:p-12">
           <form onSubmit={handleSubmit} className="space-y-8">

@@ -1,13 +1,21 @@
-# Embroidery E-Commerce
-Online marketplace for handmade embroidery products
+# Hand Embroidery by Sana
 
-## Technical Details
-This project uses React + Vite.
+A premium e-commerce platform for handcrafted embroidery and mehndi services.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Tech Stack
+- **Frontend**: React (Vite)
+- **Styling**: Tailwind CSS v4
+- **Backend**: Supabase (Database, Auth)
+- **Icons**: Lucide React
+- **Router**: React Router v7
 
-Currently, two official plugins are available:
+## Key Features
+- **Modern UI**: Custom "Admin Panel" inspired layout with glassmorphism and premium typography ('Playfair Display', 'Outfit').
+- **Admin Dashboard**: Comprehensive management for Products, Orders, Messages, and Gallery.
+- **Shop**: Category-based browsing (Bridal, Hoop Art, etc.) with stock management.
+- **Services**: Booking system for Mehndi and Custom Design requests.
+- **Responsive**: Fully optimized for mobile and desktop.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
+## Development
+1. `npm install`
+2. `npm run dev` (Starts at http://localhost:5173)

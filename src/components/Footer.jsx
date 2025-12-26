@@ -3,140 +3,112 @@ import { Link } from 'react-router-dom';
 import {
   Instagram,
   MessageCircle,
-  Phone,
   Mail,
   Heart,
-  ArrowUpRight
+  MapPin,
+  ArrowRight
 } from 'lucide-react';
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="relative bg-[#141312] text-stone-300 overflow-hidden">
-      {/* Top Accent */}
-      <div className="h-px w-full bg-gradient-to-r from-transparent via-rose-800/60 to-transparent" />
-
-      <div className="container-custom py-12 lg:py-14">
-        {/* Main Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-y-12 lg:gap-x-10">
-
-          {/* Brand */}
-          <div className="lg:col-span-4 space-y-6">
+    <footer className="bg-[#f0ece9] text-stone-600 border-t border-stone-200 font-sofia">
+      <div className="container-custom py-6 lg:py-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-8">
+          {/* 1. Brand Section */}
+          <div className="lg:col-span-4 space-y-3">
             <Link to="/" className="inline-block">
-              <h3 className="font-heading text-4xl font-bold text-white tracking-tight">
-                Embroidery<span className="text-rose-500">.</span>
-              </h3>
-              <span className="block mt-1 text-[11px] tracking-[0.35em] uppercase font-semibold text-rose-500">
-                By Sana
-              </span>
+               {/* Logo: Displaying original (likely dark) logo without filters for light bg */}
+              <img 
+                src="/logo.png" 
+                alt="Embroidery By Sana" 
+                className="h-20 w-auto object-contain mix-blend-multiply opacity-90 hover:opacity-100 transition-opacity" 
+              />
             </Link>
-
-            <p className="text-sm leading-relaxed text-stone-400 max-w-sm">
-              Celebrating the timeless art of hand embroidery. Every piece is
-              thoughtfully handcrafted to bring elegance, heritage, and warmth
-              into your everyday life.
+            <p className="text-stone-500 leading-relaxed max-w-sm font-light text-sm">
+              Weaving stories into fabric. Handcrafted embroidery and detailed Mehndi designs 
+              that bring a touch of heritage and elegance to your special moments.
             </p>
-
-            <div className="flex items-center gap-4 pt-2">
-              <a
-                href="https://www.instagram.com/embroidery_by__sana"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-rose-700 transition"
-              >
-                <Instagram className="w-5 h-5" />
-              </a>
-              <a
-                href="https://wa.me/917428013214"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-green-600 transition"
-              >
-                <MessageCircle className="w-5 h-5" />
-              </a>
+            <div className="flex gap-3 pt-1">
+               <SocialLink href="https://www.instagram.com/embroidery_by__sana" icon={<Instagram size={18} />} label="Instagram" />
+               <SocialLink href="https://wa.me/917428013214" icon={<MessageCircle size={18} />} label="WhatsApp" />
+               <SocialLink href="mailto:hello@sanaembroidery.com" icon={<Mail size={18} />} label="Email" />
             </div>
           </div>
 
-          {/* Shop */}
-          <div className="lg:col-span-2 space-y-5">
-            <h4 className="text-white font-heading font-semibold text-lg">
-              Shop
-            </h4>
-            <ul className="space-y-3 text-sm">
-              {[
-                ['Shop All', '/shop'],
-                ['Bridal Collection', '/shop?category=Bridal'],
-                ['Hoop Art', '/shop?category=Hoop Art'],
-                ['Accessories', '/shop?category=Accessories'],
-              ].map(([label, path]) => (
-                <li key={label}>
-                  <Link
-                    to={path}
-                    className="group inline-flex items-center gap-1 text-stone-400 hover:text-white transition"
-                  >
-                    {label}
-                    <ArrowUpRight className="w-3 h-3 opacity-0 group-hover:opacity-100 transition" />
-                  </Link>
+          {/* 2. Quick Links */}
+          <div className="lg:col-span-3 lg:pl-8 space-y-4">
+             <h4 className="font-heading text-base font-bold text-stone-900 uppercase tracking-widest">Explore</h4>
+             <ul className="space-y-2 text-sm">
+                <FooterLink to="/shop" label="Shop Collection" />
+                <FooterLink to="/gallery" label="Our Gallery" />
+                <FooterLink to="/mehndi-booking" label="Book Mehndi" />
+                <FooterLink to="/custom-design" label="Custom Orders" />
+             </ul>
+          </div>
+
+          {/* 3. Help & Info */}
+          <div className="lg:col-span-2 space-y-4">
+             <h4 className="font-heading text-base font-bold text-stone-900 uppercase tracking-widest">Help</h4>
+             <ul className="space-y-2 text-sm">
+                <FooterLink to="/about" label="Our Story" />
+                <FooterLink to="/support" label="Contact Us" />
+                <FooterLink to="/profile" label="Order History" />
+             </ul>
+          </div>
+
+          {/* 4. Contact / Location */}
+          <div className="lg:col-span-3 space-y-4">
+            <h4 className="font-heading text-base font-bold text-stone-900 uppercase tracking-widest">Visit Us</h4>
+            <ul className="space-y-3 text-sm text-stone-500">
+                <li className="flex items-start gap-2">
+                    <MapPin className="w-5 h-5 text-rose-800 shrink-0" />
+                    <span>Based in India,<br/>Shipping Worldwide</span>
                 </li>
-              ))}
             </ul>
           </div>
-
-          {/* Company */}
-          <div className="lg:col-span-2 space-y-5">
-            <h4 className="text-white font-heading font-semibold text-lg">
-              Company
-            </h4>
-            <ul className="space-y-3 text-sm text-stone-400">
-              <li><Link to="/about" className="hover:text-white">Our Story</Link></li>
-              <li><Link to="/gallery" className="hover:text-white">Gallery</Link></li>
-              <li><Link to="/support" className="hover:text-white">Contact Us</Link></li>
-              <li><Link to="/mehndi-booking" className="hover:text-white">Mehndi Services</Link></li>
-            </ul>
-          </div>
-
-          {/* Contact Card */}
-          <div className="lg:col-span-4">
-            <div className="relative bg-gradient-to-br from-stone-800/60 to-stone-900/60 border border-stone-700 rounded-2xl p-8 space-y-6">
-              <h4 className="text-white font-heading font-semibold text-xl">
-                Contact Us
-              </h4>
-
-              <div className="space-y-4 text-sm">
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-lg bg-rose-900/20 flex items-center justify-center">
-                    <Phone className="w-4 h-4 text-rose-500" />
-                  </div>
-                  <span className="text-stone-200 font-medium">
-                    +91 74280 13214
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-4">
-                  <div className="w-10 h-10 rounded-lg bg-rose-900/20 flex items-center justify-center">
-                    <Mail className="w-4 h-4 text-rose-500" />
-                  </div>
-                  <span className="text-stone-200 font-medium">
-                    hello@sanaembroidery.com
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-14 pt-6 border-t border-stone-800 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-stone-500">
-          <p>© {currentYear} Hand Embroidery by Sana</p>
-          <p className="flex items-center gap-1">
-            Made with <Heart className="w-3 h-3 text-rose-500" /> in India
-          </p>
+        <div className="mt-8 pt-6 border-t border-stone-200 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-stone-400">
+             <p>&copy; {currentYear} Embroidery By Sana. All rights reserved.</p>
+             <div className="flex items-center gap-1">
+                <span>Handcrafted with</span>
+                <Heart className="w-3 h-3 text-rose-500 fill-current" />
+                <span>in India</span>
+             </div>
         </div>
       </div>
     </footer>
   );
 };
+
+// Helper Components
+const SocialLink = ({ href, icon, label }) => (
+    <a 
+        href={href} 
+        target="_blank" 
+        rel="noopener noreferrer"
+        className="w-8 h-8 rounded-full border border-stone-200 text-stone-600 flex items-center justify-center hover:bg-rose-900 hover:border-rose-900 hover:text-white transition-all duration-300"
+        aria-label={label}
+    >
+        {icon}
+    </a>
+);
+
+const FooterLink = ({ to, label }) => (
+    <li>
+        <Link 
+            to={to} 
+            className="group flex items-center gap-2 text-stone-500 hover:text-rose-900 transition-colors"
+        >
+            <span className="w-0 overflow-hidden group-hover:w-3 transition-all duration-300">
+                <ArrowRight size={12} />
+            </span>
+            {label}
+        </Link>
+    </li>
+);
 
 export default Footer;
