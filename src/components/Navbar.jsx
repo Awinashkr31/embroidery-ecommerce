@@ -152,8 +152,8 @@ const Navbar = () => {
     <nav
   className={`fixed top-0 w-full z-50 transition-all duration-500 ease-in-out
     ${isScrolled
-      ? 'bg-white/80 backdrop-blur-xl shadow-sm py-3 px-6 md:px-12 lg:px-20'
-      : 'bg-transparent py-4 px-6 md:px-12 lg:px-20'
+      ? 'bg-white/90 backdrop-blur-md border-b border-stone-100 shadow-sm py-2 px-6 md:px-12 lg:px-20'
+      : 'bg-white/50 backdrop-blur-sm py-3 px-6 md:px-12 lg:px-20'
     }`}
     >
       <div className="container-custom">
@@ -166,19 +166,14 @@ const Navbar = () => {
               className="p-2 text-stone-800 hover:text-rose-900 transition-colors rounded-full hover:bg-stone-100"
               onClick={() => setIsMobileMenuOpen(true)}
             >
-              <Menu className="w-6 h-6" />
+              <Menu className="w-5 h-5" />
             </button>
           </div>
 
           {/* 2. Left: Logo (Desktop: Center/Left balanced) */}
            <div className="flex-shrink-0 flex items-center gap-2 lg:w-1/4">
             <Link to="/" className="flex flex-col group">
-              <span className="font-heading text-2xl lg:text-3xl font-bold text-stone-900 leading-none group-hover:text-rose-900 transition-colors">
-                Enbroidery.
-              </span>
-              <span className="text-[10px] uppercase tracking-[0.3em] text-stone-500 font-medium group-hover:tracking-[0.4em] transition-all">
-                By Sana
-              </span>
+              <img src="/logo.png" alt="Enbroidery By Sana" className="h-12 md:h-14 w-auto object-contain" />
             </Link>
           </div>
 
@@ -188,14 +183,13 @@ const Navbar = () => {
                 <Link 
                   key={link.path}
                   to={link.path} 
-                  className={`relative text-xs font-bold tracking-widest uppercase transition-colors duration-300 py-2 hover:text-rose-900 ${
-                    isActive(link.path) ? 'text-rose-900' : 'text-stone-600'
+                  className={`relative text-xs font-bold tracking-widest uppercase transition-all duration-300 px-4 py-1.5 rounded-full whitespace-nowrap ${
+                    isActive(link.path) 
+                      ? 'bg-rose-900 text-white shadow-sm' 
+                      : 'text-stone-600 hover:text-rose-900 hover:bg-stone-50'
                   }`}
                 >
                   {link.name}
-                  {isActive(link.path) && (
-                    <span className="absolute -bottom-1 left-1/2 w-1 h-1 bg-rose-900 rounded-full transform -translate-x-1/2"></span>
-                  )}
                 </Link>
               ))}
           </div>
@@ -203,11 +197,6 @@ const Navbar = () => {
           {/* 4. Right: Icons & Actions */}
           <div className="flex items-center justify-end space-x-2 lg:space-x-4 lg:w-1/4">
              
-             {/* Search */}
-            <button className="p-2 text-stone-600 hover:text-rose-900 transition-colors rounded-full hover:bg-stone-100 hidden sm:block">
-               <Search className="w-5 h-5" />
-            </button>
-
              {/* Wishlist */}
             <Link to="/wishlist" className="p-2 text-stone-600 hover:text-rose-900 transition-colors rounded-full hover:bg-stone-100 hidden sm:block">
                <Heart className="w-5 h-5" />
@@ -352,12 +341,7 @@ const Navbar = () => {
             <div className="p-6 h-full flex flex-col">
                 <div className="flex items-center justify-between mb-10">
                     <Link to="/" className="flex flex-col" onClick={() => setIsMobileMenuOpen(false)}>
-                        <span className="font-heading text-2xl font-bold text-stone-900">
-                          Enbroidery.
-                        </span>
-                        <span className="text-[10px] uppercase tracking-[0.3em] text-rose-900 font-medium">
-                          By Sana
-                        </span>
+                        <img src="/logo.png" alt="Enbroidery By Sana" className="h-16 w-auto object-contain" />
                     </Link>
                     <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-stone-500 hover:text-rose-900 rounded-full hover:bg-stone-100">
                         <X className="w-6 h-6" />

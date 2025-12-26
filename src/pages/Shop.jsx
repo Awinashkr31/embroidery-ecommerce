@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getOptimizedImageUrl } from '../utils/imageUtils';
 import { Package, Heart, Search, ChevronDown, Sparkles } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useProducts } from '../context/ProductContext';
@@ -103,8 +104,97 @@ const Shop = () => {
 
             <div className="container-custom pb-20">
                 <div className="flex flex-col lg:flex-row gap-12 items-start">
+                    {/* Mobile Filter Toggle */}
+                    <div className="lg:hidden w-full mb-6">
+                        <button 
+                            onClick={() => document.getElementById('mobile-filters').classList.remove('translate-x-full')}
+                            className="w-full flex items-center justify-center gap-2 bg-white border border-stone-200 py-3 rounded-lg font-medium text-stone-900"
+                        >
+                            <span className="uppercase tracking-wider text-xs font-bold">Filters & Sort</span>
+                            <ChevronDown className="w-4 h-4" />
+                        </button>
+                    </div>
+
+                    {/* Mobile Filters Drawer */}
+                    <div id="mobile-filters" className="fixed inset-0 z-50 transform translate-x-full transition-transform duration-300 lg:hidden">
+                        <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" onClick={() => document.getElementById('mobile-filters').classList.add('translate-x-full')} />
+                        <aside className="absolute right-0 top-0 bottom-0 w-[300px] bg-white shadow-2xl p-6 overflow-y-auto">
+                            <div className="flex justify-between items-center mb-8">
+                                <h3 className="font-heading font-bold text-xl text-stone-900">Filters</h3>
+                                <button onClick={() => document.getElementById('mobile-filters').classList.add('translate-x-full')}>
+                                    <span className="text-2xl">&times;</span>
+                                </button>
+                            </div>
+
+                            <div className="space-y-10">
+                                {/* Categories */}
+                                <div>
+                                    <h3 className="font-heading font-bold text-stone-900 mb-4 text-base uppercase tracking-wider">Categories</h3>
+                                    <div className="flex flex-col gap-2">
+                                        {categories.map(cat => (
+                                            <button
+                                                key={cat.id}
+                                                onClick={() => {
+                                                    setFilter(cat.id);
+                                                    document.getElementById('mobile-filters').classList.add('translate-x-full');
+                                                }}
+                                                className={`text-left text-sm transition-all duration-300 py-1 flex items-center gap-2 group ${
+                                                    filter === cat.id
+                                                    ? 'text-rose-900 font-bold'
+                                                    : 'text-stone-500 hover:text-stone-900'
+                                                }`}
+                                            >
+                                                <span className={`w-1.5 h-1.5 rounded-full bg-rose-900 transition-all duration-300 ${filter === cat.id ? 'opacity-100' : 'opacity-0 pre-opacity'}`} />
+                                                {cat.label}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Price Range */}
+                                <div>
+                                    <h3 className="font-heading font-bold text-stone-900 mb-4 text-base uppercase tracking-wider">Price</h3>
+                                    <div className="flex flex-col gap-3">
+                                        {priceRanges.map(range => (
+                                            <label key={range.id} className="flex items-center gap-3 cursor-pointer group">
+                                                <div className="relative flex items-center">
+                                                    <input 
+                                                        type="radio" 
+                                                        name="price-mobile" 
+                                                        checked={priceRange === range.id}
+                                                        onChange={() => setPriceRange(range.id)}
+                                                        className="peer appearance-none w-4 h-4 border border-stone-300 rounded-full checked:border-rose-900 checked:border-4 transition-all"
+                                                    />
+                                                </div>
+                                                <span className={`text-sm transition-colors ${priceRange === range.id ? 'text-stone-900 font-medium' : 'text-stone-500 group-hover:text-stone-800'}`}>
+                                                    {range.label}
+                                                </span>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Availability */}
+                                <div>
+                                    <h3 className="font-heading font-bold text-stone-900 mb-4 text-base uppercase tracking-wider">Availability</h3>
+                                    <label className="flex items-center gap-3 cursor-pointer group">
+                                        <input 
+                                            type="checkbox" 
+                                            checked={inStockOnly}
+                                            onChange={(e) => setInStockOnly(e.target.checked)}
+                                            className="w-4 h-4 rounded border-stone-300 text-rose-900 focus:ring-rose-900 cursor-pointer"
+                                        />
+                                        <span className={`text-sm transition-colors ${inStockOnly ? 'text-stone-900 font-medium' : 'text-stone-500 group-hover:text-stone-800'}`}>
+                                            In Stock Only
+                                        </span>
+                                    </label>
+                                </div>
+                            </div>
+                        </aside>
+                    </div>
+
                     {/* Sidebar - Desktop */}
-                    <aside className="w-full lg:w-64 shrink-0 lg:sticky lg:top-32 space-y-10 animate-in fade-in slide-in-from-left-4 duration-700">
+                    <aside className="hidden lg:block w-64 shrink-0 sticky top-32 space-y-10 animate-in fade-in slide-in-from-left-4 duration-700">
                         {/* Categories */}
                         <div>
                             <h3 className="font-heading font-bold text-stone-900 mb-4 text-base uppercase tracking-wider">Categories</h3>
@@ -222,7 +312,7 @@ const Shop = () => {
                             </div>
                         ) : (
                             <>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-10">
+                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-8 md:gap-x-6 md:gap-y-10">
                                     {paginatedProducts.map((product) => (
                                         <Link 
                                             key={product.id} 
@@ -230,17 +320,17 @@ const Shop = () => {
                                             className="group block"
                                         >
                                             {/* Image Card */}
-                                            <div className="relative aspect-[3/4] overflow-hidden bg-stone-100 mb-5">
+                                            <div className="relative aspect-[3/4] overflow-hidden bg-stone-100 mb-3 md:mb-5">
                                                 <img
-                                                    src={product.image}
+                                                    src={getOptimizedImageUrl(product.image, { width: 600, quality: 80 })}
                                                     alt={product.name}
                                                     className={`w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 ${!product.inStock ? 'grayscale opacity-80' : ''}`}
                                                 />
                                                 
                                                 {/* Minimal Badges */}
-                                                <div className="absolute top-3 left-3 flex flex-col gap-1">
+                                                <div className="absolute top-2 left-2 md:top-3 md:left-3 flex flex-col gap-1">
                                                     {!product.inStock && (
-                                                        <span className="bg-stone-900 text-white text-[10px] font-bold uppercase tracking-widest px-2 py-1">
+                                                        <span className="bg-stone-900 text-white text-[8px] md:text-[10px] font-bold uppercase tracking-widest px-1.5 py-0.5 md:px-2 md:py-1">
                                                             Sold Out
                                                         </span>
                                                     )}
@@ -252,12 +342,12 @@ const Shop = () => {
                                                         e.preventDefault();
                                                         toggleWishlist(product);
                                                     }}
-                                                    className="absolute top-3 right-3 p-2 bg-white/90 text-stone-500 hover:text-rose-600 transition-all opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 duration-300"
+                                                    className="absolute top-2 right-2 md:top-3 md:right-3 p-1.5 md:p-2 bg-white/90 text-stone-500 hover:text-rose-600 transition-all opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 duration-300"
                                                 >
-                                                    <Heart className={`w-4 h-4 ${isInWishlist(product.id) ? 'fill-rose-600 text-rose-600' : ''}`} />
+                                                    <Heart className={`w-3.5 h-3.5 md:w-4 md:h-4 ${isInWishlist(product.id) ? 'fill-rose-600 text-rose-600' : ''}`} />
                                                 </button>
 
-                                                {/* Add to Cart Overlay */}
+                                                {/* Add to Cart Overlay - Desktop Only mostly or adjusted */}
                                                 {product.inStock && (
                                                     <button 
                                                         onClick={async (e) => {
@@ -265,7 +355,7 @@ const Shop = () => {
                                                             await addToCart(product);
                                                             addToast("Added to bag", "success");
                                                         }}
-                                                        className="absolute inset-x-0 bottom-0 py-3 bg-white/95 text-stone-900 text-xs font-bold uppercase tracking-widest translate-y-full group-hover:translate-y-0 transition-transform duration-300 flex items-center justify-center gap-2 hover:bg-stone-900 hover:text-white"
+                                                        className="hidden md:flex absolute inset-x-0 bottom-0 py-3 bg-white/95 text-stone-900 text-xs font-bold uppercase tracking-widest translate-y-full group-hover:translate-y-0 transition-transform duration-300 items-center justify-center gap-2 hover:bg-stone-900 hover:text-white"
                                                     >
                                                         <Package className="w-3 h-3" /> Add to Bag
                                                     </button>
@@ -273,17 +363,17 @@ const Shop = () => {
                                             </div>
 
                                             {/* Product Info */}
-                                            <div className="text-center space-y-1">
-                                                <h3 className="font-heading text-lg text-stone-900 group-hover:text-rose-900 transition-colors duration-300">
+                                            <div className="text-center space-y-0.5 md:space-y-1">
+                                                <h3 className="font-heading text-sm md:text-lg text-stone-900 group-hover:text-rose-900 transition-colors duration-300 truncate px-1">
                                                     {product.name}
                                                 </h3>
-                                                <div className="flex items-center justify-center gap-2 text-sm">
+                                                <div className="flex flex-wrap items-center justify-center gap-1.5 text-xs md:text-sm">
                                                     <span className="font-medium text-stone-900">₹{product.price.toLocaleString()}</span>
                                                     {product.originalPrice && (
                                                         <>
-                                                            <span className="text-stone-400 line-through text-xs">₹{product.originalPrice.toLocaleString()}</span>
+                                                            <span className="text-stone-400 line-through text-[10px] md:text-xs">₹{product.originalPrice.toLocaleString()}</span>
                                                             {product.discountPercentage > 0 && (
-                                                                <span className="text-rose-900 text-xs font-bold">
+                                                                <span className="text-rose-900 text-[10px] md:text-xs font-bold">
                                                                     ({product.discountPercentage}% OFF)
                                                                 </span>
                                                             )}

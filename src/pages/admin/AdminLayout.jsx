@@ -15,7 +15,9 @@ import {
   Settings,
   Calendar,
   Bell,
-  Palette
+  Palette,
+  Image as ImageIcon,
+  LayoutTemplate
 } from 'lucide-react';
 
 const AdminLayout = () => {
@@ -41,6 +43,7 @@ const AdminLayout = () => {
     { icon: Star, label: 'Reviews', path: '/admin/reviews' },
     { icon: Mail, label: 'Support Messages', path: '/admin/messages' },
     { icon: Calendar, label: 'Mehndi Bookings', path: '/admin/bookings' },
+    { icon: ImageIcon, label: 'Gallery', path: '/admin/gallery' },
     { icon: Tag, label: 'Coupons', path: '/admin/coupons' },
     { icon: Bell, label: 'Notifications', path: '/admin/notifications' },
   { icon: Settings, label: 'Settings', path: '/admin/settings' },

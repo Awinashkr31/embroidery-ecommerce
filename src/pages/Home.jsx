@@ -1,11 +1,29 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useProducts } from '../context/ProductContext';
 import { Star, ArrowRight, Flower, Heart, Scissors, PenTool } from 'lucide-react';
 import SEO from '../components/SEO';
+import { fetchSetting } from '../utils/settingsUtils';
 
 const Home = () => {
   const { products } = useProducts();
+  const [heroImage, setHeroImage] = useState("https://images.unsplash.com/photo-1620799140408-ed5341cd2431?w=800");
+  const [heroTitle, setHeroTitle] = useState("Weaving Stories in Thread");
+  const [heroSubtitle, setHeroSubtitle] = useState("Timeless hand embroidery blending tradition with modern aesthetics.");
+
+  useEffect(() => {
+    const loadSettings = async () => {
+        const image = await fetchSetting('home_hero_image');
+        if (image) setHeroImage(image);
+        
+        const title = await fetchSetting('home_hero_title');
+        if (title) setHeroTitle(title);
+        
+        const subtitle = await fetchSetting('home_hero_subtitle');
+        if (subtitle) setHeroSubtitle(subtitle);
+    };
+    loadSettings();
+  }, []);
 
   const featuredProducts = useMemo(() => {
     return products.slice(0, 4);
@@ -30,13 +48,12 @@ const Home = () => {
                 Handcrafted Perfection
               </div>
 
-              <h1 className="text-5xl lg:text-7xl font-heading text-stone-900 leading-tight">
-                Weaving <br />
-                <span className="italic text-rose-900 font-serif">Stories</span> in Thread
+              <h1 className="text-4xl md:text-5xl lg:text-7xl font-heading text-stone-900 leading-tight">
+                {heroTitle}
               </h1>
 
               <p className="text-lg text-stone-600 max-w-lg">
-                Timeless hand embroidery blending tradition with modern aesthetics.
+                {heroSubtitle}
               </p>
 
               <div className="flex gap-4">
@@ -63,9 +80,9 @@ const Home = () => {
 
               <div className="relative w-[320px] sm:w-[420px] aspect-[3/4]">
                 <img
-                  src="https://images.unsplash.com/photo-1620799140408-ed5341cd2431?w=800"
+                  src={heroImage}
                   alt="Hand embroidery artwork"
-                  className="w-full h-full object-contain rounded-[100px_100px_0_0] shadow-2xl"
+                  className="w-full h-full object-cover rounded-[100px_100px_0_0] shadow-2xl"
                   loading="eager"
                 />
 

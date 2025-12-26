@@ -1,10 +1,38 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
+import { fetchSetting } from '../utils/settingsUtils';
 import { Link } from 'react-router-dom';
 import { Scissors, Flower, Sparkles, Heart, Home as HomeIcon, Calendar } from 'lucide-react';
 
 const About = () => {
+  const [storyImage, setStoryImage] = useState("https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80");
+  const [heroTitle, setHeroTitle] = useState("About Sana");
+  const [heroSubtitle, setHeroSubtitle] = useState("A passionate artist dedicated to preserving and celebrating the timeless beauty of hand embroidery and mehndi art.");
+  const [storyTitle, setStoryTitle] = useState("My Journey with Thread & Henna");
+  const [storyText, setStoryText] = useState("What started as a childhood fascination with my grandmother's intricate needlework has blossomed into a lifelong passion for preserving traditional crafts.");
+  const [signatureImage, setSignatureImage] = useState(null);
+
   useEffect(() => {
     window.scrollTo(0, 0);
+    const loadSettings = async () => {
+        const image = await fetchSetting('about_story_image');
+        if (image) setStoryImage(image);
+
+        const hTitle = await fetchSetting('about_hero_title');
+        if (hTitle) setHeroTitle(hTitle);
+
+        const hSubtitle = await fetchSetting('about_hero_subtitle');
+        if (hSubtitle) setHeroSubtitle(hSubtitle);
+
+        const sTitle = await fetchSetting('about_story_title');
+        if (sTitle) setStoryTitle(sTitle);
+
+        const sText = await fetchSetting('about_story_text');
+        if (sText) setStoryText(sText);
+
+        const sSig = await fetchSetting('about_signature_image');
+        if (sSig) setSignatureImage(sSig);
+    };
+    loadSettings();
   }, []);
 
   return (
@@ -14,11 +42,11 @@ const About = () => {
         <div className="container-custom relative z-10">
           <div className="text-center max-w-4xl mx-auto" data-id="about-hero-content">
              <span className="inline-block py-1 px-4 rounded-full bg-rose-50 text-rose-900 text-xs font-bold uppercase tracking-widest mb-6 border border-rose-100">The Artist Behind the Art</span>
-            <h1 className="text-5xl lg:text-7xl font-heading font-bold text-stone-900 mb-8 leading-tight" data-id="about-hero-title">
-              About <span className="text-rose-900 italic">Sana</span>
+             <h1 className="text-5xl lg:text-7xl font-heading font-bold text-stone-900 mb-8 leading-tight" data-id="about-hero-title">
+               {heroTitle}
             </h1>
             <p className="text-xl text-stone-600 max-w-2xl mx-auto leading-relaxed" data-id="about-hero-subtitle">
-              A passionate artist dedicated to preserving and celebrating the timeless beauty of hand embroidery and mehndi art.
+              {heroSubtitle}
             </p>
           </div>
         </div>
@@ -34,7 +62,7 @@ const About = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div className="relative group" data-id="story-image-container">
               <div className="absolute inset-0 bg-rose-900 rounded-[2rem] rotate-3 group-hover:rotate-2 transition-transform opacity-10"></div>
-              <img src="https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+              <img src={storyImage}
                 alt="Sana working on embroidery"
                 className="relative rounded-[2rem] shadow-xl w-full h-[500px] object-cover border-4 border-white rotate-[-3deg] group-hover:rotate-0 transition-transform duration-700"
                 data-id="story-main-image" />
@@ -46,24 +74,20 @@ const About = () => {
 
             <div data-id="story-content" className="space-y-8">
               <h2 className="text-4xl font-heading font-bold text-stone-900 leading-tight" data-id="story-title">
-                My Journey with <br/><span className="text-rose-900">Thread & Henna</span>
+                {storyTitle}
               </h2>
               <div className="space-y-6 text-stone-600 text-lg leading-relaxed">
-                <p data-id="story-para-1">
-                  What started as a childhood fascination with my grandmother's intricate needlework has blossomed into a lifelong
-                  passion for preserving traditional crafts. Over five years ago, I began my journey into the world of hand embroidery,
-                  drawn by the meditative rhythm of needle through fabric.
-                </p>
-                <p data-id="story-para-2">
-                  My love for mehndi art developed alongside my embroidery skills. There's something deeply satisfying about creating
-                  temporary art that marks life's special moments – from weddings and festivals to simple celebrations of joy.
-                </p>
-                <p data-id="story-para-3">
-                  Today, I'm honored to share these traditional arts with modern clients who appreciate handmade beauty. Every piece
-                  I create carries not just aesthetic value, but the love, patience, and cultural heritage that make handcrafted
-                  items truly special.
+                <p data-id="story-para-1" className="whitespace-pre-line">
+                  {storyText}
                 </p>
               </div>
+              
+              {signatureImage && (
+                  <div className="pt-8">
+                      <img src={signatureImage} alt="Founder Signature" className="h-16 opacity-80" />
+                  </div>
+              )}
+
               <div className="pt-4">
                   <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Signature_sample.svg/1200px-Signature_sample.svg.png" alt="Signature" className="h-12 opacity-50" />
               </div>

@@ -1,109 +1,287 @@
-import React, { useState } from 'react';
-import { X } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { getOptimizedImageUrl } from '../utils/imageUtils';
+import { X, Loader, ChevronLeft, ChevronRight, Layers } from 'lucide-react';
+import { fetchSetting } from '../utils/settingsUtils';
+import { supabase } from '../config/supabase';
 
-const GALLERY_IMAGES = [
-  { id: 1, src: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600&h=800&fit=crop", type: "embroidery", title: "Floral Hoop" },
-  { id: 2, src: "https://images.unsplash.com/photo-1594736797933-d0f9dd8b4d40?w=600&h=600&fit=crop", type: "mehndi", title: "Bridal Hands" },
-  { id: 3, src: "https://images.unsplash.com/photo-1574180566232-aaad1b5b8450?w=600&h=400&fit=crop", type: "embroidery", title: "Cushion Cover" },
-  { id: 4, src: "https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=600&h=600&fit=crop", type: "jewellery", title: "Silk Earrings" },
-  { id: 5, src: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600&h=800&fit=crop", type: "embroidery", title: "Table Runner" },
-  { id: 6, src: "https://images.unsplash.com/photo-1573408301185-9146fe634ad0?w=600&h=600&fit=crop", type: "decor", title: "Wall Art" },
-  { id: 7, src: "https://images.unsplash.com/photo-1524678606370-a47ad25cb82a?w=600&h=400&fit=crop", type: "accessories", title: "Hair Clips" },
-  { id: 8, src: "https://images.unsplash.com/photo-1611652022419-a9419f74343d?w=600&h=800&fit=crop", type: "embroidery", title: "Botanical Art" },
-];
-
-const FILTER_TABS = [
-  { id: 'all', label: 'All' },
-  { id: 'embroidery', label: 'Embroidery' },
-  { id: 'mehndi', label: 'Mehndi' },
-  { id: 'decor', label: 'Home Decor' },
-  { id: 'jewellery', label: 'Jewellery' }
+// --- Configuration ---
+const PREDEFINED_MEHNDI_TYPES = [
+    'Arabic Mehndi',
+    'Indian (Traditional) Mehndi',
+    'Bridal Mehndi',
+    'Minimal / Modern Mehndi'
 ];
 
 const Gallery = () => {
-  const [activeFilter, setActiveFilter] = useState('all');
-  const [selectedImage, setSelectedImage] = useState(null);
+    // State
+    const [activeMainTab, setActiveMainTab] = useState('Mehndi'); // 'Mehndi' | 'Hand Embroidery' | 'Art' | 'Custom Design'
+    const [activeSubTab, setActiveSubTab] = useState('All'); // For Mehndi internal filters
 
-  const filteredImages = activeFilter === 'all' 
-    ? GALLERY_IMAGES 
-    : GALLERY_IMAGES.filter(img => img.type === activeFilter);
+    const [images, setImages] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [selectedItem, setSelectedItem] = useState(null);
+    const [lightboxIndex, setLightboxIndex] = useState(0); // Current image index in lightbox
 
-  return (
-    <div className="bg-white min-h-screen font-sofia py-12 lg:py-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl lg:text-5xl font-light text-gray-800 mb-6">
-            Our <span className="text-deep-rose">Gallery</span>
-          </h1>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-8">
-            A curated collection of our finest work, showcasing the intricate details and passion put into every piece.
-          </p>
+    // Settings State
+    const [pageTitle, setPageTitle] = useState("Gallery");
+    const [pageSubtitle, setPageSubtitle] = useState("Handcrafted Artistry");
+    const [bannerImage, setBannerImage] = useState(null);
 
-          {/* Filter Tabs */}
-          <div className="flex flex-wrap justify-center gap-2 mb-12">
-            {FILTER_TABS.map(tab => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveFilter(tab.id)}
-                className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${
-                  activeFilter === tab.id
-                    ? 'bg-deep-rose text-white shadow-md'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-        </div>
+    // Fetch Data
+    useEffect(() => {
+        const fetchData = async () => {
+            setLoading(true);
+            try {
+                const banner = await fetchSetting('gallery_banner_image');
+                if (banner) setBannerImage(banner);
 
-        {/* Masonry-style Grid */}
-        <div className="columns-1 md:columns-2 lg:columns-3 gap-8 space-y-8">
-          {filteredImages.map(image => (
-            <div 
-              key={image.id} 
-              className="break-inside-avoid group relative rounded-2xl overflow-hidden cursor-zoom-in shadow-sm hover:shadow-xl transition-all"
-              onClick={() => setSelectedImage(image)}
-            >
-              <img 
-                src={image.src} 
-                alt={image.title}
-                className="w-full h-auto object-cover transform group-hover:scale-105 transition-transform duration-500"
-              />
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <p className="text-white font-medium text-lg tracking-wide">{image.title}</p>
-              </div>
+                const title = await fetchSetting('gallery_title');
+                if (title) setPageTitle(title);
+
+                const subtitle = await fetchSetting('gallery_subtitle');
+                if (subtitle) setPageSubtitle(subtitle);
+
+                const { data, error } = await supabase
+                    .from('gallery')
+                    .select('*')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+                // Normalize images: if 'images' array is empty, populate it with single 'image_url'
+                const normalizedData = (data || []).map(item => ({
+                    ...item,
+                    images: (item.images && item.images.length > 0) ? item.images : [item.image_url]
+                }));
+
+                setImages(normalizedData);
+            } catch (error) {
+                console.error("Error loading gallery data:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchData();
+    }, []);
+
+    // Filter Logic
+    const getFilteredImages = () => {
+        if (activeMainTab === 'Mehndi') {
+            const mehndiImages = images.filter(img => 
+                PREDEFINED_MEHNDI_TYPES.includes(img.category)
+            );
+            if (activeSubTab === 'All') return mehndiImages;
+            return mehndiImages.filter(img => img.category === activeSubTab);
+        } else if (activeMainTab === 'Art') {
+            return images.filter(img => img.category === 'Art');
+        } else if (activeMainTab === 'Custom Design') {
+            return images.filter(img => img.category === 'Custom Design');
+        } else {
+            // Hand Embroidery View (Existing "Hand Embroidery" category + Gifts/Decor/Other fallback)
+            // Anything NOT Mehndi AND NOT Art AND NOT Custom Design
+            return images.filter(img => 
+                !PREDEFINED_MEHNDI_TYPES.includes(img.category) && 
+                img.category !== 'Art' &&
+                img.category !== 'Custom Design'
+            );
+        }
+    };
+
+    const filteredImages = getFilteredImages();
+
+    // Grouping for "All" view in sub-categories (Optional, if we want sections again)
+    // For now, let's stick to a clean Masonry grid for the main views as requested by "2 main category" simplification.
+    // Actually, for "Hand Embroidery", showing sections (Embroidery vs Gifts) might still be nice if they exist.
+    // But let's keep it simple first.
+
+    const openLightbox = (item) => {
+        setSelectedItem(item);
+        setLightboxIndex(0);
+    };
+
+    const nextLightboxImage = (e) => {
+        e.stopPropagation();
+        if (selectedItem && selectedItem.images.length > 1) {
+            setLightboxIndex((prev) => (prev + 1) % selectedItem.images.length);
+        }
+    };
+
+    const prevLightboxImage = (e) => {
+        e.stopPropagation();
+        if (selectedItem && selectedItem.images.length > 1) {
+            setLightboxIndex((prev) => (prev - 1 + selectedItem.images.length) % selectedItem.images.length);
+        }
+    };
+
+    return (
+        <div className="bg-white min-h-screen font-sofia">
+            
+            {/* --- Banner Section --- */}
+            <div className="relative bg-stone-50 pt-24 pb-12 lg:pt-32 lg:pb-16 text-center px-4">
+                 {bannerImage && (
+                    <div className="absolute inset-0 z-0 opacity-10">
+                        <img src={bannerImage} alt="" className="w-full h-full object-cover" />
+                    </div>
+                 )}
+                 <div className="relative z-10 max-w-4xl mx-auto">
+                    <h1 className="text-4xl lg:text-5xl font-heading text-stone-800 mb-4">{pageTitle}</h1>
+                    <p className="text-lg text-stone-500 max-w-2xl mx-auto">{pageSubtitle}</p>
+                 </div>
             </div>
-          ))}
-        </div>
-      </div>
 
-      {/* Lightbox Modal */}
-      {selectedImage && (
-        <div className="fixed inset-0 z-[60] bg-black/90 flex items-center justify-center p-4 backdrop-blur-sm"
-             onClick={() => setSelectedImage(null)}>
-          <button 
-            className="absolute top-4 right-4 text-white hover:text-rose-gold transition-colors p-2"
-            onClick={() => setSelectedImage(null)}
-          >
-            <X size={32} />
-          </button>
-          
-          <div className="max-w-4xl w-full max-h-[90vh] relative" onClick={e => e.stopPropagation()}>
-            <img 
-              src={selectedImage.src} 
-              alt={selectedImage.title}
-              className="w-full h-full object-contain rounded-lg"
-            />
-            <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent text-white rounded-b-lg">
-              <h3 className="text-xl font-medium">{selectedImage.title}</h3>
-              <p className="text-sm text-gray-300 capitalize">{selectedImage.type}</p>
+            {/* --- Main Navigation Tabs --- */}
+            <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-100 shadow-sm">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex justify-center w-full">
+                        <div className="flex flex-wrap justify-center p-2 gap-2">
+                            {['Mehndi', 'Hand Embroidery', 'Art', 'Custom Design'].map((tab) => (
+                                <button
+                                    key={tab}
+                                    onClick={() => { setActiveMainTab(tab); setActiveSubTab('All'); }}
+                                    className={`px-8 py-3 rounded-full text-lg font-heading transition-all duration-300 ${
+                                        activeMainTab === tab
+                                            ? 'bg-rose-900 text-white shadow-lg transform scale-105'
+                                            : 'text-stone-500 hover:bg-stone-100 hover:text-stone-800'
+                                    }`}
+                                >
+                                    {tab}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Sub Navigation (Only for Mehndi) */}
+                    {activeMainTab === 'Mehndi' && (
+                        <div className="flex overflow-x-auto py-3 gap-2 no-scrollbar justify-start md:justify-center border-t border-stone-100 mt-2">
+                            {['All', ...PREDEFINED_MEHNDI_TYPES].map((subTab) => (
+                                <button
+                                    key={subTab}
+                                    onClick={() => setActiveSubTab(subTab)}
+                                    className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+                                        activeSubTab === subTab
+                                            ? 'bg-rose-100 text-rose-800 ring-1 ring-rose-200'
+                                            : 'text-stone-500 hover:bg-stone-50'
+                                    }`}
+                                >
+                                    {subTab.replace(' Mehndi', '')}
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
             </div>
-          </div>
+
+            {/* --- Content Area --- */}
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                {loading ? (
+                    <div className="flex h-96 items-center justify-center">
+                        <Loader className="w-8 h-8 animate-spin text-stone-300" />
+                    </div>
+                ) : filteredImages.length === 0 ? (
+                    <div className="text-center py-32 bg-stone-50 rounded-3xl border border-dashed border-stone-200">
+                        <p className="text-stone-400 text-lg">No designs found in this collection yet.</p>
+                    </div>
+                ) : (
+                    <div className="columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6">
+                        {filteredImages.map(image => (
+                            <div 
+                                key={image.id} 
+                                className="break-inside-avoid group relative rounded-2xl overflow-hidden bg-stone-100 cursor-zoom-in"
+                                onClick={() => openLightbox(image)}
+                            >
+                                <img 
+                                    src={getOptimizedImageUrl(image.images[0], { width: 600, quality: 80 })} 
+                                    alt={image.title}
+                                    className="w-full h-auto object-cover transition-transform duration-700 md:group-hover:scale-105"
+                                    loading="lazy"
+                                />
+                                
+                                {/* Multi-image Indicator */}
+                                {image.images.length > 1 && (
+                                    <div className="absolute top-3 right-3 bg-black/50 backdrop-blur-md text-white px-2 py-1 rounded-lg text-xs font-medium flex items-center gap-1 z-10">
+                                        <Layers size={12} />
+                                        <span>+{image.images.length - 1}</span>
+                                    </div>
+                                )}
+                                
+                                {/* Hover Overlay */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
+                                    <div className="transform translate-y-4 md:group-hover:translate-y-0 transition-transform duration-300">
+                                        <span className="text-rose-200 text-xs font-bold uppercase tracking-widest mb-1 block">
+                                            {image.category}
+                                        </span>
+                                        <p className="text-white font-heading text-xl">{image.title}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </main>
+
+            {/* --- Lightbox Modal --- */}
+            {selectedItem && (
+                <div className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-xl flex items-center justify-center p-4 lg:p-10 animate-fade-in"
+                     onClick={() => setSelectedItem(null)}>
+                    
+                    <button 
+                        className="fixed top-6 right-6 p-3 bg-white/10 hover:bg-white/20 rounded-full text-white transition-colors z-50"
+                        onClick={() => setSelectedItem(null)}
+                    >
+                        <X size={24} />
+                    </button>
+
+                    {/* Navigation Buttons (Only if multiple images) */}
+                    {selectedItem.images.length > 1 && (
+                        <>
+                            <button
+                                onClick={prevLightboxImage}
+                                className="fixed left-4 lg:left-8 top-1/2 -translate-y-1/2 p-3 bg-white/10 hover:bg-white/20 text-white rounded-full transition-all z-50"
+                            >
+                                <ChevronLeft size={32} />
+                            </button>
+                            <button
+                                onClick={nextLightboxImage}
+                                className="fixed right-4 lg:right-8 top-1/2 -translate-y-1/2 p-3 bg-white/10 hover:bg-white/20 text-white rounded-full transition-all z-50"
+                            >
+                                <ChevronRight size={32} />
+                            </button>
+                        </>
+                    )}
+                    
+                    <div className="w-full max-w-6xl flex flex-col items-center" onClick={e => e.stopPropagation()}>
+                        <div className="relative w-full flex justify-center h-[80vh]">
+                            <img 
+                                src={selectedItem.images[lightboxIndex]} 
+                                alt={selectedItem.title}
+                                className="max-w-full max-h-full object-contain rounded-lg shadow-2xl"
+                            />
+                        </div>
+                        
+                        {/* Dots Indicator */}
+                        {selectedItem.images.length > 1 && (
+                            <div className="flex gap-2 mt-4">
+                                {selectedItem.images.map((_, idx) => (
+                                    <div 
+                                        key={idx}
+                                        className={`w-2 h-2 rounded-full transition-all ${
+                                            idx === lightboxIndex ? 'bg-white w-4' : 'bg-white/30'
+                                        }`}
+                                    />
+                                ))}
+                            </div>
+                        )}
+
+                        <div className="mt-6 text-center text-white max-w-lg px-4">
+                            <h3 className="text-2xl font-heading mb-2">{selectedItem.title}</h3>
+                            {selectedItem.description && (
+                                <p className="text-white/60 font-light">{selectedItem.description}</p>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
-      )}
-    </div>
-  );
+    );
 };
 
 export default Gallery;
