@@ -223,7 +223,7 @@ export const CartProvider = ({ children }) => {
   };
 
   // Order Management
-  const placeOrder = async (userDetails = {}) => {
+  const placeOrder = async (userDetails = {}, paymentOverrides = {}) => {
     // Basic validation
     if (cart.length === 0) throw new Error("Cart is empty");
 
@@ -245,7 +245,8 @@ export const CartProvider = ({ children }) => {
       total: cartTotal,
       status: 'pending',
       payment_method: userDetails.paymentMethod,
-      payment_status: 'pending' // Default
+      payment_status: paymentOverrides.status || 'pending', // Use override or default
+      payment_id: paymentOverrides.paymentId || null // Store Razorpay ID if provided
     };
 
     try {

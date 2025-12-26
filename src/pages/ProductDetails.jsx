@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useProducts } from '../context/ProductContext';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
@@ -13,6 +13,7 @@ const ProductDetails = () => {
     const { addToCart } = useCart();
     const { toggleWishlist, isInWishlist } = useWishlist();
     const { addToast } = useToast();
+    const navigate = useNavigate();
     
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -176,7 +177,7 @@ const ProductDetails = () => {
                                          if(product.inStock) {
                                             await addToCart(product);
                                             // Ideally navigate to checkout
-                                            addToast("Proceeding to checkout...", "success");
+                                            navigate('/cart');
                                          }
                                     }}
                                     disabled={!product.inStock}

@@ -2,8 +2,19 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { ArrowLeft, CreditCard, Truck, MapPin, Plus, CheckCircle } from 'lucide-react';
+import { ArrowLeft, CreditCard, Truck, MapPin, Plus, CheckCircle, Tag } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
+import { supabase } from '../config/supabase';
+
+const loadRazorpay = () => {
+    return new Promise((resolve) => {
+        const script = document.createElement('script');
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.onload = () => resolve(true);
+        script.onerror = () => resolve(false);
+        document.body.appendChild(script);
+    });
+};
 
 const Checkout = () => {
     const { cart, cartTotal, subtotal, shippingCharge, discountAmount, appliedCoupon, placeOrder, savedAddresses, saveAddress } = useCart();
@@ -113,12 +124,93 @@ const Checkout = () => {
         }
 
         try {
-            await placeOrder({
-                ...formData,
-                userId: currentUser?.uid,
-                email: currentUser?.email || formData.email
-            });
-            navigate('/order-success');
+            if (formData.paymentMethod === 'online') {
+                // 1. Load Razorpay SDK
+                const isLoaded = await loadRazorpay();
+                if (!isLoaded) {
+                    throw new Error('Razorpay SDK failed to load. Please check your internet connection.');
+                }
+
+                // 2. Create Order via Supabase Edge Function (Secure)
+                const { data: orderData, error: orderError } = await supabase.functions.invoke('razorpay-payment', {
+                    body: { 
+                        action: 'create-order',
+                        cartItems: cart.map(item => ({ id: item.id, quantity: item.quantity })),
+                        couponCode: appliedCoupon?.code
+                    }
+                });
+
+                if (orderError) throw orderError;
+
+                // 3. Initialize Razorpay Options
+                const options = {
+                    key: import.meta.env.VITE_RAZORPAY_KEY_ID,
+                    amount: orderData.amount,
+                    currency: orderData.currency,
+                    name: "Enbroidery",
+                    description: "Handcrafted Embroidery",
+                    order_id: orderData.id,
+                    prefill: {
+                        name: `${formData.firstName} ${formData.lastName}`,
+                        email: formData.email,
+                        contact: formData.phone
+                    },
+                    theme: {
+                        color: "#881337"
+                    },
+                    handler: async function (response) {
+                        try {
+                            // 4. Verify Payment Signature
+                            const { data: verifyData, error: verifyError } = await supabase.functions.invoke('razorpay-payment', {
+                                body: { 
+                                    action: 'verify-signature',
+                                    paymentId: response.razorpay_payment_id,
+                                    orderId: response.razorpay_order_id,
+                                    signature: response.razorpay_signature
+                                }
+                            });
+
+                            if (verifyError || verifyData?.status !== 'success') {
+                                throw new Error('Payment verification failed');
+                            }
+
+                            // 5. Place Order in Database
+                            await placeOrder({
+                                ...formData,
+                                userId: currentUser?.uid,
+                                email: currentUser?.email || formData.email
+                            }, {
+                                status: 'paid',
+                                paymentId: response.razorpay_payment_id
+                            });
+
+                            navigate('/order-success');
+                        } catch (err) {
+                            console.error('Payment verification error:', err);
+                            addToast('Payment verification failed. Please contact support if amount was deducted.', 'error');
+                            setIsSubmitting(false);
+                        }
+                    },
+                    modal: {
+                        ondismiss: function() {
+                            setIsSubmitting(false);
+                            addToast('Payment cancelled', 'info');
+                        }
+                    }
+                };
+
+                const paymentObject = new window.Razorpay(options);
+                paymentObject.open();
+
+            } else {
+                // COD Flow
+                await placeOrder({
+                    ...formData,
+                    userId: currentUser?.uid,
+                    email: currentUser?.email || formData.email
+                });
+                navigate('/order-success');
+            }
         } catch (error) {
             console.error('Order placement failed:', error);
             addToast(error.message || 'Failed to place order. Please try again.', 'error');
@@ -321,18 +413,27 @@ const Checkout = () => {
                                         </div>
                                         <CheckCircle className="ml-auto w-5 h-5 text-rose-900 relative z-10" />
                                     </label>
-                                    <label className="flex items-center p-5 border-2 border-stone-100 rounded-xl cursor-not-allowed opacity-60">
+                                    <label className={`flex items-center p-5 border-2 rounded-xl cursor-pointer transition-all relative overflow-hidden group ${
+                                        formData.paymentMethod === 'online' 
+                                        ? 'border-emerald-600 bg-emerald-50/30' 
+                                        : 'border-stone-100 hover:border-emerald-200'
+                                    }`}>
+                                        <div className={`absolute inset-0 transition-colors ${formData.paymentMethod === 'online' ? '' : 'bg-white/50 group-hover:bg-transparent'}`}></div>
                                         <input
                                             type="radio"
                                             name="paymentMethod"
                                             value="online"
-                                            disabled
-                                            className="text-stone-300"
+                                            checked={formData.paymentMethod === 'online'}
+                                            onChange={handleChange}
+                                            className="text-emerald-600 focus:ring-emerald-600 w-5 h-5 relative z-10"
                                         />
-                                        <div className="ml-4">
-                                            <span className="block font-bold text-stone-400">Online Payment</span>
-                                            <span className="text-xs text-stone-400">Temporarily Unavailable</span>
+                                        <div className="ml-4 relative z-10">
+                                            <span className={`block font-bold ${formData.paymentMethod === 'online' ? 'text-emerald-800' : 'text-stone-900'}`}>Online Payment</span>
+                                            <span className="text-xs text-stone-500">Secure payment via Razorpay</span>
                                         </div>
+                                        {formData.paymentMethod === 'online' && (
+                                            <CheckCircle className="ml-auto w-5 h-5 text-emerald-600 relative z-10" />
+                                        )}
                                     </label>
                                 </div>
                             </div>

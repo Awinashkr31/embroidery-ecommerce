@@ -41,7 +41,10 @@ const Orders = () => {
                     city: o.shipping_address?.city,
                     state: o.shipping_address?.state,
                     zipCode: o.shipping_address?.zipCode,
-                }
+                },
+                paymentStatus: o.payment_status || 'pending',
+                paymentMethod: o.payment_method || 'cod',
+                paymentId: o.payment_id
             };
         });
         setOrders(mappedOrders);
@@ -194,6 +197,7 @@ const Orders = () => {
                 <th className="px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider">Date</th>
                 <th className="px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider">Customer</th>
                 <th className="px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider">Total</th>
+                <th className="px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider">Payment</th>
                 <th className="px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider">Status</th>
                 <th className="px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider text-right">View</th>
               </tr>
@@ -223,6 +227,14 @@ const Orders = () => {
                     </td>
                     <td className="px-6 py-4 text-sm font-bold text-stone-900">
                       ₹{order.total.toLocaleString()}
+                    </td>
+                    <td className="px-6 py-4">
+                        <div className="flex flex-col">
+                             <span className={`text-xs font-bold uppercase ${order.paymentStatus === 'paid' ? 'text-emerald-600' : 'text-amber-600'}`}>
+                                {order.paymentStatus}
+                             </span>
+                             <span className="text-[10px] text-stone-400 capitalize">{order.paymentMethod}</span>
+                        </div>
                     </td>
                     <td className="px-6 py-4">
                       <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide border ${getStatusColor(order.status)}`}>
@@ -306,6 +318,22 @@ const Orders = () => {
                 
                  {/* Totals */}
                 <div className="bg-stone-50 p-4 rounded-xl space-y-2">
+                    <div className="flex justify-between text-sm text-stone-600">
+                        <span>Payment Method</span>
+                        <span className="font-medium capitalize">{selectedOrder.paymentMethod === 'cod' ? 'Cash on Delivery' : selectedOrder.paymentMethod}</span>
+                    </div>
+                    {selectedOrder.paymentId && (
+                        <div className="flex justify-between text-sm text-stone-600">
+                            <span>Payment ID</span>
+                            <span className="font-mono text-xs bg-white px-2 py-0.5 rounded border border-stone-200">{selectedOrder.paymentId}</span>
+                        </div>
+                    )}
+                    <div className="flex justify-between text-sm text-stone-600">
+                         <span>Payment Status</span>
+                         <span className={`font-bold uppercase text-xs px-2 py-0.5 rounded ${selectedOrder.paymentStatus === 'paid' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                             {selectedOrder.paymentStatus}
+                         </span>
+                    </div>
                     <div className="flex justify-between text-base font-bold text-stone-900 pt-2 border-t border-stone-200">
                         <span>Grand Total</span>
                         <span className="text-rose-900">₹{selectedOrder.total.toLocaleString()}</span>

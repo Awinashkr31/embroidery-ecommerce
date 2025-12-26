@@ -11,7 +11,9 @@ import {
   Bell,
   Trash2,
   Search,
-  ChevronDown
+  ChevronDown,
+  Package,
+  MapPin
 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -301,14 +303,23 @@ const Navbar = () => {
                         <User className="w-4 h-4 mr-3" />
                         My Profile
                     </Link>
-                     <Link
-                        to="/admin"
+                    <Link
+                        to="/profile#orders"
                         className="flex items-center w-full px-5 py-2.5 text-xs font-medium text-stone-600 hover:bg-stone-50 hover:text-rose-900 transition-colors"
                         onClick={() => setIsUserMenuOpen(false)}
                     >
-                        <Search className="w-4 h-4 mr-3" />
-                        Admin Panel
+                        <Package className="w-4 h-4 mr-3" />
+                        My Orders
                     </Link>
+                    <Link
+                        to="/profile#addresses"
+                        className="flex items-center w-full px-5 py-2.5 text-xs font-medium text-stone-600 hover:bg-stone-50 hover:text-rose-900 transition-colors"
+                        onClick={() => setIsUserMenuOpen(false)}
+                    >
+                        <MapPin className="w-4 h-4 mr-3" />
+                        Addresses
+                    </Link>
+
                   </div>
                   <div className="border-t border-stone-50 py-2">
                      <button
