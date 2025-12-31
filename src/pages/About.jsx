@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { fetchSetting } from '../utils/settingsUtils';
 import { Link } from 'react-router-dom';
-import { Scissors, Flower, Sparkles, Heart, Home as HomeIcon, Calendar } from 'lucide-react';
+import { Scissors, Flower, Sparkles, Heart, Home as HomeIcon, Calendar, ArrowRight, Instagram } from 'lucide-react';
 
 const About = () => {
   const [storyImage, setStoryImage] = useState("https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80");
@@ -36,127 +36,159 @@ const About = () => {
   }, []);
 
   return (
-    <div className="bg-[#fdfbf7] min-h-screen font-body">
-      {/* Hero Section */}
-      <section className="relative pt-32 pb-24 lg:pt-40 lg:pb-32 overflow-hidden" data-id="about-hero">
-        <div className="container-custom relative z-10">
-          <div className="text-center max-w-4xl mx-auto" data-id="about-hero-content">
-             <span className="inline-block py-1 px-4 rounded-full bg-rose-50 text-rose-900 text-xs font-bold uppercase tracking-widest mb-6 border border-rose-100">The Artist Behind the Art</span>
-             <h1 className="text-5xl lg:text-7xl font-heading font-bold text-stone-900 mb-8 leading-tight" data-id="about-hero-title">
-               {heroTitle}
+    <div className="bg-[#fcfaf8] min-h-screen font-body selection:bg-rose-100 selection:text-rose-900">
+      
+      {/* 1. HERO SECTION */}
+      <section className="relative h-[70vh] min-h-[500px] flex items-center justify-center overflow-hidden">
+         {/* Background with parallax-like static fix */}
+         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1544006659-f0b21884ce1d?q=80&w=2070&auto=format&fit=crop')] bg-cover bg-center bg-fixed"></div>
+         <div className="absolute inset-0 bg-stone-900/60 backdrop-blur-[2px]"></div>
+
+         <div className="container-custom relative z-10 text-center px-6">
+            <span className="inline-block py-1 px-4 rounded-full bg-white/10 backdrop-blur-md text-white border border-white/20 text-xs font-bold uppercase tracking-[0.2em] mb-6 animate-fade-in-up">
+                The Artist
+            </span>
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-heading font-bold text-white mb-8 leading-tight tracking-tight animate-fade-in-up delay-100">
+                {heroTitle}
             </h1>
-            <p className="text-xl text-stone-600 max-w-2xl mx-auto leading-relaxed" data-id="about-hero-subtitle">
-              {heroSubtitle}
+            <p className="text-xl md:text-2xl text-stone-200 max-w-3xl mx-auto leading-relaxed font-light animate-fade-in-up delay-200 border-l-4 border-rose-500 pl-6 text-left md:text-center md:border-l-0 md:pl-0">
+               {heroSubtitle}
             </p>
-          </div>
-        </div>
-        
-        {/* Decorative elements */}
-         <div className="absolute top-0 left-0 w-96 h-96 bg-rose-100 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 opacity-50"></div>
-          <div className="absolute bottom-0 right-0 w-[500px] h-[500px] bg-stone-100 rounded-full blur-3xl translate-x-1/3 translate-y-1/3 opacity-70"></div>
+         </div>
+
+         {/* Scroll indicator */}
+         <div className="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce opacity-50">
+            <div className="w-[1px] h-16 bg-gradient-to-b from-transparent via-white to-transparent"></div>
+         </div>
       </section>
 
-      {/* Main Story Section */}
-      <section className="py-20 bg-white" data-id="main-story">
+      {/* 2. STORY SECTION */}
+      <section className="py-24 relative overflow-hidden">
+        {/* Decor */}
+        <div className="absolute top-0 right-0 w-1/2 h-full bg-rose-50/50 -skew-x-12 translate-x-1/4 -z-10"></div>
+
         <div className="container-custom">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-            <div className="relative group" data-id="story-image-container">
-              <div className="absolute inset-0 bg-rose-900 rounded-[2rem] rotate-3 group-hover:rotate-2 transition-transform opacity-10"></div>
-              <img src={storyImage}
-                alt="Sana working on embroidery"
-                className="relative rounded-[2rem] shadow-xl w-full h-[500px] object-cover border-4 border-white rotate-[-3deg] group-hover:rotate-0 transition-transform duration-700"
-                data-id="story-main-image" />
-               <div className="absolute -bottom-8 -right-8 bg-white p-6 rounded-2xl shadow-lg animate-bounce-slow max-w-xs border border-stone-50 hidden md:block">
-                  <p className="font-heading font-bold text-lg text-rose-900 mb-1">"Crafting memories"</p>
-                   <p className="text-stone-500 text-sm">One stitch at a time</p>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+            
+            {/* Image Side */}
+            <div className="relative group animate-on-scroll">
+                <div className="absolute top-4 left-4 w-full h-full border-2 border-rose-900/10 rounded-[2rem] -z-10 transition-transform duration-500 group-hover:translate-x-2 group-hover:translate-y-2"></div>
+                <div className="relative rounded-[2rem] overflow-hidden shadow-2xl">
+                    <img 
+                        src={storyImage} 
+                        alt="Sana Artist" 
+                        className="w-full h-[600px] object-cover transition-transform duration-1000 group-hover:scale-105"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-stone-900/60 to-transparent opacity-60"></div>
+                    
+                    <div className="absolute bottom-8 left-8 text-white">
+                        <p className="font-heading text-3xl font-bold mb-2">Artistry in every stitch</p>
+                        <div className="h-1 w-12 bg-rose-500"></div>
+                    </div>
+                </div>
+                
+                {/* Floating Card */}
+                <div className="absolute -bottom-10 -right-10 bg-white p-6 rounded-xl shadow-xl max-w-xs hidden md:block animate-move-y">
+                     <div className="flex items-center gap-4 mb-3">
+                        <div className="bg-rose-100 p-2 rounded-full">
+                            <Heart className="w-5 h-5 text-rose-600" />
+                        </div>
+                        <div>
+                            <span className="block font-bold text-stone-900">Passion Driven</span>
+                            <span className="text-xs text-stone-500">Since 2018</span>
+                        </div>
+                     </div>
+                     <p className="text-sm text-stone-600 italic">"Design is not just what it looks like, it's how it feels."</p>
+                </div>
+            </div>
+
+            {/* Text Side */}
+            <div className="space-y-8 animate-on-scroll">
+               <h2 className="text-4xl md:text-5xl font-heading font-bold text-stone-900 leading-tight">
+                  {storyTitle}
+               </h2>
+               <div className="space-y-6 text-stone-600 text-lg leading-relaxed font-light">
+                   <p className="whitespace-pre-line">
+                       {storyText}
+                   </p>
+                   <p>
+                       Every piece I create is infused with mindfulness and dedication. Whether it's the intricate flow of henna on a bride's hand or the delicate thread work on a hoop, my goal is to create something that resonates with your soul.
+                   </p>
+               </div>
+
+               <div className="pt-8 flex items-center gap-8">
+                   {signatureImage && (
+                       <img src={signatureImage} alt="Signature" className="h-16 opacity-80 invert-0" />
+                   )}
+                   
+                   <a href="https://instagram.com" target="_blank" rel="noreferrer" className="flex items-center gap-2 text-rose-900 font-bold hover:gap-4 transition-all">
+                       <Instagram className="w-5 h-5" /> Follow My Journey <ArrowRight className="w-4 h-4" />
+                   </a>
                </div>
             </div>
 
-            <div data-id="story-content" className="space-y-8">
-              <h2 className="text-4xl font-heading font-bold text-stone-900 leading-tight" data-id="story-title">
-                {storyTitle}
-              </h2>
-              <div className="space-y-6 text-stone-600 text-lg leading-relaxed">
-                <p data-id="story-para-1" className="whitespace-pre-line">
-                  {storyText}
-                </p>
-              </div>
-              
-              {signatureImage && (
-                  <div className="pt-8">
-                      <img src={signatureImage} alt="Founder Signature" className="h-16 opacity-80" />
+          </div>
+        </div>
+      </section>
+
+      {/* 3. SKILLS GRID */}
+      <section className="py-24 bg-stone-900 text-white relative">
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5"></div>
+        
+        <div className="container-custom relative z-10">
+          <div className="text-center mb-20 max-w-2xl mx-auto">
+             <span className="text-rose-400 font-bold tracking-widest text-sm uppercase mb-3 block">Expertise</span>
+             <h2 className="text-4xl md:text-5xl font-heading font-bold mb-6">Mastery & Craft</h2>
+             <p className="text-stone-400 text-lg">Blending traditional Indian artistry with contemporary aesthetics across multiple mediums.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+             {[
+               { icon: Scissors, name: "Hand Embroidery", desc: "Detailed French knots, satin stitch, and intricate thread painting." },
+               { icon: Flower, name: "Bridal Mehndi", desc: "Customized bridal henna with intricate storytelling figures." },
+               { icon: Sparkles, name: "Custom Designs", desc: "Bespoke creations tailored to your specific vision and occasion." },
+               { icon: Heart, name: "Jewelry Making", desc: "Handcrafted embroidered earrings, necklaces and accessories." },
+               { icon: HomeIcon, name: "Home Interior", desc: "Artistic hoops and textiles to elevate your living space." },
+               { icon: Calendar, name: "Workshops", desc: "Teaching the art of embroidery and henna to the next generation." }
+             ].map((skill, i) => (
+                 <div key={i} className="group bg-white/5 border border-white/10 p-8 rounded-2xl hover:bg-rose-900 hover:border-rose-800 transition-all duration-300 hover:-translate-y-2">
+                     <div className="mb-6 inline-flex p-3 rounded-lg bg-white/10 text-rose-300 group-hover:bg-white group-hover:text-rose-900 transition-colors">
+                         <skill.icon className="w-6 h-6" />
+                     </div>
+                     <h3 className="text-xl font-bold mb-3 font-heading">{skill.name}</h3>
+                     <p className="text-stone-400 group-hover:text-rose-100 text-sm leading-relaxed">{skill.desc}</p>
+                 </div>
+             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 4. CTA */}
+      <section className="py-24 bg-rose-50">
+          <div className="container-custom">
+              <div className="bg-white rounded-[3rem] p-12 md:p-20 shadow-xl border border-rose-100 text-center relative overflow-hidden">
+                  <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-rose-400 via-rose-600 to-rose-900"></div>
+                  
+                  <div className="relative z-10 max-w-3xl mx-auto space-y-8">
+                      <h2 className="text-4xl md:text-6xl font-heading font-bold text-stone-900">
+                          Ready to create something <span className="text-transparent bg-clip-text bg-gradient-to-r from-rose-600 to-rose-900">timeless?</span>
+                      </h2>
+                      <p className="text-xl text-stone-600">
+                          From bridal henna to custom embroidered hoops, let's bring your vision to life with elegance and precision.
+                      </p>
+                      <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+                        <Link to="/custom-design" className="px-10 py-4 bg-rose-900 text-white rounded-full font-bold shadow-lg shadow-rose-900/30 hover:shadow-xl hover:-translate-y-1 transition-all">
+                            Start a Project
+                        </Link>
+                        <Link to="/contact" className="px-10 py-4 bg-white text-stone-900 border-2 border-stone-200 rounded-full font-bold hover:border-rose-900 hover:text-rose-900 transition-all">
+                            Contact Me
+                        </Link>
+                      </div>
                   </div>
-              )}
-
-              <div className="pt-4">
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Signature_sample.svg/1200px-Signature_sample.svg.png" alt="Signature" className="h-12 opacity-50" />
               </div>
-            </div>
           </div>
-        </div>
       </section>
 
-      {/* Skills & Specialties */}
-      <section className="py-24 bg-[#fdfbf7]" data-id="skills-section">
-        <div className="container-custom">
-          <div className="text-center mb-16" data-id="skills-header">
-            <h2 className="text-4xl font-heading font-bold text-stone-900 mb-4" data-id="skills-title">
-              Skills & Specialties
-            </h2>
-            <div className="h-1 w-24 bg-rose-900 mx-auto rounded-full mb-6"></div>
-            <p className="text-stone-600 max-w-2xl mx-auto" data-id="skills-subtitle">
-              Years of practice have honed these traditional techniques and modern applications
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8" data-id="skills-grid">
-            {[
-              { icon: Scissors, name: "Hand Embroidery", desc: "French knots, chain stitch, and mixed-media techniques for decor." },
-              { icon: Flower, name: "Bridal Mehndi", desc: "Intricate bridal patterns and traditional motifs that tell a story." },
-              { icon: Sparkles, name: "Custom Designs", desc: "Personalized embroidery incorporating names and dates." },
-              { icon: Heart, name: "Jewelry Making", desc: "Handcrafted embroidered earrings and accessories." },
-              { icon: HomeIcon, name: "Home Decor", desc: "Wall art and cushion covers that bring warmth to living spaces." },
-              { icon: Calendar, name: "Event Mehndi", desc: "Festival designs and group sessions for celebrations." }
-            ].map((skill, index) => (
-                <div key={index} className="bg-white rounded-2xl p-8 shadow-sm border border-stone-100 hover:shadow-xl hover:-translate-y-1 transition-all group duration-300">
-                  <div className="w-16 h-16 bg-stone-50 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-rose-900 group-hover:text-white transition-colors duration-300">
-                    <skill.icon className="w-8 h-8 text-rose-900 group-hover:text-white transition-colors" />
-                  </div>
-                  <h3 className="text-xl font-heading font-bold text-stone-900 mb-3 group-hover:text-rose-900 transition-colors">{skill.name}</h3>
-                  <p className="text-stone-500 leading-relaxed">
-                    {skill.desc}
-                  </p>
-                </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-24 bg-stone-900 text-white relative overflow-hidden" data-id="cta-section">
-          {/* Background pattern */}
-         <div className="absolute inset-0 opacity-10" style={{backgroundImage: 'radial-gradient(circle at 1px 1px, white 1px, transparent 0)', backgroundSize: '40px 40px'}}></div>
-
-        <div className="container-custom text-center relative z-10">
-          <h2 className="text-4xl lg:text-5xl font-heading font-bold mb-8" data-id="cta-title">
-            Let's Create Something <span className="text-rose-400 italic">Beautiful</span> Together
-          </h2>
-          <p className="text-xl text-stone-300 mb-10 max-w-2xl mx-auto" data-id="cta-description">
-            Whether you're looking for a special gift, custom embroidery, or beautiful mehndi for your celebration.
-          </p>
-
-          <div className="flex flex-col sm:flex-row gap-4 justify-center" data-id="cta-buttons">
-            <Link to="/custom-design"
-              className="px-8 py-4 bg-rose-900 text-white rounded-full font-bold uppercase tracking-widest hover:bg-rose-800 transition-colors shadow-lg shadow-rose-900/40">
-              Request Custom Design
-            </Link>
-            <Link to="/contact"
-              className="px-8 py-4 bg-transparent border-2 border-stone-700 text-white rounded-full font-bold uppercase tracking-widest hover:bg-white hover:text-stone-900 transition-all">
-              Get in Touch
-            </Link>
-          </div>
-        </div>
-      </section>
     </div>
   );
 };
