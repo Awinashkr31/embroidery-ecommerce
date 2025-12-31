@@ -334,6 +334,11 @@ const Shop = () => {
                                                             Sold Out
                                                         </span>
                                                     )}
+                                                    {product.discountPercentage > 0 && (
+                                                        <span className="bg-rose-900 text-white text-[8px] md:text-[10px] font-bold uppercase tracking-widest px-1.5 py-0.5 md:px-2 md:py-1">
+                                                            {product.discountPercentage}% OFF
+                                                        </span>
+                                                    )}
                                                 </div>
 
                                                 {/* Wishlist */}
@@ -349,16 +354,25 @@ const Shop = () => {
 
                                                 {/* Add to Cart Overlay - Desktop Only mostly or adjusted */}
                                                 {product.inStock && (
-                                                    <button 
-                                                        onClick={async (e) => {
-                                                            e.preventDefault();
-                                                            await addToCart(product);
-                                                            addToast("Added to bag", "success");
-                                                        }}
-                                                        className="hidden md:flex absolute inset-x-0 bottom-0 py-3 bg-white/95 text-stone-900 text-xs font-bold uppercase tracking-widest translate-y-full group-hover:translate-y-0 transition-transform duration-300 items-center justify-center gap-2 hover:bg-stone-900 hover:text-white"
-                                                    >
-                                                        <Package className="w-3 h-3" /> Add to Bag
-                                                    </button>
+                                                    product.clothingInformation ? (
+                                                        <Link 
+                                                            to={`/product/${product.id}`}
+                                                            className="hidden md:flex absolute inset-x-0 bottom-0 py-3 bg-white/95 text-stone-900 text-xs font-bold uppercase tracking-widest translate-y-full group-hover:translate-y-0 transition-transform duration-300 items-center justify-center gap-2 hover:bg-stone-900 hover:text-white"
+                                                        >
+                                                            Select Size
+                                                        </Link>
+                                                    ) : (
+                                                        <button 
+                                                            onClick={async (e) => {
+                                                                e.preventDefault();
+                                                                await addToCart(product);
+                                                                addToast("Added to bag", "success");
+                                                            }}
+                                                            className="hidden md:flex absolute inset-x-0 bottom-0 py-3 bg-white/95 text-stone-900 text-xs font-bold uppercase tracking-widest translate-y-full group-hover:translate-y-0 transition-transform duration-300 items-center justify-center gap-2 hover:bg-stone-900 hover:text-white"
+                                                        >
+                                                            <Package className="w-3 h-3" /> Add to Bag
+                                                        </button>
+                                                    )
                                                 )}
                                             </div>
 

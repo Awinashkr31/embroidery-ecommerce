@@ -8,15 +8,24 @@ const ProtectedRoute = () => {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      // DEV BYPASS CHECK
-      const bypass = localStorage.getItem('admin_dev_bypass') === 'true';
-      setAuthenticated(!!session || bypass);
+      // 1. Check if Supabase Session exists
+      // 2. Check if Email is Admin (Strict)
+      // 3. OR Check Dev Bypass (Dev Mode)
+      
+      const userEmail = session?.user?.email;
+      
+      const isAdmin = (session && userEmail === 'awinashkr31@gmail.com');
+
+      // STRICT CHECK: Session MUST exist and be the admin email.
+      setAuthenticated(isAdmin);
       setLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-       const bypass = localStorage.getItem('admin_dev_bypass') === 'true';
-       setAuthenticated(!!session || bypass);
+       const userEmail = session?.user?.email;
+       const isAdmin = (session && userEmail === 'awinashkr31@gmail.com');
+       
+       setAuthenticated(isAdmin);
     });
 
     return () => subscription.unsubscribe();
@@ -27,7 +36,7 @@ const ProtectedRoute = () => {
   }
 
   if (!authenticated) {
-    return <Navigate to="/admin/login" replace />;
+    return <Navigate to="/sadmin/login" replace />;
   }
 
   return <Outlet />;

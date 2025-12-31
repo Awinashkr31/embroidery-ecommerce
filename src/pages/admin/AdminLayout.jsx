@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { supabase } from '../../config/supabase';
 import { 
   LayoutDashboard, 
   Package, 
@@ -27,26 +28,36 @@ const AdminLayout = () => {
 
   // Auth check is now handled by ProtectedRoute wrapper
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     if (window.confirm('Are you sure you want to logout?')) {
-      localStorage.removeItem('adminLoggedIn');
-      navigate('/admin/login');
+      try {
+        // 1. Attempt to Clear Supabase Session
+        await supabase.auth.signOut();
+      } catch (error) {
+        console.warn("Logout error (session might be missing):", error);
+      } finally {
+        // 2. ALWAYS Clear Local Keys
+        localStorage.removeItem('adminLoggedIn');
+        
+        // 3. Redirect
+        navigate('/sadmin/login');
+      }
     }
   };
 
   const menuItems = [
-    { icon: LayoutDashboard, label: 'Dashboard', path: '/admin/dashboard' },
-    { icon: ShoppingBag, label: 'Products', path: '/admin/products' },
-    { icon: ShoppingCart, label: 'Orders', path: '/admin/orders' },
-    { icon: User, label: 'User Analytics', path: '/admin/users' },
-    { icon: Palette, label: 'Design Requests', path: '/admin/design-requests' },
-    { icon: Star, label: 'Reviews', path: '/admin/reviews' },
-    { icon: Mail, label: 'Support Messages', path: '/admin/messages' },
-    { icon: Calendar, label: 'Mehndi Bookings', path: '/admin/bookings' },
-    { icon: ImageIcon, label: 'Gallery', path: '/admin/gallery' },
-    { icon: Tag, label: 'Coupons', path: '/admin/coupons' },
-    { icon: Bell, label: 'Notifications', path: '/admin/notifications' },
-  { icon: Settings, label: 'Settings', path: '/admin/settings' },
+    { icon: LayoutDashboard, label: 'Dashboard', path: '/sadmin/dashboard' },
+    { icon: ShoppingBag, label: 'Products', path: '/sadmin/products' },
+    { icon: ShoppingCart, label: 'Orders', path: '/sadmin/orders' },
+    { icon: User, label: 'User Analytics', path: '/sadmin/users' },
+    { icon: Palette, label: 'Design Requests', path: '/sadmin/design-requests' },
+    { icon: Star, label: 'Reviews', path: '/sadmin/reviews' },
+    { icon: Mail, label: 'Support Messages', path: '/sadmin/messages' },
+    { icon: Calendar, label: 'Mehndi Bookings', path: '/sadmin/bookings' },
+    { icon: ImageIcon, label: 'Gallery', path: '/sadmin/gallery' },
+    { icon: Tag, label: 'Coupons', path: '/sadmin/coupons' },
+    { icon: Bell, label: 'Notifications', path: '/sadmin/notifications' },
+  { icon: Settings, label: 'Settings', path: '/sadmin/settings' },
   ];
 
   return (

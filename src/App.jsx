@@ -8,14 +8,17 @@ import { ProductProvider } from './context/ProductContext'
 import { AuthProvider } from './context/AuthContext'
 import { ToastProvider } from './context/ToastContext'
 import { WishlistProvider } from './context/WishlistContext'
+import { SettingsProvider } from './context/SettingsContext'
 
 // Lazy Load Page Components for Performance
 const Login = lazy(() => import('./pages/Login'));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 const Register = lazy(() => import('./pages/Register'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Wishlist = lazy(() => import('./pages/Wishlist'));
 const OrderSuccess = lazy(() => import('./pages/OrderSuccess'));
+const OrderConfirmation = lazy(() => import('./pages/OrderConfirmation'));
 
 const Home = lazy(() => import('./pages/Home'));
 const About = lazy(() => import('./pages/About'));
@@ -30,6 +33,9 @@ const Checkout = lazy(() => import('./pages/Checkout'));
 
 // Admin Components
 const AdminLogin = lazy(() => import('./pages/admin/AdminLogin'));
+const AdminRegister = lazy(() => import('./pages/admin/AdminRegister'));
+const AdminForgotPassword = lazy(() => import('./pages/admin/AdminForgotPassword'));
+const AdminUpdatePassword = lazy(() => import('./pages/admin/AdminUpdatePassword'));
 const AdminLayout = lazy(() => import('./pages/admin/AdminLayout'));
 const Dashboard = lazy(() => import('./pages/admin/Dashboard'));
 const ProductManager = lazy(() => import('./pages/admin/ProductManager'));
@@ -58,18 +64,22 @@ function App() {
     <AuthProvider>
       <ToastProvider>
       <WishlistProvider>
+      <SettingsProvider>
       <CartProvider>
       <ProductProvider>
         <Router>
           <Suspense fallback={<PageLoader />}>
             <Routes>
               {/* Admin Routes */}
-              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route path="/sadmin/login" element={<AdminLogin />} />
+              <Route path="/sadmin/register" element={<AdminRegister />} />
+              <Route path="/sadmin/forgot-password" element={<AdminForgotPassword />} />
+              <Route path="/sadmin/update-password" element={<AdminUpdatePassword />} />
               
               {/* Protected Admin Routes */}
               <Route element={<ProtectedRoute />}>
-                <Route path="/admin" element={<AdminLayout />}>
-                  <Route index element={<Navigate to="/admin/dashboard" replace />} />
+                <Route path="/sadmin" element={<AdminLayout />}>
+                  <Route index element={<Navigate to="/sadmin/dashboard" replace />} />
                   <Route path="dashboard" element={<Dashboard />} />
                   <Route path="products" element={<ProductManager />} />
                   <Route path="orders" element={<AdminOrders />} />
@@ -104,11 +114,13 @@ function App() {
                         <Route path="/checkout" element={<Checkout />} />
                         <Route path="/login" element={<Login />} />
                         <Route path="/forgot-password" element={<ForgotPassword />} />
+                        <Route path="/reset-password" element={<ResetPassword />} />
 
                         <Route path="/register" element={<Register />} />
                         <Route path="/profile" element={<Profile />} />
                         <Route path="/wishlist" element={<Wishlist />} />
                         <Route path="/order-success" element={<OrderSuccess />} />
+                        <Route path="/order-confirmation" element={<OrderConfirmation />} />
                       </Routes>
                     </Suspense>
                   </main>
@@ -120,6 +132,7 @@ function App() {
         </Router>
       </ProductProvider>
       </CartProvider>
+      </SettingsProvider>
       </WishlistProvider>
       </ToastProvider>
     </AuthProvider>

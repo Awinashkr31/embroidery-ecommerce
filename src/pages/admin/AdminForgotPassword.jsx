@@ -1,58 +1,64 @@
 import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext';
+import { supabase } from '../../config/supabase';
 import { Link } from 'react-router-dom';
-import { Mail, ArrowLeft, Send, CheckCircle, AlertCircle } from 'lucide-react';
-import { getAuthErrorMessage } from '../utils/authErrors';
+import { Mail, ArrowLeft, Send, CheckCircle, AlertCircle, ShieldCheck } from 'lucide-react';
 
-export default function ForgotPassword() {
-  const { resetPassword } = useAuth();
+const AdminForgotPassword = () => {
   const [email, setEmail] = useState('');
-  const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(e) {
-    e.preventDefault();
-
-    try {
-      setMessage('');
-      setError('');
+  const handleSubmit = async (e) => {
+      e.preventDefault();
       setLoading(true);
-      await resetPassword(email);
-      setMessage('We have sent password reset instructions to your email.');
-    } catch (err) {
-      setError(getAuthErrorMessage(err));
-    }
-    setLoading(false);
-  }
+      setError('');
+      setMessage('');
+
+      try {
+          // SECURITY: Only allow the Master Admin email
+          if (email !== 'awinashkr31@gmail.com') {
+              throw new Error("Invalid admin email provided.");
+          }
+
+          const { error } = await supabase.auth.resetPasswordForEmail(email, {
+              redirectTo: `${window.location.origin}/sadmin/update-password`,
+          });
+
+          if (error) throw error;
+
+          setMessage('Password reset instructions sent. Check your email.');
+      } catch (err) {
+          setError(err.message);
+      } finally {
+          setLoading(false);
+      }
+  };
 
   return (
     <div className="min-h-screen flex bg-[#fdfbf7] font-body">
-      {/* Visual Side (Left) */}
-      <div className="hidden lg:flex w-1/2 relative overflow-hidden bg-rose-950">
-        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1590013330461-9f2257bd7ded?q=80&w=1920')] bg-cover bg-center opacity-50 mix-blend-overlay"></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-rose-950 via-rose-950/20 to-transparent"></div>
-        
+      {/* Visual Side */}
+      <div className="hidden lg:flex w-1/2 relative overflow-hidden bg-stone-950">
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1617327918451-382a17688ed9?q=80&w=1920')] bg-cover bg-center opacity-40 mix-blend-overlay"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-900/60 to-transparent"></div>
         <div className="relative z-10 flex flex-col justify-end p-16 text-white h-full">
-            <h1 className="text-5xl font-heading leading-tight mb-6">
-                Don't Worry, <br/> We've Got <span className="italic font-serif text-rose-200">You</span>.
+            <h1 className="text-4xl font-heading leading-tight mb-4">
+               Recovery <span className="text-rose-200">Mode</span>.
             </h1>
-            <p className="text-lg text-rose-100/80 max-w-md leading-relaxed">
-                Enter your email and we'll help you get back to your account in no time.
-            </p>
+            <p className="text-stone-300 max-w-md">Secure password reset for administrators.</p>
         </div>
       </div>
 
-      {/* Form Side (Right) */}
+      {/* Form Side */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-6 lg:p-12 relative">
-        <div className="w-full max-w-[420px] space-y-8 animate-in slide-in-from-bottom-8 duration-700">
-          <Link to="/login" className="inline-flex items-center text-sm font-bold uppercase tracking-wider text-stone-400 hover:text-stone-600 transition-colors mb-4">
-              <ArrowLeft className="w-4 h-4 mr-2" /> Back to Login
+        <div className="w-full max-w-[400px] space-y-8 animate-in slide-in-from-right-8 duration-700">
+          <Link to="/sadmin/login" className="inline-flex items-center text-xs font-bold uppercase tracking-widest text-stone-400 hover:text-stone-600 transition-colors mb-4">
+              <ArrowLeft className="w-4 h-4 mr-2" /> Return to Login
           </Link>
 
           <div>
-            <h2 className="text-3xl lg:text-4xl font-heading text-stone-900 mb-3">Reset Password</h2>
-            <p className="text-stone-500">Provide your email address to proceed.</p>
+            <h2 className="text-3xl font-heading text-stone-900 mb-2">Forgot Password?</h2>
+            <p className="text-stone-500 text-sm">Enter your admin email to receive a secure reset link.</p>
           </div>
 
           {message && (
@@ -70,10 +76,9 @@ export default function ForgotPassword() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Email Input */}
             <div className="group">
                 <label className="block text-xs font-bold uppercase tracking-wider text-stone-500 mb-2 group-focus-within:text-rose-900 transition-colors">
-                    Email Address
+                    Admin Email
                 </label>
                 <div className="relative">
                     <input
@@ -82,7 +87,7 @@ export default function ForgotPassword() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         className="w-full pl-11 pr-4 py-3.5 bg-white border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-900/10 focus:border-rose-900 transition-all font-medium text-stone-800 placeholder-stone-400"
-                        placeholder="you@example.com"
+                        placeholder="admin@company.com"
                     />
                     <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400 group-focus-within:text-rose-900 transition-colors" />
                 </div>
@@ -93,17 +98,13 @@ export default function ForgotPassword() {
                 disabled={loading}
                 className="w-full bg-stone-900 hover:bg-rose-900 text-white font-bold py-4 rounded-xl shadow-lg shadow-stone-900/10 hover:shadow-rose-900/20 active:scale-[0.98] transition-all duration-200 flex items-center justify-center gap-2 group disabled:opacity-70 disabled:pointer-events-none"
             >
-                {loading ? (
-                    <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                ) : (
-                    <>
-                        Send Reset Link <Send className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                    </>
-                )}
+                {loading ? <span className="animate-spin text-xl">•</span> : <>Send Reset Link <Send className="w-4 h-4" /></>}
             </button>
           </form>
         </div>
       </div>
     </div>
   );
-}
+};
+
+export default AdminForgotPassword;

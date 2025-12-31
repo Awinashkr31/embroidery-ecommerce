@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-import { User, Package, MapPin, LogOut, Trash2, ChevronRight, Clock, CheckCircle, AlertTriangle, Loader, Star, X } from 'lucide-react';
+import { User, Package, MapPin, LogOut, Trash2, ChevronRight, Clock, CheckCircle, AlertTriangle, Loader, Star, X, Camera } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
 import { useToast } from '../context/ToastContext';
@@ -119,21 +119,31 @@ const Profile = () => {
         }
     };
 
-    const handleCancelOrder = async (orderId) => {
-        if (!window.confirm('Are you sure you want to cancel this order?')) return;
-        
-        try {
-            const { error } = await supabase
-                .from('orders')
-                .update({ status: 'Cancelled' })
-                .eq('id', orderId);
-                
-            if (error) throw error;
+    const handleCancelOrder = async (order) => {
+        const isDirectCancel = ['pending', 'confirmed'].includes(order.status.toLowerCase());
+        const confirmMsg = isDirectCancel 
+            ? 'Are you sure you want to cancel this order?' 
+            : 'Do you want to request cancellation for this order? Admin approval required.';
             
-            setOrders(orders.map(o => o.id === orderId ? { ...o, status: 'Cancelled' } : o));
-            addToast('Order cancelled successfully', 'success');
+        if (!window.confirm(confirmMsg)) return;
+
+        try {
+            // Use RPC function to bypass RLS safely
+            const { data, error } = await supabase.rpc('cancel_order', { 
+                p_order_id: order.id, 
+                p_email: currentUser.email 
+            });
+
+            if (error) throw error;
+            if (!data.success) throw new Error(data.message);
+            
+            // Update local state based on returned new status
+            const newStatus = data.new_status;
+            setOrders(orders.map(o => o.id === order.id ? { ...o, status: newStatus } : o));
+            addToast(data.message, 'success');
         } catch (error) {
-            addToast('Failed to cancel order', 'error');
+            console.error('Cancellation error:', error);
+            addToast(error.message || 'Failed to update order', 'error');
         }
     };
 
@@ -183,6 +193,7 @@ const Profile = () => {
         switch(status.toLowerCase()) {
             case 'completed': return 'bg-green-100 text-green-700 border-green-200';
             case 'cancelled': return 'bg-red-100 text-red-700 border-red-200';
+            case 'cancellation_requested': return 'bg-amber-100 text-amber-700 border-amber-200';
             default: return 'bg-blue-100 text-blue-700 border-blue-200';
         }
     };
@@ -195,25 +206,28 @@ const Profile = () => {
                 <div className="bg-white rounded-2xl shadow-sm border border-stone-100 p-8 mb-8 flex flex-col md:flex-row items-center gap-8 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-rose-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 opacity-50 pointer-events-none"></div>
                     
-                    <div className="relative z-10 w-28 h-28 rounded-full bg-rose-50 flex items-center justify-center border-4 border-white shadow-lg overflow-hidden shrink-0 group">
-                        {uploadingImage ? (
-                            <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-20">
-                                <Loader className="w-8 h-8 text-white animate-spin" />
-                            </div>
-                        ) : (
-                            <label className="absolute inset-0 bg-black/0 group-hover:bg-black/30 cursor-pointer flex items-center justify-center transition-all z-20">
-                                <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
-                                <span className="text-white text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity">Change</span>
-                            </label>
-                        )}
-                        
-                        {currentUser.photoURL ? (
-                            <img src={currentUser.photoURL} alt={currentUser.displayName} className="w-full h-full object-cover" />
-                        ) : (
-                            <span className="text-3xl font-heading font-bold text-rose-900">
-                                {currentUser.displayName ? currentUser.displayName[0].toUpperCase() : 'U'}
-                            </span>
-                        )}
+                    <div className="relative z-10 shrink-0">
+                        <div className="w-28 h-28 rounded-full bg-rose-50 flex items-center justify-center border-4 border-white shadow-lg overflow-hidden relative">
+                            {uploadingImage && (
+                                <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-20">
+                                    <Loader className="w-8 h-8 text-white animate-spin" />
+                                </div>
+                            )}
+                            
+                            {currentUser.photoURL ? (
+                                <img src={currentUser.photoURL} alt={currentUser.displayName} className="w-full h-full object-cover" />
+                            ) : (
+                                <span className="text-3xl font-heading font-bold text-rose-900">
+                                    {currentUser.displayName ? currentUser.displayName[0].toUpperCase() : 'U'}
+                                </span>
+                            )}
+                        </div>
+
+                        {/* Edit Button */}
+                        <label className="absolute bottom-0 right-0 bg-white border border-stone-200 p-2 rounded-full cursor-pointer shadow-md text-stone-600 hover:text-rose-900 hover:bg-rose-50 transition-colors z-30" title="Change Profile Photo">
+                            <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} />
+                            <Camera className="w-4 h-4" />
+                        </label>
                     </div>
                     
                     <div className="relative z-10 text-center md:text-left flex-1">
@@ -356,16 +370,27 @@ const Profile = () => {
                                                     ))}
                                                 </div>
 
-                                                {order.status.toLowerCase() === 'pending' && (
+                                                {['pending', 'confirmed', 'processing', 'shipped'].includes(order.status.toLowerCase()) && (
                                                     <div className="mt-6 pt-6 border-t border-stone-100 flex justify-end">
                                                         <button 
-                                                            onClick={() => handleCancelOrder(order.id)}
-                                                            className="text-red-600 hover:text-white px-4 py-2 rounded-lg border border-red-200 hover:bg-red-600 transition-all text-sm font-bold uppercase tracking-wide flex items-center gap-2"
+                                                            onClick={() => handleCancelOrder(order)}
+                                                            className={`px-4 py-2 rounded-lg border transition-all text-sm font-bold uppercase tracking-wide flex items-center gap-2 ${
+                                                                ['pending', 'confirmed'].includes(order.status.toLowerCase()) 
+                                                                ? 'text-red-600 border-red-200 hover:bg-red-600 hover:text-white' 
+                                                                : 'text-amber-600 border-amber-200 hover:bg-amber-600 hover:text-white'
+                                                            }`}
                                                         >
                                                             <Trash2 className="w-4 h-4" />
-                                                            Cancel Order
+                                                            {['pending', 'confirmed'].includes(order.status.toLowerCase()) ? 'Cancel Order' : 'Request Cancellation'}
                                                         </button>
                                                     </div>
+                                                )}
+                                                {order.status === 'cancellation_requested' && (
+                                                     <div className="mt-6 pt-6 border-t border-stone-100 flex justify-end">
+                                                        <span className="px-4 py-2 rounded-lg border border-stone-200 bg-stone-50 text-stone-400 text-sm font-bold uppercase tracking-wide cursor-not-allowed">
+                                                            Cancellation Pending
+                                                        </span>
+                                                     </div>
                                                 )}
                                             </div>
                                         </div>

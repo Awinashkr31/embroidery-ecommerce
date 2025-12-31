@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useProducts } from '../../context/ProductContext';
 import { Plus, Edit2, Trash2, X, Image as ImageIcon, Search, Filter, SortAsc, Loader, Upload, Shirt } from 'lucide-react';
 import { uploadImage } from '../../utils/uploadUtils';
@@ -329,42 +329,45 @@ const ProductManager = () => {
                                     </div>
 
                                     {/* Additional Images Grid (Only for Clothing) */}
-                                    {isClothing && (
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <label className="text-xs font-bold text-stone-500 uppercase tracking-widest">Back View</label>
-                                                <div className="group relative aspect-square bg-stone-50 rounded-xl border-2 border-dashed border-stone-200 overflow-hidden flex items-center justify-center hover:border-rose-200 transition-all">
-                                                    {formData.images[1] ? (
-                                                        <img src={formData.images[1]} alt="Back" className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        <ImageIcon className="w-6 h-6 text-stone-300" />
-                                                    )}
-                                                    <label className="absolute inset-0 cursor-pointer flex items-center justify-center bg-black/0 group-hover:bg-black/10 transition-colors">
-                                                        <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 1)} disabled={uploading} />
-                                                        <div className="opacity-0 group-hover:opacity-100 bg-white/90 p-1.5 rounded-full shadow-sm">
-                                                            <Upload className="w-3 h-3 text-stone-700" />
-                                                        </div>
-                                                    </label>
-                                                </div>
-                                            </div>
-                                            <div className="space-y-2">
-                                                <label className="text-xs font-bold text-stone-500 uppercase tracking-widest">Close-up</label>
-                                                <div className="group relative aspect-square bg-stone-50 rounded-xl border-2 border-dashed border-stone-200 overflow-hidden flex items-center justify-center hover:border-rose-200 transition-all">
-                                                    {formData.images[2] ? (
-                                                        <img src={formData.images[2]} alt="Close-up" className="w-full h-full object-cover" />
-                                                    ) : (
-                                                        <ImageIcon className="w-6 h-6 text-stone-300" />
-                                                    )}
-                                                    <label className="absolute inset-0 cursor-pointer flex items-center justify-center bg-black/0 group-hover:bg-black/10 transition-colors">
-                                                        <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 2)} disabled={uploading} />
-                                                        <div className="opacity-0 group-hover:opacity-100 bg-white/90 p-1.5 rounded-full shadow-sm">
-                                                            <Upload className="w-3 h-3 text-stone-700" />
-                                                        </div>
-                                                    </label>
-                                                </div>
+                                    {/* Additional Images Grid (Now for ALL products) */}
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-bold text-stone-500 uppercase tracking-widest">
+                                                {isClothing ? 'Back View' : 'Image 2'}
+                                            </label>
+                                            <div className="group relative aspect-square bg-stone-50 rounded-xl border-2 border-dashed border-stone-200 overflow-hidden flex items-center justify-center hover:border-rose-200 transition-all">
+                                                {formData.images[1] ? (
+                                                    <img src={formData.images[1]} alt="View 2" className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <ImageIcon className="w-6 h-6 text-stone-300" />
+                                                )}
+                                                <label className="absolute inset-0 cursor-pointer flex items-center justify-center bg-black/0 group-hover:bg-black/10 transition-colors">
+                                                    <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 1)} disabled={uploading} />
+                                                    <div className="opacity-0 group-hover:opacity-100 bg-white/90 p-1.5 rounded-full shadow-sm">
+                                                        <Upload className="w-3 h-3 text-stone-700" />
+                                                    </div>
+                                                </label>
                                             </div>
                                         </div>
-                                    )}
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-bold text-stone-500 uppercase tracking-widest">
+                                                {isClothing ? 'Close-up' : 'Image 3'}
+                                            </label>
+                                            <div className="group relative aspect-square bg-stone-50 rounded-xl border-2 border-dashed border-stone-200 overflow-hidden flex items-center justify-center hover:border-rose-200 transition-all">
+                                                {formData.images[2] ? (
+                                                    <img src={formData.images[2]} alt="View 3" className="w-full h-full object-cover" />
+                                                ) : (
+                                                    <ImageIcon className="w-6 h-6 text-stone-300" />
+                                                )}
+                                                <label className="absolute inset-0 cursor-pointer flex items-center justify-center bg-black/0 group-hover:bg-black/10 transition-colors">
+                                                    <input type="file" className="hidden" accept="image/*" onChange={(e) => handleImageUpload(e, 2)} disabled={uploading} />
+                                                    <div className="opacity-0 group-hover:opacity-100 bg-white/90 p-1.5 rounded-full shadow-sm">
+                                                        <Upload className="w-3 h-3 text-stone-700" />
+                                                    </div>
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
 
                                     {/* Featured Toggle */}
                                     <div className="bg-amber-50 rounded-xl p-4 border border-amber-100">
@@ -428,7 +431,7 @@ const ProductManager = () => {
                                     {/* Price & Category */}
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-3">
-                                            <label className="text-xs font-bold text-stone-500 uppercase tracking-widest">Price (₹)</label>
+                                            <label className="text-xs font-bold text-stone-500 uppercase tracking-widest">Selling Price (₹)</label>
                                             <div className="relative">
                                                 <span className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 font-bold">₹</span>
                                                 <input 
@@ -441,15 +444,29 @@ const ProductManager = () => {
                                             </div>
                                         </div>
                                         <div className="space-y-3">
-                                            <label className="text-xs font-bold text-stone-500 uppercase tracking-widest">Category</label>
-                                            <select 
-                                                className="w-full px-4 py-3 rounded-xl bg-stone-50 border-2 border-stone-100 focus:border-rose-900 focus:bg-white focus:ring-0 outline-none transition-all font-medium appearance-none"
-                                                value={formData.category}
-                                                onChange={(e) => setFormData({...formData, category: e.target.value})}
-                                            >
-                                                {categories.map(c => <option key={c} value={c}>{c}</option>)}
-                                            </select>
+                                            <label className="text-xs font-bold text-stone-500 uppercase tracking-widest">MRP / Original (₹)</label>
+                                            <div className="relative">
+                                                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 font-bold">₹</span>
+                                                <input 
+                                                    type="number"
+                                                    className="w-full pl-8 pr-4 py-3 rounded-xl bg-stone-50 border-2 border-stone-100 focus:border-rose-900 focus:bg-white focus:ring-0 outline-none transition-all font-medium"
+                                                    value={formData.originalPrice || ''}
+                                                    onChange={(e) => setFormData({...formData, originalPrice: e.target.value})}
+                                                    placeholder="Optional"
+                                                />
+                                            </div>
                                         </div>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <label className="text-xs font-bold text-stone-500 uppercase tracking-widest">Category</label>
+                                        <select 
+                                            className="w-full px-4 py-3 rounded-xl bg-stone-50 border-2 border-stone-100 focus:border-rose-900 focus:bg-white focus:ring-0 outline-none transition-all font-medium appearance-none"
+                                            value={formData.category}
+                                            onChange={(e) => setFormData({...formData, category: e.target.value})}
+                                        >
+                                            {categories.map(c => <option key={c} value={c}>{c}</option>)}
+                                        </select>
                                     </div>
 
                                     {/* Clothing Specific: Stock Management */}

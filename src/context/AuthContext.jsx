@@ -11,7 +11,8 @@ import {
   RecaptchaVerifier,
   signInWithPhoneNumber,
   sendPasswordResetEmail,
-  sendEmailVerification
+  sendEmailVerification,
+  confirmPasswordReset
 } from 'firebase/auth';
 
 const AuthContext = createContext();
@@ -42,6 +43,10 @@ export function AuthProvider({ children }) {
 
   function resetPassword(email) {
     return sendPasswordResetEmail(auth, email);
+  }
+
+  function confirmReset(oobCode, newPassword) {
+    return confirmPasswordReset(auth, oobCode, newPassword);
   }
 
   function verifyEmail(user) {
@@ -104,6 +109,7 @@ export function AuthProvider({ children }) {
     signup,
     logout,
     resetPassword,
+    confirmReset,
     verifyEmail,
     updateUser: async (name, photoURL, phone) => {
         await updateProfile(auth.currentUser, {

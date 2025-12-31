@@ -39,26 +39,33 @@ export const CartProvider = ({ children }) => {
                     for (const item of localCart) {
                         try {
                              // Check if item already exists in DB to update quantity
-                             const { data: existing } = await supabase
+                             let query = supabase
                                 .from('cart_items')
-                                .select('quantity')
+                                .select('quantity, id')
                                 .eq('user_id', currentUser.uid)
-                                .eq('product_id', item.id)
-                                .single();
+                                .eq('product_id', item.id);
+                             
+                             if (item.selectedSize) {
+                                 query = query.eq('selected_size', item.selectedSize);
+                             } else {
+                                 query = query.is('selected_size', null);
+                             }
+                             
+                             const { data: existing } = await query.single();
 
                              if (existing) {
                                  await supabase
                                     .from('cart_items')
                                     .update({ quantity: existing.quantity + item.quantity })
-                                    .eq('user_id', currentUser.uid)
-                                    .eq('product_id', item.id);
+                                    .eq('id', existing.id);
                              } else {
                                  await supabase
                                     .from('cart_items')
                                     .insert({ 
                                         user_id: currentUser.uid, 
                                         product_id: item.id, 
-                                        quantity: item.quantity 
+                                        quantity: item.quantity,
+                                        selected_size: item.selectedSize || null
                                     });
                              }
                         } catch (err) {
@@ -84,6 +91,7 @@ export const CartProvider = ({ children }) => {
                 const mappedCart = data.map(item => ({
                     ...item.products,
                     quantity: item.quantity,
+                    selectedSize: item.selected_size, // Map DB column to app property
                     cartItemId: item.id // Keep reference to DB ID if needed
                 }));
                 setCart(mappedCart);
@@ -117,9 +125,16 @@ export const CartProvider = ({ children }) => {
 
   const addToCart = async (product) => {
     // Check Stock
-    const currentItem = cart.find(item => item.id === product.id);
+    // UNIQUE IDENTIFIER: Product ID + Selected Size
+    const currentItem = cart.find(item => item.id === product.id && item.selectedSize === product.selectedSize);
     const currentQty = currentItem ? currentItem.quantity : 0;
-    const availableStock = product.stock !== undefined ? product.stock : (product.stock_quantity !== undefined ? product.stock_quantity : 100); // Fallback if property missing
+    
+    let availableStock = 100;
+    if (product.clothingInformation?.sizes && product.selectedSize) {
+        availableStock = product.clothingInformation.sizes[product.selectedSize] || 0;
+    } else {
+         availableStock = product.stock !== undefined ? product.stock : (product.stock_quantity !== undefined ? product.stock_quantity : 100);
+    }
 
     if (currentQty + 1 > availableStock) {
         addToast(`Cannot add more. Only ${availableStock} items in stock.`, 'error');
@@ -128,10 +143,10 @@ export const CartProvider = ({ children }) => {
 
     // Optimistic Update
     setCart(prevCart => {
-      const existingItem = prevCart.find(item => item.id === product.id);
+      const existingItem = prevCart.find(item => item.id === product.id && item.selectedSize === product.selectedSize);
       if (existingItem) {
         return prevCart.map(item =>
-          item.id === product.id
+          (item.id === product.id && item.selectedSize === product.selectedSize)
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
@@ -143,17 +158,35 @@ export const CartProvider = ({ children }) => {
     if (currentUser?.uid) {
         try {
             // Check if exists in DB to update or insert
-            const existingItem = cart.find(item => item.id === product.id);
+            let query = supabase
+                .from('cart_items')
+                .select('*')
+                .eq('user_id', currentUser.uid)
+                .eq('product_id', product.id);
+            
+            if (product.selectedSize) {
+                query = query.eq('selected_size', product.selectedSize);
+            } else {
+                query = query.is('selected_size', null);
+            }
+
+            const { data: existingItems } = await query;
+            const existingItem = existingItems && existingItems.length > 0 ? existingItems[0] : null;
+
             if (existingItem) {
                  await supabase
                     .from('cart_items')
                     .update({ quantity: existingItem.quantity + 1 })
-                    .eq('user_id', currentUser.uid)
-                    .eq('product_id', product.id);
+                    .eq('id', existingItem.id);
             } else {
                 await supabase
                     .from('cart_items')
-                    .insert({ user_id: currentUser.uid, product_id: product.id, quantity: 1 });
+                    .insert({ 
+                        user_id: currentUser.uid, 
+                        product_id: product.id, 
+                        quantity: 1,
+                        selected_size: product.selectedSize || null
+                    });
             }
         } catch (error) {
             console.error("Error syncing cart add:", error);
@@ -162,32 +195,47 @@ export const CartProvider = ({ children }) => {
     return true;
   };
 
-  const removeFromCart = async (productId) => {
-    setCart(prevCart => prevCart.filter(item => item.id !== productId));
+  const removeFromCart = async (productId, selectedSize = null) => {
+    setCart(prevCart => prevCart.filter(item => !(item.id === productId && item.selectedSize === selectedSize)));
     
     if (currentUser?.uid) {
         try {
-            await supabase
+            let query = supabase
                 .from('cart_items')
                 .delete()
                 .eq('user_id', currentUser.uid)
                 .eq('product_id', productId);
+            
+            if (selectedSize) {
+                query = query.eq('selected_size', selectedSize);
+            } else {
+                query = query.is('selected_size', null);
+            }
+            
+            await query;
         } catch (error) {
             console.error("Error removing from cart DB:", error);
         }
     }
   };
 
-  const updateQuantity = async (productId, quantity) => {
+  const updateQuantity = async (productId, quantity, selectedSize = null) => {
     if (quantity < 1) {
-      removeFromCart(productId);
+      removeFromCart(productId, selectedSize);
       return;
     }
 
     // Check Stock for increase
-    const item = cart.find(i => i.id === productId);
-    if (item && quantity > item.quantity) { // Only check if increasing
-        const availableStock = item.stock !== undefined ? item.stock : (item.stock_quantity !== undefined ? item.stock_quantity : 100);
+    const item = cart.find(i => i.id === productId && i.selectedSize === selectedSize);
+    
+    if (item && quantity > item.quantity) { 
+        let availableStock = 100;
+        if (item.clothingInformation?.sizes && item.selectedSize) {
+            availableStock = item.clothingInformation.sizes[item.selectedSize] || 0;
+        } else {
+            availableStock = item.stock !== undefined ? item.stock : (item.stock_quantity !== undefined ? item.stock_quantity : 100);
+        }
+        
         if (quantity > availableStock) {
             addToast(`Cannot add more. Only ${availableStock} items in stock.`, 'error');
             return;
@@ -196,7 +244,7 @@ export const CartProvider = ({ children }) => {
     
     setCart(prevCart =>
       prevCart.map(item =>
-        item.id === productId
+        (item.id === productId && item.selectedSize === selectedSize)
           ? { ...item, quantity: Number(quantity) }
           : item
       )
@@ -204,11 +252,19 @@ export const CartProvider = ({ children }) => {
 
     if (currentUser?.uid) {
         try {
-            await supabase
+            let query = supabase
                 .from('cart_items')
                 .update({ quantity: Number(quantity) })
                 .eq('user_id', currentUser.uid)
                 .eq('product_id', productId);
+            
+            if (selectedSize) {
+                query = query.eq('selected_size', selectedSize);
+            } else {
+                query = query.is('selected_size', null);
+            }
+
+            await query;
         } catch (error) {
              console.error("Error updating cart quantity:", error);
         }

@@ -120,7 +120,7 @@ const AdminNotifications = () => {
 
         } catch (error) {
             console.error('Send Error:', error);
-            setFeedback({ type: 'error', msg: 'Failed to send notifications.' });
+            setFeedback({ type: 'error', msg: error.message || 'Failed to send notifications.' });
         } finally {
             setSending(false);
         }

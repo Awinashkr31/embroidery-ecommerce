@@ -7,20 +7,48 @@ import { fetchSetting } from '../utils/settingsUtils';
 
 const Home = () => {
   const { products } = useProducts();
-  const [heroImage, setHeroImage] = useState("https://images.unsplash.com/photo-1620799140408-ed5341cd2431?w=800");
+  
+  // Default Images (Fallbacks)
+  // Default Images (Fallbacks)
+  const defaultHero = "https://images.unsplash.com/photo-1620799140408-ed5341cd2431?q=80&w=800&auto=format&fit=crop";
+  const defaultHoop = "https://images.unsplash.com/photo-1615561021463-569d643806a6?q=80&w=1200&auto=format&fit=crop";
+  const defaultBridal = "https://images.unsplash.com/photo-1546167889-0b4b5ff0afd0?q=80&w=800&auto=format&fit=crop";
+  const defaultStory1 = "https://images.unsplash.com/photo-1605218427368-35b8dd98ec65?q=80&w=600&auto=format&fit=crop";
+  const defaultStory2 = "https://images.unsplash.com/photo-1594913785162-e6785fdd27f2?q=80&w=600&auto=format&fit=crop";
+
+  // State
+  const [heroImage, setHeroImage] = useState(defaultHero);
   const [heroTitle, setHeroTitle] = useState("Weaving Stories in Thread");
   const [heroSubtitle, setHeroSubtitle] = useState("Timeless hand embroidery blending tradition with modern aesthetics.");
+  
+  const [hoopImage, setHoopImage] = useState(defaultHoop);
+  const [bridalImage, setBridalImage] = useState(defaultBridal);
+  const [storyImage1, setStoryImage1] = useState(defaultStory1);
+  const [storyImage2, setStoryImage2] = useState(defaultStory2);
 
   useEffect(() => {
     const loadSettings = async () => {
-        const image = await fetchSetting('home_hero_image');
-        if (image) setHeroImage(image);
+        const h_image = await fetchSetting('home_hero_image');
+        if (h_image) setHeroImage(h_image);
         
-        const title = await fetchSetting('home_hero_title');
-        if (title) setHeroTitle(title);
+        const h_title = await fetchSetting('home_hero_title');
+        if (h_title) setHeroTitle(h_title);
         
-        const subtitle = await fetchSetting('home_hero_subtitle');
-        if (subtitle) setHeroSubtitle(subtitle);
+        const h_sub = await fetchSetting('home_hero_subtitle');
+        if (h_sub) setHeroSubtitle(h_sub);
+
+        // New Dynamic Images
+        const hoop = await fetchSetting('home_category_hoop_image');
+        if (hoop) setHoopImage(hoop);
+
+        const bridal = await fetchSetting('home_category_bridal_image');
+        if (bridal) setBridalImage(bridal);
+
+        const s1 = await fetchSetting('home_brand_story_image_1');
+        if (s1) setStoryImage1(s1);
+
+        const s2 = await fetchSetting('home_brand_story_image_2');
+        if (s2) setStoryImage2(s2);
     };
     loadSettings();
   }, []);
@@ -119,7 +147,7 @@ const Home = () => {
           <div className="grid md:grid-cols-3 gap-6">
             <Link to="/shop?category=Hoop Art" className="md:col-span-2 relative rounded-3xl overflow-hidden">
               <img
-                src="https://images.unsplash.com/photo-1615561021463-569d643806a6?w=1200"
+                src={hoopImage}
                 alt="Hoop Art embroidery"
                 className="w-full h-full object-cover"
               />
@@ -131,7 +159,7 @@ const Home = () => {
             <div className="flex flex-col gap-6">
               <Link to="/shop?category=Bridal" className="relative rounded-3xl overflow-hidden min-h-[240px]">
                 <img
-                  src="https://images.unsplash.com/photo-1546167889-0b4b5ff0afd0?w=800"
+                  src={bridalImage}
                   alt="Bridal embroidery"
                   className="w-full h-full object-cover"
                 />
@@ -160,7 +188,7 @@ const Home = () => {
             </Link>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
             {featuredProducts.map(product => (
               <Link key={product.id} to={`/product/${product.id}`} className="block">
                 <div className="aspect-[4/5] bg-white rounded-2xl flex items-center justify-center p-4">
@@ -204,12 +232,12 @@ const Home = () => {
 
           <div className="grid grid-cols-2 gap-4">
             <img
-              src="https://images.unsplash.com/photo-1605218427368-35b8dd98ec65?w=600"
+              src={storyImage1}
               alt="Embroidery process"
               className="rounded-2xl"
             />
             <img
-              src="https://images.unsplash.com/photo-1594913785162-e6785fdd27f2?w=600"
+              src={storyImage2}
               alt="Hand stitching"
               className="rounded-2xl"
             />

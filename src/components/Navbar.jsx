@@ -88,7 +88,7 @@ const Navbar = () => {
   const handleDeleteNotification = async (id, e) => {
     e.stopPropagation();
     try {
-        const { data, error } = await supabase.rpc('delete_notification', { notification_id: id });
+        const { error } = await supabase.from('notifications').delete().eq('id', id);
         if (error) throw error;
         
         setNotifications(prev => prev.filter(n => n.id !== id));
