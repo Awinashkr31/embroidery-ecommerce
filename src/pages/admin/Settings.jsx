@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../../config/supabase';
-import { Save, Globe, Mail, Phone, MapPin, Facebook, Instagram, Twitter, Loader, Image as ImageIcon, Upload, FileText, LayoutTemplate, Type, Pencil, X } from 'lucide-react';
+import { Save, Globe, Mail, Phone, MapPin, Facebook, Instagram, Twitter, Loader, Image as ImageIcon, Upload, FileText, LayoutTemplate, Type, Pencil, X, Plus, Trash2, IndianRupee, Clock } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
+import imageCompression from 'browser-image-compression';
 
 const Settings = () => {
     const { addToast } = useToast();
@@ -24,6 +25,10 @@ const Settings = () => {
         home_hero_title: 'Weaving Stories in Thread',
         home_hero_subtitle: 'Timeless hand embroidery blending tradition with modern aesthetics.',
         home_hero_image: '',
+        home_category_hoop_image: '',
+        home_category_bridal_image: '',
+        home_brand_story_image_1: '',
+        home_brand_story_image_2: '',
         
         // About
         about_hero_title: 'About Sana',
@@ -37,11 +42,51 @@ const Settings = () => {
         custom_design_title: 'Custom Design Request',
         custom_design_subtitle: "Let's bring your unique vision to life.",
         custom_design_banner_image: '',
+        custom_design_body_image: '',
 
         // Mehndi
         mehndi_title: 'Mehndi Booking',
         mehndi_subtitle: 'Professional mehndi artistry for your special occasions.',
         mehndi_feature_image: '',
+        mehndi_packages: JSON.stringify([
+          {
+            id: 1,
+            name: "Bridal Package",
+            price: 5000,
+            features: [
+              "Full hands (front & back) up to elbows",
+              "Feet up to ankles",
+              "Intricate bridal figures",
+              "Premium organic henna",
+              "Dark stain guarantee"
+            ],
+            duration: "4-6 Hours"
+          },
+          {
+            id: 2,
+            name: "Party Guest Package",
+            price: 500,
+            features: [
+              "Per hand (one side)",
+              "Simple arabic/indian designs",
+              "Premium organic henna",
+              "Quick application (15-20 mins)"
+            ],
+            duration: "15-20 Mins"
+          },
+          {
+            id: 3,
+            name: "Engagement Special",
+            price: 2500,
+            features: [
+              "Both hands up to wrists",
+              "Intricate geometric patterns",
+              "Couple initials inclusion",
+              "Premium organic henna"
+            ],
+            duration: "2-3 Hours"
+          }
+        ]),
 
         // Gallery
         gallery_title: 'Our Gallery',
@@ -60,7 +105,13 @@ const Settings = () => {
             if (data && data.length > 0) {
                 const settingsObj = {};
                 data.forEach(item => {
-                    settingsObj[item.setting_key] = item.setting_value;
+                    // If the value is an object/array (JSONB), stringify it for the state
+                    // because our inputs/editors expect string values.
+                    if (typeof item.setting_value === 'object' && item.setting_value !== null) {
+                        settingsObj[item.setting_key] = JSON.stringify(item.setting_value);
+                    } else {
+                        settingsObj[item.setting_key] = item.setting_value;
+                    }
                 });
                 setSettings(prev => ({ ...prev, ...settingsObj }));
             }
@@ -99,22 +150,40 @@ const Settings = () => {
         }
     };
 
+
+
     const handleImageUpload = async (e, key) => {
         const file = e.target.files[0];
         if (!file) return;
 
         try {
             setUploading(true);
+
+            // COMPRESSION LOGIC
+            const options = {
+                maxSizeMB: 0.2, // < 200KB
+                maxWidthOrHeight: 1920,
+                useWebWorker: true
+            };
+            
+            let uploadFile = file;
+            try {
+                uploadFile = await imageCompression(file, options);
+                console.log(`Compressed: ${(uploadFile.size / 1024 / 1024).toFixed(2)} MB`);
+            } catch (cErr) {
+                console.warn("Compression failed, using original:", cErr);
+            }
+
             const oldUrl = settings[key];
             if (oldUrl) await deleteImageFromStorage(oldUrl);
 
-            const fileExt = file.name.split('.').pop();
+            const fileExt = uploadFile.name.split('.').pop();
             const fileName = `${key}_${Date.now()}.${fileExt}`;
             const filePath = `site-assets/${fileName}`;
 
             const { error: uploadError } = await supabase.storage
                 .from('images')
-                .upload(filePath, file);
+                .upload(filePath, uploadFile);
 
             if (uploadError) throw uploadError;
 
@@ -123,11 +192,11 @@ const Settings = () => {
                 .getPublicUrl(filePath);
 
             setSettings(prev => ({ ...prev, [key]: publicUrl }));
-            addToast('Image uploaded! Click Save to persist changes.', 'success');
+            addToast('Image uploaded! Click "Save Changes" at the bottom to apply.', 'success');
 
         } catch (error) {
             console.error('Upload failed:', error);
-            addToast('Failed to upload image.', 'error');
+            addToast(`Failed to upload: ${error.message || 'Unknown error'}`, 'error');
         } finally {
             setUploading(false);
         }
@@ -353,6 +422,56 @@ const Settings = () => {
                                 </div>
                             </div>
                         </div>
+
+                        {/* Category Images */}
+                        <div className="bg-white p-6 rounded-xl border border-stone-100 shadow-sm space-y-6">
+                            <h3 className="font-bold text-lg text-stone-900 flex items-center gap-2">
+                                <ImageIcon className="w-5 h-5 text-rose-900" /> Category Images
+                            </h3>
+                            <div className="grid md:grid-cols-2 gap-6">
+                                <ImageUploader 
+                                    label="Hoop Art Image"
+                                    url={settings.home_category_hoop_image} 
+                                    uploading={uploading}
+                                    onUpload={(e) => handleImageUpload(e, 'home_category_hoop_image')}
+                                    onDelete={() => handleImageDelete('home_category_hoop_image')}
+                                    isEditing={isEditing}
+                                />
+                                <ImageUploader 
+                                    label="Bridal Image"
+                                    url={settings.home_category_bridal_image} 
+                                    uploading={uploading}
+                                    onUpload={(e) => handleImageUpload(e, 'home_category_bridal_image')}
+                                    onDelete={() => handleImageDelete('home_category_bridal_image')}
+                                    isEditing={isEditing}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Brand Story Images */}
+                        <div className="bg-white p-6 rounded-xl border border-stone-100 shadow-sm space-y-6">
+                            <h3 className="font-bold text-lg text-stone-900 flex items-center gap-2">
+                                <ImageIcon className="w-5 h-5 text-rose-900" /> Brand Story Images
+                            </h3>
+                            <div className="grid md:grid-cols-2 gap-6">
+                                <ImageUploader 
+                                    label="Story Image 1 (Left)"
+                                    url={settings.home_brand_story_image_1} 
+                                    uploading={uploading}
+                                    onUpload={(e) => handleImageUpload(e, 'home_brand_story_image_1')}
+                                    onDelete={() => handleImageDelete('home_brand_story_image_1')}
+                                    isEditing={isEditing}
+                                />
+                                <ImageUploader 
+                                    label="Story Image 2 (Right)"
+                                    url={settings.home_brand_story_image_2} 
+                                    uploading={uploading}
+                                    onUpload={(e) => handleImageUpload(e, 'home_brand_story_image_2')}
+                                    onDelete={() => handleImageDelete('home_brand_story_image_2')}
+                                    isEditing={isEditing}
+                                />
+                            </div>
+                        </div>
                     </div>
                 )}
 
@@ -466,6 +585,16 @@ const Settings = () => {
                                         onDelete={() => handleImageDelete('custom_design_banner_image')}
                                         isEditing={isEditing}
                                     />
+                                    <div className="mt-6">
+                                        <ImageUploader 
+                                            label="Body/Feature Image"
+                                            url={settings.custom_design_body_image} 
+                                            uploading={uploading}
+                                            onUpload={(e) => handleImageUpload(e, 'custom_design_body_image')}
+                                            onDelete={() => handleImageDelete('custom_design_body_image')}
+                                            isEditing={isEditing}
+                                        />
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -508,6 +637,18 @@ const Settings = () => {
                                     />
                                 </div>
                             </div>
+                        </div>
+
+                        {/* Package Editor Section */}
+                        <div className="bg-white p-6 rounded-xl border border-stone-100 shadow-sm space-y-6">
+                            <h3 className="font-bold text-lg text-stone-900 flex items-center gap-2">
+                                <IndianRupee className="w-5 h-5 text-rose-900" /> Package Pricing
+                            </h3>
+                            <PackageEditor 
+                                packagesJSON={settings.mehndi_packages}
+                                onChange={(newJSON) => handleChange({ target: { name: 'mehndi_packages', value: newJSON } })}
+                                isEditing={isEditing}
+                            />
                         </div>
                     </div>
                 )}
@@ -670,3 +811,178 @@ const ImageUploader = ({ url, uploading, onUpload, onDelete, isEditing, label })
 );
 
 export default Settings;
+
+// Package Editor Component
+// Package Editor Component
+const PackageEditor = ({ packagesJSON, onChange, isEditing }) => {
+    const [localPackages, setLocalPackages] = useState([]);
+    const isInternalChange = React.useRef(false);
+
+    useEffect(() => {
+        try {
+            // If the change came from us, skip syncing state to preserve cursor/focus
+            if (isInternalChange.current) {
+                isInternalChange.current = false;
+                return;
+            }
+            const parsed = JSON.parse(packagesJSON || '[]');
+            setLocalPackages(parsed);
+        } catch {
+            setLocalPackages([]);
+        }
+    }, [packagesJSON]);
+
+    const updatePackage = (id, field, value) => {
+        if (!isEditing) return;
+        isInternalChange.current = true;
+        const updated = localPackages.map(pkg => 
+            pkg.id === id ? { ...pkg, [field]: value } : pkg
+        );
+        setLocalPackages(updated);
+        onChange(JSON.stringify(updated));
+    };
+
+    const updateFeatures = (id, featuresText) => {
+        if (!isEditing) return;
+        isInternalChange.current = true;
+        const featuresArray = featuresText.split('\n');
+        
+        const updated = localPackages.map(pkg => 
+            pkg.id === id ? { ...pkg, features: featuresArray } : pkg
+        );
+        setLocalPackages(updated);
+        onChange(JSON.stringify(updated));
+    };
+
+    const addPackage = () => {
+        isInternalChange.current = true;
+        const newId = localPackages.length > 0 ? Math.max(...localPackages.map(p => p.id)) + 1 : 1;
+        const newPackage = {
+            id: newId,
+            name: "New Package",
+            price: 1000,
+            duration: "1 Hour",
+            features: ["Feature 1", "Feature 2"]
+        };
+        const updated = [...localPackages, newPackage];
+        setLocalPackages(updated);
+        onChange(JSON.stringify(updated));
+    };
+
+    const deletePackage = (id) => {
+        if (!window.confirm("Delete this package?")) return;
+        isInternalChange.current = true;
+        const updated = localPackages.filter(p => p.id !== id);
+        setLocalPackages(updated);
+        onChange(JSON.stringify(updated));
+    };
+
+    if (!localPackages || localPackages.length === 0) {
+         return (
+             <div className="text-center p-4">
+                 <p className="text-stone-500 mb-4">No packages defined.</p>
+                 {isEditing && (
+                    <button type="button" onClick={addPackage} className="text-sm font-bold text-rose-900 border border-rose-900 px-4 py-2 rounded-lg hover:bg-rose-50">
+                        + Add First Package
+                    </button>
+                 )}
+             </div>
+         );
+    }
+
+    return (
+        <div className="space-y-6">
+            <div className="grid gap-6">
+                {localPackages.map((pkg) => (
+                    <div key={pkg.id} className="p-4 rounded-xl border border-stone-200 bg-stone-50 relative group">
+                        {isEditing && (
+                            <button 
+                                type="button"
+                                onClick={() => deletePackage(pkg.id)}
+                                className="absolute top-4 right-4 text-red-400 hover:text-red-600 p-1"
+                                title="Delete Package"
+                            >
+                                <Trash2 className="w-4 h-4" />
+                            </button>
+                        )}
+                        
+                        <div className="grid md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-xs font-bold text-stone-500 mb-1">Package Name</label>
+                                {isEditing ? (
+                                    <input 
+                                        value={pkg.name}
+                                        onChange={(e) => updatePackage(pkg.id, 'name', e.target.value)}
+                                        className="w-full px-3 py-2 rounded-lg border border-stone-300 text-sm font-bold"
+                                    />
+                                ) : (
+                                    <h4 className="font-bold text-lg text-stone-800">{pkg.name}</h4>
+                                )}
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label className="block text-xs font-bold text-stone-500 mb-1">Price (₹)</label>
+                                    {isEditing ? (
+                                        <input 
+                                            type="text" 
+                                            value={pkg.price}
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                // Allow numeric input but keep as string/number in local state to allow deleting to empty
+                                                if (val === '' || /^\d+$/.test(val)) {
+                                                    updatePackage(pkg.id, 'price', val === '' ? 0 : parseInt(val));
+                                                }
+                                            }}
+                                            className="w-full px-3 py-2 rounded-lg border border-stone-300 text-sm"
+                                        />
+                                    ) : (
+                                        <p className="text-rose-900 font-bold">₹{pkg.price}</p>
+                                    )}
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold text-stone-500 mb-1">Duration</label>
+                                    {isEditing ? (
+                                        <input 
+                                            value={pkg.duration}
+                                            onChange={(e) => updatePackage(pkg.id, 'duration', e.target.value)}
+                                            className="w-full px-3 py-2 rounded-lg border border-stone-300 text-sm"
+                                        />
+                                    ) : (
+                                        <p className="text-stone-600 text-sm">{pkg.duration}</p>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="md:col-span-2">
+                                <label className="block text-xs font-bold text-stone-500 mb-1">Features (One per line)</label>
+                                {isEditing ? (
+                                    <textarea 
+                                        value={pkg.features.join('\n')}
+                                        onChange={(e) => updateFeatures(pkg.id, e.target.value)}
+                                        rows={4}
+                                        className="w-full px-3 py-2 rounded-lg border border-stone-300 text-sm font-mono"
+                                    />
+                                ) : (
+                                    <ul className="list-disc list-inside text-sm text-stone-600 space-y-1">
+                                        {pkg.features.map((f, i) => <li key={i}>{f}</li>)}
+                                    </ul>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {isEditing && (
+                <button 
+                    type="button"
+                    onClick={addPackage}
+                    className="w-full py-3 border-2 border-dashed border-stone-300 rounded-xl text-stone-500 font-bold hover:border-rose-900 hover:text-rose-900 transition-colors flex items-center justify-center gap-2"
+                >
+                    <Plus className="w-4 h-4" /> Add New Package
+                </button>
+            )}
+        </div>
+    );
+};

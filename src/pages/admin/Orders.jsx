@@ -9,7 +9,7 @@ const Orders = () => {
   const [activeTab, setActiveTab] = useState('All');
   const [loading, setLoading] = useState(true);
 
-  const statusOptions = ['pending', 'processing', 'shipped', 'delivered', 'cancelled']; // Lowercase to match DB enum if possible, or map
+  const statusOptions = ['pending', 'processing', 'shipped', 'delivered', 'cancelled', 'cancellation_requested']; // Lowercase to match DB enum if possible, or map
 
   const fetchOrders = async () => {
     try {
@@ -138,6 +138,7 @@ const Orders = () => {
       case 'cancelled': return 'bg-red-100 text-red-700 border-red-200';
       case 'processing': return 'bg-blue-100 text-blue-700 border-blue-200';
       case 'shipped': return 'bg-purple-100 text-purple-700 border-purple-200';
+      case 'cancellation_requested': return 'bg-amber-100 text-amber-700 border-amber-200 animate-pulse'; // Highlight requests
       default: return 'bg-stone-100 text-stone-700 border-stone-200';
     }
   };
@@ -308,6 +309,9 @@ const Orders = () => {
                                 </div>
                                 <div className="flex-1">
                                     <p className="font-bold text-stone-900 text-sm">{item.name}</p>
+                                    {(item.selectedSize || item.selected_size) && (
+                                        <p className="text-xs text-stone-600 font-medium mt-0.5">Size: <span className="text-stone-900 font-bold">{item.selectedSize || item.selected_size}</span></p>
+                                    )}
                                     <p className="text-xs text-stone-500 mt-1">₹{item.price.toLocaleString()} × {item.quantity}</p>
                                 </div>
                                 <p className="font-bold text-stone-900 text-sm">₹{(item.price * item.quantity).toLocaleString()}</p>

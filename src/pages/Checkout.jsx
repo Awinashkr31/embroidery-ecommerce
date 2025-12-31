@@ -203,13 +203,15 @@ const Checkout = () => {
                 paymentObject.open();
 
             } else {
-                // COD Flow
-                await placeOrder({
-                    ...formData,
-                    userId: currentUser?.uid,
-                    email: currentUser?.email || formData.email
+                // COD Flow - Redirect to Confirmation Page
+                navigate('/order-confirmation', { 
+                    state: { 
+                        formData: {
+                            ...formData,
+                            paymentMethod: 'cod' 
+                        } 
+                    } 
                 });
-                navigate('/order-success');
             }
         } catch (error) {
             console.error('Order placement failed:', error);

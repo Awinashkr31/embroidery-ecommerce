@@ -18,6 +18,10 @@ const ProductDetails = () => {
     const [product, setProduct] = useState(null);
     const [loading, setLoading] = useState(true);
     const [reviews, setReviews] = useState([]);
+    
+    // Clothing Support
+    const [selectedSize, setSelectedSize] = useState(null);
+    const [sizeError, setSizeError] = useState(false);
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -153,12 +157,87 @@ const ProductDetails = () => {
                             </p>
                         </div>
 
+                        {/* Clothing Specific: Size Selector & Details */}
+                        {product.clothingInformation && (
+                            <div className="mb-10 space-y-6 border-b border-stone-200/60 pb-10">
+                                {/* Quick Clothing Specs */}
+                                <div className="flex flex-wrap gap-4 text-sm text-stone-600">
+                                    {product.clothingInformation.gender && (
+                                        <div className="flex items-center gap-2 px-3 py-1 bg-stone-50 rounded-full border border-stone-200">
+                                            <span className="font-bold text-xs uppercase tracking-wider text-stone-400">For</span>
+                                            <span className="font-medium">{product.clothingInformation.gender}</span>
+                                        </div>
+                                    )}
+                                    {product.clothingInformation.fabric && (
+                                        <div className="flex items-center gap-2 px-3 py-1 bg-stone-50 rounded-full border border-stone-200">
+                                            <span className="font-bold text-xs uppercase tracking-wider text-stone-400">Material</span>
+                                            <span className="font-medium">{product.clothingInformation.fabric}</span>
+                                        </div>
+                                    )}
+                                    {product.clothingInformation.fitType && (
+                                        <div className="flex items-center gap-2 px-3 py-1 bg-stone-50 rounded-full border border-stone-200">
+                                            <span className="font-bold text-xs uppercase tracking-wider text-stone-400">Fit</span>
+                                            <span className="font-medium">{product.clothingInformation.fitType}</span>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Size Selector */}
+                                <div className="space-y-3">
+                                    <div className="flex justify-between">
+                                        <h3 className="text-sm font-bold text-stone-900 uppercase tracking-widest">Select Size</h3>
+                                        <span className={`text-xs font-bold ${sizeError ? 'text-red-500 animate-pulse' : 'text-rose-900'}`}>
+                                            {sizeError ? 'Please select a size' : 'Size Guide'}
+                                        </span>
+                                    </div>
+                                    <div className="flex flex-wrap gap-3">
+                                        {Object.entries(product.clothingInformation.sizes || {})
+                                            .sort((a, b) => {
+                                                const order = { 'XS': 1, 'S': 2, 'M': 3, 'L': 4, 'XL': 5, 'XXL': 6, '3XL': 7 };
+                                                return (order[a[0]] || 99) - (order[b[0]] || 99);
+                                            })
+                                            .map(([size, qty]) => {
+                                                const isAvailable = qty > 0;
+                                                const isSelected = selectedSize === size;
+                                                
+                                                return (
+                                                    <button
+                                                        key={size}
+                                                        onClick={() => {
+                                                            if (isAvailable) {
+                                                                setSelectedSize(size);
+                                                                setSizeError(false);
+                                                            }
+                                                        }}
+                                                        disabled={!isAvailable}
+                                                        className={`w-12 h-12 md:w-14 md:h-14 rounded-full border font-bold text-sm flex items-center justify-center transition-all ${
+                                                            isSelected 
+                                                                ? 'bg-rose-900 border-rose-900 text-white shadow-lg scale-110' 
+                                                                : isAvailable 
+                                                                    ? 'bg-white border-stone-200 text-stone-900 hover:border-rose-900 hover:text-rose-900' 
+                                                                    : 'bg-stone-100 border-stone-100 text-stone-300 cursor-not-allowed line-through'
+                                                        }`}
+                                                    >
+                                                        {size}
+                                                    </button>
+                                                );
+                                            })}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                         {/* Actions */}
                         <div className="flex flex-col gap-4 mb-12">
                             <div className="flex gap-4">
                                 <button
                                     onClick={async () => {
-                                        const success = await addToCart(product);
+                                        if (product.clothingInformation && !selectedSize) {
+                                            setSizeError(true);
+                                            addToast('Please select a size first', 'error');
+                                            return;
+                                        }
+                                        const success = await addToCart({ ...product, selectedSize });
                                         if (success) addToast(`Added ${product.name} to bag`, 'success');
                                     }}
                                     disabled={!product.inStock}
@@ -175,7 +254,12 @@ const ProductDetails = () => {
                                 <button 
                                     onClick={async () => {
                                          if(product.inStock) {
-                                            await addToCart(product);
+                                            if (product.clothingInformation && !selectedSize) {
+                                                setSizeError(true);
+                                                addToast('Please select a size first', 'error');
+                                                return;
+                                            }
+                                            await addToCart({ ...product, selectedSize });
                                             // Ideally navigate to checkout
                                             navigate('/cart');
                                          }

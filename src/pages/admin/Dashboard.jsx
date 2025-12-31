@@ -45,7 +45,11 @@ const Dashboard = () => {
         const safeOrders = orders || [];
         const safeProducts = products || [];
         
-        const totalRevenue = safeOrders.reduce((sum, order) => sum + (Number(order.total) || 0), 0);
+        const totalRevenue = safeOrders.reduce((sum, order) => {
+            // Robust check for different column naming conventions
+            const amount = Number(order.total) || Number(order.total_amount) || Number(order.amount) || 0;
+            return sum + amount;
+        }, 0);
         const totalOrders = safeOrders.length;
         const pendingOrders = safeOrders.filter(o => o.status === 'pending').length;
         // Logic for low stock: assuming 'stock_quantity' field from schema
@@ -77,7 +81,10 @@ const Dashboard = () => {
                 o.created_at.startsWith(date) && 
                 o.status !== 'cancelled'
             );
-            return daysOrders.reduce((sum, o) => sum + (Number(o.total) || 0), 0);
+            return daysOrders.reduce((sum, o) => {
+                 const amount = Number(o.total) || Number(o.total_amount) || Number(o.amount) || 0;
+                 return sum + amount;
+            }, 0);
         });
 
         // Normalize for chart height (percentage) if needed, 
@@ -297,7 +304,7 @@ const Dashboard = () => {
                                             {new Date(order.created_at).toLocaleDateString()}
                                         </td>
                                         <td className="px-6 py-4 text-sm font-bold text-stone-900">
-                                            {formatCurrency(order.total)}
+                                            {formatCurrency(order.total || order.total_amount || order.amount)}
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${

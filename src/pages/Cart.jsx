@@ -66,6 +66,9 @@ const Cart = () => {
                                                 <span className="text-stone-400 line-through text-xs">₹{item.originalPrice.toLocaleString()}</span>
                                             )}
                                          </div>
+                                         {item.selectedSize && (
+                                             <span className="text-xs font-medium text-stone-600">Size: <span className="text-stone-900 font-bold">{item.selectedSize}</span></span>
+                                         )}
                                          {item.discountPercentage > 0 && (
                                             <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full w-fit">
                                                 {item.discountPercentage}% OFF
@@ -79,14 +82,14 @@ const Cart = () => {
                                 <div className="flex items-center gap-4">
                                     <div className="flex items-center bg-stone-50 border border-stone-200 rounded-lg overflow-hidden">
                                         <button
-                                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                            onClick={() => updateQuantity(item.id, item.quantity - 1, item.selectedSize)}
                                             className="px-3 py-1 hover:bg-stone-200 transition-colors text-stone-600 font-bold"
                                         >
                                             -
                                         </button>
                                         <span className="w-10 text-center text-stone-900 font-medium text-sm">{item.quantity}</span>
                                         <button
-                                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                            onClick={() => updateQuantity(item.id, item.quantity + 1, item.selectedSize)}
                                             disabled={item.quantity >= (item.stock ?? item.stock_quantity ?? 100)}
                                             className={`px-3 py-1 transition-colors font-bold ${
                                                 item.quantity >= (item.stock ?? item.stock_quantity ?? 100)
@@ -98,7 +101,7 @@ const Cart = () => {
                                         </button>
                                     </div>
                                     <button
-                                        onClick={() => removeFromCart(item.id)}
+                                        onClick={() => removeFromCart(item.id, item.selectedSize)}
                                         className="p-2 text-stone-400 hover:text-rose-900 transition-colors rounded-lg hover:bg-rose-50"
                                         title="Remove Item"
                                     >
