@@ -175,7 +175,7 @@ const MehndiBooking = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10">
         
         {/* Packages Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20 animate-fade-in-up delay-300">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-20 animate-fade-in-up delay-300">
           {packages.map((pkg) => (
             <div 
               key={pkg.id}
@@ -240,7 +240,7 @@ const MehndiBooking = () => {
                     </Link>
                 </div>
                 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
                     {galleryImages.map((img, idx) => (
                         <div 
                             key={idx} 

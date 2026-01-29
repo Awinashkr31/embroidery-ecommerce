@@ -28,6 +28,7 @@
     -webkit-font-smoothing: antialiased;
     /* Prevent pull-to-refresh on mobile if needed, though usually handled by JS */
     overscroll-behavior-y: none;
+    overflow-x: hidden;
   }
 
   h1, h2, h3, h4, h5, h6 {
