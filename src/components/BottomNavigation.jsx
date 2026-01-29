@@ -1,11 +1,17 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import { Home, ShoppingBag, Heart, User, LayoutGrid } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 
 const BottomNavigation = () => {
   const { cart } = useCart();
+  const location = useLocation();
   const cartItemCount = cart.length;
+
+  // Hide on Cart and Checkout pages to prevent overlap with sticky buttons
+  if (['/cart', '/checkout'].includes(location.pathname)) {
+    return null;
+  }
 
   // Myntra-like styling: 
   // - Clean white background

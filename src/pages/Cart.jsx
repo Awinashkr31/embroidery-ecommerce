@@ -39,7 +39,7 @@ const Cart = () => {
     }
 
     return (
-        <div className="bg-[#fdfbf7] min-h-screen font-body pt-32 pb-24">
+        <div className="bg-[#fdfbf7] min-h-screen font-body pt-32 pb-32 lg:pb-24">
             <SEO title="Shopping Cart" description="Review your selected items and proceed to checkout." />
             <div className="container-custom">
                 <h1 className="text-3xl lg:text-4xl font-heading font-bold text-stone-900 mb-8">Shopping Cart</h1>
@@ -48,7 +48,7 @@ const Cart = () => {
                     {/* Cart Items */}
                     <div className="lg:w-2/3 space-y-6">
                         {cart.map((item) => (
-                            <div key={item.id} className="bg-white p-6 rounded-2xl shadow-sm border border-stone-100 flex gap-6 items-center">
+                            <div key={item.id} className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-stone-100 flex gap-4 md:gap-6 items-start md:items-center">
                                 <div className="w-24 h-24 rounded-xl overflow-hidden bg-stone-100 shrink-0">
                                     <img
                                         src={item.image}
@@ -57,50 +57,72 @@ const Cart = () => {
                                     />
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <h3 className="text-lg font-bold text-stone-900 mb-1 truncate">{item.name}</h3>
-                                    <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 text-sm">
-                                    <div className="flex flex-col gap-1 text-sm bg-stone-50 p-2 rounded-lg">
-                                         <div className="flex items-center gap-2">
-                                            <span className="font-bold text-stone-900">Unit: ₹{item.price.toLocaleString()}</span>
-                                            {item.originalPrice && (
-                                                <span className="text-stone-400 line-through text-xs">₹{item.originalPrice.toLocaleString()}</span>
-                                            )}
-                                         </div>
-                                         {item.selectedSize && (
-                                             <span className="text-xs font-medium text-stone-600">Size: <span className="text-stone-900 font-bold">{item.selectedSize}</span></span>
-                                         )}
-                                         {item.discountPercentage > 0 && (
-                                            <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full w-fit">
-                                                {item.discountPercentage}% OFF
-                                            </span>
-                                         )}
+                                    <div className="flex justify-between items-start">
+                                        <h3 className="text-lg font-heading font-medium text-stone-900 mb-1 truncate pr-4">{item.name}</h3>
+                                        {/* Mobile Remove (Top Right) */}
+                                        <button
+                                            onClick={() => removeFromCart(item.id, item.selectedSize)}
+                                            className="text-stone-400 hover:text-rose-900 transition-colors p-1 -mt-1 -mr-1 lg:hidden"
+                                            title="Remove Item"
+                                        >
+                                            <X className="w-5 h-5" />
+                                        </button>
                                     </div>
-                                    <p className="text-rose-900 font-bold sm:hidden mt-2">Total: ₹{(item.price * item.quantity).toLocaleString()}</p>
+
+                                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm mt-1">
+                                        <div className="flex flex-wrap gap-2 text-sm text-stone-500">
+                                             {item.selectedSize && (
+                                                 <span className="flex items-center bg-stone-50 border border-stone-200 px-2 py-0.5 rounded text-xs">
+                                                    Size: <span className="font-bold text-stone-900 ml-1">{item.selectedSize}</span>
+                                                 </span>
+                                             )}
+                                             <div className="flex items-center gap-2">
+                                                <span className="font-medium text-stone-900">₹{item.price.toLocaleString()}</span>
+                                                {item.originalPrice && (
+                                                    <span className="text-stone-400 line-through text-xs">₹{item.originalPrice.toLocaleString()}</span>
+                                                )}
+                                             </div>
+                                             {item.discountPercentage > 0 && (
+                                                <span className="text-[10px] font-bold text-rose-900 bg-rose-50 px-1.5 py-0.5 rounded ml-1 self-center">
+                                                    -{item.discountPercentage}%
+                                                </span>
+                                             )}
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center justify-between mt-4">
+                                         {/* Quantity Selector - Pill Style */}
+                                        <div className="flex items-center bg-white border border-stone-200 rounded-full h-8 shadow-sm">
+                                            <button
+                                                onClick={() => updateQuantity(item.id, item.quantity - 1, item.selectedSize)}
+                                                className="w-8 h-full flex items-center justify-center hover:bg-stone-50 transition-colors text-stone-500 rounded-l-full"
+                                            >
+                                                <span className="text-lg leading-none mb-0.5">-</span>
+                                            </button>
+                                            <span className="w-8 text-center text-stone-900 font-bold text-sm leading-none">{item.quantity}</span>
+                                            <button
+                                                onClick={() => updateQuantity(item.id, item.quantity + 1, item.selectedSize)}
+                                                disabled={item.quantity >= (item.stock ?? item.stock_quantity ?? 100)}
+                                                className={`w-8 h-full flex items-center justify-center transition-colors rounded-r-full ${
+                                                    item.quantity >= (item.stock ?? item.stock_quantity ?? 100)
+                                                    ? 'text-stone-300 cursor-not-allowed'
+                                                    : 'text-stone-500 hover:bg-stone-50'
+                                                }`}
+                                            >
+                                                <span className="text-lg leading-none mb-0.5">+</span>
+                                            </button>
+                                        </div>
+                                         
+                                        <p className="text-rose-900 font-bold sm:hidden">₹{(item.price * item.quantity).toLocaleString()}</p>
                                     </div>
                                 </div>
 
-                                <div className="flex items-center gap-4">
-                                    <div className="flex items-center bg-stone-50 border border-stone-200 rounded-lg overflow-hidden">
-                                        <button
-                                            onClick={() => updateQuantity(item.id, item.quantity - 1, item.selectedSize)}
-                                            className="px-3 py-1 hover:bg-stone-200 transition-colors text-stone-600 font-bold"
-                                        >
-                                            -
-                                        </button>
-                                        <span className="w-10 text-center text-stone-900 font-medium text-sm">{item.quantity}</span>
-                                        <button
-                                            onClick={() => updateQuantity(item.id, item.quantity + 1, item.selectedSize)}
-                                            disabled={item.quantity >= (item.stock ?? item.stock_quantity ?? 100)}
-                                            className={`px-3 py-1 transition-colors font-bold ${
-                                                item.quantity >= (item.stock ?? item.stock_quantity ?? 100)
-                                                ? 'text-stone-300 cursor-not-allowed'
-                                                : 'text-stone-600 hover:bg-stone-200'
-                                            }`}
-                                        >
-                                            +
-                                        </button>
+                                {/* Desktop Remove & Total */}
+                                <div className="hidden lg:flex items-center gap-6">
+                                     <div className="w-24 text-right font-bold text-stone-900">
+                                        ₹{(item.price * item.quantity).toLocaleString()}
                                     </div>
-                                    <button
+                                     <button
                                         onClick={() => removeFromCart(item.id, item.selectedSize)}
                                         className="p-2 text-stone-400 hover:text-rose-900 transition-colors rounded-lg hover:bg-rose-50"
                                         title="Remove Item"
@@ -108,16 +130,14 @@ const Cart = () => {
                                         <Trash2 className="w-5 h-5" />
                                     </button>
                                 </div>
-                                <div className="hidden sm:block w-32 text-right font-bold text-stone-900">
-                                    ₹{(item.price * item.quantity).toLocaleString()}
-                                </div>
                             </div>
                         ))}
                     </div>
 
                     {/* Order Summary */}
                     <div className="lg:w-1/3">
-                        <div className="bg-white rounded-2xl shadow-lg border border-stone-100 p-8 sticky top-28">
+                        {/* Desktop Summary Card */}
+                        <div className="bg-white rounded-2xl shadow-lg border border-stone-100 p-8 sticky top-28 hidden lg:block">
                             <h2 className="text-xl font-heading font-bold text-stone-900 mb-6">Order Summary</h2>
                             <div className="space-y-4 mb-8">
                                 <div className="flex justify-between text-stone-600">
@@ -190,8 +210,83 @@ const Cart = () => {
                                 </p>
                             )}
                         </div>
+
+                        {/* Mobile Summary & Coupon (Non-Sticky) */}
+                         <div className="bg-white rounded-2xl shadow-sm border border-stone-100 p-6 lg:hidden mb-6">
+                            <h2 className="text-lg font-heading font-bold text-stone-900 mb-4">Order Details</h2>
+                             <div className="space-y-3 mb-6">
+                                <div className="flex justify-between text-stone-600 text-sm">
+                                    <span>Subtotal</span>
+                                    <span>₹{subtotal.toLocaleString()}</span>
+                                </div>
+                                 {appliedCoupon && (
+                                    <div className="flex justify-between text-emerald-600 bg-emerald-50 px-2 py-1 rounded text-xs">
+                                        <span className="flex items-center font-bold"><Tag className="w-3 h-3 mr-1"/> {appliedCoupon.code}</span>
+                                        <span className="font-bold">-₹{discountAmount.toLocaleString()}</span>
+                                    </div>
+                                )}
+                                <div className="flex justify-between text-stone-600 text-sm">
+                                    <span>Shipping</span>
+                                    <span className={shippingCharge === 0 ? "text-emerald-700 font-bold" : "text-stone-900 font-medium"}>
+                                        {shippingCharge === 0 ? 'Free' : `₹${shippingCharge}`}
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            {/* Mobile Coupon Input */}
+                             <div className="mb-2">
+                                {appliedCoupon ? (
+                                    <div className="bg-emerald-50 border border-emerald-100 rounded-lg p-3 flex items-center justify-between">
+                                        <div className="flex items-center text-emerald-700">
+                                            <Tag className="w-3 h-3 mr-2" />
+                                            <span className="text-xs font-bold">Coupon Applied</span>
+                                        </div>
+                                        <button onClick={removeCoupon} className="text-emerald-600 hover:text-emerald-800 p-1 hover:bg-emerald-100 rounded-full transition-colors">
+                                            <X className="w-3 h-3" />
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-2">
+                                        <div className="flex gap-2">
+                                            <input
+                                                type="text"
+                                                placeholder="Coupon Code"
+                                                className="flex-1 px-3 py-2 border border-stone-200 rounded-lg focus:ring-1 focus:ring-rose-900/20 focus:border-rose-900 outline-none uppercase font-medium text-xs transition-all"
+                                                value={couponCode}
+                                                onChange={(e) => setCouponCode(e.target.value)}
+                                            />
+                                            <button
+                                                onClick={handleApplyCoupon}
+                                                className="px-4 py-2 bg-stone-900 text-white rounded-lg hover:bg-stone-800 transition-colors font-bold text-[10px] uppercase tracking-wider"
+                                            >
+                                                Apply
+                                            </button>
+                                        </div>
+                                        {couponError && <p className="text-rose-600 text-[10px] font-bold flex items-center gap-1"><X className="w-3 h-3"/> {couponError}</p>}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
                     </div>
                 </div>
+            </div>
+
+            {/* Mobile Sticky Checkout Bar */}
+            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200 px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-[0_-4px_10px_rgba(0,0,0,0.1)] lg:hidden z-50">
+                 <div className="flex items-center justify-between gap-4">
+                    <div>
+                        <p className="text-xs text-stone-500 font-medium">Total</p>
+                        <p className="text-xl font-bold text-rose-900">₹{cartTotal.toLocaleString()}</p>
+                    </div>
+                    <button
+                        onClick={() => navigate('/checkout')}
+                        className="flex-1 bg-rose-900 text-white py-3 rounded-xl font-bold uppercase tracking-widest hover:bg-rose-800 transition-all flex items-center justify-center gap-2 shadow-lg shadow-rose-900/20"
+                    >
+                        <span>Checkout</span>
+                        <ArrowRight className="w-4 h-4" />
+                    </button>
+                 </div>
             </div>
         </div>
     );

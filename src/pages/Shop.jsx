@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { getOptimizedImageUrl } from '../utils/imageUtils';
 import { Package, Heart, Search, ChevronDown, Sparkles } from 'lucide-react';
-import { useCart } from '../context/CartContext';
+// import { useCart } from '../context/CartContext';
 import { useProducts } from '../context/ProductContext';
 import { useCategories } from '../context/CategoryContext';
 import { useWishlist } from '../context/WishlistContext';
 import { Link } from 'react-router-dom';
-import { useToast } from '../context/ToastContext';
+// import { useToast } from '../context/ToastContext';
 
 const Shop = () => {
     const { products, loading: productsLoading } = useProducts();
     const { categories: contextCategories } = useCategories();
-    const { addToCart } = useCart();
+
     const { toggleWishlist, isInWishlist } = useWishlist();
-    const { addToast } = useToast();
+
     
     // Filter States
     const [filter, setFilter] = useState('all');
@@ -311,7 +311,7 @@ const Shop = () => {
                             </div>
                         ) : (
                             <>
-                                <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-8 md:gap-x-6 md:gap-y-10">
+                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8 md:gap-x-6 md:gap-y-10">
                                     {paginatedProducts.map((product) => (
                                         <Link 
                                             key={product.id} 
@@ -351,28 +351,7 @@ const Shop = () => {
                                                     <Heart className={`w-3.5 h-3.5 md:w-4 md:h-4 ${isInWishlist(product.id) ? 'fill-rose-600 text-rose-600' : ''}`} />
                                                 </button>
 
-                                                {/* Add to Cart Overlay - Desktop Only mostly or adjusted */}
-                                                {product.inStock && (
-                                                    product.clothingInformation ? (
-                                                        <Link 
-                                                            to={`/product/${product.id}`}
-                                                            className="hidden md:flex absolute inset-x-0 bottom-0 py-3 bg-white/95 text-stone-900 text-xs font-bold uppercase tracking-widest translate-y-full group-hover:translate-y-0 transition-transform duration-300 items-center justify-center gap-2 hover:bg-stone-900 hover:text-white"
-                                                        >
-                                                            Select Size
-                                                        </Link>
-                                                    ) : (
-                                                        <button 
-                                                            onClick={async (e) => {
-                                                                e.preventDefault();
-                                                                await addToCart(product);
-                                                                addToast("Added to bag", "success");
-                                                            }}
-                                                            className="hidden md:flex absolute inset-x-0 bottom-0 py-3 bg-white/95 text-stone-900 text-xs font-bold uppercase tracking-widest translate-y-full group-hover:translate-y-0 transition-transform duration-300 items-center justify-center gap-2 hover:bg-stone-900 hover:text-white"
-                                                        >
-                                                            <Package className="w-3 h-3" /> Add to Bag
-                                                        </button>
-                                                    )
-                                                )}
+                                                {/* Add to Cart Overlay Removed */}
                                             </div>
 
                                             {/* Product Info */}
