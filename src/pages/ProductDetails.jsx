@@ -10,7 +10,7 @@ import { Heart, ShoppingBag, ArrowLeft, Truck, Shield, Star, Award, Search, Spar
 const ProductDetails = () => {
     const { id } = useParams();
     const { products } = useProducts();
-    const { addToCart } = useCart();
+    const { addToCart, cart } = useCart();
     const { toggleWishlist, isInWishlist } = useWishlist();
     const { addToast } = useToast();
     const navigate = useNavigate();
@@ -25,6 +25,12 @@ const ProductDetails = () => {
     
     // Image Gallery State
     const [selectedImage, setSelectedImage] = useState(null);
+
+    // Check if item is in cart (reactive to size selection for clothing)
+    const isInCart = product && cart.some(item => 
+        item.id === product.id && 
+        (product.clothingInformation ? item.selectedSize === selectedSize : true)
+    );
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -260,6 +266,11 @@ const ProductDetails = () => {
                             <div className="flex gap-4">
                                 <button
                                     onClick={async () => {
+                                        if (isInCart) {
+                                            navigate('/cart');
+                                            return;
+                                        }
+
                                         if (product.clothingInformation && !selectedSize) {
                                             setSizeError(true);
                                             addToast('Please select a size first', 'error');
@@ -271,12 +282,14 @@ const ProductDetails = () => {
                                     disabled={!product.inStock}
                                     className={`flex-1 py-4 px-8 rounded-full font-bold uppercase tracking-widest text-sm transition-all duration-300 flex items-center justify-center gap-3 ${
                                         product.inStock
-                                        ? 'bg-stone-900 text-white hover:bg-stone-800 shadow-lg shadow-stone-900/10 hover:shadow-stone-900/20 hover:-translate-y-0.5'
+                                        ? isInCart 
+                                            ? 'bg-emerald-800 text-white hover:bg-emerald-900 shadow-lg shadow-emerald-900/10' // Distinct style for Go to Cart
+                                            : 'bg-stone-900 text-white hover:bg-stone-800 shadow-lg shadow-stone-900/10 hover:shadow-stone-900/20 hover:-translate-y-0.5'
                                         : 'bg-stone-200 text-stone-400 cursor-not-allowed'
                                     }`}
                                 >
                                     <ShoppingBag className="w-4 h-4" />
-                                    {product.inStock ? 'Add to Bag' : 'Sold Out'}
+                                    {product.inStock ? (isInCart ? 'Go to Bag' : 'Add to Bag') : 'Sold Out'}
                                 </button>
                                 
                                 <button 
