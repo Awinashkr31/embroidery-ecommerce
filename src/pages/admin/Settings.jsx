@@ -3,6 +3,7 @@ import { supabase } from '../../../config/supabase';
 import { Save, Globe, Mail, Phone, MapPin, Facebook, Instagram, Twitter, Loader, Image as ImageIcon, Upload, FileText, LayoutTemplate, Type, Pencil, X, Plus, Trash2, IndianRupee, Clock } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 import imageCompression from 'browser-image-compression';
+import ImageCropper from '../../components/ImageCropper';
 
 const Settings = () => {
     const { addToast } = useToast();
@@ -11,6 +12,11 @@ const Settings = () => {
     const [uploading, setUploading] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [activeTab, setActiveTab] = useState('general');
+
+    // Cropping State
+    const [cropModalOpen, setCropModalOpen] = useState(false);
+    const [cropImageSrc, setCropImageSrc] = useState(null);
+    const [cropKey, setCropKey] = useState(null);
 
     const [settings, setSettings] = useState({
         // General
@@ -152,18 +158,41 @@ const Settings = () => {
 
 
 
-    const handleImageUpload = async (e, key) => {
+    const handleImageUpload = (e, key) => {
         const file = e.target.files[0];
         if (!file) return;
 
+        const reader = new FileReader();
+        reader.addEventListener('load', () => {
+             setCropImageSrc(reader.result);
+             setCropKey(key);
+             setCropModalOpen(true);
+             e.target.value = null;
+        });
+        reader.readAsDataURL(file);
+    };
+
+    const handleCropComplete = async (croppedBlob) => {
+        if (!croppedBlob) {
+             setCropModalOpen(false);
+             return;
+        }
+
         try {
             setUploading(true);
+            setCropModalOpen(false);
 
-            // COMPRESSION LOGIC
+            // Convert Blob to File for compression library
+            const file = new File([croppedBlob], `setting_${Date.now()}.jpg`, {
+                type: 'image/jpeg',
+                lastModified: Date.now()
+            });
+
             const options = {
                 maxSizeMB: 0.2, // < 200KB
                 maxWidthOrHeight: 1920,
-                useWebWorker: true
+                useWebWorker: true,
+                fileType: 'image/jpeg'
             };
             
             let uploadFile = file;
@@ -174,16 +203,19 @@ const Settings = () => {
                 console.warn("Compression failed, using original:", cErr);
             }
 
+            const key = cropKey;
             const oldUrl = settings[key];
             if (oldUrl) await deleteImageFromStorage(oldUrl);
 
-            const fileExt = uploadFile.name.split('.').pop();
+            const fileExt = 'jpg';
             const fileName = `${key}_${Date.now()}.${fileExt}`;
             const filePath = `site-assets/${fileName}`;
 
             const { error: uploadError } = await supabase.storage
                 .from('images')
-                .upload(filePath, uploadFile);
+                .upload(filePath, uploadFile, {
+                    contentType: 'image/jpeg'
+                });
 
             if (uploadError) throw uploadError;
 
@@ -199,6 +231,8 @@ const Settings = () => {
             addToast(`Failed to upload: ${error.message || 'Unknown error'}`, 'error');
         } finally {
             setUploading(false);
+            setCropImageSrc(null);
+            setCropKey(null);
         }
     };
 
@@ -721,6 +755,23 @@ const Settings = () => {
                     @apply px-4 py-2 rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-rose-900/20 focus:border-rose-900 transition-all;
                 }
             `}</style>
+             
+            {/* Crop Modal */}
+            {cropModalOpen && (
+                <ImageCropper
+                    imageSrc={cropImageSrc}
+                    aspect={
+                        (cropKey || '').includes('banner') || (cropKey || '').includes('hero') ? 16/9 : 
+                        (cropKey || '').includes('story') ? 4/3 : 1
+                    }
+                    onCancel={() => {
+                        setCropModalOpen(false);
+                        setCropImageSrc(null);
+                        setCropKey(null);
+                    }}
+                    onCropComplete={handleCropComplete}
+                />
+            )}
         </div>
     );
 };

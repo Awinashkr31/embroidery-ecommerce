@@ -1,4 +1,4 @@
-// Import the functions you need from the SDKs you need
+console.log('[DEBUG] 1. Firebase Config Executing');
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
@@ -15,9 +15,19 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+console.log('Firebase Config:', firebaseConfig);
 
-// Export Auth and Provider for use in AuthContext
-export const auth = getAuth(app);
-export const googleProvider = new GoogleAuthProvider();
+let app;
+let auth;
+let googleProvider;
+
+try {
+  app = initializeApp(firebaseConfig);
+  auth = getAuth(app);
+  googleProvider = new GoogleAuthProvider();
+  console.log('Firebase Initialized Successfully');
+} catch (error) {
+  console.error('Firebase Initialization Error:', error);
+}
+
+export { auth, googleProvider };

@@ -1,59 +1,28 @@
 import { supabase } from '../config/supabase';
+import imageCompression from 'browser-image-compression';
 
 /**
- * Compresses an image file to ensure it's optimized for web
+ * Compresses an image file to ensure it's optimized for web (max 200KB)
  * @param {File} file 
- * @param {number} maxWidth - Max width of the image (default 1200px)
- * @param {number} quality - JPEG quality (0 to 1, default 0.8)
+ * @param {number} maxWidth - Max width of the image (default 1920px)
  */
-export const compressImage = async (file, maxWidth = 1200, quality = 0.8) => {
-  return new Promise((resolve, reject) => {
-    // If it's not an image, return original
-    if (!file.type.match(/image.*/)) {
-      resolve(file);
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = (event) => {
-      const img = new Image();
-      img.src = event.target.result;
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        let width = img.width;
-        let height = img.height;
-
-        // Resize if larger than maxWidth
-        if (width > maxWidth) {
-          height = (height * maxWidth) / width;
-          width = maxWidth;
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
-
-        // Compress
-        canvas.toBlob((blob) => {
-          if (!blob) {
-            reject(new Error('Canvas is empty'));
-            return;
-          }
-          // Note: converting to jpeg for better compression
-          const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".jpg", {
-            type: 'image/jpeg',
-            lastModified: Date.now(),
-          });
-          resolve(compressedFile);
-        }, 'image/jpeg', quality);
-      };
-      img.onerror = (error) => reject(error);
+export const compressImage = async (file, maxWidth = 1920) => {
+  try {
+    const options = {
+      maxSizeMB: 0.2,          // 200KB max size
+      maxWidthOrHeight: maxWidth,
+      useWebWorker: true,
+      fileType: 'image/jpeg'
     };
-    reader.onerror = (error) => reject(error);
-  });
+    
+    // browser-image-compression helps match the 0.2MB limit iteratively
+    const compressedFile = await imageCompression(file, options);
+    return compressedFile;
+  } catch (error) {
+    console.error("Compression failed:", error);
+    // Fallback: return original if compression fails (or handle differently)
+    return file;
+  }
 };
 
 /**

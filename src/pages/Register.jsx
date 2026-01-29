@@ -6,7 +6,7 @@ import { getAuthErrorMessage } from '../utils/authErrors';
 import { useToast } from '../context/ToastContext';
 
 export default function Register() {
-  const { signup, updateUser, verifyEmail, logout } = useAuth();
+  const { signup, updateUser, verifyEmail, logout, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
   const { addToast } = useToast();
   const [error, setError] = useState('');
@@ -48,6 +48,17 @@ export default function Register() {
       setError(getAuthErrorMessage(err));
     }
     setLoading(false);
+  }
+
+  async function handleGoogleSignUp() {
+    try {
+      setError('');
+      await signInWithGoogle();
+      navigate('/');
+    } catch (err) {
+      console.error(err);
+      setError(getAuthErrorMessage(err));
+    }
   }
 
   return (
@@ -209,6 +220,23 @@ export default function Register() {
                 )}
             </button>
           </form>
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-stone-200"></div>
+            </div>
+            <div className="relative flex justify-center text-xs uppercase font-bold tracking-widest text-stone-400">
+                <span className="bg-[#fdfbf7] px-4">Or continue with</span>
+            </div>
+          </div>
+
+          <button
+            onClick={handleGoogleSignUp}
+            className="w-full bg-white border border-stone-200 hover:border-stone-300 hover:bg-stone-50 text-stone-700 font-bold py-3.5 rounded-xl transition-all duration-200 flex items-center justify-center gap-3 group"
+          >
+            <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5" />
+            <span>Sign up with Google</span>
+          </button>
 
           <p className="text-center text-stone-500">
             Already have an account?{' '}

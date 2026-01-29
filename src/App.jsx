@@ -1,14 +1,17 @@
+console.log('[DEBUG] 4. App File Executing');
 import React, { Suspense, lazy } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
+import BottomNavigation from './components/BottomNavigation'
 import { CartProvider } from './context/CartContext'
 import { ProductProvider } from './context/ProductContext'
 import { AuthProvider } from './context/AuthContext'
 import { ToastProvider } from './context/ToastContext'
 import { WishlistProvider } from './context/WishlistContext'
 import { SettingsProvider } from './context/SettingsContext'
+import { CategoryProvider } from './context/CategoryContext'
 
 // Lazy Load Page Components for Performance
 const Login = lazy(() => import('./pages/Login'));
@@ -23,6 +26,7 @@ const OrderConfirmation = lazy(() => import('./pages/OrderConfirmation'));
 const Home = lazy(() => import('./pages/Home'));
 const About = lazy(() => import('./pages/About'));
 const Shop = lazy(() => import('./pages/Shop'));
+
 const ProductDetails = lazy(() => import('./pages/ProductDetails'));
 const CustomDesign = lazy(() => import('./pages/CustomDesign'));
 const MehndiBooking = lazy(() => import('./pages/MehndiBooking'));
@@ -65,6 +69,7 @@ function App() {
       <ToastProvider>
       <WishlistProvider>
       <SettingsProvider>
+      <CategoryProvider>
       <CartProvider>
       <ProductProvider>
         <Router>
@@ -97,7 +102,7 @@ function App() {
 
               {/* Public Routes */}
               <Route path="*" element={
-                <div className="flex flex-col min-h-screen">
+                <div className="flex flex-col min-h-screen pb-16 md:pb-0">
                   <Navbar />
                   <main className="flex-grow pt-20">
                     <Suspense fallback={<PageLoader />}>
@@ -105,6 +110,7 @@ function App() {
                         <Route path="/" element={<Home />} />
                         <Route path="/about" element={<About />} />
                         <Route path="/shop" element={<Shop />} />
+
                         <Route path="/product/:id" element={<ProductDetails />} />
                         <Route path="/custom-design" element={<CustomDesign />} />
                         <Route path="/mehndi-booking" element={<MehndiBooking />} />
@@ -125,6 +131,7 @@ function App() {
                     </Suspense>
                   </main>
                   <Footer />
+                  <BottomNavigation />
                 </div>
               } />
             </Routes>
@@ -132,6 +139,7 @@ function App() {
         </Router>
       </ProductProvider>
       </CartProvider>
+      </CategoryProvider>
       </SettingsProvider>
       </WishlistProvider>
       </ToastProvider>

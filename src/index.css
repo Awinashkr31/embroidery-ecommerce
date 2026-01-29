@@ -26,11 +26,27 @@
     @apply antialiased text-stone-900 bg-[#fdfbf7];
     font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
+    /* Prevent pull-to-refresh on mobile if needed, though usually handled by JS */
+    overscroll-behavior-y: none;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
     @apply font-semibold tracking-tight;
+  }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
   }
 }
 
