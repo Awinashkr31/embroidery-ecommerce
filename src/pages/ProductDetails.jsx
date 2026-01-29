@@ -22,6 +22,9 @@ const ProductDetails = () => {
     // Clothing Support
     const [selectedSize, setSelectedSize] = useState(null);
     const [sizeError, setSizeError] = useState(false);
+    
+    // Image Gallery State
+    const [selectedImage, setSelectedImage] = useState(null);
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -29,7 +32,11 @@ const ProductDetails = () => {
             const found = products.find(p => p.id === parseInt(id) || p.id === id);
             setProduct(found);
             setLoading(false);
-            if (found) fetchReviews(found.id);
+            if (found) {
+                 fetchReviews(found.id);
+                 // Initialize selected image
+                 setSelectedImage(found.image);
+            }
         }
     }, [id, products]);
 
@@ -88,7 +95,7 @@ const ProductDetails = () => {
                     <div className="relative h-fit lg:sticky lg:top-28 space-y-4">
                         <div className="aspect-[4/5] bg-stone-100 rounded-lg overflow-hidden relative shadow-sm group">
                             <img 
-                                src={product.image} 
+                                src={selectedImage || product.image} 
                                 alt={product.name} 
                                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
                             />
@@ -103,6 +110,27 @@ const ProductDetails = () => {
                                 </button>
                             </div>
                         </div>
+
+                        {/* Thumbnail Gallery */}
+                        {product.images && product.images.length > 1 && (
+                            <div className="grid grid-cols-4 gap-4">
+                                {product.images.map((img, idx) => (
+                                    img && (
+                                        <button 
+                                            key={idx}
+                                            onClick={() => setSelectedImage(img)}
+                                            className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
+                                                selectedImage === img 
+                                                ? 'border-rose-900 shadow-md opacity-100' 
+                                                : 'border-transparent opacity-70 hover:opacity-100'
+                                            }`}
+                                        >
+                                            <img src={img} alt={`View ${idx + 1}`} className="w-full h-full object-cover" />
+                                        </button>
+                                    )
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     {/* Details Section - Clean Typography */}

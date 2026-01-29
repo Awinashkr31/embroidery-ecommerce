@@ -1,3 +1,4 @@
+console.log('[DEBUG] 3. AuthContext Executing');
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { auth, googleProvider } from '../config/firebase';
 import { supabase } from '../config/supabase';
@@ -94,6 +95,7 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      console.log('onAuthStateChanged fired', user);
       setCurrentUser(user);
       if (user) await syncUserToSupabase(user);
       setLoading(false);
@@ -101,6 +103,10 @@ export function AuthProvider({ children }) {
 
     return unsubscribe;
   }, []);
+
+  if (loading) {
+      return <div>Authentication initializing... (Check Console)</div>;
+  }
 
   const value = {
     currentUser,
@@ -125,7 +131,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider value={value}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 }

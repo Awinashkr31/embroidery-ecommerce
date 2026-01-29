@@ -1,14 +1,30 @@
 import React, { useState } from 'react';
 import { useProducts } from '../../context/ProductContext';
+import { useCategories } from '../../context/CategoryContext';
+import { useToast } from '../../context/ToastContext';
 import { Plus, Edit2, Trash2, X, Image as ImageIcon, Search, Filter, SortAsc, Loader, Upload, Shirt } from 'lucide-react';
 import { uploadImage } from '../../utils/uploadUtils';
+import ImageCropper from '../../components/ImageCropper';
 
 const ProductManager = () => {
     const { products, addProduct, updateProduct, deleteProduct, toggleStock } = useProducts();
+    const { categories: categoryObjects, addCategory, deleteCategory } = useCategories();
+    const { addToast } = useToast();
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+    const [newCategory, setNewCategory] = useState('');
+    
+    // Map objects to simple array if needed, but objects {id, label} are better. 
+    // Existing code uses strings. Let's adapt.
+    const categories = categoryObjects.map(c => c.label);
 
     const [editingProduct, setEditingProduct] = useState(null);
     const [uploading, setUploading] = useState(false);
+
+    // Cropping State
+    const [cropModalOpen, setCropModalOpen] = useState(false);
+    const [cropImageSrc, setCropImageSrc] = useState(null);
+    const [cropIndex, setCropIndex] = useState(0);
     
     // Search & Filter State
     const [searchTerm, setSearchTerm] = useState('');
@@ -25,6 +41,10 @@ const ProductManager = () => {
         images: ['', '', ''], // [Front, Back, Close-up]
         stockQuantity: 10,
         featured: false,
+        // Enhanced Fields
+        sku: '',
+        tags: '',
+        color: '',
         // Clothing specific
         fabric: '', 
     };
@@ -43,8 +63,10 @@ const ProductManager = () => {
     const [clothingData, setClothingData] = useState(initialClothingState);
     const [isClothing, setIsClothing] = useState(false);
 
-    const categories = ["Home Decor", "Accessories", "Art", "Gifts", "Jewelry", "Clothing", "Mens Ethnic", "Womens Ethnic"];
+    // const categories = ["Home Decor", "Accessories", "Art", "Gifts", "Jewelry", "Clothing", "Mens Ethnic", "Womens Ethnic"]; 
+    // Now provided by context above ^
     const sizesList = ["XS", "S", "M", "L", "XL", "XXL", "3XL"];
+    const fabricTypes = ["Cotton", "Silk", "Linen", "Velvet", "Organza", "Georgette", "Chiffon", "Rayon", "Wool", "Denim", "Mixed/Blend", "Crepe", "Satin"];
 
     // Filtered Products Calculation
     const filteredProducts = products.filter(product => {
@@ -71,6 +93,13 @@ const ProductManager = () => {
             if (product.clothingInformation) {
                 setClothingData(product.clothingInformation);
                 setIsClothing(true);
+                // Hydrate enhanced fields from clothingInformation JSON if they exist there
+                setFormData(prev => ({
+                    ...prev,
+                    sku: product.clothingInformation.sku || '',
+                    tags: product.clothingInformation.tags || '',
+                    color: product.clothingInformation.color || ''
+                }));
             } else {
                 setClothingData(initialClothingState);
                 setIsClothing(!!product.fabric); // Legacy check
@@ -87,21 +116,44 @@ const ProductManager = () => {
         setIsModalOpen(true);
     };
 
-    const handleImageUpload = async (e, index) => {
+    const handleImageUpload = (e, index) => {
         const file = e.target.files[0];
         if (!file) return;
 
+        const reader = new FileReader();
+        reader.addEventListener('load', () => {
+             setCropImageSrc(reader.result);
+             setCropIndex(index);
+             setCropModalOpen(true);
+             // Reset file input value so same file can be selected again if needed
+             e.target.value = null; 
+        });
+        reader.readAsDataURL(file);
+    };
+
+    const handleCropComplete = async (croppedBlob) => {
+        if (!croppedBlob) {
+            setCropModalOpen(false);
+            return;
+        }
+
         try {
             setUploading(true);
+            setCropModalOpen(false); // Close modal while uploading
+
+            // Convert Blob to File
+            const file = new File([croppedBlob], `cropped-image-${Date.now()}.jpg`, { type: 'image/jpeg' });
+
             const publicUrl = await uploadImage(file, 'images', 'products');
             const newImages = [...formData.images];
-            newImages[index] = publicUrl;
+            newImages[cropIndex] = publicUrl;
             setFormData({ ...formData, images: newImages });
         } catch (error) {
             console.error('Upload failed:', error);
             alert('Failed to upload image. Please try again.');
         } finally {
             setUploading(false);
+            setCropImageSrc(null);
         }
     };
 
@@ -123,7 +175,13 @@ const ProductManager = () => {
             originalPrice: formData.originalPrice ? Number(formData.originalPrice) : null,
             stockQuantity: Number(formData.stockQuantity),
             image: formData.images[0], // Main image for legacy support
-            clothingInformation: isClothing ? clothingData : null
+            // pack enhanced fields into clothingInformation (as a flexible metadata json)
+            clothingInformation: {
+                ...(isClothing ? clothingData : {}),
+                sku: formData.sku,
+                tags: formData.tags,
+                color: formData.color
+            }
         };
         try {
             if (editingProduct) {
@@ -158,6 +216,13 @@ const ProductManager = () => {
                     >
                         <Plus className="w-5 h-5 mr-2" />
                         Add Standard
+                    </button>
+                    <button 
+                         onClick={() => setIsCategoryModalOpen(true)}
+                         className="flex items-center justify-center px-4 py-3 bg-stone-100 text-stone-700 rounded-xl hover:bg-stone-200 transition-colors font-bold tracking-wide text-sm"
+                    >
+                        <Filter className="w-5 h-5 mr-2" />
+                        Categories
                     </button>
                     <button 
                         onClick={() => handleOpenModal(null, 'clothing')}
@@ -245,7 +310,7 @@ const ProductManager = () => {
                                             </button>
                                         </td>
                                         <td className="px-6 py-4 text-right">
-                                            <div className="flex items-center justify-end space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <div className="flex items-center justify-end space-x-2">
                                                 <button 
                                                     onClick={() => handleOpenModal(product)}
                                                     className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
@@ -310,7 +375,8 @@ const ProductManager = () => {
                                     {/* Main Image (Front) */}
                                     <div className="space-y-2">
                                         <label className="text-xs font-bold text-stone-500 uppercase tracking-widest flex justify-between">
-                                            {isClothing ? 'Front View (Main)' : 'Product Image'}
+                                            {isClothing ? 'Front View (Main)' : 'Main Image'}
+                                            <span className="text-stone-400 font-normal normal-case tracking-normal ml-2">(Cover)</span>
                                             {isClothing && <span className="text-rose-600">*</span>}
                                         </label>
                                         <div className="group relative aspect-[3/4] bg-stone-50 rounded-2xl border-2 border-dashed border-stone-200 overflow-hidden flex items-center justify-center hover:border-rose-200 transition-all">
@@ -417,13 +483,16 @@ const ProductManager = () => {
                                             </div>
                                             <div className="space-y-3">
                                                 <label className="text-xs font-bold text-stone-500 uppercase tracking-widest">Fabric / Material</label>
-                                                <input 
-                                                    type="text" 
-                                                    className="w-full px-4 py-3 rounded-xl bg-stone-50 border-2 border-stone-100 focus:border-rose-900 focus:bg-white focus:ring-0 outline-none transition-all font-medium"
-                                                    placeholder="e.g. 100% Cotton"
+                                                <select 
+                                                    className="w-full px-4 py-3 rounded-xl bg-stone-50 border-2 border-stone-100 focus:border-rose-900 focus:bg-white focus:ring-0 outline-none transition-all font-medium appearance-none"
                                                     value={formData.fabric}
                                                     onChange={(e) => setFormData({...formData, fabric: e.target.value})}
-                                                />
+                                                >
+                                                    <option value="">Select Fabric</option>
+                                                    {fabricTypes.map(f => (
+                                                        <option key={f} value={f}>{f}</option>
+                                                    ))}
+                                                </select>
                                             </div>
                                         </div>
                                     )}
@@ -577,6 +646,69 @@ const ProductManager = () => {
                         </div>
                     </div>
                 </div>
+            )}
+            {/* Category Manager Modal */}
+            {isCategoryModalOpen && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-stone-900/40 backdrop-blur-md" onClick={() => setIsCategoryModalOpen(false)} />
+                    <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden p-6 animate-in zoom-in-95 duration-300">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-xl font-bold text-stone-900">Manage Categories</h2>
+                            <button onClick={() => setIsCategoryModalOpen(false)}><X className="w-6 h-6 text-stone-400" /></button>
+                        </div>
+                        
+                        <div className="flex gap-2 mb-6">
+                            <input 
+                                type="text"
+                                value={newCategory}
+                                onChange={(e) => setNewCategory(e.target.value)}
+                                placeholder="New Category Name"
+                                className="flex-1 px-4 py-2 rounded-lg border border-stone-200 focus:outline-none focus:border-rose-900"
+                            />
+                            <button 
+                                onClick={async () => {
+                                    if (!newCategory.trim()) return;
+                                    await addCategory(newCategory);
+                                    setNewCategory('');
+                                }}
+                                className="bg-rose-900 text-white px-4 py-2 rounded-lg font-bold hover:bg-rose-800"
+                            >
+                                <Plus className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        <div className="max-h-[300px] overflow-y-auto space-y-2">
+                            {categoryObjects.map(cat => (
+                                <div key={cat.id} className="flex justify-between items-center p-3 bg-stone-50 rounded-lg group">
+                                    <span className="font-medium text-stone-700">{cat.label}</span>
+                                    <button 
+                                        onClick={() => {
+                                            if (window.confirm(`Delete category "${cat.label}"?`)) {
+                                                deleteCategory(cat.id);
+                                            }
+                                        }}
+                                        className="text-stone-400 hover:text-red-500 transition-all"
+                                    >
+                                        <Trash2 className="w-4 h-4" />
+                                    </button>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Crop Modal */}
+            {cropModalOpen && (
+                <ImageCropper
+                    imageSrc={cropImageSrc}
+                    aspect={isClothing && cropIndex === 0 ? 3/4 : 1} 
+                    onCancel={() => {
+                        setCropModalOpen(false);
+                        setCropImageSrc(null);
+                    }}
+                    onCropComplete={handleCropComplete}
+                />
             )}
         </div>
     );

@@ -3,12 +3,14 @@ import { getOptimizedImageUrl } from '../utils/imageUtils';
 import { Package, Heart, Search, ChevronDown, Sparkles } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useProducts } from '../context/ProductContext';
+import { useCategories } from '../context/CategoryContext';
 import { useWishlist } from '../context/WishlistContext';
 import { Link } from 'react-router-dom';
 import { useToast } from '../context/ToastContext';
 
 const Shop = () => {
     const { products, loading: productsLoading } = useProducts();
+    const { categories: contextCategories } = useCategories();
     const { addToCart } = useCart();
     const { toggleWishlist, isInWishlist } = useWishlist();
     const { addToast } = useToast();
@@ -73,10 +75,7 @@ const Shop = () => {
 
     const categories = [
         { id: 'all', label: 'All Creations' },
-        { id: 'Home Decor', label: 'Home Decor' },
-        { id: 'Accessories', label: 'Accessories' },
-        { id: 'Art', label: 'Art' },
-        { id: 'Gifts', label: 'Gifts' }
+        ...contextCategories
     ];
 
     const priceRanges = [
@@ -108,7 +107,7 @@ const Shop = () => {
                     <div className="lg:hidden w-full mb-6">
                         <button 
                             onClick={() => document.getElementById('mobile-filters').classList.remove('translate-x-full')}
-                            className="w-full flex items-center justify-center gap-2 bg-white border border-stone-200 py-3 rounded-lg font-medium text-stone-900"
+                            className="w-full flex items-center justify-center gap-2 bg-white border border-stone-200 py-3 rounded-lg font-medium text-stone-900 shadow-sm"
                         >
                             <span className="uppercase tracking-wider text-xs font-bold">Filters & Sort</span>
                             <ChevronDown className="w-4 h-4" />
@@ -116,7 +115,7 @@ const Shop = () => {
                     </div>
 
                     {/* Mobile Filters Drawer */}
-                    <div id="mobile-filters" className="fixed inset-0 z-50 transform translate-x-full transition-transform duration-300 lg:hidden">
+                    <div id="mobile-filters" className="fixed inset-0 z-50 transform translate-x-full transition-transform duration-300 lg:hidden text-left">
                         <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" onClick={() => document.getElementById('mobile-filters').classList.add('translate-x-full')} />
                         <aside className="absolute right-0 top-0 bottom-0 w-[300px] bg-white shadow-2xl p-6 overflow-y-auto">
                             <div className="flex justify-between items-center mb-8">
@@ -259,7 +258,7 @@ const Shop = () => {
                     {/* Product Grid - with Sticky Header */}
                     <div className="flex-1 w-full relative">
                         {/* Sticky Toolbar: Search, Sort, & Count */}
-                        <div className="sticky top-20 lg:top-24 z-20 bg-white/95 backdrop-blur-md py-4 mb-8 border-y border-stone-200 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4 transition-all duration-300">
+                        <div className="sticky top-20 lg:top-24 z-20 bg-white/95 backdrop-blur-md py-4 mb-8 border-y border-stone-200 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4 transition-all duration-300 px-4 md:px-0 rounded-xl md:rounded-none mt-[-1rem] md:mt-0">
                              {/* Result Count (Desktop) */}
                             <div className="hidden md:block text-sm font-medium text-stone-500 pl-4">
                                 Showing {allFilteredProducts.length} results
@@ -320,7 +319,7 @@ const Shop = () => {
                                             className="group block"
                                         >
                                             {/* Image Card */}
-                                            <div className="relative aspect-[3/4] overflow-hidden bg-stone-100 mb-3 md:mb-5">
+                                            <div className="relative aspect-[3/4] overflow-hidden bg-stone-100 mb-3 md:mb-5 rounded-[20px] md:rounded-2xl">
                                                 <img
                                                     src={getOptimizedImageUrl(product.image, { width: 600, quality: 80 })}
                                                     alt={product.name}
@@ -330,12 +329,12 @@ const Shop = () => {
                                                 {/* Minimal Badges */}
                                                 <div className="absolute top-2 left-2 md:top-3 md:left-3 flex flex-col gap-1">
                                                     {!product.inStock && (
-                                                        <span className="bg-stone-900 text-white text-[8px] md:text-[10px] font-bold uppercase tracking-widest px-1.5 py-0.5 md:px-2 md:py-1">
+                                                        <span className="bg-stone-900 text-white text-[8px] md:text-[10px] font-bold uppercase tracking-widest px-1.5 py-0.5 md:px-2 md:py-1 rounded-sm">
                                                             Sold Out
                                                         </span>
                                                     )}
                                                     {product.discountPercentage > 0 && (
-                                                        <span className="bg-rose-900 text-white text-[8px] md:text-[10px] font-bold uppercase tracking-widest px-1.5 py-0.5 md:px-2 md:py-1">
+                                                        <span className="bg-rose-900 text-white text-[8px] md:text-[10px] font-bold uppercase tracking-widest px-1.5 py-0.5 md:px-2 md:py-1 rounded-sm">
                                                             {product.discountPercentage}% OFF
                                                         </span>
                                                     )}
@@ -347,7 +346,7 @@ const Shop = () => {
                                                         e.preventDefault();
                                                         toggleWishlist(product);
                                                     }}
-                                                    className="absolute top-2 right-2 md:top-3 md:right-3 p-1.5 md:p-2 bg-white/90 text-stone-500 hover:text-rose-600 transition-all opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 duration-300"
+                                                    className="absolute top-2 right-2 md:top-3 md:right-3 p-1.5 md:p-2 bg-white/90 rounded-full text-stone-500 hover:text-rose-600 transition-all opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 duration-300 shadow-sm"
                                                 >
                                                     <Heart className={`w-3.5 h-3.5 md:w-4 md:h-4 ${isInWishlist(product.id) ? 'fill-rose-600 text-rose-600' : ''}`} />
                                                 </button>

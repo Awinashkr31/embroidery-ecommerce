@@ -9,7 +9,6 @@ const Home = () => {
   const { products } = useProducts();
   
   // Default Images (Fallbacks)
-  // Default Images (Fallbacks)
   const defaultHero = "https://images.unsplash.com/photo-1620799140408-ed5341cd2431?q=80&w=800&auto=format&fit=crop";
   const defaultHoop = "https://images.unsplash.com/photo-1615561021463-569d643806a6?q=80&w=1200&auto=format&fit=crop";
   const defaultBridal = "https://images.unsplash.com/photo-1546167889-0b4b5ff0afd0?q=80&w=800&auto=format&fit=crop";
@@ -133,9 +132,48 @@ const Home = () => {
       </section>
 
       {/* ================= CATEGORIES ================= */}
-      <section className="py-16 bg-white overflow-visible">
+      <section className="py-8 md:py-16 bg-white overflow-visible">
         <div className="container-custom">
-          <div className="text-center mb-12">
+          {/* Mobile Categories (Horizontal Scroll) */}
+          <div className="md:hidden flex gap-4 overflow-x-auto no-scrollbar pb-4 -mx-4 px-4 snap-x">
+             <Link to="/shop?category=Hoop Art" className="flex flex-col items-center gap-2 min-w-[80px] snap-center">
+               <div className="w-16 h-16 rounded-full p-[2px] border-2 border-rose-900/20">
+                 <img src={hoopImage} alt="Hoop Art" className="w-full h-full rounded-full object-cover" />
+               </div>
+               <span className="text-xs font-medium text-center">Hoop Art</span>
+             </Link>
+             
+             <Link to="/shop?category=Bridal" className="flex flex-col items-center gap-2 min-w-[80px] snap-center">
+               <div className="w-16 h-16 rounded-full p-[2px] border-2 border-rose-900/20">
+                 <img src={bridalImage} alt="Bridal" className="w-full h-full rounded-full object-cover" />
+               </div>
+               <span className="text-xs font-medium text-center">Bridal</span>
+             </Link>
+
+             <Link to="/custom-design" className="flex flex-col items-center gap-2 min-w-[80px] snap-center">
+               <div className="w-16 h-16 rounded-full p-[2px] border-2 border-rose-900/20 bg-stone-50 flex items-center justify-center">
+                 <PenTool size={20} className="text-rose-900" />
+               </div>
+               <span className="text-xs font-medium text-center">Custom</span>
+             </Link>
+
+             <Link to="/shop?category=Decor" className="flex flex-col items-center gap-2 min-w-[80px] snap-center">
+                <div className="w-16 h-16 rounded-full p-[2px] border-2 border-rose-900/20 bg-stone-50 flex items-center justify-center">
+                  <Flower size={20} className="text-rose-900" />
+                </div>
+                <span className="text-xs font-medium text-center">Decor</span>
+             </Link>
+
+             <Link to="/gallery" className="flex flex-col items-center gap-2 min-w-[80px] snap-center">
+                <div className="w-16 h-16 rounded-full p-[2px] border-2 border-rose-900/20 bg-stone-50 flex items-center justify-center">
+                  <Heart size={20} className="text-rose-900" />
+                </div>
+                <span className="text-xs font-medium text-center">Gallery</span>
+             </Link>
+          </div>
+
+          {/* Desktop Categories (Grid) */}
+          <div className="hidden md:block text-center mb-12">
             <span className="text-rose-900 text-xs uppercase tracking-[0.2em] font-bold">
               Curated Collections
             </span>
@@ -144,20 +182,20 @@ const Home = () => {
             </h2>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
-            <Link to="/shop?category=Hoop Art" className="md:col-span-2 relative rounded-3xl overflow-hidden">
+          <div className="hidden md:grid md:grid-cols-3 gap-6">
+            <Link to="/shop?category=Hoop Art" className="md:col-span-2 relative rounded-3xl overflow-hidden hover:scale-[1.01] transition-transform duration-500">
               <img
                 src={hoopImage}
                 alt="Hoop Art embroidery"
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-black/50 flex items-end p-8">
+              <div className="absolute inset-0 bg-black/40 flex items-end p-8">
                 <h3 className="text-white text-3xl font-heading">Hoop Art</h3>
               </div>
             </Link>
 
             <div className="flex flex-col gap-6">
-              <Link to="/shop?category=Bridal" className="relative rounded-3xl overflow-hidden min-h-[240px]">
+              <Link to="/shop?category=Bridal" className="relative rounded-3xl overflow-hidden min-h-[240px] hover:scale-[1.01] transition-transform duration-500">
                 <img
                   src={bridalImage}
                   alt="Bridal embroidery"
@@ -168,7 +206,7 @@ const Home = () => {
                 </div>
               </Link>
 
-              <Link to="/custom-design" className="rounded-3xl bg-stone-900 text-white flex flex-col items-center justify-center p-8 min-h-[240px]">
+              <Link to="/custom-design" className="rounded-3xl bg-stone-900 text-white flex flex-col items-center justify-center p-8 min-h-[240px] hover:bg-stone-800 transition-colors">
                 <PenTool className="w-8 h-8 text-rose-400 mb-4" />
                 <h3 className="text-2xl font-heading">Custom Design</h3>
                 <p className="text-sm text-stone-400 mt-2">Create something unique</p>
@@ -179,28 +217,29 @@ const Home = () => {
       </section>
 
       {/* ================= FEATURED PRODUCTS ================= */}
-      <section className="py-16 bg-[#fdfbf7]">
+      <section className="py-8 md:py-16 bg-[#fdfbf7]">
         <div className="container-custom">
-          <div className="flex justify-between items-end mb-8">
-            <h2 className="text-3xl font-heading">New Arrivals</h2>
-            <Link to="/shop" className="text-sm uppercase tracking-wide flex items-center gap-2">
+          <div className="flex justify-between items-end mb-6 md:mb-8 px-2 md:px-0">
+            <h2 className="text-2xl md:text-3xl font-heading">New Arrivals</h2>
+            <Link to="/shop" className="text-xs md:text-sm uppercase tracking-wide flex items-center gap-2 text-rose-900 font-medium">
               View All <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
+          {/* Mobile Horizontal Scroll / Desktop Grid */}
+          <div className="flex md:grid md:grid-cols-4 gap-4 overflow-x-auto md:overflow-visible no-scrollbar pb-4 md:pb-0 -mx-4 md:mx-0 px-4 md:px-0 snap-x">
             {featuredProducts.map(product => (
-              <Link key={product.id} to={`/product/${product.id}`} className="block">
-                <div className="aspect-[4/5] bg-white rounded-2xl flex items-center justify-center p-4">
+              <Link key={product.id} to={`/product/${product.id}`} className="min-w-[160px] md:min-w-0 flex-shrink-0 block snap-center">
+                <div className="aspect-[4/5] bg-white rounded-2xl flex items-center justify-center p-4 relative shadow-sm border border-stone-100">
                   <img
                     src={product.image}
                     alt={product.name}
-                    className="max-h-full object-contain"
+                    className="max-h-full object-contain hover:scale-105 transition-transform duration-300"
                     loading="lazy"
                   />
                 </div>
-                <h3 className="mt-3 font-heading font-bold truncate">{product.name}</h3>
-                <p className="text-stone-500">₹{product.price.toLocaleString()}</p>
+                <h3 className="mt-3 font-heading font-bold truncate px-1 text-sm md:text-base">{product.name}</h3>
+                <p className="text-stone-500 px-1 text-sm md:text-base">₹{product.price.toLocaleString()}</p>
               </Link>
             ))}
           </div>

@@ -27,7 +27,6 @@ export const ProductProvider = ({ children }) => {
                 ...p,
                 image: p.images?.[0] || 'https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=500',
                 inStock: (p.stock_quantity || 0) > 0,
-                inStock: (p.stock_quantity || 0) > 0,
                 stock: p.stock_quantity, // Keep raw value too
                 clothingInformation: p.clothing_information,
                 originalPrice: p.original_price,
