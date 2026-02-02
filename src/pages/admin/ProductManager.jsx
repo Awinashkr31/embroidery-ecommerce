@@ -180,13 +180,14 @@ const ProductManager = () => {
             originalPrice: formData.originalPrice ? Number(formData.originalPrice) : null,
             stockQuantity: Number(formData.stockQuantity),
             image: formData.images[0], // Main image for legacy support
-            // pack enhanced fields into clothingInformation (as a flexible metadata json)
-            clothingInformation: {
-                ...(isClothing ? clothingData : {}),
+            // Only save clothingInformation if it is explicitly a clothing item
+            // This prevents "Select Size" headers from appearing on standard products
+            clothingInformation: isClothing ? {
+                ...clothingData,
                 sku: formData.sku,
                 tags: formData.tags,
                 color: formData.color
-            }
+            } : null
         };
         try {
             if (editingProduct) {
@@ -361,9 +362,29 @@ const ProductManager = () => {
                             <div>
                                 <h2 className="text-2xl font-heading font-bold text-stone-800 flex items-center gap-2">
                                     {editingProduct ? 'Edit Product' : 'Add New Product'}
-                                    {isClothing && <span className="px-2 py-0.5 bg-rose-100 text-rose-800 text-xs rounded-full">Clothing</span>}
                                 </h2>
-                                <p className="text-stone-500 text-sm mt-1">Fill in the details to update your inventory</p>
+                                <div className="flex items-center gap-4 mt-2">
+                                     <p className="text-stone-500 text-sm">Fill in the details to update your inventory</p>
+                                     <button 
+                                        type="button"
+                                        onClick={() => {
+                                            const newIsClothing = !isClothing;
+                                            setIsClothing(newIsClothing);
+                                            // Initialize clothing data if switching to clothing and it's empty
+                                            if (newIsClothing && (!clothingData || Object.keys(clothingData).length === 0)) {
+                                                setClothingData(initialClothingState);
+                                            }
+                                        }}
+                                        className={`flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold transition-colors border ${isClothing ? 'bg-rose-100 text-rose-800 border-rose-200' : 'bg-stone-100 text-stone-600 border-stone-200 hover:bg-stone-200'}`}
+                                     >
+                                        {isClothing ? (
+                                            <><Shirt className="w-3 h-3" /> Clothing Item</>
+                                        ) : (
+                                            <><span className="w-3 h-3 rounded-full bg-stone-400"></span> Standard Item</>
+                                        )}
+                                        <span className="ml-1 text-[10px] opacity-60 uppercase tracking-wider">(Click to Switch)</span>
+                                     </button>
+                                </div>
                             </div>
                             <button 
                                 onClick={() => setIsModalOpen(false)} 
