@@ -359,13 +359,15 @@ const Navbar = () => {
                     </button>
                 </div>
 
-                <div className="space-y-6 flex-1">
+                <div className="space-y-1 flex-1 px-2">
                     {navLinks.map((link) => (
                         <Link 
                             key={link.path}
                             to={link.path}
-                            className={`block text-xl font-heading font-medium transition-colors ${
-                                isActive(link.path) ? 'text-rose-900 pl-4 border-l-2 border-rose-900' : 'text-stone-600 hover:text-rose-900'
+                            className={`block text-base font-body font-medium transition-all py-3 px-4 ${
+                                isActive(link.path) 
+                                    ? 'text-rose-900 font-semibold bg-rose-50/50 rounded-r-full border-l-4 border-rose-900' 
+                                    : 'text-stone-600 hover:text-stone-900 hover:bg-stone-50 rounded-r-full border-l-4 border-transparent'
                             }`}
                             onClick={() => setIsMobileMenuOpen(false)}
                         >
@@ -374,25 +376,31 @@ const Navbar = () => {
                     ))}
                 </div>
 
-                <div className="border-t border-stone-100 pt-6 space-y-4">
+                <div className="border-t border-stone-100 pt-6 px-4 pb-4">
                      {currentUser ? (
                         <>
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="w-10 h-10 rounded-full bg-stone-100 flex items-center justify-center text-stone-500">
-                                    <User className="w-5 h-5" />
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="w-10 h-10 rounded-full bg-stone-100 flex items-center justify-center text-stone-500 border border-stone-200 overflow-hidden">
+                                     {currentUser.photoURL ? (
+                                        <img src={currentUser.photoURL} alt="User" className="w-full h-full object-cover" />
+                                      ) : (
+                                        <User className="w-5 h-5" />
+                                      )}
                                 </div>
-                                <div>
-                                    <p className="text-sm font-bold text-stone-900">{currentUser.displayName || 'User'}</p>
-                                    <p className="text-xs text-stone-500 truncate w-32">{currentUser.email}</p>
+                                <div className="overflow-hidden">
+                                    <p className="text-sm font-bold text-stone-900 truncate">{currentUser.displayName || 'User'}</p>
+                                    <p className="text-xs text-stone-500 truncate">{currentUser.email}</p>
                                 </div>
                             </div>
-                            <Link to="/profile" className="block text-sm font-medium text-stone-600 hover:text-rose-900 py-2">Account Settings</Link>
-                            <button onClick={handleLogout} className="block w-full text-left text-sm font-medium text-red-600 hover:text-red-700 py-2">Sign Out</button>
+                            <div className="space-y-1">
+                                <Link to="/profile" className="block text-sm font-medium text-stone-600 hover:text-rose-900 py-2">Account Settings</Link>
+                                <button onClick={handleLogout} className="block w-full text-left text-sm font-medium text-stone-400 hover:text-red-600 py-2 transition-colors">Sign Out</button>
+                            </div>
                         </>
                      ) : (
                          <div className="grid grid-cols-2 gap-4">
-                            <Link to="/login" className="btn-primary flex items-center justify-center !px-0 text-xs">Login</Link>
-                            <Link to="/register" className="btn-outline flex items-center justify-center !px-0 text-xs">Sign Up</Link>
+                            <Link to="/login" className="btn-primary flex items-center justify-center !px-0 text-xs py-2.5">Login</Link>
+                            <Link to="/register" className="btn-outline flex items-center justify-center !px-0 text-xs py-2.5">Sign Up</Link>
                          </div>
                      )}
                 </div>

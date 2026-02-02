@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useProducts } from '../../context/ProductContext';
 import { useCategories } from '../../context/CategoryContext';
-import { useToast } from '../../context/ToastContext';
+
 import { Plus, Edit2, Trash2, X, Image as ImageIcon, Search, Filter, SortAsc, Loader, Upload, Shirt } from 'lucide-react';
 import { uploadImage } from '../../utils/uploadUtils';
 import ImageCropper from '../../components/ImageCropper';
@@ -9,7 +9,7 @@ import ImageCropper from '../../components/ImageCropper';
 const ProductManager = () => {
     const { products, addProduct, updateProduct, deleteProduct, toggleStock } = useProducts();
     const { categories: categoryObjects, addCategory, deleteCategory } = useCategories();
-    const { addToast } = useToast();
+    // const { addToast } = useToast(); // Unused
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
     const [newCategory, setNewCategory] = useState('');
@@ -56,7 +56,9 @@ const ProductManager = () => {
         sleeveType: 'Full Sleeve',
         occasion: 'Festive',
         careInstructions: 'Machine wash cold. Do not bleach.',
-        sizes: {} // e.g., { 'S': 5, 'M': 5 }
+
+        sizes: {}, // e.g., { 'S': 5, 'M': 5 }
+        colors: [] // e.g. ["Red", "Blue"]
     };
 
     const [formData, setFormData] = useState(initialProductState);
@@ -65,7 +67,7 @@ const ProductManager = () => {
 
     // const categories = ["Home Decor", "Accessories", "Art", "Gifts", "Jewelry", "Clothing", "Mens Ethnic", "Womens Ethnic"]; 
     // Now provided by context above ^
-    const sizesList = ["XS", "S", "M", "L", "XL", "XXL", "3XL"];
+    const sizesList = ["XS", "S", "M", "L", "XL", "XXL", "3XL", "Free"];
     const fabricTypes = ["Cotton", "Silk", "Linen", "Velvet", "Organza", "Georgette", "Chiffon", "Rayon", "Wool", "Denim", "Mixed/Blend", "Crepe", "Satin"];
 
     // Filtered Products Calculation
@@ -91,7 +93,10 @@ const ProductManager = () => {
 
             // Hydrate clothing fields
             if (product.clothingInformation) {
-                setClothingData(product.clothingInformation);
+                setClothingData({
+                    ...product.clothingInformation,
+                    colors: product.clothingInformation.colors || []
+                });
                 setIsClothing(true);
                 // Hydrate enhanced fields from clothingInformation JSON if they exist there
                 setFormData(prev => ({
@@ -212,14 +217,14 @@ const ProductManager = () => {
                 <div className="flex gap-3">
                     <button 
                         onClick={() => handleOpenModal()}
-                        className="flex items-center justify-center px-4 py-3 bg-stone-100 text-stone-700 rounded-xl hover:bg-stone-200 transition-colors font-bold tracking-wide text-sm"
+                        className="flex items-center justify-center px-6 py-3 bg-white text-stone-900 border border-stone-200 rounded-xl hover:bg-stone-50 hover:border-stone-300 transition-all font-bold tracking-wide text-sm shadow-sm"
                     >
                         <Plus className="w-5 h-5 mr-2" />
                         Add Standard
                     </button>
                     <button 
                          onClick={() => setIsCategoryModalOpen(true)}
-                         className="flex items-center justify-center px-4 py-3 bg-stone-100 text-stone-700 rounded-xl hover:bg-stone-200 transition-colors font-bold tracking-wide text-sm"
+                         className="flex items-center justify-center px-6 py-3 bg-white text-stone-900 border border-stone-200 rounded-xl hover:bg-stone-50 hover:border-stone-300 transition-all font-bold tracking-wide text-sm shadow-sm"
                     >
                         <Filter className="w-5 h-5 mr-2" />
                         Categories
@@ -494,6 +499,26 @@ const ProductManager = () => {
                                                     ))}
                                                 </select>
                                             </div>
+                                        </div>
+                                    )}
+
+                                    {isClothing && (
+                                        <div className="space-y-3 mt-4">
+                                            <label className="text-xs font-bold text-stone-500 uppercase tracking-widest">Available Colors</label>
+                                            <input 
+                                                type="text"
+                                                className="w-full px-4 py-3 rounded-xl bg-stone-50 border-2 border-stone-100 focus:border-rose-900 focus:bg-white focus:ring-0 outline-none transition-all font-medium placeholder:text-stone-300"
+                                                placeholder="e.g. Red, Blue, NA (Comma Separated)"
+                                                value={clothingData.colors ? clothingData.colors.join(', ') : ''}
+                                                onChange={(e) => {
+                                                    const val = e.target.value;
+                                                    setClothingData({
+                                                        ...clothingData, 
+                                                        colors: val.split(',').map(c => c.trim()).filter(c => c !== '')
+                                                    });
+                                                }}
+                                            />
+                                            <p className="text-[10px] text-stone-400">Use "NA" if not applicable.</p>
                                         </div>
                                     )}
 

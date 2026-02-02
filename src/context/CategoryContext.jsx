@@ -36,7 +36,14 @@ export const CategoryProvider = ({ children }) => {
             if (data && data.setting_value) {
                 // Ensure it's an array
                 const parsed = Array.isArray(data.setting_value) ? data.setting_value : JSON.parse(data.setting_value);
-                setCategories(parsed);
+                
+                // Auto-capitalize existing categories on load
+                const formatted = parsed.map(cat => ({
+                    ...cat,
+                    label: cat.label.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ')
+                }));
+                
+                setCategories(formatted);
             } else {
                 // If not found, use defaults and save them (optional, but good for first run)
                 setCategories(DEFAULT_CATEGORIES);
@@ -77,7 +84,13 @@ export const CategoryProvider = ({ children }) => {
         }
     };
 
-    const addCategory = async (label) => {
+    const addCategory = async (rawLabel) => {
+        // Auto-capitalize: First letter of each word
+        const label = rawLabel
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .join(' ');
+
         const id = label; // Simple ID generation, or use label as ID
         const newCat = { id, label };
         // Check duplicate

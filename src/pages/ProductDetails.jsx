@@ -22,6 +22,8 @@ const ProductDetails = () => {
     // Clothing Support
     const [selectedSize, setSelectedSize] = useState(null);
     const [sizeError, setSizeError] = useState(false);
+    const [selectedColor, setSelectedColor] = useState(null);
+    const [colorError, setColorError] = useState(false);
     
     // Image Gallery State
     const [selectedImage, setSelectedImage] = useState(null);
@@ -36,8 +38,30 @@ const ProductDetails = () => {
     // Check if item is in cart (reactive to size selection for clothing)
     const isInCart = product && cart.some(item => 
         item.id === product.id && 
-        (product.clothingInformation ? item.selectedSize === selectedSize : true)
+        (product.clothingInformation 
+            ? (item.selectedSize === selectedSize && item.selectedColor === selectedColor) 
+            : true)
     );
+
+    const singleSizeKey = product?.clothingInformation?.sizes && 
+                         Object.keys(product.clothingInformation.sizes).length === 1 && 
+                         Object.keys(product.clothingInformation.sizes)[0];
+
+    const shouldHideSizeSelector = singleSizeKey === 'NA';
+    const shouldAutoSelectSize = singleSizeKey === 'NA' || singleSizeKey === 'Free';
+
+    const hasOnlyNAColor = product?.clothingInformation?.colors && 
+                           product.clothingInformation.colors.length === 1 && 
+                           product.clothingInformation.colors[0] === 'NA';
+
+    useEffect(() => {
+        if (shouldAutoSelectSize && singleSizeKey) {
+            setSelectedSize(singleSizeKey);
+        }
+        if (hasOnlyNAColor) {
+            setSelectedColor('NA');
+        }
+    }, [product, shouldAutoSelectSize, singleSizeKey, hasOnlyNAColor]);
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -94,10 +118,10 @@ const ProductDetails = () => {
         : 0;
 
     return (
-        <div className="min-h-screen bg-[#fdfbf7] pt-28 pb-20 font-body selection:bg-rose-100 selection:text-rose-900">
+        <div className="min-h-screen bg-[#fdfbf7] pt-7 pb-20 font-body selection:bg-rose-100 selection:text-rose-900">
             <div className="container-custom">
                 {/* Breadcrumb - Minimal */}
-                <div className="mb-8">
+                <div className="mb-8 hidden lg:block">
                     <Link to="/shop" className="inline-flex items-center gap-2 text-stone-500 hover:text-rose-900 transition-colors text-sm font-medium tracking-wide group">
                         <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> Back to Collection
                     </Link>
@@ -250,7 +274,41 @@ const ProductDetails = () => {
                         {/* Clothing Specific: Size Selector & Details */}
                         {product.clothingInformation && (
                             <div className="mb-10 space-y-6">
+                                {/* Color Selector */}
+                                {product.clothingInformation.colors && product.clothingInformation.colors.length > 0 && !hasOnlyNAColor && (
+                                    <div className="space-y-4">
+                                        <h3 className="text-xs font-bold text-stone-900 uppercase tracking-widest">Select Color</h3>
+                                        <div className="flex flex-wrap gap-3">
+                                            {product.clothingInformation.colors.map((color) => {
+                                                const isSelected = selectedColor === color;
+                                                return (
+                                                    <button
+                                                        key={color}
+                                                        onClick={() => {
+                                                            setSelectedColor(color);
+                                                            setColorError(false);
+                                                        }}
+                                                        className={`px-4 py-2 rounded-lg border transition-all duration-200 font-medium ${
+                                                            isSelected 
+                                                                ? 'bg-stone-900 text-white border-stone-900 shadow-lg' 
+                                                                : 'bg-white text-stone-900 border-stone-200 hover:border-stone-900'
+                                                        }`}
+                                                    >
+                                                        {color}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                        {colorError && (
+                                            <p className="text-red-500 text-sm animate-pulse flex items-center gap-1">
+                                                <span className="w-1 h-1 bg-red-500 rounded-full"></span> Please select a color
+                                            </p>
+                                        )}
+                                    </div>
+                                )}
+
                                 {/* Size Selector */}
+                                {!shouldHideSizeSelector && (
                                 <div className="space-y-4">
                                     <div className="flex justify-between items-center">
                                         <h3 className="text-xs font-bold text-stone-900 uppercase tracking-widest">Select Size</h3>
@@ -261,7 +319,7 @@ const ProductDetails = () => {
                                     <div className="flex flex-wrap gap-3">
                                         {Object.entries(product.clothingInformation.sizes || {})
                                             .sort((a, b) => {
-                                                const order = { 'XS': 1, 'S': 2, 'M': 3, 'L': 4, 'XL': 5, 'XXL': 6, '3XL': 7 };
+                                                const order = { 'XS': 1, 'S': 2, 'M': 3, 'L': 4, 'XL': 5, 'XXL': 6, '3XL': 7, 'Free': 8 };
                                                 return (order[a[0]] || 99) - (order[b[0]] || 99);
                                             })
                                             .map(([size, qty]) => {
@@ -302,6 +360,7 @@ const ProductDetails = () => {
                                         </p>
                                     )}
                                 </div>
+                                )}
                             </div>
                         )}
 
@@ -320,7 +379,13 @@ const ProductDetails = () => {
                                             addToast('Please select a size first', 'error');
                                             return;
                                         }
-                                        const success = await addToCart({ ...product, selectedSize });
+                                        if (product.clothingInformation && product.clothingInformation.colors && product.clothingInformation.colors.length > 0 && !selectedColor) {
+                                            setColorError(true);
+                                            addToast('Please select a color first', 'error');
+                                            return;
+                                        }
+
+                                        const success = await addToCart({ ...product, selectedSize, selectedColor });
                                         if (success) addToast(`Added ${product.name} to bag`, 'success');
                                     }}
                                     disabled={!product.inStock}
@@ -344,7 +409,12 @@ const ProductDetails = () => {
                                                 addToast('Please select a size first', 'error');
                                                 return;
                                             }
-                                            await addToCart({ ...product, selectedSize });
+                                            if (product.clothingInformation && product.clothingInformation.colors && product.clothingInformation.colors.length > 0 && !selectedColor) {
+                                                setColorError(true);
+                                                addToast('Please select a color first', 'error');
+                                                return;
+                                            }
+                                            await addToCart({ ...product, selectedSize, selectedColor });
                                             navigate('/cart');
                                          }
                                     }}

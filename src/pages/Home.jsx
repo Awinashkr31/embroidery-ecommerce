@@ -1,48 +1,77 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useProducts } from '../context/ProductContext';
-import { Star, ArrowRight, Flower, Heart, Scissors, PenTool } from 'lucide-react';
+import { useCategories } from '../context/CategoryContext';
+import { Star, ArrowRight, Flower, Heart, Scissors, PenTool, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 import SEO from '../components/SEO';
 import { fetchSetting } from '../utils/settingsUtils';
 
+const ScrollRevealSection = ({ children, className }) => {
+    const [isVisible, setIsVisible] = useState(false);
+    const ref = useRef(null);
+  
+    useEffect(() => {
+      const observer = new IntersectionObserver(
+        ([entry]) => {
+          if (entry.isIntersecting) {
+            setIsVisible(true);
+            observer.disconnect();
+          }
+        },
+        { threshold: 0.1 }
+      );
+  
+      if (ref.current) {
+        observer.observe(ref.current);
+      }
+  
+      return () => {
+        if (ref.current) {
+          observer.unobserve(ref.current);
+        }
+      };
+    }, []);
+  
+    return (
+      <section 
+        ref={ref} 
+        className={`${className} transition-all duration-1000 transform ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'}`}
+      >
+        {children}
+      </section>
+    );
+};
+
+const sliderImages = [
+    "https://images.unsplash.com/photo-1620799140408-ed5341cd2431?q=80&w=1600&auto=format&fit=crop", // Intricate Embroidery
+    "https://images.unsplash.com/photo-1616627561839-074385245eb6?q=80&w=1600&auto=format&fit=crop", // Hoop Art
+    "https://images.unsplash.com/photo-1544816155-12df9643f363?q=80&w=1600&auto=format&fit=crop"  // Fashion/Clothing
+];
+
 const Home = () => {
   const { products } = useProducts();
+  const { categories } = useCategories();
   
-  // Default Images (Fallbacks)
-  const defaultHero = "https://images.unsplash.com/photo-1620799140408-ed5341cd2431?q=80&w=800&auto=format&fit=crop";
-  const defaultHoop = "https://images.unsplash.com/photo-1615561021463-569d643806a6?q=80&w=1200&auto=format&fit=crop";
-  const defaultBridal = "https://images.unsplash.com/photo-1546167889-0b4b5ff0afd0?q=80&w=800&auto=format&fit=crop";
+  // Default Images
   const defaultStory1 = "https://images.unsplash.com/photo-1605218427368-35b8dd98ec65?q=80&w=600&auto=format&fit=crop";
   const defaultStory2 = "https://images.unsplash.com/photo-1594913785162-e6785fdd27f2?q=80&w=600&auto=format&fit=crop";
 
   // State
-  const [heroImage, setHeroImage] = useState(defaultHero);
-  const [heroTitle, setHeroTitle] = useState("Weaving Stories in Thread");
-  const [heroSubtitle, setHeroSubtitle] = useState("Timeless hand embroidery blending tradition with modern aesthetics.");
-  
-  const [hoopImage, setHoopImage] = useState(defaultHoop);
-  const [bridalImage, setBridalImage] = useState(defaultBridal);
   const [storyImage1, setStoryImage1] = useState(defaultStory1);
   const [storyImage2, setStoryImage2] = useState(defaultStory2);
 
+  // Slider State
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+        setCurrentSlide((prev) => (prev + 1) % sliderImages.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
+
   useEffect(() => {
     const loadSettings = async () => {
-        const h_image = await fetchSetting('home_hero_image');
-        if (h_image) setHeroImage(h_image);
-        
-        const h_title = await fetchSetting('home_hero_title');
-        if (h_title) setHeroTitle(h_title);
-        
-        const h_sub = await fetchSetting('home_hero_subtitle');
-        if (h_sub) setHeroSubtitle(h_sub);
-
-        // New Dynamic Images
-        const hoop = await fetchSetting('home_category_hoop_image');
-        if (hoop) setHoopImage(hoop);
-
-        const bridal = await fetchSetting('home_category_bridal_image');
-        if (bridal) setBridalImage(bridal);
-
         const s1 = await fetchSetting('home_brand_story_image_1');
         if (s1) setStoryImage1(s1);
 
@@ -53,241 +82,312 @@ const Home = () => {
   }, []);
 
   const featuredProducts = useMemo(() => {
-    return products.slice(0, 4);
+    return products.slice(0, 8); 
   }, [products]);
 
+  // Dynamic Categories Logic
+  const dynamicCategories = useMemo(() => {
+    return categories.map(cat => {
+        const product = products.find(p => p.category === cat.label && (p.image || p.images?.length > 0));
+        return {
+            id: cat.id,
+            label: cat.label,
+            image: product ? (product.image || product.images[0]) : "https://images.unsplash.com/photo-1616627561839-074385245eb6?q=80&w=600&auto=format&fit=crop"
+        };
+    });
+  }, [categories, products]);
+
   return (
-    <div className="font-body overflow-x-clip">
+    <div className="font-body selection:bg-rose-100 selection:text-rose-900">
       <SEO
         title="Home"
-        description="Welcome to Sana's Hand Embroidery. Explore handcrafted embroidery and mehndi art."
+        description="Welcome to Sana's Hand Embroidery. Explore handcrafted embroidery art, clothing, and custom designs."
       />
 
-      {/* ================= HERO SECTION ================= */}
-      <section className="relative py-20 lg:py-32 bg-[#fdfbf7] overflow-visible">
-        <div className="container-custom">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-
-            {/* Left Content */}
-            <div className="space-y-6 animate-in slide-in-from-left-5 duration-700">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-rose-900/10 bg-white shadow-sm text-rose-900 text-[10px] font-bold tracking-[0.2em] uppercase">
-                <Star className="w-3 h-3 fill-current" aria-hidden="true" />
-                Handcrafted Perfection
-              </div>
-
-              <h1 className="text-4xl md:text-5xl lg:text-7xl font-heading text-stone-900 leading-tight">
-                {heroTitle}
-              </h1>
-
-              <p className="text-lg text-stone-600 max-w-lg">
-                {heroSubtitle}
-              </p>
-
-              <div className="flex gap-4">
-                <Link to="/shop" className="btn-primary">Shop Collection</Link>
-                <Link to="/custom-design" className="btn-outline">Custom Order</Link>
-              </div>
-
-              <div className="flex items-center gap-8 pt-8 border-t border-stone-200/50">
-                <div>
-                  <p className="text-3xl font-bold">100%</p>
-                  <p className="text-xs uppercase tracking-widest text-stone-500">Handmade</p>
-                </div>
-                <div className="w-px h-8 bg-stone-200" />
-                <div>
-                  <p className="text-3xl font-bold">500+</p>
-                  <p className="text-xs uppercase tracking-widest text-stone-500">Happy Clients</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Visual */}
-            <div className="relative min-h-[50vh] flex justify-center lg:justify-end overflow-visible">
-              <div className="absolute w-[120%] h-[80%] bg-stone-100 rounded-full blur-3xl opacity-60" />
-
-              <div className="relative w-[320px] sm:w-[420px] aspect-[3/4]">
-                <img
-                  src={heroImage}
-                  alt="Hand embroidery artwork"
-                  className="w-full h-full object-cover rounded-[100px_100px_0_0] shadow-2xl"
-                  loading="eager"
-                />
-
-                <div className="absolute -bottom-6 -left-6 bg-white p-5 rounded-2xl shadow-xl max-w-[200px] hidden sm:block">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className="bg-rose-50 p-2 rounded-full">
-                      <Flower className="w-4 h-4 text-rose-900" aria-hidden="true" />
-                    </div>
-                    <span className="text-xs font-bold uppercase">New In</span>
+      {/* ================= HERO SLIDER ================= */}
+      <section className="relative w-full h-[50vh] md:h-[70vh] overflow-hidden bg-stone-900">
+          {sliderImages.map((img, idx) => (
+              <div 
+                  key={idx}
+                  className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${idx === currentSlide ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+              >
+                  <img src={img} alt={`Slide ${idx + 1}`} className="w-full h-full object-cover opacity-80" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-center justify-center">
+                       {idx === 0 && (
+                           <div className="text-center text-white animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300 px-4">
+                               <h1 className="text-5xl md:text-7xl font-heading mb-4 drop-shadow-md">Weaving Dreams</h1>
+                               <p className="text-xl md:text-2xl font-light tracking-wide drop-shadow-sm">Where tradition meets modern artistry</p>
+                           </div>
+                       )}
                   </div>
-                  <p className="text-xs text-stone-500">
-                    Spring floral collection now available.
-                  </p>
-                </div>
               </div>
-            </div>
+          ))}
 
-          </div>
-        </div>
-      </section>
-
-      {/* ================= CATEGORIES ================= */}
-      <section className="py-8 md:py-16 bg-white overflow-visible">
-        <div className="container-custom">
-          {/* Mobile Categories (Horizontal Scroll) */}
-          <div className="md:hidden flex gap-4 overflow-x-auto no-scrollbar pb-4 -mx-4 px-4 snap-x">
-             <Link to="/shop?category=Hoop Art" className="flex flex-col items-center gap-2 min-w-[80px] snap-center">
-               <div className="w-16 h-16 rounded-full p-[2px] border-2 border-rose-900/20">
-                 <img src={hoopImage} alt="Hoop Art" className="w-full h-full rounded-full object-cover" />
-               </div>
-               <span className="text-xs font-medium text-center">Hoop Art</span>
-             </Link>
-             
-             <Link to="/shop?category=Bridal" className="flex flex-col items-center gap-2 min-w-[80px] snap-center">
-               <div className="w-16 h-16 rounded-full p-[2px] border-2 border-rose-900/20">
-                 <img src={bridalImage} alt="Bridal" className="w-full h-full rounded-full object-cover" />
-               </div>
-               <span className="text-xs font-medium text-center">Bridal</span>
-             </Link>
-
-             <Link to="/custom-design" className="flex flex-col items-center gap-2 min-w-[80px] snap-center">
-               <div className="w-16 h-16 rounded-full p-[2px] border-2 border-rose-900/20 bg-stone-50 flex items-center justify-center">
-                 <PenTool size={20} className="text-rose-900" />
-               </div>
-               <span className="text-xs font-medium text-center">Custom</span>
-             </Link>
-
-             <Link to="/shop?category=Decor" className="flex flex-col items-center gap-2 min-w-[80px] snap-center">
-                <div className="w-16 h-16 rounded-full p-[2px] border-2 border-rose-900/20 bg-stone-50 flex items-center justify-center">
-                  <Flower size={20} className="text-rose-900" />
-                </div>
-                <span className="text-xs font-medium text-center">Decor</span>
-             </Link>
-
-             <Link to="/gallery" className="flex flex-col items-center gap-2 min-w-[80px] snap-center">
-                <div className="w-16 h-16 rounded-full p-[2px] border-2 border-rose-900/20 bg-stone-50 flex items-center justify-center">
-                  <Heart size={20} className="text-rose-900" />
-                </div>
-                <span className="text-xs font-medium text-center">Gallery</span>
-             </Link>
-          </div>
-
-          {/* Desktop Categories (Grid) */}
-          <div className="hidden md:block text-center mb-12">
-            <span className="text-rose-900 text-xs uppercase tracking-[0.2em] font-bold">
-              Curated Collections
-            </span>
-            <h2 className="text-3xl md:text-4xl font-heading text-stone-900 mt-2">
-              Explore Our Artistry
-            </h2>
-          </div>
-
-          <div className="hidden md:grid md:grid-cols-3 gap-6">
-            <Link to="/shop?category=Hoop Art" className="md:col-span-2 relative rounded-3xl overflow-hidden hover:scale-[1.01] transition-transform duration-500">
-              <img
-                src={hoopImage}
-                alt="Hoop Art embroidery"
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-black/40 flex items-end p-8">
-                <h3 className="text-white text-3xl font-heading">Hoop Art</h3>
-              </div>
-            </Link>
-
-            <div className="flex flex-col gap-6">
-              <Link to="/shop?category=Bridal" className="relative rounded-3xl overflow-hidden min-h-[240px] hover:scale-[1.01] transition-transform duration-500">
-                <img
-                  src={bridalImage}
-                  alt="Bridal embroidery"
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                  <h3 className="text-white text-2xl font-heading">Bridal</h3>
-                </div>
-              </Link>
-
-              <Link to="/custom-design" className="rounded-3xl bg-stone-900 text-white flex flex-col items-center justify-center p-8 min-h-[240px] hover:bg-stone-800 transition-colors">
-                <PenTool className="w-8 h-8 text-rose-400 mb-4" />
-                <h3 className="text-2xl font-heading">Custom Design</h3>
-                <p className="text-sm text-stone-400 mt-2">Create something unique</p>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ================= FEATURED PRODUCTS ================= */}
-      <section className="py-8 md:py-16 bg-[#fdfbf7]">
-        <div className="container-custom">
-          <div className="flex justify-between items-end mb-6 md:mb-8 px-2 md:px-0">
-            <h2 className="text-2xl md:text-3xl font-heading">New Arrivals</h2>
-            <Link to="/shop" className="text-xs md:text-sm uppercase tracking-wide flex items-center gap-2 text-rose-900 font-medium">
-              View All <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-
-          {/* Mobile: 2-Column Grid / Desktop: 4-Column Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 px-2 md:px-0">
-            {featuredProducts.map(product => (
-              <Link key={product.id} to={`/product/${product.id}`} className="group block">
-                <div className="aspect-[3/4] bg-white rounded-xl overflow-hidden relative shadow-sm border border-stone-100 mb-3">
-                  <img
-                    src={product.image}
-                    alt={product.name}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                    loading="lazy"
+          {/* Slider Controls */}
+          <button 
+                onClick={() => setCurrentSlide((prev) => (prev - 1 + sliderImages.length) % sliderImages.length)}
+                className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 backdrop-blur-md hover:bg-white/20 text-white transition-all z-10"
+          >
+              <ChevronLeft className="w-6 h-6" />
+          </button>
+          <button 
+                onClick={() => setCurrentSlide((prev) => (prev + 1) % sliderImages.length)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 backdrop-blur-md hover:bg-white/20 text-white transition-all z-10"
+          >
+              <ChevronRight className="w-6 h-6" />
+          </button>
+          
+          {/* Indicators */}
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-3 z-10">
+              {sliderImages.map((_, idx) => (
+                  <button 
+                    key={idx}
+                    onClick={() => setCurrentSlide(idx)}
+                    className={`w-2.5 h-2.5 rounded-full transition-all ${idx === currentSlide ? 'bg-white w-8' : 'bg-white/50'}`}
                   />
-                  {/* New Badge */}
-                  <div className="absolute top-2 left-2 bg-white/90 backdrop-blur px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider text-rose-900 shadow-sm">
-                    New
-                  </div>
-                </div>
-                <h3 className="font-heading font-bold text-stone-900 truncate text-sm md:text-base group-hover:text-rose-900 transition-colors">
-                  {product.name}
-                </h3>
-                <p className="text-stone-500 text-sm md:text-base mt-1">₹{product.price.toLocaleString()}</p>
-              </Link>
-            ))}
+              ))}
           </div>
+      </section>
+
+      {/* ================= DYNAMIC CATEGORIES ================= */}
+      <section className="py-12 md:py-20 bg-white">
+        <div className="container-custom">
+            
+            <div className="flex flex-col md:flex-row justify-between items-end mb-8 md:mb-12 gap-4">
+                <div className="max-w-xl text-center md:text-left w-full md:w-auto">
+                    <span className="text-rose-900 text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase mb-2 block">Collections</span>
+                    <h2 className="text-3xl md:text-4xl font-heading text-stone-900">Shop by Category</h2>
+                </div>
+                <Link to="/shop" className="hidden md:flex group items-center gap-2 text-sm font-bold uppercase tracking-widest text-stone-500 hover:text-stone-900 transition-colors">
+                    View Full Catalog 
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                </Link>
+            </div>
+
+            {/* Dynamic Grid */}
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-8">
+                
+                {dynamicCategories.map((category) => (
+                    <Link 
+                        key={category.id} 
+                        to={`/shop?category=${encodeURIComponent(category.label)}`}
+                        className="group flex flex-col items-center gap-2 md:gap-4"
+                    >
+                        <div className="relative w-28 h-28 md:w-32 md:h-32 lg:w-40 lg:h-40 rounded-full overflow-hidden border-2 border-transparent group-hover:border-rose-200 transition-all duration-300 shadow-sm group-hover:shadow-lg">
+                            <img 
+                                src={category.image} 
+                                alt={category.label} 
+                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                            />
+                        </div>
+                        
+                        <div className="flex items-center gap-1 md:gap-2 text-stone-800 group-hover:text-rose-900 transition-colors">
+                            <span className="font-heading font-medium text-sm md:text-lg text-center leading-tight">{category.label}</span>
+                            <ArrowRight className="w-3 h-3 md:w-4 md:h-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 hidden md:block" />
+                        </div>
+                    </Link>
+                ))}
+
+            </div>
+            
+            <div className="text-center mt-8 md:hidden">
+                <Link to="/shop" className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-stone-500 hover:text-stone-900 transition-colors border-b border-stone-300 pb-1">
+                    View Full Catalog 
+                    <ArrowRight className="w-3 h-3" />
+                </Link>
+            </div>
+
         </div>
       </section>
 
-      {/* ================= BRAND STORY ================= */}
-      <section className="py-20 bg-stone-900 text-white overflow-visible">
-        <div className="container-custom grid lg:grid-cols-2 gap-12 items-center">
-          <div>
-            <h2 className="text-4xl font-heading mb-6">
-              More Than <span className="italic font-serif text-stone-400">Thread</span>
-            </h2>
-            <p className="text-stone-400 mb-8">
-              Each stitch carries patience, tradition, and love handcrafted in India.
-            </p>
-
-            <div className="space-y-6">
-              <div className="flex gap-4">
-                <Scissors className="text-rose-400" />
-                <p>Tailored to your vision</p>
-              </div>
-              <div className="flex gap-4">
-                <Heart className="text-rose-400" />
-                <p>Made with love</p>
-              </div>
+      {/* ================= CURATED ARRIVALS ================= */}
+      <ScrollRevealSection className="py-12 md:py-24 bg-[#fdfbf7]">
+        <div className="container-custom">
+            
+            <div className="text-center max-w-2xl mx-auto mb-12">
+                <span className="text-rose-500 text-[10px] md:text-xs font-bold tracking-[0.3em] uppercase mb-3 block">Fresh from the studio</span>
+                <h2 className="text-3xl md:text-5xl font-heading text-stone-900 leading-tight">New Arrivals</h2>
             </div>
-          </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <img
-              src={storyImage1}
-              alt="Embroidery process"
-              className="rounded-2xl"
-            />
-            <img
-              src={storyImage2}
-              alt="Hand stitching"
-              className="rounded-2xl"
-            />
-          </div>
+            <div className="flex overflow-x-auto pb-6 -mx-4 px-4 scrollbar-hide snap-x snap-mandatory gap-4">
+                {featuredProducts.map((product, idx) => (
+                    <Link key={product.id} to={`/product/${product.id}`} className="group min-w-[150px] w-[45vw] sm:w-[280px] flex-shrink-0 snap-center">
+                        <div className="relative aspect-[3/4] bg-white rounded-2xl overflow-hidden mb-4 shadow-sm">
+                            <img 
+                                src={product.image} 
+                                alt={product.name} 
+                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                            />
+                            {/* Actions Overlay */}
+                            <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 translate-x-2 group-hover:translate-x-0">
+                                <button className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg text-stone-900 hover:text-rose-600 transition-colors">
+                                    <Heart className="w-5 h-5" />
+                                </button>
+                            </div>
+                            
+                            {/* Badges */}
+                            {idx < 2 && (
+                                <div className="absolute top-4 left-4 bg-rose-500 text-white text-[10px] uppercase font-bold px-3 py-1 rounded-full shadow-lg shadow-rose-500/20">
+                                    New
+                                </div>
+                            )}
+                            {product.discountPercentage > 0 && (
+                                <div className="absolute bottom-4 left-4 bg-stone-900 text-white text-[10px] uppercase font-bold px-3 py-1 rounded-full">
+                                    {product.discountPercentage}% OFF
+                                </div>
+                            )}
+                        </div>
+
+                        <div>
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <h3 className="font-heading font-bold text-stone-900 text-base md:text-lg group-hover:text-rose-900 transition-colors line-clamp-1">
+                                        {product.name}
+                                    </h3>
+                                    <p className="text-stone-500 text-xs md:text-sm mt-1 capitalize">{product.category}</p>
+                                </div>
+                                <div className="text-right pl-2">
+                                    <p className="font-bold text-stone-900 text-sm md:text-base">₹{product.price.toLocaleString()}</p>
+                                    {product.originalPrice > product.price && (
+                                        <p className="text-[10px] md:text-xs text-stone-400 line-through">₹{product.originalPrice.toLocaleString()}</p>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </Link>
+                ))}
+            </div>
+
+                <div className="text-center mt-10 md:mt-16">
+                    <Link to="/shop" className="inline-flex items-center gap-2 px-8 py-3 bg-rose-900 text-white rounded-full font-bold uppercase tracking-widest text-[10px] md:text-xs hover:bg-rose-800 transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5">
+                        View All Products
+                    </Link>
+                </div>
         </div>
+      </ScrollRevealSection>
+
+      {/* ================= CATEGORY SECTIONS ================= */}
+      {categories.map((category) => {
+        const categoryProducts = products.filter(p => p.category === category.label).slice(0, 8);
+        
+        if (categoryProducts.length === 0) return null;
+
+        return (
+          <ScrollRevealSection key={category.id} className="py-12 md:py-24 bg-white even:bg-[#fdfbf7]">
+            <div className="container-custom">
+                
+                <div className="text-center max-w-2xl mx-auto mb-12">
+                    <h2 className="text-3xl md:text-5xl font-heading text-stone-900 leading-tight">{category.label}</h2>
+                </div>
+
+                <div className="flex overflow-x-auto pb-6 -mx-4 px-4 scrollbar-hide snap-x snap-mandatory gap-4">
+                    {categoryProducts.map((product) => (
+                        <Link key={product.id} to={`/product/${product.id}`} className="group min-w-[150px] w-[45vw] sm:w-[280px] flex-shrink-0 snap-center">
+                            <div className="relative aspect-[3/4] bg-white rounded-2xl overflow-hidden mb-4 shadow-sm border border-stone-100">
+                                <img 
+                                    src={product.image} 
+                                    alt={product.name} 
+                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                />
+                                {/* Actions Overlay */}
+                                <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 translate-x-2 group-hover:translate-x-0">
+                                    <button className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg text-stone-900 hover:text-rose-600 transition-colors">
+                                        <Heart className="w-5 h-5" />
+                                    </button>
+                                </div>
+                                
+                                {product.discountPercentage > 0 && (
+                                    <div className="absolute bottom-4 left-4 bg-stone-900 text-white text-[10px] uppercase font-bold px-3 py-1 rounded-full">
+                                        {product.discountPercentage}% OFF
+                                    </div>
+                                )}
+                            </div>
+
+                            <div>
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <h3 className="font-heading font-bold text-stone-900 text-base md:text-lg group-hover:text-rose-900 transition-colors line-clamp-1">
+                                            {product.name}
+                                        </h3>
+                                        <p className="text-stone-500 text-xs md:text-sm mt-1 capitalize">{product.category}</p>
+                                    </div>
+                                    <div className="text-right pl-2">
+                                        <p className="font-bold text-stone-900 text-sm md:text-base">₹{product.price.toLocaleString()}</p>
+                                        {product.originalPrice > product.price && (
+                                            <p className="text-[10px] md:text-xs text-stone-400 line-through">₹{product.originalPrice.toLocaleString()}</p>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </Link>
+                    ))}
+                </div>
+
+                <div className="text-center mt-10 md:mt-16">
+                    <Link to={`/shop?category=${encodeURIComponent(category.label)}`} className="inline-flex items-center gap-2 px-8 py-3 bg-rose-900 text-white rounded-full font-bold uppercase tracking-widest text-[10px] md:text-xs hover:bg-rose-800 transition-all shadow-md hover:shadow-lg hover:-translate-y-0.5">
+                        View All {category.label}
+                    </Link>
+                </div>
+            </div>
+          </ScrollRevealSection>
+        );
+      })}
+
+      {/* ================= STORY SECTION ================= */}
+      <section className="py-16 md:py-24 bg-stone-900 text-white overflow-hidden relative">
+          <div className="absolute top-0 right-0 w-[400px] h-[400px] md:w-[600px] md:h-[600px] bg-rose-900/20 rounded-full blur-[120px] translate-x-1/2 -translate-y-1/2" />
+          
+          <div className="container-custom grid lg:grid-cols-2 gap-10 md:gap-16 items-center relative z-10">
+              <div className="space-y-6 md:space-y-8 text-center lg:text-left">
+                  <div>
+                      <span className="text-rose-400 text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase mb-2 md:mb-4 block">Our Process</span>
+                      <h2 className="text-3xl md:text-4xl lg:text-5xl font-heading mb-4 md:mb-6 leading-tight">
+                          Every Stitch Tells a <br/><span className="text-rose-400 font-serif italic">Beautiful Story</span>
+                      </h2>
+                      <p className="text-stone-400 text-base md:text-lg leading-relaxed">
+                          We believe in the power of handmade. In a world of fast fashion, we slow down to create meaningful pieces that last a lifetime. Each hoop, each dress, and each design is crafted with patience and precision.
+                      </p>
+                  </div>
+
+                  <div className="grid sm:grid-cols-2 gap-6 md:gap-8 pt-6 md:pt-8 border-t border-stone-800 text-left">
+                      <div className="flex gap-4">
+                          <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-stone-800 flex items-center justify-center shrink-0">
+                              <Scissors className="w-5 h-5 md:w-6 md:h-6 text-white" />
+                          </div>
+                          <div>
+                              <h4 className="font-bold text-base md:text-lg mb-1">Custom Fit</h4>
+                              <p className="text-stone-400 text-xs md:text-sm">Tailored specifically to your measurements and style preferences.</p>
+                          </div>
+                      </div>
+                      <div className="flex gap-4">
+                          <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-stone-800 flex items-center justify-center shrink-0">
+                              <Heart className="w-5 h-5 md:w-6 md:h-6 text-white" />
+                          </div>
+                          <div>
+                              <h4 className="font-bold text-base md:text-lg mb-1">Handmade Love</h4>
+                              <p className="text-stone-400 text-xs md:text-sm">Crafted by skilled artisans who pour their heart into every stitch.</p>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+
+              <div className="relative mt-8 lg:mt-0">
+                  <div className="aspect-square relative z-10">
+                     <img 
+                        src={storyImage1} 
+                        alt="Artisan working" 
+                        className="w-1/2 absolute top-0 left-0 rounded-2xl shadow-2xl border-4 border-stone-800 hover:scale-105 transition-transform duration-500 z-20"
+                     />
+                     <img 
+                        src={storyImage2} 
+                        alt="Finished embroidery" 
+                        className="w-2/3 absolute bottom-0 right-0 rounded-2xl shadow-2xl border-4 border-stone-800 hover:scale-105 transition-transform duration-500 z-10"
+                     />
+                  </div>
+                  {/* Decorative Circle text */}
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200px] h-[200px] md:w-[300px] md:h-[300px] border border-stone-700/50 rounded-full animate-spin-slow pointer-events-none" />
+              </div>
+          </div>
       </section>
 
     </div>
