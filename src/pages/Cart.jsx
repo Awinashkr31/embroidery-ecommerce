@@ -54,6 +54,11 @@ const Cart = () => {
                                         src={item.image}
                                         alt={item.name}
                                         className="w-full h-full object-cover"
+                                        onError={(e) => {
+                                            e.target.onerror = null;
+                                            e.target.src = '/logo.png';
+                                            e.target.className = "w-full h-full object-contain p-2 bg-stone-50 opacity-50";
+                                        }}
                                     />
                                 </div>
                                 <div className="flex-1 min-w-0">

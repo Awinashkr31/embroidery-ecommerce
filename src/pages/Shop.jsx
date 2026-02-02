@@ -5,12 +5,13 @@ import { Package, Heart, Search, ChevronDown, Sparkles } from 'lucide-react';
 import { useProducts } from '../context/ProductContext';
 import { useCategories } from '../context/CategoryContext';
 import { useWishlist } from '../context/WishlistContext';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 // import { useToast } from '../context/ToastContext';
 
 const Shop = () => {
     const { products, loading: productsLoading } = useProducts();
     const { categories: contextCategories } = useCategories();
+    const [searchParams] = useSearchParams();
 
     const { toggleWishlist, isInWishlist } = useWishlist();
 
@@ -27,7 +28,13 @@ const Shop = () => {
 
     useEffect(() => {
         window.scrollTo(0, 0);
-    }, []);
+        
+        // Handle URL params
+        const categoryParam = searchParams.get('category');
+        if (categoryParam) {
+            setFilter(categoryParam);
+        }
+    }, [searchParams]);
 
     useEffect(() => {
         setCurrentPage(1);
@@ -324,6 +331,12 @@ const Shop = () => {
                                                     src={getOptimizedImageUrl(product.image, { width: 600, quality: 80 })}
                                                     alt={product.name}
                                                     className={`w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 ${!product.inStock ? 'grayscale opacity-80' : ''}`}
+                                                    onError={(e) => {
+                                                        e.target.onerror = null;
+                                                        e.target.src = '/logo.png';
+                                                        e.target.parentElement.className += " bg-stone-50"; // Ensure background for transparent logo
+                                                        e.target.className = `w-full h-full object-contain p-8 opacity-50 ${!product.inStock ? 'grayscale' : ''}`;
+                                                    }}
                                                 />
                                                 
                                                 {/* Minimal Badges */}

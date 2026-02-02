@@ -198,9 +198,31 @@ const Profile = () => {
         }
     };
 
-    // ... existing return ...
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-[#fdfbf7]">
+                <Loader className="w-8 h-8 text-rose-900 animate-spin" />
+            </div>
+        );
+    }
+
+    if (!currentUser) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-[#fdfbf7] px-4 font-body">
+                <div className="w-20 h-20 bg-rose-50 rounded-full flex items-center justify-center mb-6">
+                    <User className="w-10 h-10 text-rose-900" />
+                </div>
+                <h2 className="text-2xl font-heading font-bold text-stone-900 mb-2">My Profile</h2>
+                <p className="text-stone-600 mb-8 text-center max-w-sm">Please log in to view your orders, manage addresses, and access your profile settings.</p>
+                <Link to="/login" className="btn-primary px-8">
+                    Log In / Sign Up
+                </Link>
+            </div>
+        );
+    }
+
     return (
-        <div className="min-h-screen bg-[#fdfbf7] py-12 lg:py-20 font-body">
+        <div className="min-h-screen bg-[#fdfbf7] pt-32 pb-24 lg:py-20 font-body">
             <div className="container-custom">
                 {/* Profile Header */}
                 <div className="bg-white rounded-2xl shadow-sm border border-stone-100 p-8 mb-8 flex flex-col md:flex-row items-center gap-8 relative overflow-hidden">
