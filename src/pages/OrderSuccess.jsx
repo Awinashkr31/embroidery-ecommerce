@@ -1,15 +1,15 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Check, ArrowRight, ShoppingBag, FileText} from 'lucide-react';
-import SEO from '../components/SEO';
+import { Check, ArrowRight, ShoppingBag, FileText } from 'lucide-react';
 
 const OrderSuccess = () => {
     const { state } = useLocation();
-    const orderId = state?.orderId; // Expect orderId from navigation state
+    const orderId = state?.orderId;
+    
+    console.log("OrderSuccess Rendered. Order ID:", orderId);
 
     return (
         <div className="min-h-screen bg-[#fdfbf7] flex items-center justify-center font-body p-6 pt-24 pb-12">
-            <SEO title="Order Confirmed - Thank You" description="Your order has been placed successfully." />
             
             <div className="max-w-xl w-full text-center">
                 {/* Success Animation Circle */}
