@@ -6,7 +6,7 @@ import { getAuthErrorMessage } from '../utils/authErrors';
 import { useToast } from '../context/ToastContext';
 
 export default function Register() {
-  const { signup, updateUser, verifyEmail, logout, signInWithGoogle } = useAuth();
+  const { signup, updateUser, signInWithGoogle } = useAuth();
   const navigate = useNavigate();
   const { addToast } = useToast();
   const [error, setError] = useState('');
@@ -32,18 +32,13 @@ export default function Register() {
       setError('');
       setLoading(true);
       
-      const { user } = await signup(formData.email, formData.password);
+      // Signup creates the user and logs them in automatically in firebase
+      await signup(formData.email, formData.password);
       await updateUser(formData.name, null, formData.phone);
-      await verifyEmail(user);
-      await logout();
+      // Skip verification enforcement for "easy" login
       
-      addToast('Account created! Verification email sent.', 'success');
-      
-      navigate('/login', { 
-        state: { 
-          message: "Account created! We've sent a verification link to your email. Please verify your email before logging in." 
-        } 
-      });
+      addToast('Account created successfully!', 'success');
+      navigate('/');
     } catch (err) {
       setError(getAuthErrorMessage(err));
     }

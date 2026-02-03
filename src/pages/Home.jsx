@@ -4,7 +4,7 @@ import { useProducts } from '../context/ProductContext';
 import { useCategories } from '../context/CategoryContext';
 import { Star, ArrowRight, Flower, Heart, Scissors, PenTool, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 import SEO from '../components/SEO';
-import { fetchSetting } from '../utils/settingsUtils';
+import { useSettings } from '../context/SettingsContext';
 
 const ScrollRevealSection = ({ children, className }) => {
     const [isVisible, setIsVisible] = useState(false);
@@ -42,26 +42,53 @@ const ScrollRevealSection = ({ children, className }) => {
     );
 };
 
-const sliderImages = [
-    "https://images.unsplash.com/photo-1620799140408-ed5341cd2431?q=80&w=1600&auto=format&fit=crop", // Intricate Embroidery
-    "https://images.unsplash.com/photo-1616627561839-074385245eb6?q=80&w=1600&auto=format&fit=crop", // Hoop Art
-    "https://images.unsplash.com/photo-1544816155-12df9643f363?q=80&w=1600&auto=format&fit=crop"  // Fashion/Clothing
-];
-
 const Home = () => {
   const { products } = useProducts();
   const { categories } = useCategories();
-  
-  // Default Images
-  const defaultStory1 = "https://images.unsplash.com/photo-1605218427368-35b8dd98ec65?q=80&w=600&auto=format&fit=crop";
-  const defaultStory2 = "https://images.unsplash.com/photo-1594913785162-e6785fdd27f2?q=80&w=600&auto=format&fit=crop";
+  const { settings } = useSettings();
 
-  // State
-  const [storyImage1, setStoryImage1] = useState(defaultStory1);
-  const [storyImage2, setStoryImage2] = useState(defaultStory2);
+  const sliderImages = [
+      settings.home_slider_image_1,
+      settings.home_slider_image_2,
+      settings.home_slider_image_3
+  ];
+
+  // Story Images from Settings (or defaults in context)
+  const storyImage1 = settings.home_brand_story_image_1;
+  const storyImage2 = settings.home_brand_story_image_2;
 
   // Slider State
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [touchStart, setTouchStart] = useState(null);
+  const [touchEnd, setTouchEnd] = useState(null);
+
+  // Minimum swipe distance (in px) 
+  const minSwipeDistance = 50;
+  
+  const onTouchStart = (e) => {
+    setTouchEnd(null); // Reset
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+  
+  const onTouchMove = (e) => setTouchEnd(e.targetTouches[0].clientX);
+  
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+    
+    if (isLeftSwipe) {
+       // Swipe Left -> Next Slide
+       setCurrentSlide((prev) => (prev + 1) % sliderImages.length);
+    } 
+    if (isRightSwipe) {
+       // Swipe Right -> Prev Slide
+       setCurrentSlide((prev) => (prev - 1 + sliderImages.length) % sliderImages.length);
+    }
+  };
+
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -70,16 +97,7 @@ const Home = () => {
     return () => clearInterval(timer);
   }, []);
 
-  useEffect(() => {
-    const loadSettings = async () => {
-        const s1 = await fetchSetting('home_brand_story_image_1');
-        if (s1) setStoryImage1(s1);
 
-        const s2 = await fetchSetting('home_brand_story_image_2');
-        if (s2) setStoryImage2(s2);
-    };
-    loadSettings();
-  }, []);
 
   const featuredProducts = useMemo(() => {
     return products.slice(0, 8); 
@@ -105,7 +123,13 @@ const Home = () => {
       />
 
       {/* ================= HERO SLIDER ================= */}
-      <section className="relative w-full h-[50vh] md:h-[70vh] overflow-hidden bg-stone-900">
+      <section 
+        className="relative w-full h-[50vh] md:h-[70vh] overflow-hidden bg-stone-900"
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+      >
+
           {sliderImages.map((img, idx) => (
               <div 
                   key={idx}
@@ -126,13 +150,13 @@ const Home = () => {
           {/* Slider Controls */}
           <button 
                 onClick={() => setCurrentSlide((prev) => (prev - 1 + sliderImages.length) % sliderImages.length)}
-                className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 backdrop-blur-md hover:bg-white/20 text-white transition-all z-10"
+                className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 backdrop-blur-md hover:bg-white/20 text-white transition-all z-10 hidden md:block"
           >
               <ChevronLeft className="w-6 h-6" />
           </button>
           <button 
                 onClick={() => setCurrentSlide((prev) => (prev + 1) % sliderImages.length)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 backdrop-blur-md hover:bg-white/20 text-white transition-all z-10"
+                className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 backdrop-blur-md hover:bg-white/20 text-white transition-all z-10 hidden md:block"
           >
               <ChevronRight className="w-6 h-6" />
           </button>

@@ -27,6 +27,7 @@ const ProductDetails = () => {
     
     // Image Gallery State
     const [selectedImage, setSelectedImage] = useState(null);
+    const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
 
     // Accordion State
     const [openSection, setOpenSection] = useState('description');
@@ -43,16 +44,18 @@ const ProductDetails = () => {
             : true)
     );
 
-    const singleSizeKey = product?.clothingInformation?.sizes && 
-                         Object.keys(product.clothingInformation.sizes).length === 1 && 
-                         Object.keys(product.clothingInformation.sizes)[0];
-
+    // Helpers for Clothing Info
+    const info = product?.clothingInformation || {};
+    const sizes = info.sizes || {};
+    const hasSizes = Object.keys(sizes).length > 0;
+    // Fallback: if 'availableSizes' array exists in info (new format), use it to generate mock qty if sizes obj empty
+    // But ProductManager saves `sizes` object based on availableSizes list, so it should be fine.
+    
+    const singleSizeKey = Object.keys(sizes).length === 1 && Object.keys(sizes)[0];
     const shouldHideSizeSelector = singleSizeKey === 'NA';
     const shouldAutoSelectSize = singleSizeKey === 'NA' || singleSizeKey === 'Free';
 
-    const hasOnlyNAColor = product?.clothingInformation?.colors && 
-                           product.clothingInformation.colors.length === 1 && 
-                           product.clothingInformation.colors[0] === 'NA';
+    const hasOnlyNAColor = info.colors && info.colors.length === 1 && info.colors[0] === 'NA';
 
     useEffect(() => {
         if (shouldAutoSelectSize && singleSizeKey) {
@@ -71,8 +74,10 @@ const ProductDetails = () => {
             setLoading(false);
             if (found) {
                  fetchReviews(found.id);
-                 // Initialize selected image
                  setSelectedImage(found.image);
+                 
+                 // SEO Update
+                 document.title = found.clothingInformation?.metaTitle || found.name + " | Enbroidery";
             }
         }
     }, [id, products]);
@@ -111,11 +116,49 @@ const ProductDetails = () => {
 
     const relatedProducts = products
         .filter(p => p.category === product.category && p.id !== product.id)
-        .slice(0, 4);
+
 
     const averageRating = reviews.length > 0 
         ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1) 
         : 0;
+
+    // Variant Logic
+     // If no sizes defined, we assume 'Standard' for variant lookup if colors exist
+     const effectiveSize = selectedSize || (!hasSizes ? 'Standard' : null);
+     const variantKey = (selectedColor && effectiveSize) ? `${selectedColor}-${effectiveSize}` : null;
+     const variantData = variantKey && info.variantStock ? info.variantStock[variantKey] : null;
+
+     // Price Display Logic
+     const currentPrice = variantData && variantData.price ? parseInt(variantData.price) : product.price;
+     
+     // Stock Logic for Current Selection
+     const currentStock = variantData && variantData.stock !== undefined ? parseInt(variantData.stock) : product.stock;
+     const isCurrentVariantInStock = currentStock > 0;
+
+    // Validation Helper
+    const validateSelection = () => {
+        // 1. Check Color
+        if (product.clothingInformation && info.colors && info.colors.length > 0 && !hasOnlyNAColor && !selectedColor) {
+            setColorError(true);
+            addToast('Please select a color first', 'error');
+            const el = document.getElementById('color-selector');
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return false;
+        }
+
+        // 2. Check Size
+        // If "Size & Fit" is enabled (hasSizes is true), size selection is MANDATORY.
+        // We enforce this if clothingInformation exists AND sizes exist.
+        if (product.clothingInformation && hasSizes && !shouldHideSizeSelector && !selectedSize) {
+            setSizeError(true);
+            addToast('Please select a size first', 'error');
+            const el = document.getElementById('size-selector');
+            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return false;
+        }
+
+        return true;
+    };
 
     return (
         <div className="min-h-screen bg-[#fdfbf7] pt-7 pb-20 font-body selection:bg-rose-100 selection:text-rose-900">
@@ -128,7 +171,7 @@ const ProductDetails = () => {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-[40%_60%] gap-12 xl:gap-24 mb-32">
-                    {/* Image Section - Sticky & Elegant */}
+                    {/* ... Image Section (Same as before) ... */}
                     <div className="relative h-fit lg:sticky lg:top-28 space-y-4 lg:space-y-0 lg:flex lg:gap-6">
                         {/* Desktop Thumbnails (Left Side) */}
                         {product.images && product.images.length > 1 && (
@@ -140,7 +183,7 @@ const ProductDetails = () => {
                                             onClick={() => setSelectedImage(img)}
                                             className={`aspect-[3/4] rounded-lg overflow-hidden border-2 transition-all duration-300 ${
                                                 (selectedImage || product.image) === img 
-                                                ? 'border-blue-600 shadow-md ring-2 ring-blue-100' // Using blue as per reference image, slightly adapted
+                                                ? 'border-blue-600 shadow-md ring-2 ring-blue-100' 
                                                 : 'border-transparent opacity-70 hover:opacity-100 hover:border-gray-200'
                                             }`}
                                         >
@@ -153,15 +196,12 @@ const ProductDetails = () => {
 
                         {/* Main Image Area */}
                         <div className="flex-1 rounded-lg overflow-hidden relative shadow-sm group bg-stone-100 aspect-[4/5]">
-                            
-                            {/* Desktop: Single Image controlled by state */}
                             <div className="hidden lg:block w-full h-full"> 
                                 <img 
                                     src={selectedImage || product.image} 
                                     alt={product.name} 
                                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
                                 />
-                                {/* Detail Magnifier/Action Buttons could go here */}
                                 <div className="absolute top-4 right-4 flex flex-col gap-3">
                                     <button 
                                         onClick={() => toggleWishlist(product)}
@@ -171,8 +211,6 @@ const ProductDetails = () => {
                                     </button>
                                 </div>
                             </div>
-
-                            {/* Mobile: Swipeable Carousel */}
                             <div className="lg:hidden flex overflow-x-auto snap-x snap-mandatory w-full h-full no-scrollbar">
                                 {(product.images && product.images.length > 0 ? product.images : [product.image]).map((img, idx) => (
                                     <div key={idx} className="w-full h-full flex-shrink-0 snap-center relative">
@@ -181,7 +219,6 @@ const ProductDetails = () => {
                                             alt={`${product.name} - View ${idx + 1}`} 
                                             className="w-full h-full object-cover" 
                                         />
-                                         {/* Floating Action within slide */}
                                         <div className="absolute top-4 right-4">
                                             <button 
                                                 onClick={() => toggleWishlist(product)}
@@ -193,35 +230,18 @@ const ProductDetails = () => {
                                     </div>
                                 ))}
                             </div>
-                            
-                            {/* Mobile Dots Indicator */}
                             {product.images && product.images.length > 1 && (
                                 <div className="lg:hidden absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
                                     {product.images.map((_, idx) => (
-                                        <div 
-                                            key={idx} 
-                                            className={`w-1.5 h-1.5 rounded-full transition-all ${
-                                                // Ideally strictly we'd track scroll index, but for simple dot visual:
-                                                'bg-white/80 shadow-sm'
-                                                // Real active state would require scroll listener or intersection observer
-                                                // For MVP just showing they exist or maybe static
-                                            }`} 
-                                        ></div>
+                                        <div key={idx} className={`w-1.5 h-1.5 rounded-full transition-all ${'bg-white/80 shadow-sm'}`}></div>
                                     ))}
-                                    {/* Note: React state for active slide is complex without a lib. 
-                                        To keep it simple and native allow generic dots or remove if user dislikes. 
-                                        Better to just show a "1/N" badge if strict tracking needed.
-                                        For now, minimal dots.
-                                    */} 
                                 </div>
                             )}
                         </div>
-
-
                     </div>
 
                     {/* Details Section - Clean Typography */}
-        <div className="lg:pt-4 pl-0 lg:pl-8"> 
+                    <div className="lg:pt-4 pl-0 lg:pl-8"> 
                         <div className="mb-8 space-y-4">
                              <div className="flex items-center justify-between">
                                 <span className="text-xs font-bold tracking-[0.2em] uppercase text-rose-900 bg-rose-50 px-3 py-1 rounded-sm">
@@ -235,6 +255,10 @@ const ProductDetails = () => {
                             <h1 className="text-4xl lg:text-5xl font-heading font-medium text-stone-900 leading-tight">
                                 {product.name}
                             </h1>
+                            
+                            {info.shortDescription && (
+                                <p className="text-stone-500 font-light text-lg">{info.shortDescription}</p>
+                            )}
 
                             <div className="flex items-center gap-4">
                                 <div className="flex text-amber-500 gap-0.5">
@@ -251,14 +275,16 @@ const ProductDetails = () => {
                         {/* Price Area */}
                         <div className="mb-10 pb-8 border-b border-stone-100">
                             <div className="flex items-baseline gap-4 mb-2">
-                                <span className="text-3xl font-heading font-medium text-stone-900">
-                                    ₹{product.price.toLocaleString()}
+                                <span className="text-3xl font-heading font-medium text-stone-900 relative">
+                                    <span className="text-sm absolute -top-2 -left-3 text-stone-400 font-sans">₹</span>
+                                    {currentPrice.toLocaleString()}
                                 </span>
                                 {product.originalPrice && (
                                     <>
                                         <span className="text-xl text-stone-400 line-through font-light">
                                             ₹{product.originalPrice.toLocaleString()}
                                         </span>
+                                        {/* Dynamic Discount if price changed? For now keep base discount display logic or recalc */}
                                         {product.discountPercentage > 0 && (
                                             <span className="text-sm font-bold text-rose-900 bg-rose-50 px-2 py-1 rounded">
                                                 SAVE {product.discountPercentage}%
@@ -271,15 +297,15 @@ const ProductDetails = () => {
                         </div>
                    
                         
-                        {/* Clothing Specific: Size Selector & Details */}
+                        {/* Selector Section: Color & Size */}
                         {product.clothingInformation && (
                             <div className="mb-10 space-y-6">
                                 {/* Color Selector */}
-                                {product.clothingInformation.colors && product.clothingInformation.colors.length > 0 && !hasOnlyNAColor && (
-                                    <div className="space-y-4">
+                                {info.colors && info.colors.length > 0 && !hasOnlyNAColor && (
+                                    <div className="space-y-4" id="color-selector">
                                         <h3 className="text-xs font-bold text-stone-900 uppercase tracking-widest">Select Color</h3>
                                         <div className="flex flex-wrap gap-3">
-                                            {product.clothingInformation.colors.map((color) => {
+                                            {info.colors.map((color) => {
                                                 const isSelected = selectedColor === color;
                                                 return (
                                                     <button
@@ -308,22 +334,46 @@ const ProductDetails = () => {
                                 )}
 
                                 {/* Size Selector */}
-                                {!shouldHideSizeSelector && (
-                                <div className="space-y-4">
+                                {!shouldHideSizeSelector && Object.keys(sizes).length > 0 && (
+                                <div className="space-y-4" id="size-selector">
                                     <div className="flex justify-between items-center">
                                         <h3 className="text-xs font-bold text-stone-900 uppercase tracking-widest">Select Size</h3>
-                                        <button className="text-xs font-medium text-rose-900 underline underline-offset-4 hover:text-rose-700">
-                                            Size Guide
-                                        </button>
+                                        {info.sizeChart && (
+                                            <button 
+                                                onClick={() => setIsSizeChartOpen(true)}
+                                                className="text-xs font-medium text-rose-900 underline underline-offset-4 hover:text-rose-700"
+                                            >
+                                                Size Guide
+                                            </button>
+                                        )}
                                     </div>
                                     <div className="flex flex-wrap gap-3">
-                                        {Object.entries(product.clothingInformation.sizes || {})
+                                        {Object.entries(sizes)
                                             .sort((a, b) => {
                                                 const order = { 'XS': 1, 'S': 2, 'M': 3, 'L': 4, 'XL': 5, 'XXL': 6, '3XL': 7, 'Free': 8 };
                                                 return (order[a[0]] || 99) - (order[b[0]] || 99);
                                             })
-                                            .map(([size, qty]) => {
-                                                const isAvailable = qty > 0;
+                                            .map(([size, _legacyQty]) => {
+                                                // Check Real Stock
+                                                let isAvailable = true;
+                                                
+                                                if (info.variantStock) {
+                                                     // If color selected, check specific variant
+                                                     if (selectedColor) {
+                                                         const vKey = `${selectedColor}-${size}`;
+                                                         if (info.variantStock[vKey] && info.variantStock[vKey].stock !== undefined) {
+                                                             isAvailable = parseInt(info.variantStock[vKey].stock) > 0;
+                                                         }
+                                                     }
+                                                     // If no color selected yet, maybe check if ANY color has stock for this size?
+                                                     // For simplicity, default to available unless strictly 0 everywhere (complex).
+                                                     // Let's just rely on user picking color first if colors exist.
+                                                     // NOTE: Best UX: disable sizes that are OOS for selected color.
+                                                } else {
+                                                    // Legacy fallback
+                                                    isAvailable = _legacyQty > 0;
+                                                }
+
                                                 const isSelected = selectedSize === size;
                                                 
                                                 return (
@@ -367,62 +417,57 @@ const ProductDetails = () => {
                         {/* Actions */}
                         <div className="flex flex-col gap-4 mb-16">
                             <div className="flex gap-4">
-                                <button
-                                    onClick={async () => {
-                                        if (isInCart) {
-                                            navigate('/cart');
-                                            return;
-                                        }
+                                {(() => {
+                                    const isVariantSelected = selectedColor && (selectedSize || !hasSizes);
+                                    const isStockAvailable = isVariantSelected && info.variantStock 
+                                        ? isCurrentVariantInStock 
+                                        : product.inStock;
 
-                                        if (product.clothingInformation && !selectedSize) {
-                                            setSizeError(true);
-                                            addToast('Please select a size first', 'error');
-                                            return;
-                                        }
-                                        if (product.clothingInformation && product.clothingInformation.colors && product.clothingInformation.colors.length > 0 && !selectedColor) {
-                                            setColorError(true);
-                                            addToast('Please select a color first', 'error');
-                                            return;
-                                        }
+                                    return (
+                                     <>
+                                        <button
+                                            onClick={async () => {
+                                                if (isInCart) {
+                                                    navigate('/cart');
+                                                    return;
+                                                }
 
-                                        const success = await addToCart({ ...product, selectedSize, selectedColor });
-                                        if (success) addToast(`Added ${product.name} to bag`, 'success');
-                                    }}
-                                    disabled={!product.inStock}
-                                    className={`flex-1 py-4 px-8 rounded-full font-bold uppercase tracking-widest text-xs lg:text-sm transition-all duration-300 flex items-center justify-center gap-3 ${
-                                        product.inStock
-                                        ? isInCart 
-                                            ? 'bg-emerald-800 text-white hover:bg-emerald-900 shadow-lg shadow-emerald-900/10' 
-                                            : 'bg-stone-900 text-white hover:bg-stone-800 shadow-xl shadow-stone-900/10 hover:-translate-y-0.5'
-                                        : 'bg-stone-200 text-stone-400 cursor-not-allowed'
-                                    }`}
-                                >
-                                    <ShoppingBag className="w-4 h-4" />
-                                    {product.inStock ? (isInCart ? 'Go to Bag' : 'Add to Bag') : 'Sold Out'}
-                                </button>
-                                
-                                <button 
-                                    onClick={async () => {
-                                         if(product.inStock) {
-                                            if (product.clothingInformation && !selectedSize) {
-                                                setSizeError(true);
-                                                addToast('Please select a size first', 'error');
-                                                return;
-                                            }
-                                            if (product.clothingInformation && product.clothingInformation.colors && product.clothingInformation.colors.length > 0 && !selectedColor) {
-                                                setColorError(true);
-                                                addToast('Please select a color first', 'error');
-                                                return;
-                                            }
-                                            await addToCart({ ...product, selectedSize, selectedColor });
-                                            navigate('/cart');
-                                         }
-                                    }}
-                                    disabled={!product.inStock}
-                                    className="px-8 py-4 rounded-full border border-stone-200 font-bold uppercase tracking-widest text-xs lg:text-sm hover:border-stone-900 hover:text-stone-900 transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-white"
-                                >
-                                    Buy Now
-                                </button>
+                                                if (!validateSelection()) return;
+                                                
+                                                // If no sizes, we pass null as size (or maybe implicit Standard?)
+                                                // Pass selectedSize which is null if !hasSizes
+                                                const success = await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice });
+                                                if (success) addToast(`Added ${product.name} to bag`, 'success');
+                                            }}
+                                            disabled={!isStockAvailable}
+                                            className={`flex-1 py-4 px-8 rounded-full font-bold uppercase tracking-widest text-xs lg:text-sm transition-all duration-300 flex items-center justify-center gap-3 ${
+                                                isStockAvailable
+                                                ? isInCart 
+                                                    ? 'bg-emerald-800 text-white hover:bg-emerald-900 shadow-lg shadow-emerald-900/10' 
+                                                    : 'bg-stone-900 text-white hover:bg-stone-800 shadow-xl shadow-stone-900/10 hover:-translate-y-0.5'
+                                                : 'bg-stone-200 text-stone-400 cursor-not-allowed'
+                                            }`}
+                                        >
+                                            <ShoppingBag className="w-4 h-4" />
+                                            {isStockAvailable ? (isInCart ? 'Go to Bag' : 'Add to Bag') : 'Sold Out'}
+                                        </button>
+                                        
+                                        <button 
+                                            onClick={async () => {
+                                                 if(isStockAvailable) {
+                                                    if (!validateSelection()) return;
+                                                    await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice });
+                                                    navigate('/cart');
+                                                 }
+                                            }}
+                                            disabled={!isStockAvailable}
+                                            className="px-8 py-4 rounded-full border border-stone-200 font-bold uppercase tracking-widest text-xs lg:text-sm hover:border-stone-900 hover:text-stone-900 transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-white"
+                                        >
+                                            Buy Now
+                                        </button>
+                                     </>
+                                    );
+                                })()}
                             </div>
                         </div>
 
@@ -438,32 +483,58 @@ const ProductDetails = () => {
                                     {openSection === 'description' ? <Minus className="w-4 h-4 text-rose-900" /> : <Plus className="w-4 h-4 text-stone-400 group-hover:text-rose-900 transition-colors" />}
                                 </button>
                                 <div className={`overflow-hidden transition-all duration-300 ease-in-out ${openSection === 'description' ? 'max-h-96 opacity-100 mb-6' : 'max-h-0 opacity-0'}`}>
-                                    <p className="text-stone-600 leading-relaxed font-light">
+                                    <p className="text-stone-600 leading-relaxed font-light mb-4 text-sm md:text-base">
                                         {product.description}
                                     </p>
                                     
+                                    {info.keyFeatures && info.keyFeatures.length > 0 && (
+                                        <div className="mb-4">
+                                            <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                                {info.keyFeatures.map((feat, i) => (
+                                                    <li key={i} className="flex items-start gap-2 text-sm text-stone-700">
+                                                        <span className="w-1 h-1 rounded-full bg-rose-500 mt-2 shrink-0"></span>
+                                                        {feat}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    )}
+
                                      {product.clothingInformation && (
-                                        <div className="mt-6 p-4 bg-stone-50 rounded-lg space-y-2">
-                                            <div className="grid grid-cols-2 gap-4 text-sm">
-                                                {product.clothingInformation.fabric && (
+                                        <div className="p-4 bg-stone-50 rounded-lg space-y-4 text-sm mt-4">
+                                            <div className="grid grid-cols-2 gap-y-4 gap-x-8">
+                                                {info.fabric && (
                                                     <div>
-                                                        <span className="block text-xs font-bold text-stone-400 uppercase">Material</span>
-                                                        <span className="text-stone-800">{product.clothingInformation.fabric}</span>
+                                                        <span className="block text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-0.5">Material</span>
+                                                        <span className="text-stone-800 font-medium">{info.fabric}</span>
+                                                        {info.fabricBlend && <span className="block text-stone-500 text-xs mt-0.5">{info.fabricBlend}</span>}
                                                     </div>
                                                 )}
-                                                {product.clothingInformation.fitType && (
+                                                {info.fitType && (
                                                     <div>
-                                                        <span className="block text-xs font-bold text-stone-400 uppercase">Fit</span>
-                                                        <span className="text-stone-800">{product.clothingInformation.fitType}</span>
+                                                        <span className="block text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-0.5">Fit</span>
+                                                        <span className="text-stone-800 font-medium">{info.fitType}</span>
                                                     </div>
                                                 )}
-                                                {product.clothingInformation.gender && (
+                                                {info.lengthType && (
                                                     <div>
-                                                        <span className="block text-xs font-bold text-stone-400 uppercase">Gender</span>
-                                                        <span className="text-stone-800">{product.clothingInformation.gender}</span>
+                                                        <span className="block text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-0.5">Length</span>
+                                                        <span className="text-stone-800 font-medium">{info.lengthType}</span>
+                                                    </div>
+                                                )}
+                                                {info.countryOfOrigin && (
+                                                    <div>
+                                                        <span className="block text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-0.5">Origin</span>
+                                                        <span className="text-stone-800 font-medium">{info.countryOfOrigin}</span>
                                                     </div>
                                                 )}
                                             </div>
+                                            {info.careInstructions && (
+                                                 <div className="pt-3 border-t border-stone-100">
+                                                    <span className="block text-[10px] font-bold text-stone-400 uppercase tracking-widest mb-1">Care</span>
+                                                    <p className="text-stone-600 leading-snug">{info.careInstructions}</p>
+                                                </div>
+                                            )}
                                         </div>
                                     )}
                                 </div>
@@ -476,7 +547,7 @@ const ProductDetails = () => {
                                         onClick={() => toggleSection('details')}
                                         className="w-full py-6 flex items-center justify-between text-left group"
                                     >
-                                        <span className="font-heading font-medium text-lg text-stone-900">Details & Specifications</span>
+                                        <span className="font-heading font-medium text-lg text-stone-900">Specifications</span>
                                         {openSection === 'details' ? <Minus className="w-4 h-4 text-rose-900" /> : <Plus className="w-4 h-4 text-stone-400 group-hover:text-rose-900 transition-colors" />}
                                     </button>
                                     <div className={`overflow-hidden transition-all duration-300 ease-in-out ${openSection === 'details' ? 'max-h-96 opacity-100 mb-6' : 'max-h-0 opacity-0'}`}>
@@ -498,7 +569,7 @@ const ProductDetails = () => {
                                     onClick={() => toggleSection('shipping')}
                                     className="w-full py-6 flex items-center justify-between text-left group"
                                 >
-                                    <span className="font-heading font-medium text-lg text-stone-900">Shipping & Delivery</span>
+                                    <span className="font-heading font-medium text-lg text-stone-900">Shipping & Returns</span>
                                     {openSection === 'shipping' ? <Minus className="w-4 h-4 text-rose-900" /> : <Plus className="w-4 h-4 text-stone-400 group-hover:text-rose-900 transition-colors" />}
                                 </button>
                                 <div className={`overflow-hidden transition-all duration-300 ease-in-out ${openSection === 'shipping' ? 'max-h-96 opacity-100 mb-6' : 'max-h-0 opacity-0'}`}>
@@ -506,15 +577,26 @@ const ProductDetails = () => {
                                         <div className="flex items-start gap-4">
                                             <Truck className="w-5 h-5 text-stone-400 shrink-0" />
                                             <div>
-                                                <p className="font-medium text-stone-900">Free Standard Shipping</p>
-                                                <p className="mt-1">Enjoy complimentary shipping on all orders above ₹499. Estimated delivery 5-7 business days.</p>
+                                                <p className="font-medium text-stone-900">Shipping</p>
+                                                <p className="mt-1">
+                                                    {info.shippingCharges > 0 
+                                                        ? `Standard shipping charges of ₹${info.shippingCharges} apply.` 
+                                                        : 'Enjoy complimentary free shipping on this item.'
+                                                    }
+                                                    {info.weight && ` Weight: ${info.weight}.`}
+                                                </p>
                                             </div>
                                         </div>
                                         <div className="flex items-start gap-4">
                                             <Shield className="w-5 h-5 text-stone-400 shrink-0" />
                                             <div>
-                                                <p className="font-medium text-stone-900">Secure Packaging</p>
-                                                <p className="mt-1">All items are carefully packaged to ensure they arrive in perfect condition.</p>
+                                                <p className="font-medium text-stone-900">Return Policy</p>
+                                                <p className="mt-1">
+                                                    {info.returnAvailable 
+                                                        ? `${info.returnPeriod || 7}-day easy return policy. Item must be in original condition.` 
+                                                        : 'This item is not eligible for returns.'
+                                                    }
+                                                </p>
                                             </div>
                                         </div>
                                     </div>
@@ -586,6 +668,20 @@ const ProductDetails = () => {
                     </div>
                 )}
             </div>
+
+            {/* Size Chart Modal */}
+            {isSizeChartOpen && info.sizeChart && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setIsSizeChartOpen(false)} />
+                    <div className="relative bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden animate-in zoom-in-95">
+                         <div className="p-4 border-b border-stone-100 flex justify-between items-center">
+                            <h3 className="font-heading font-bold px-2">Size Guide</h3>
+                            <button onClick={() => setIsSizeChartOpen(false)} className="p-2 hover:bg-stone-100 rounded-full"><X className="w-5 h-5" /></button>
+                        </div>
+                        <img src={info.sizeChart} alt="Size Chart" className="w-full h-auto max-h-[70vh] object-contain" />
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

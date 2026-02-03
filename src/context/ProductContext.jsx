@@ -121,9 +121,25 @@ export const ProductProvider = ({ children }) => {
 
             if (error) throw error;
 
-            setProducts(prev => prev.map(prod => 
-                prod.id === id ? { ...prod, ...data, image: data.images?.[0] || prod.image } : prod
-            ));
+            setProducts(prev => prev.map(prod => {
+                if (prod.id === id) {
+                    return {
+                        ...prod,
+                        ...data,
+                        // Ensure all frontend-specific mappings are updated
+                        image: data.images?.[0] || prod.image,
+                        images: data.images,
+                        clothingInformation: data.clothing_information,
+                        originalPrice: data.original_price,
+                        stock: data.stock_quantity,
+                        inStock: (data.stock_quantity || 0) > 0,
+                        discountPercentage: (data.original_price && data.original_price > data.price)
+                            ? Math.round(((data.original_price - data.price) / data.original_price) * 100)
+                            : 0
+                    };
+                }
+                return prod;
+            }));
         } catch (error) {
             console.error('Error updating product:', error);
             throw error;

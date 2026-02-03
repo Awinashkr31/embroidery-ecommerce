@@ -47,8 +47,8 @@ const Cart = () => {
                 <div className="flex flex-col lg:flex-row gap-12">
                     {/* Cart Items */}
                     <div className="lg:w-2/3 space-y-6">
-                        {cart.map((item) => (
-                            <div key={item.id} className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-stone-100 flex gap-4 md:gap-6 items-start md:items-center">
+                        {cart.map((item, idx) => (
+                            <div key={`${item.id}-${item.selectedSize || 'nosize'}-${item.selectedColor || 'nocolor'}-${idx}`} className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-stone-100 flex gap-4 md:gap-6 items-start md:items-center">
                                 <div className="w-24 h-24 rounded-xl overflow-hidden bg-stone-100 shrink-0">
                                     <img
                                         src={item.image}
@@ -75,20 +75,34 @@ const Cart = () => {
                                     </div>
 
                                     <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm mt-1">
-                                        <div className="flex flex-wrap gap-2 text-sm text-stone-500">
-                                             {item.selectedSize && (
-                                                 <span className="flex items-center bg-stone-50 border border-stone-200 px-2 py-0.5 rounded text-xs">
-                                                    Size: <span className="font-bold text-stone-900 ml-1">{item.selectedSize}</span>
-                                                 </span>
-                                             )}
+                                        <div className="flex flex-wrap items-center gap-3 text-sm text-stone-500">
                                              <div className="flex items-center gap-2">
                                                 <span className="font-medium text-stone-900">₹{item.price.toLocaleString()}</span>
                                                 {item.originalPrice && (
                                                     <span className="text-stone-400 line-through text-xs">₹{item.originalPrice.toLocaleString()}</span>
                                                 )}
                                              </div>
+                                            
+                                            {item.selectedSize && (
+                                                <span className="text-xs font-bold text-stone-500 bg-stone-50 border border-stone-200 px-2 py-1 rounded">
+                                                    Size: {item.selectedSize}
+                                                </span>
+                                            )}
+                                            
+                                            {item.selectedColor && item.selectedColor !== 'NA' && (
+                                                <div className="flex items-center gap-1.5 bg-stone-50 border border-stone-200 px-2 py-1 rounded">
+                                                    <span 
+                                                        className="w-3 h-3 rounded-full border border-stone-300 shadow-sm" 
+                                                        style={{ backgroundColor: item.selectedColor.toLowerCase() }}
+                                                    ></span>
+                                                    <span className="text-xs font-bold text-stone-600">
+                                                        {item.selectedColor}
+                                                    </span>
+                                                </div>
+                                            )}
+
                                              {item.discountPercentage > 0 && (
-                                                <span className="text-[10px] font-bold text-rose-900 bg-rose-50 px-1.5 py-0.5 rounded ml-1 self-center">
+                                                <span className="text-[10px] font-bold text-rose-900 bg-rose-50 px-1.5 py-0.5 rounded">
                                                     -{item.discountPercentage}%
                                                 </span>
                                              )}
@@ -99,14 +113,14 @@ const Cart = () => {
                                          {/* Quantity Selector - Pill Style */}
                                         <div className="flex items-center bg-white border border-stone-200 rounded-full h-8 shadow-sm">
                                             <button
-                                                onClick={() => updateQuantity(item.id, item.quantity - 1, item.selectedSize)}
+                                                onClick={() => updateQuantity(item.id, item.quantity - 1, item.selectedSize, item.selectedColor)}
                                                 className="w-8 h-full flex items-center justify-center hover:bg-stone-50 transition-colors text-stone-500 rounded-l-full"
                                             >
                                                 <span className="text-lg leading-none mb-0.5">-</span>
                                             </button>
                                             <span className="w-8 text-center text-stone-900 font-bold text-sm leading-none">{item.quantity}</span>
                                             <button
-                                                onClick={() => updateQuantity(item.id, item.quantity + 1, item.selectedSize)}
+                                                onClick={() => updateQuantity(item.id, item.quantity + 1, item.selectedSize, item.selectedColor)}
                                                 disabled={item.quantity >= (item.stock ?? item.stock_quantity ?? 100)}
                                                 className={`w-8 h-full flex items-center justify-center transition-colors rounded-r-full ${
                                                     item.quantity >= (item.stock ?? item.stock_quantity ?? 100)
@@ -128,7 +142,7 @@ const Cart = () => {
                                         ₹{(item.price * item.quantity).toLocaleString()}
                                     </div>
                                      <button
-                                        onClick={() => removeFromCart(item.id, item.selectedSize)}
+                                        onClick={() => removeFromCart(item.id, item.selectedSize, item.selectedColor)}
                                         className="p-2 text-stone-400 hover:text-rose-900 transition-colors rounded-lg hover:bg-rose-50"
                                         title="Remove Item"
                                     >

@@ -22,7 +22,7 @@ const Checkout = () => {
     const { addToast } = useToast();
     const navigate = useNavigate();
     
-    const [shouldSaveAddress, setShouldSaveAddress] = useState(false);
+    const [shouldSaveAddress, setShouldSaveAddress] = useState(true);
     const [selectedAddressId, setSelectedAddressId] = useState('new'); // 'new' or address ID
 
     // Filter addresses for current user
@@ -455,13 +455,26 @@ const Checkout = () => {
                         <div className="bg-white p-8 rounded-2xl shadow-lg border border-stone-100 sticky top-28">
                             <h2 className="text-xl font-heading font-bold text-stone-900 mb-6 border-b border-stone-100 pb-4">Order Summary</h2>
                             <div className="space-y-4 mb-6 max-h-[calc(100vh-400px)] overflow-y-auto custom-scrollbar pr-2">
-                                {cart.map((item) => (
-                                    <div key={item.id} className="flex gap-4 py-2">
-                                        <div className="w-16 h-16 rounded-lg bg-stone-100 overflow-hidden shrink-0">
+                                {cart.map((item, idx) => (
+                                    <div key={`${item.id}-${item.selectedSize || 'nosize'}-${item.selectedColor || 'nocolor'}-${idx}`} className="flex gap-4 py-3 border-b border-stone-100 last:border-0">
+                                        <div className="w-16 h-16 rounded-lg bg-stone-100 overflow-hidden shrink-0 border border-stone-200">
                                             <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <h4 className="font-bold text-stone-800 text-sm truncate">{item.name}</h4>
+                                            <div className="flex flex-wrap gap-2 mt-1.5">
+                                                 {(item.selectedSize) && (
+                                                    <span className="text-[10px] font-bold text-stone-500 bg-stone-100 px-1.5 py-0.5 rounded border border-stone-200">
+                                                        {item.selectedSize}
+                                                    </span>
+                                                )}
+                                                {(item.selectedColor && item.selectedColor !== 'NA') && (
+                                                    <span className="flex items-center gap-1 text-[10px] font-bold text-stone-500 bg-stone-100 px-1.5 py-0.5 rounded border border-stone-200">
+                                                        <span className="w-2 h-2 rounded-full border border-stone-300" style={{ backgroundColor: item.selectedColor.toLowerCase() }}></span>
+                                                        {item.selectedColor}
+                                                    </span>
+                                                )}
+                                            </div>
                                             <p className="text-xs text-stone-500 mt-1">Qty: {item.quantity}</p>
                                         </div>
                                         <div className="text-right">
