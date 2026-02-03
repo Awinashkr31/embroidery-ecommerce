@@ -301,7 +301,8 @@ const ProductManager = () => {
         setCropModalOpen(false);
         try {
             const file = new File([croppedBlob], `upload-${Date.now()}.jpg`, { type: 'image/jpeg' });
-            const url = await uploadImage(file, 'products');
+            // Use 'images' bucket, but in 'products' folder for organization
+            const url = await uploadImage(file, 'images', 'products');
             
             if (cropTarget.field === 'images') {
                 const newImages = [...formData.images];
@@ -312,7 +313,7 @@ const ProductManager = () => {
             }
         } catch (err) {
             console.error(err);
-            alert('Upload failed');
+            alert(`Upload failed: ${err.message}`);
         } finally {
 
             setCropImageSrc(null);
