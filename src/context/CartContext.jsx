@@ -30,11 +30,14 @@ export const CartProvider = ({ children }) => {
         if (!currentUser?.uid) return;
         
         try {
+            console.log("Fetching remote cart for user:", currentUser.uid);
+
             // Check for local items to merge
             const localCartStr = localStorage.getItem('cart');
             if (localCartStr) {
                 const localCart = JSON.parse(localCartStr);
                 if (localCart.length > 0) {
+                    console.log("Merging local cart items...", localCart.length);
                     // Merge logic: Add local items to Supabase
                     for (const item of localCart) {
                         try {
@@ -91,12 +94,21 @@ export const CartProvider = ({ children }) => {
 
             if (error) throw error;
 
+            console.log("Remote cart fetched:", data?.length);
+
             if (data && mounted) {
                 // Merge remote cart items. 
                 // Note: The structure from DB join is slightly different (product details in 'products').
                 // We need to flatten it to match existing app structure { ...product, quantity }.
                 const mappedCart = data.map(item => {
                     const p = item.products;
+                    
+                    // Safety check: if product was deleted or FK broken
+                    if (!p) {
+                        console.warn('Cart item found with missing product data:', item);
+                        return null;
+                    }
+
                     // Calculate Variant Price
                     let finalPrice = p.price;
                     if (p.clothingInformation?.variantStock && item.selected_size && item.selected_color) {
@@ -115,7 +127,8 @@ export const CartProvider = ({ children }) => {
                         selectedColor: item.selected_color,
                         cartItemId: item.id
                     };
-                });
+                }).filter(Boolean); // Filter out nulls
+                
                 setCart(mappedCart);
             }
         } catch (error) {
@@ -369,42 +382,129 @@ export const CartProvider = ({ children }) => {
   };
 
 
-  const [coupons, setCoupons] = useState(() => {
-    try {
-      const localCoupons = localStorage.getItem('coupons');
-      return localCoupons ? JSON.parse(localCoupons) : [];
-    } catch (error) {
-       console.error('Error parsing coupons', error);
-       return [];
-    }
-  });
+  // Coupon Management - Supabase Integration
+  const [coupons, setCoupons] = useState([]);
 
-  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const fetchCoupons = async () => {
+      try {
+          const { data, error } = await supabase
+              .from('coupons')
+              .select('*')
+              .order('created_at', { ascending: false });
+
+          if (error) throw error;
+
+          if (data) {
+              // Map DB snake_case to App camelCase
+              const mappedCoupons = data.map(c => ({
+                  id: c.id,
+                  code: c.code,
+                  type: c.type,
+                  discount: Number(c.discount),
+                  minOrder: Number(c.min_order),
+                  maxDiscount: Number(c.max_discount),
+                  startDate: c.start_date,
+                  expiry: c.expiry,
+                  usageLimit: c.usage_limit,
+                  perUserLimit: c.per_user_limit,
+                  includedCategories: c.included_categories
+              }));
+              setCoupons(mappedCoupons);
+          }
+      } catch (error) {
+          console.error("Error fetching coupons:", error);
+      }
+  };
 
   useEffect(() => {
-    localStorage.setItem('coupons', JSON.stringify(coupons));
-  }, [coupons]);
+      fetchCoupons();
+  }, []); // Run once on mount
 
-  const addCoupon = (coupon) => {
-    setCoupons(prev => [...prev, { ...coupon, id: Date.now() }]);
+  const addCoupon = async (couponData) => {
+    try {
+        // Map App camelCase to DB snake_case
+        const dbCoupon = {
+            code: couponData.code,
+            type: couponData.type,
+            discount: couponData.discount,
+            min_order: couponData.minOrder,
+            max_discount: couponData.maxDiscount,
+            start_date: couponData.startDate,
+            expiry: couponData.expiry,
+            usage_limit: couponData.usageLimit,
+            per_user_limit: couponData.perUserLimit,
+            included_categories: couponData.includedCategories
+        };
+
+        const { data, error } = await supabase
+            .from('coupons')
+            .insert([dbCoupon])
+            .select()
+            .single();
+
+        if (error) throw error;
+
+        // Optimistic update using returned data mapped back
+        const newCoupon = {
+            id: data.id,
+            code: data.code,
+            type: data.type,
+            discount: Number(data.discount),
+            minOrder: Number(data.min_order),
+            maxDiscount: Number(data.max_discount),
+            startDate: data.start_date,
+            expiry: data.expiry,
+            usageLimit: data.usage_limit,
+            perUserLimit: data.per_user_limit,
+            includedCategories: data.included_categories
+        };
+
+        setCoupons(prev => [newCoupon, ...prev]);
+        addToast("Coupon created successfully", "success");
+    } catch (error) {
+        console.error("Error adding coupon:", error);
+        addToast("Failed to create coupon", "error");
+    }
   };
 
-  const deleteCoupon = (id) => {
-    setCoupons(prev => prev.filter(c => c.id !== id));
+  const deleteCoupon = async (id) => {
+    try {
+        const { error } = await supabase
+            .from('coupons')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw error;
+
+        setCoupons(prev => prev.filter(c => c.id !== id));
+        addToast("Coupon deleted", "info");
+    } catch (error) {
+        console.error("Error deleting coupon:", error);
+        addToast("Failed to delete coupon", "error");
+    }
   };
+
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
 
   const applyCoupon = (code) => {
     const coupon = coupons.find(c => c.code === code);
     if (!coupon) {
       throw new Error('Invalid coupon code');
     }
-    // Check expiry
-    if (new Date(coupon.expiry) < new Date()) {
-      throw new Error('Coupon has expired');
-    }
-    // Check Start Date
-    if (coupon.startDate && new Date(coupon.startDate) > new Date()) {
+    
+    // Validate Dates
+    const now = new Date();
+    // Reset time part for date-only comparison if needed, but usually timestamps work fine.
+    // If startDate is future
+    if (coupon.startDate && new Date(coupon.startDate) > now) {
         throw new Error(`Coupon is valid from ${new Date(coupon.startDate).toLocaleDateString()}`);
+    }
+    // If expiry is past
+    // NOTE: expiry usually set to midnight? Let's assume inclusive end of day or exact timestamp.
+    // If input was YYYY-MM-DD, new Date(str) is UTC midnight.
+    // Let's be lenient: check simple comparison
+    if (new Date(coupon.expiry) < now) {
+      throw new Error('Coupon has expired');
     }
 
     // Check Min Order
@@ -413,12 +513,11 @@ export const CartProvider = ({ children }) => {
         throw new Error(`Minimum order of ₹${coupon.minOrder} required`);
     }
 
-    // Check Category Eligibility (Optional: Throw error if no eligible items? Or just apply £0?)
-    // Better UX: Warn if no eligible items.
+    // Check Category Eligibility
     if (coupon.includedCategories && coupon.includedCategories.length > 0) {
         const hasEligibleItem = cart.some(item => coupon.includedCategories.includes(item.category));
         if (!hasEligibleItem) {
-             throw new Error(`Coupon only applicable on: ${coupon.includedCategories.join(', ')}`);
+             throw new Error(`Coupon only applicable on specific categories`);
         }
     }
 
