@@ -309,9 +309,19 @@ const Orders = () => {
                                 </div>
                                 <div className="flex-1">
                                     <p className="font-bold text-stone-900 text-sm">{item.name}</p>
-                                    {(item.selectedSize || item.selected_size) && (
-                                        <p className="text-xs text-stone-600 font-medium mt-0.5">Size: <span className="text-stone-900 font-bold">{item.selectedSize || item.selected_size}</span></p>
-                                    )}
+                                    <div className="flex flex-wrap gap-2 mt-1">
+                                        {(item.selectedSize || item.selected_size) && (
+                                            <span className="text-[10px] font-bold text-stone-500 bg-stone-100 px-1.5 py-0.5 rounded border border-stone-200">
+                                                Size: {item.selectedSize || item.selected_size}
+                                            </span>
+                                        )}
+                                        {(item.selectedColor || item.selected_color) && (item.selectedColor !== 'NA' && item.selected_color !== 'NA') && (
+                                            <span className="flex items-center gap-1 text-[10px] font-bold text-stone-500 bg-stone-100 px-1.5 py-0.5 rounded border border-stone-200">
+                                                <span className="w-2 h-2 rounded-full border border-stone-300" style={{ backgroundColor: (item.selectedColor || item.selected_color || '').toLowerCase() }}></span>
+                                                {item.selectedColor || item.selected_color}
+                                            </span>
+                                        )}
+                                    </div>
                                     <p className="text-xs text-stone-500 mt-1">₹{item.price.toLocaleString()} × {item.quantity}</p>
                                 </div>
                                 <p className="font-bold text-stone-900 text-sm">₹{(item.price * item.quantity).toLocaleString()}</p>

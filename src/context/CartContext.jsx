@@ -51,6 +51,12 @@ export const CartProvider = ({ children }) => {
                                  query = query.is('selected_size', null);
                              }
                              
+                             if (item.selectedColor) {
+                                 query = query.eq('selected_color', item.selectedColor);
+                             } else {
+                                 query = query.is('selected_color', null);
+                             }
+                             
                              const { data: existing } = await query.single();
 
                              if (existing) {
@@ -65,7 +71,8 @@ export const CartProvider = ({ children }) => {
                                         user_id: currentUser.uid, 
                                         product_id: item.id, 
                                         quantity: item.quantity,
-                                        selected_size: item.selectedSize || null
+                                        selected_size: item.selectedSize || null,
+                                        selected_color: item.selectedColor || null
                                     });
                              }
                         } catch (err) {
@@ -88,12 +95,27 @@ export const CartProvider = ({ children }) => {
                 // Merge remote cart items. 
                 // Note: The structure from DB join is slightly different (product details in 'products').
                 // We need to flatten it to match existing app structure { ...product, quantity }.
-                const mappedCart = data.map(item => ({
-                    ...item.products,
-                    quantity: item.quantity,
-                    selectedSize: item.selected_size, // Map DB column to app property
-                    cartItemId: item.id // Keep reference to DB ID if needed
-                }));
+                const mappedCart = data.map(item => {
+                    const p = item.products;
+                    // Calculate Variant Price
+                    let finalPrice = p.price;
+                    if (p.clothingInformation?.variantStock && item.selected_size && item.selected_color) {
+                        const key = `${item.selected_color}-${item.selected_size}`;
+                        const variant = p.clothingInformation.variantStock[key];
+                        if (variant && variant.price) {
+                            finalPrice = parseInt(variant.price);
+                        }
+                    }
+
+                    return {
+                        ...p,
+                        price: finalPrice, // Override base price
+                        quantity: item.quantity,
+                        selectedSize: item.selected_size,
+                        selectedColor: item.selected_color,
+                        cartItemId: item.id
+                    };
+                });
                 setCart(mappedCart);
             }
         } catch (error) {
@@ -125,8 +147,12 @@ export const CartProvider = ({ children }) => {
 
   const addToCart = async (product) => {
     // Check Stock
-    // UNIQUE IDENTIFIER: Product ID + Selected Size
-    const currentItem = cart.find(item => item.id === product.id && item.selectedSize === product.selectedSize);
+    // UNIQUE IDENTIFIER: Product ID + Selected Size + Selected Color
+    const currentItem = cart.find(item => 
+        item.id === product.id && 
+        item.selectedSize === product.selectedSize &&
+        item.selectedColor === product.selectedColor
+    );
     const currentQty = currentItem ? currentItem.quantity : 0;
     
     let availableStock = 100;
@@ -143,10 +169,14 @@ export const CartProvider = ({ children }) => {
 
     // Optimistic Update
     setCart(prevCart => {
-      const existingItem = prevCart.find(item => item.id === product.id && item.selectedSize === product.selectedSize);
+      const existingItem = prevCart.find(item => 
+          item.id === product.id && 
+          item.selectedSize === product.selectedSize &&
+          item.selectedColor === product.selectedColor
+      );
       if (existingItem) {
         return prevCart.map(item =>
-          (item.id === product.id && item.selectedSize === product.selectedSize)
+          (item.id === product.id && item.selectedSize === product.selectedSize && item.selectedColor === product.selectedColor)
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
@@ -170,6 +200,12 @@ export const CartProvider = ({ children }) => {
                 query = query.is('selected_size', null);
             }
 
+            if (product.selectedColor) {
+                query = query.eq('selected_color', product.selectedColor);
+            } else {
+                query = query.is('selected_color', null);
+            }
+
             const { data: existingItems } = await query;
             const existingItem = existingItems && existingItems.length > 0 ? existingItems[0] : null;
 
@@ -185,7 +221,8 @@ export const CartProvider = ({ children }) => {
                         user_id: currentUser.uid, 
                         product_id: product.id, 
                         quantity: 1,
-                        selected_size: product.selectedSize || null
+                        selected_size: product.selectedSize || null,
+                        selected_color: product.selectedColor || null
                     });
             }
         } catch (error) {
@@ -195,8 +232,8 @@ export const CartProvider = ({ children }) => {
     return true;
   };
 
-  const removeFromCart = async (productId, selectedSize = null) => {
-    setCart(prevCart => prevCart.filter(item => !(item.id === productId && item.selectedSize === selectedSize)));
+  const removeFromCart = async (productId, selectedSize = null, selectedColor = null) => {
+    setCart(prevCart => prevCart.filter(item => !(item.id === productId && item.selectedSize === selectedSize && item.selectedColor === selectedColor)));
     
     if (currentUser?.uid) {
         try {
@@ -212,6 +249,12 @@ export const CartProvider = ({ children }) => {
                 query = query.is('selected_size', null);
             }
             
+            if (selectedColor) {
+                query = query.eq('selected_color', selectedColor);
+            } else {
+                query = query.is('selected_color', null);
+            }
+            
             await query;
         } catch (error) {
             console.error("Error removing from cart DB:", error);
@@ -219,14 +262,14 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  const updateQuantity = async (productId, quantity, selectedSize = null) => {
+  const updateQuantity = async (productId, quantity, selectedSize = null, selectedColor = null) => {
     if (quantity < 1) {
-      removeFromCart(productId, selectedSize);
+      removeFromCart(productId, selectedSize, selectedColor);
       return;
     }
 
     // Check Stock for increase
-    const item = cart.find(i => i.id === productId && i.selectedSize === selectedSize);
+    const item = cart.find(i => i.id === productId && i.selectedSize === selectedSize && i.selectedColor === selectedColor);
     
     if (item && quantity > item.quantity) { 
         let availableStock = 100;
@@ -244,7 +287,7 @@ export const CartProvider = ({ children }) => {
     
     setCart(prevCart =>
       prevCart.map(item =>
-        (item.id === productId && item.selectedSize === selectedSize)
+        (item.id === productId && item.selectedSize === selectedSize && item.selectedColor === selectedColor)
           ? { ...item, quantity: Number(quantity) }
           : item
       )
@@ -262,6 +305,12 @@ export const CartProvider = ({ children }) => {
                 query = query.eq('selected_size', selectedSize);
             } else {
                 query = query.is('selected_size', null);
+            }
+
+            if (selectedColor) {
+                query = query.eq('selected_color', selectedColor);
+            } else {
+                query = query.is('selected_color', null);
             }
 
             await query;
@@ -353,6 +402,26 @@ export const CartProvider = ({ children }) => {
     if (new Date(coupon.expiry) < new Date()) {
       throw new Error('Coupon has expired');
     }
+    // Check Start Date
+    if (coupon.startDate && new Date(coupon.startDate) > new Date()) {
+        throw new Error(`Coupon is valid from ${new Date(coupon.startDate).toLocaleDateString()}`);
+    }
+
+    // Check Min Order
+    const currentSubtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+    if (coupon.minOrder && currentSubtotal < coupon.minOrder) {
+        throw new Error(`Minimum order of ₹${coupon.minOrder} required`);
+    }
+
+    // Check Category Eligibility (Optional: Throw error if no eligible items? Or just apply £0?)
+    // Better UX: Warn if no eligible items.
+    if (coupon.includedCategories && coupon.includedCategories.length > 0) {
+        const hasEligibleItem = cart.some(item => coupon.includedCategories.includes(item.category));
+        if (!hasEligibleItem) {
+             throw new Error(`Coupon only applicable on: ${coupon.includedCategories.join(', ')}`);
+        }
+    }
+
     setAppliedCoupon(coupon);
   };
 
@@ -462,7 +531,40 @@ export const CartProvider = ({ children }) => {
   const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
   const subtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
   
-  const discountAmount = appliedCoupon ? (subtotal * (appliedCoupon.discount / 100)) : 0;
+  const discountAmount = appliedCoupon ? (() => {
+      // 1. Validate General Rules
+      if (appliedCoupon.minOrder && subtotal < appliedCoupon.minOrder) return 0;
+      const now = new Date();
+      if (appliedCoupon.startDate && new Date(appliedCoupon.startDate) > now) return 0;
+      if (new Date(appliedCoupon.expiry) < now) return 0;
+      
+      // 2. Identify Eligible Items & Subtotal
+      let eligibleItems = cart;
+      if (appliedCoupon.includedCategories && appliedCoupon.includedCategories.length > 0) {
+          eligibleItems = cart.filter(item => appliedCoupon.includedCategories.includes(item.category));
+      }
+      
+      const eligibleSubtotal = eligibleItems.reduce((total, item) => total + (item.price * item.quantity), 0);
+      if (eligibleSubtotal === 0) return 0;
+
+      // 3. Calculate Discount
+      let discount = 0;
+      if (appliedCoupon.type === 'flat') {
+          discount = appliedCoupon.discount;
+          // Cap at eligible subtotal (can't discount more than item value)
+          if (discount > eligibleSubtotal) discount = eligibleSubtotal;
+      } else {
+          // Percentage
+          discount = eligibleSubtotal * (appliedCoupon.discount / 100);
+          
+          // Cap at Max Discount (for percentage)
+          if (appliedCoupon.maxDiscount && discount > appliedCoupon.maxDiscount) {
+              discount = appliedCoupon.maxDiscount;
+          }
+      }
+      
+      return Math.round(discount);
+  })() : 0;
   const shippingCharge = subtotal < 499 ? 50 : 0;
   const cartTotal = subtotal - discountAmount + shippingCharge;
 

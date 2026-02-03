@@ -1,13 +1,23 @@
 import React, { useState } from 'react';
 import { useCart } from '../../context/CartContext';
-import { Plus, Trash2, Tag } from 'lucide-react';
+import { useCategories } from '../../context/CategoryContext';
+import { Plus, Trash2, Tag, Calendar, AlertCircle } from 'lucide-react';
 
 const AdminCoupons = () => {
   const { coupons, addCoupon, deleteCoupon } = useCart();
+  const { categories } = useCategories();
+  
   const [formData, setFormData] = useState({
     code: '',
+    type: 'percentage',
     discount: '',
-    expiry: ''
+    minOrder: '',
+    maxDiscount: '',
+    startDate: '',
+    expiry: '',
+    usageLimit: '',
+    perUserLimit: '',
+    includedCategories: []
   });
 
   const handleSubmit = (e) => {
@@ -15,63 +25,186 @@ const AdminCoupons = () => {
     if (formData.code && formData.discount && formData.expiry) {
         addCoupon({
             code: formData.code.toUpperCase(),
+            type: formData.type,
             discount: Number(formData.discount),
-            expiry: formData.expiry
+            minOrder: Number(formData.minOrder) || 0,
+            maxDiscount: Number(formData.maxDiscount) || 0,
+            startDate: formData.startDate || new Date().toISOString().split('T')[0],
+            expiry: formData.expiry,
+            usageLimit: Number(formData.usageLimit) || 0,
+            perUserLimit: Number(formData.perUserLimit) || 0,
+            includedCategories: formData.includedCategories
         });
-        setFormData({ code: '', discount: '', expiry: '' });
+        setFormData({ 
+            code: '', type: 'percentage', discount: '', 
+            minOrder: '', maxDiscount: '', startDate: '', expiry: '', 
+            usageLimit: '', perUserLimit: '', includedCategories: [] 
+        });
     }
+  };
+
+  const toggleCategory = (catId) => {
+      setFormData(prev => {
+          const exists = prev.includedCategories.includes(catId);
+          if (exists) {
+              return { ...prev, includedCategories: prev.includedCategories.filter(id => id !== catId) };
+          }
+          return { ...prev, includedCategories: [...prev.includedCategories, catId] };
+      });
   };
 
   return (
     <div>
        <div className="mb-8">
         <h1 className="text-2xl font-semibold text-gray-800 mb-2">Discount Coupons</h1>
-        <p className="text-gray-600">Manage promotional codes and discounts</p>
+        <p className="text-gray-600">Manage promotional codes, invalidity rules, and targeting.</p>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-8">
         {/* Add Coupon Form */}
         <div className="lg:col-span-1">
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 sticky top-6">
                 <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
                     <Plus className="w-5 h-5 mr-2 text-deep-rose" />
                     Create New Coupon
                 </h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Coupon Code</label>
-                        <input
-                            type="text"
-                            required
-                            placeholder="SUMMER20"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-deep-rose focus:border-deep-rose outline-none uppercase"
-                            value={formData.code}
-                            onChange={(e) => setFormData({...formData, code: e.target.value})}
-                        />
+                    {/* Code & Type */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">Coupon Code</label>
+                            <input
+                                type="text"
+                                required
+                                placeholder="SUMMER20"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-deep-rose focus:border-deep-rose outline-none uppercase text-sm"
+                                value={formData.code}
+                                onChange={(e) => setFormData({...formData, code: e.target.value})}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">Type</label>
+                            <select
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-deep-rose focus:border-deep-rose outline-none text-sm"
+                                value={formData.type}
+                                onChange={(e) => setFormData({...formData, type: e.target.value})}
+                            >
+                                <option value="percentage">Percentage (%)</option>
+                                <option value="flat">Flat Amount (₹)</option>
+                            </select>
+                        </div>
                     </div>
+
+                    {/* Value & Max Discount */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">
+                                {formData.type === 'percentage' ? 'Discount (%)' : 'Amount (₹)'}
+                            </label>
+                            <input
+                                type="number"
+                                required
+                                min="1"
+                                placeholder={formData.type === 'percentage' ? "20" : "500"}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-deep-rose focus:border-deep-rose outline-none text-sm"
+                                value={formData.discount}
+                                onChange={(e) => setFormData({...formData, discount: e.target.value})}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">Max Cap (₹)</label>
+                            <input
+                                type="number"
+                                min="0"
+                                disabled={formData.type === 'flat'}
+                                placeholder={formData.type === 'flat' ? "N/A" : "Optional"}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-deep-rose focus:border-deep-rose outline-none text-sm disabled:bg-gray-100"
+                                value={formData.maxDiscount}
+                                onChange={(e) => setFormData({...formData, maxDiscount: e.target.value})}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Min Order */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Discount Percentage (%)</label>
+                        <label className="block text-xs font-medium text-gray-700 mb-1">Min Order Amount (₹)</label>
                         <input
                             type="number"
-                            required
-                            min="1"
-                            max="100"
-                            placeholder="10"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-deep-rose focus:border-deep-rose outline-none"
-                            value={formData.discount}
-                            onChange={(e) => setFormData({...formData, discount: e.target.value})}
+                            min="0"
+                            placeholder="Cart must be at least..."
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-deep-rose focus:border-deep-rose outline-none text-sm"
+                            value={formData.minOrder}
+                            onChange={(e) => setFormData({...formData, minOrder: e.target.value})}
                         />
                     </div>
+
+                    {/* Dates */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">Start Date</label>
+                            <input
+                                type="date"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-deep-rose focus:border-deep-rose outline-none text-sm"
+                                value={formData.startDate}
+                                onChange={(e) => setFormData({...formData, startDate: e.target.value})}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">Expiry Date</label>
+                            <input
+                                type="date"
+                                required
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-deep-rose focus:border-deep-rose outline-none text-sm"
+                                value={formData.expiry}
+                                onChange={(e) => setFormData({...formData, expiry: e.target.value})}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Limits */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">Total Usage Limit</label>
+                            <input
+                                type="number"
+                                min="0"
+                                placeholder="Total global uses"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-deep-rose focus:border-deep-rose outline-none text-sm"
+                                value={formData.usageLimit}
+                                onChange={(e) => setFormData({...formData, usageLimit: e.target.value})}
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">Limit Per User</label>
+                            <input
+                                type="number"
+                                min="0"
+                                placeholder="Uses per customer"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-deep-rose focus:border-deep-rose outline-none text-sm"
+                                value={formData.perUserLimit}
+                                onChange={(e) => setFormData({...formData, perUserLimit: e.target.value})}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Categories */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Expiry Date</label>
-                        <input
-                            type="date"
-                            required
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-deep-rose focus:border-deep-rose outline-none"
-                            value={formData.expiry}
-                            onChange={(e) => setFormData({...formData, expiry: e.target.value})}
-                        />
+                         <label className="block text-xs font-medium text-gray-700 mb-2">Applicable Categories (Empty = All)</label>
+                         <div className="max-h-32 overflow-y-auto border border-gray-200 rounded-lg p-2 space-y-1">
+                            {categories.map(cat => (
+                                <label key={cat.id} className="flex items-center text-sm gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">
+                                    <input 
+                                        type="checkbox"
+                                        checked={formData.includedCategories.includes(cat.id)}
+                                        onChange={() => toggleCategory(cat.id)}
+                                        className="rounded text-deep-rose focus:ring-deep-rose"
+                                    />
+                                    <span className="text-gray-700">{cat.label}</span>
+                                </label>
+                            ))}
+                         </div>
                     </div>
+
                     <button
                         type="submit"
                         className="w-full py-2 bg-deep-rose text-white rounded-lg hover:bg-opacity-90 transition-colors font-medium"
@@ -102,7 +235,8 @@ const AdminCoupons = () => {
                                 <tr>
                                     <th className="px-6 py-3">Code</th>
                                     <th className="px-6 py-3">Discount</th>
-                                    <th className="px-6 py-3">Expiry</th>
+                                    <th className="px-6 py-3">Rules</th>
+                                    <th className="px-6 py-3">Date</th>
                                     <th className="px-6 py-3">Status</th>
                                     <th className="px-6 py-3 text-right">Action</th>
                                 </tr>
@@ -112,9 +246,29 @@ const AdminCoupons = () => {
                                     const isExpired = new Date(coupon.expiry) < new Date();
                                     return (
                                         <tr key={coupon.id} className="hover:bg-gray-50">
-                                            <td className="px-6 py-4 font-medium text-gray-900">{coupon.code}</td>
-                                            <td className="px-6 py-4 text-deep-rose font-medium">{coupon.discount}% Off</td>
-                                            <td className="px-6 py-4 text-gray-600">{new Date(coupon.expiry).toLocaleDateString()}</td>
+                                            <td className="px-6 py-4">
+                                                <div className="font-bold text-gray-900">{coupon.code}</div>
+                                                <div className="text-xs text-gray-500">{coupon.type === 'flat' ? 'Flat Amount' : 'Percentage'}</div>
+                                            </td>
+                                            <td className="px-6 py-4 text-deep-rose font-bold">
+                                                {coupon.type === 'flat' ? `₹${coupon.discount}` : `${coupon.discount}%`}
+                                            </td>
+                                            <td className="px-6 py-4">
+                                                <div className="flex flex-col gap-1 text-xs text-gray-600">
+                                                    {coupon.minOrder > 0 && <span>Min Order: ₹{coupon.minOrder}</span>}
+                                                    {coupon.maxDiscount > 0 && <span>Max Disc: ₹{coupon.maxDiscount}</span>}
+                                                    {coupon.includedCategories?.length > 0 && (
+                                                        <span className="text-emerald-700 bg-emerald-50 px-1 rounded w-fit">
+                                                            {coupon.includedCategories.length} Categories
+                                                        </span>
+                                                    )}
+                                                    {coupon.usageLimit > 0 && <span>Limit: {coupon.usageLimit} total</span>}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 text-xs text-gray-600">
+                                                <div>Start: {coupon.startDate ? new Date(coupon.startDate).toLocaleDateString() : 'Immediate'}</div>
+                                                <div>Exp: {new Date(coupon.expiry).toLocaleDateString()}</div>
+                                            </td>
                                             <td className="px-6 py-4">
                                                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${isExpired ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
                                                     {isExpired ? 'Expired' : 'Active'}

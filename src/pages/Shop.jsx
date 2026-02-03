@@ -94,32 +94,10 @@ const Shop = () => {
 
     return (
         <div className="bg-[#fdfbf7] min-h-screen pb-32 font-body selection:bg-rose-100 selection:text-rose-900">
-            {/* Elegant Hero Section */}
-            <div className="pt-32 pb-12 relative overflow-hidden">
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-rose-900/5 rounded-[100%] blur-3xl pointer-events-none" />
-                
-                <div className="container-custom text-center relative z-10">
-                    <span className="text-rose-900 text-xs font-bold tracking-[0.2em] uppercase mb-4 block animate-in fade-in slide-in-from-bottom-4 duration-700">
-                        Handcrafted with Love
-                    </span>
-                    <h1 className="text-4xl md:text-6xl font-heading font-medium text-stone-900 mb-4 tracking-tight animate-in fade-in slide-in-from-bottom-4 duration-700 delay-100">
-                        The Collection
-                    </h1>
-                </div>
-            </div>
+            <div className="container-custom pb-20 pt-28 md:pt-32">
 
-            <div className="container-custom pb-20">
                 <div className="flex flex-col lg:flex-row gap-12 items-start">
-                    {/* Mobile Filter Toggle */}
-                    <div className="lg:hidden w-full mb-6">
-                        <button 
-                            onClick={() => document.getElementById('mobile-filters').classList.remove('translate-x-full')}
-                            className="w-full flex items-center justify-center gap-2 bg-white border border-stone-200 py-3 rounded-lg font-medium text-stone-900 shadow-sm"
-                        >
-                            <span className="uppercase tracking-wider text-xs font-bold">Filters & Sort</span>
-                            <ChevronDown className="w-4 h-4" />
-                        </button>
-                    </div>
+
 
                     {/* Mobile Filters Drawer */}
                     <div id="mobile-filters" className="fixed inset-0 z-50 transform translate-x-full transition-transform duration-300 lg:hidden text-left">

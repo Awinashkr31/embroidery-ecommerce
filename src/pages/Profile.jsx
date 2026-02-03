@@ -363,8 +363,21 @@ const Profile = () => {
                                                                 <h4 className="font-bold text-stone-900 group-hover:text-rose-900 transition-colors truncate">{item.name}</h4>
                                                                     <div className="flex flex-col text-sm text-stone-500">
                                                                         <span>Qty: {item.quantity} × ₹{item.price.toLocaleString()}</span>
+                                                                        <div className="flex flex-wrap gap-2 mt-1">
+                                                                            {(item.selectedSize || item.selected_size) && (
+                                                                                <span className="text-[10px] font-bold text-stone-500 bg-stone-100 px-1.5 py-0.5 rounded border border-stone-200">
+                                                                                    {item.selectedSize || item.selected_size}
+                                                                                </span>
+                                                                            )}
+                                                                            {(item.selectedColor || item.selected_color) && (item.selectedColor !== 'NA' && item.selected_color !== 'NA') && (
+                                                                                <span className="flex items-center gap-1 text-[10px] font-bold text-stone-500 bg-stone-100 px-1.5 py-0.5 rounded border border-stone-200">
+                                                                                    <span className="w-2 h-2 rounded-full border border-stone-300" style={{ backgroundColor: (item.selectedColor || item.selected_color || '').toLowerCase() }}></span>
+                                                                                    {item.selectedColor || item.selected_color}
+                                                                                </span>
+                                                                            )}
+                                                                        </div>
                                                                         {item.originalPrice && (
-                                                                            <span className="text-xs text-stone-400 line-through">MRP: ₹{item.originalPrice.toLocaleString()}</span>
+                                                                            <span className="text-xs text-stone-400 line-through mt-0.5">MRP: ₹{item.originalPrice.toLocaleString()}</span>
                                                                         )}
                                                                     </div>
                                                             </div>

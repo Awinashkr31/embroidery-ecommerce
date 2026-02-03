@@ -160,6 +160,8 @@ const Navbar = () => {
     >
       <div className="container-custom">
         <div className="flex items-center justify-between">
+
+
           
           {/* 1. Left: Mobile Menu Trigger (hidden on desktop) */}
           <div className="lg:hidden">
@@ -178,6 +180,8 @@ const Navbar = () => {
               <img src="/logo.png" alt="Enbroidery By Sana" className="h-12 md:h-14 w-auto object-contain" />
             </Link>
           </div>
+
+
 
           {/* 3. Center: Desktop Navigation */}
           <div className="hidden lg:flex items-center justify-center space-x-8 lg:w-2/4">
@@ -198,25 +202,17 @@ const Navbar = () => {
 
           {/* 4. Right: Icons & Actions */}
           <div className="flex items-center justify-end space-x-2 lg:space-x-4 lg:w-1/4">
+
+
              
              {/* Wishlist */}
             <Link to="/wishlist" className="p-2 text-stone-600 hover:text-rose-900 transition-colors rounded-full hover:bg-stone-100 hidden sm:block">
                <Heart className="w-5 h-5" />
             </Link>
             
-            {/* Cart */}
-            <Link to="/cart" className="relative p-2 text-stone-600 hover:text-rose-900 transition-colors rounded-full hover:bg-stone-100 group">
-              <ShoppingBag className="w-5 h-5 group-hover:scale-110 transition-transform" />
-              {cartCount > 0 && (
-                <span className="absolute top-1 right-0.5 bg-rose-900 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center shadow-lg border-2 border-white">
-                  {cartCount}
-                </span>
-              )}
-            </Link>
-
              {/* Notifications */}
              {currentUser && (
-                <div className="relative hidden md:block" ref={notifRef}>
+                <div className="relative" ref={notifRef}>
                     <button 
                         onClick={() => setIsNotifOpen(!isNotifOpen)}
                         className="relative p-2 text-stone-600 hover:text-rose-900 transition-colors rounded-full hover:bg-stone-100"
@@ -263,6 +259,16 @@ const Navbar = () => {
                     )}
                 </div>
             )}
+            
+            {/* Cart */}
+            <Link to="/cart" className="relative p-2 text-stone-600 hover:text-rose-900 transition-colors rounded-full hover:bg-stone-100 group">
+              <ShoppingBag className="w-5 h-5 group-hover:scale-110 transition-transform" />
+              {cartCount > 0 && (
+                <span className="absolute top-1 right-0.5 bg-rose-900 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center shadow-lg border-2 border-white">
+                  {cartCount}
+                </span>
+              )}
+            </Link>
 
             {/* Auth / User Menu */}
             <div className="relative hidden md:block" ref={userMenuRef}>

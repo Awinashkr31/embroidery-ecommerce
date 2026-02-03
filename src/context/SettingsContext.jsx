@@ -12,6 +12,9 @@ export const SettingsProvider = ({ children }) => {
     // Default Images (Fallbacks)
     const defaults = {
         home_hero_image: "https://images.unsplash.com/photo-1620799140408-ed5341cd2431?q=80&w=1920",
+        home_slider_image_1: "https://images.unsplash.com/photo-1620799140408-ed5341cd2431?q=80&w=1600&auto=format&fit=crop",
+        home_slider_image_2: "https://images.unsplash.com/photo-1616627561839-074385245eb6?q=80&w=1600&auto=format&fit=crop",
+        home_slider_image_3: "https://images.unsplash.com/photo-1544816155-12df9643f363?q=80&w=1600&auto=format&fit=crop",
         home_hero_title: "Weaving Stories in Thread",
         home_hero_subtitle: "Timeless hand embroidery blending tradition with modern aesthetics.",
         home_category_hoop_image: "https://images.unsplash.com/photo-1615561021463-569d643806a6?q=80&w=1200",

@@ -31,6 +31,9 @@ const Settings = () => {
         home_hero_title: 'Weaving Stories in Thread',
         home_hero_subtitle: 'Timeless hand embroidery blending tradition with modern aesthetics.',
         home_hero_image: '',
+        home_slider_image_1: '',
+        home_slider_image_2: '',
+        home_slider_image_3: '',
         home_category_hoop_image: '',
         home_category_bridal_image: '',
         home_brand_story_image_1: '',
@@ -301,24 +304,45 @@ const Settings = () => {
                     <h1 className="text-2xl font-bold text-stone-900">Settings & Content</h1>
                     <p className="text-stone-500">Manage global settings and page content.</p>
                 </div>
-                <button
-                    onClick={() => setIsEditing(!isEditing)}
-                    className={`flex items-center px-4 py-2 rounded-lg font-medium transition-colors ${
-                        isEditing 
-                        ? 'bg-stone-100 text-stone-600 hover:bg-stone-200' 
-                        : 'bg-rose-900 text-white hover:bg-rose-800'
-                    }`}
-                >
-                    {isEditing ? (
-                        <>
-                            <X className="w-4 h-4 mr-2" /> Cancel Editing
-                        </>
-                    ) : (
-                        <>
-                            <Pencil className="w-4 h-4 mr-2" /> Edit Settings
-                        </>
+                <div className="flex gap-3">
+                    {isEditing && (
+                        <button
+                            onClick={handleSubmit}
+                            disabled={saving}
+                            className="flex items-center px-4 py-2 bg-rose-900 text-white rounded-lg hover:bg-rose-800 disabled:opacity-70 transition-colors shadow-sm font-medium"
+                        >
+                            {saving ? (
+                                <>
+                                    <Loader className="w-4 h-4 animate-spin mr-2" />
+                                    Saving...
+                                </>
+                            ) : (
+                                <>
+                                    <Save className="w-4 h-4 mr-2" />
+                                    Save Changes
+                                </>
+                            )}
+                        </button>
                     )}
-                </button>
+                    <button
+                        onClick={() => setIsEditing(!isEditing)}
+                        className={`flex items-center px-4 py-2 rounded-lg font-medium transition-colors ${
+                            isEditing 
+                            ? 'bg-stone-100 text-stone-600 hover:bg-stone-200' 
+                            : 'bg-rose-900 text-white hover:bg-rose-800'
+                        }`}
+                    >
+                        {isEditing ? (
+                            <>
+                                <X className="w-4 h-4 mr-2" /> Cancel Editing
+                            </>
+                        ) : (
+                            <>
+                                <Pencil className="w-4 h-4 mr-2" /> Edit Settings
+                            </>
+                        )}
+                    </button>
+                </div>
             </div>
 
             {/* Tabs */}
@@ -419,68 +443,65 @@ const Settings = () => {
                 {/* HOME TAB */}
                 {activeTab === 'home' && (
                     <div className="space-y-6 animate-in fade-in duration-500">
+                        {/* Main Slider Images */}
+                        <div className="bg-white p-6 rounded-xl border border-stone-100 shadow-sm space-y-6">
+                            <h3 className="font-bold text-lg text-stone-900 flex items-center gap-2">
+                                <ImageIcon className="w-5 h-5 text-rose-900" /> Main Slider Images
+                            </h3>
+                            <div className="grid md:grid-cols-3 gap-6">
+                                <ImageUploader 
+                                    label="Slide 1"
+                                    url={settings.home_slider_image_1} 
+                                    uploading={uploading}
+                                    onUpload={(e) => handleImageUpload(e, 'home_slider_image_1')}
+                                    onDelete={() => handleImageDelete('home_slider_image_1')}
+                                    isEditing={isEditing}
+                                />
+                                <ImageUploader 
+                                    label="Slide 2"
+                                    url={settings.home_slider_image_2} 
+                                    uploading={uploading}
+                                    onUpload={(e) => handleImageUpload(e, 'home_slider_image_2')}
+                                    onDelete={() => handleImageDelete('home_slider_image_2')}
+                                    isEditing={isEditing}
+                                />
+                                <ImageUploader 
+                                    label="Slide 3"
+                                    url={settings.home_slider_image_3} 
+                                    uploading={uploading}
+                                    onUpload={(e) => handleImageUpload(e, 'home_slider_image_3')}
+                                    onDelete={() => handleImageDelete('home_slider_image_3')}
+                                    isEditing={isEditing}
+                                />
+                            </div>
+                        </div>
+
                         <div className="bg-white p-6 rounded-xl border border-stone-100 shadow-sm space-y-6">
                             <h3 className="font-bold text-lg text-stone-900 flex items-center gap-2">
                                 <LayoutTemplate className="w-5 h-5 text-rose-900" /> Hero Section
                             </h3>
                             
-                            <div className="grid md:grid-cols-2 gap-6">
-                                <div className="space-y-4">
-                                    <EditableInput 
-                                        label="Hero Title"
-                                        name="home_hero_title"
-                                        value={settings.home_hero_title}
-                                        onChange={handleChange}
-                                        isEditing={isEditing}
-                                        placeholder="Weaving Stories in Thread"
-                                    />
-                                    <EditableTextarea 
-                                        label="Hero Subtitle"
-                                        name="home_hero_subtitle"
-                                        value={settings.home_hero_subtitle}
-                                        onChange={handleChange}
-                                        isEditing={isEditing}
-                                        placeholder="Timeless hand embroidery..."
-                                    />
-                                </div>
-
-                                <div>
-                                    <ImageUploader 
-                                        label="Hero Image"
-                                        url={settings.home_hero_image} 
-                                        uploading={uploading}
-                                        onUpload={(e) => handleImageUpload(e, 'home_hero_image')}
-                                        onDelete={() => handleImageDelete('home_hero_image')}
-                                        isEditing={isEditing}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Category Images */}
-                        <div className="bg-white p-6 rounded-xl border border-stone-100 shadow-sm space-y-6">
-                            <h3 className="font-bold text-lg text-stone-900 flex items-center gap-2">
-                                <ImageIcon className="w-5 h-5 text-rose-900" /> Category Images
-                            </h3>
-                            <div className="grid md:grid-cols-2 gap-6">
-                                <ImageUploader 
-                                    label="Hoop Art Image"
-                                    url={settings.home_category_hoop_image} 
-                                    uploading={uploading}
-                                    onUpload={(e) => handleImageUpload(e, 'home_category_hoop_image')}
-                                    onDelete={() => handleImageDelete('home_category_hoop_image')}
+                            <div className="space-y-4">
+                                <EditableInput 
+                                    label="Hero Title"
+                                    name="home_hero_title"
+                                    value={settings.home_hero_title}
+                                    onChange={handleChange}
                                     isEditing={isEditing}
+                                    placeholder="Weaving Stories in Thread"
                                 />
-                                <ImageUploader 
-                                    label="Bridal Image"
-                                    url={settings.home_category_bridal_image} 
-                                    uploading={uploading}
-                                    onUpload={(e) => handleImageUpload(e, 'home_category_bridal_image')}
-                                    onDelete={() => handleImageDelete('home_category_bridal_image')}
+                                <EditableTextarea 
+                                    label="Hero Subtitle"
+                                    name="home_hero_subtitle"
+                                    value={settings.home_hero_subtitle}
+                                    onChange={handleChange}
                                     isEditing={isEditing}
+                                    placeholder="Timeless hand embroidery..."
                                 />
                             </div>
                         </div>
+
+
 
                         {/* Brand Story Images */}
                         <div className="bg-white p-6 rounded-xl border border-stone-100 shadow-sm space-y-6">
@@ -727,27 +748,7 @@ const Settings = () => {
                     </div>
                 )}
 
-                {isEditing && (
-                    <div className="flex justify-end pt-4 border-t border-stone-200">
-                        <button
-                            type="submit"
-                            disabled={saving}
-                            className="flex items-center px-6 py-3 bg-rose-900 text-white rounded-lg hover:bg-rose-800 disabled:opacity-70 transition-colors shadow-sm font-medium"
-                        >
-                            {saving ? (
-                                <>
-                                    <Loader className="w-5 h-5 animate-spin mr-2" />
-                                    Saving Changes...
-                                </>
-                            ) : (
-                                <>
-                                    <Save className="w-5 h-5 mr-2" />
-                                    Save All Changes
-                                </>
-                            )}
-                        </button>
-                    </div>
-                )}
+
             </form>
 
             <style jsx>{`
