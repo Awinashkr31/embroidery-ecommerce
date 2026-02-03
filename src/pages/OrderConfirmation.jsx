@@ -28,12 +28,12 @@ const OrderConfirmation = () => {
     const handleConfirmOrder = async () => {
         setIsSubmitting(true);
         try {
-            await placeOrder({
+            const orderResult = await placeOrder({
                 ...formData,
                 userId: currentUser?.uid,
                 email: currentUser?.email || formData.email
             });
-            navigate('/order-success');
+            navigate('/order-success', { state: { orderId: orderResult } });
         } catch (error) {
             console.error('Order placement failed:', error);
             addToast(error.message || 'Failed to place order. Please try again.', 'error');

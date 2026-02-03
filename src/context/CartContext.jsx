@@ -8,7 +8,7 @@ const CartContext = createContext();
 export const useCart = () => useContext(CartContext);
 
 export const CartProvider = ({ children }) => {
-  const { currentUser } = useAuth();
+  const { currentUser, loading } = useAuth();
   const { addToast } = useToast();
 
   // Initialize cart from local storage for initial render
@@ -148,15 +148,17 @@ export const CartProvider = ({ children }) => {
         }
     }
 
-    return () => { mounted = false; };
-  }, [currentUser]);
 
-  // Sync to local storage only if guest
+
+    return () => { mounted = false; };
+  }, [currentUser, loading]);
+
+  // Sync to local storage only if guest AND not loading
   useEffect(() => {
-    if (!currentUser) {
+    if (!loading && !currentUser) {
         localStorage.setItem('cart', JSON.stringify(cart));
     }
-  }, [cart, currentUser]);
+  }, [cart, currentUser, loading]);
 
   const addToCart = async (product) => {
     // Check Stock
@@ -410,6 +412,7 @@ export const CartProvider = ({ children }) => {
                   includedCategories: c.included_categories
               }));
               setCoupons(mappedCoupons);
+              console.log("Coupons loaded:", mappedCoupons.length);
           }
       } catch (error) {
           console.error("Error fetching coupons:", error);
@@ -487,24 +490,37 @@ export const CartProvider = ({ children }) => {
   const [appliedCoupon, setAppliedCoupon] = useState(null);
 
   const applyCoupon = (code) => {
-    const coupon = coupons.find(c => c.code === code);
+    const normalizedCode = code.trim().toUpperCase();
+    
+    // Debugging Logs
+    console.log(`Applying coupon: "${normalizedCode}"`);
+    console.log("Available Coupons:", coupons.map(c => c.code));
+
+    const coupon = coupons.find(c => c.code.toUpperCase() === normalizedCode);
+    
     if (!coupon) {
-      throw new Error('Invalid coupon code');
+      throw new Error(`Invalid coupon code: "${code}"`);
     }
     
     // Validate Dates
     const now = new Date();
-    // Reset time part for date-only comparison if needed, but usually timestamps work fine.
-    // If startDate is future
-    if (coupon.startDate && new Date(coupon.startDate) > now) {
-        throw new Error(`Coupon is valid from ${new Date(coupon.startDate).toLocaleDateString()}`);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Start of today
+
+    if (coupon.startDate) {
+        const start = new Date(coupon.startDate);
+        start.setHours(0, 0, 0, 0);
+        if (start > today) {
+            throw new Error(`Coupon is valid from ${start.toLocaleDateString()}`);
+        }
     }
-    // If expiry is past
-    // NOTE: expiry usually set to midnight? Let's assume inclusive end of day or exact timestamp.
-    // If input was YYYY-MM-DD, new Date(str) is UTC midnight.
-    // Let's be lenient: check simple comparison
-    if (new Date(coupon.expiry) < now) {
-      throw new Error('Coupon has expired');
+    
+    if (coupon.expiry) {
+        const expiry = new Date(coupon.expiry);
+        expiry.setHours(23, 59, 59, 999); // End of expiry day
+        if (expiry < now) {
+            throw new Error(`Coupon expired on ${expiry.toLocaleDateString()}`);
+        }
     }
 
     // Check Min Order
@@ -515,6 +531,9 @@ export const CartProvider = ({ children }) => {
 
     // Check Category Eligibility
     if (coupon.includedCategories && coupon.includedCategories.length > 0) {
+        // Ensure item.category matches the IDs in includedCategories
+        // Note: item.category might be a name or ID depending on product structure. 
+        // Assuming it matches the strings in includedCategories.
         const hasEligibleItem = cart.some(item => coupon.includedCategories.includes(item.category));
         if (!hasEligibleItem) {
              throw new Error(`Coupon only applicable on specific categories`);
@@ -522,6 +541,7 @@ export const CartProvider = ({ children }) => {
     }
 
     setAppliedCoupon(coupon);
+    addToast("Coupon applied successfully!", "success");
   };
 
   const removeCoupon = () => {

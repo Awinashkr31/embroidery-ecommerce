@@ -175,7 +175,7 @@ const Checkout = () => {
                             }
 
                             // 5. Place Order in Database
-                            await placeOrder({
+                            const orderResult = await placeOrder({
                                 ...formData,
                                 userId: currentUser?.uid,
                                 email: currentUser?.email || formData.email
@@ -184,7 +184,7 @@ const Checkout = () => {
                                 paymentId: response.razorpay_payment_id
                             });
 
-                            navigate('/order-success');
+                            navigate('/order-success', { state: { orderId: orderResult } });
                         } catch (err) {
                             console.error('Payment verification error:', err);
                             addToast('Payment verification failed. Please contact support if amount was deducted.', 'error');
