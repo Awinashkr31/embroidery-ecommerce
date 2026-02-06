@@ -139,8 +139,8 @@ const Home = () => {
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-center justify-center">
                        {idx === 0 && (
                            <div className="text-center text-white animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300 px-4">
-                               <h1 className="text-5xl md:text-7xl font-heading mb-4 drop-shadow-md">Weaving Dreams</h1>
-                               <p className="text-xl md:text-2xl font-light tracking-wide drop-shadow-sm">Where tradition meets modern artistry</p>
+                               <h1 className="text-5xl md:text-7xl font-heading mb-4 drop-shadow-md">{settings.home_hero_title}</h1>
+                               <p className="text-xl md:text-2xl font-light tracking-wide drop-shadow-sm">{settings.home_hero_subtitle}</p>
                            </div>
                        )}
                   </div>
