@@ -11,6 +11,9 @@ export const CartProvider = ({ children }) => {
   const { currentUser, loading } = useAuth();
   const { addToast } = useToast();
 
+  // Loading state for cart
+  const [isFetchingCart, setIsFetchingCart] = useState(true);
+
   // Initialize cart from local storage for initial render
   const [cart, setCart] = useState(() => {
     try {
@@ -27,8 +30,12 @@ export const CartProvider = ({ children }) => {
     let mounted = true;
 
     const fetchRemoteCart = async () => {
-        if (!currentUser?.uid) return;
+        if (!currentUser?.uid) {
+             setIsFetchingCart(false);
+             return;
+        }
         
+        setIsFetchingCart(true);
         try {
             console.log("Fetching remote cart for user:", currentUser.uid);
 
@@ -133,6 +140,8 @@ export const CartProvider = ({ children }) => {
             }
         } catch (error) {
             console.error('Error fetching remote cart:', error);
+        } finally {
+            if (mounted) setIsFetchingCart(false);
         }
     };
 
@@ -146,6 +155,7 @@ export const CartProvider = ({ children }) => {
         } catch (e) {
             console.error(e);
         }
+        setIsFetchingCart(false);
     }
 
 
@@ -161,18 +171,22 @@ export const CartProvider = ({ children }) => {
   }, [cart, currentUser, loading]);
 
   const addToCart = async (product) => {
+    // Normalize properties to ensure consistency (Wishlist items might have undefined)
+    const normalizedSize = product.selectedSize || null;
+    const normalizedColor = product.selectedColor || null;
+
     // Check Stock
     // UNIQUE IDENTIFIER: Product ID + Selected Size + Selected Color
     const currentItem = cart.find(item => 
         item.id === product.id && 
-        item.selectedSize === product.selectedSize &&
-        item.selectedColor === product.selectedColor
+        (item.selectedSize || null) === normalizedSize &&
+        (item.selectedColor || null) === normalizedColor
     );
     const currentQty = currentItem ? currentItem.quantity : 0;
     
     let availableStock = 100;
-    if (product.clothingInformation?.sizes && product.selectedSize) {
-        availableStock = product.clothingInformation.sizes[product.selectedSize] || 0;
+    if (product.clothingInformation?.sizes && normalizedSize) {
+        availableStock = product.clothingInformation.sizes[normalizedSize] || 0;
     } else {
          availableStock = product.stock !== undefined ? product.stock : (product.stock_quantity !== undefined ? product.stock_quantity : 100);
     }
@@ -186,17 +200,22 @@ export const CartProvider = ({ children }) => {
     setCart(prevCart => {
       const existingItem = prevCart.find(item => 
           item.id === product.id && 
-          item.selectedSize === product.selectedSize &&
-          item.selectedColor === product.selectedColor
+          (item.selectedSize || null) === normalizedSize &&
+          (item.selectedColor || null) === normalizedColor
       );
       if (existingItem) {
         return prevCart.map(item =>
-          (item.id === product.id && item.selectedSize === product.selectedSize && item.selectedColor === product.selectedColor)
+          (item.id === product.id && (item.selectedSize || null) === normalizedSize && (item.selectedColor || null) === normalizedColor)
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
       }
-      return [...prevCart, { ...product, quantity: 1 }];
+      return [...prevCart, { 
+          ...product, 
+          selectedSize: normalizedSize,
+          selectedColor: normalizedColor,
+          quantity: 1 
+      }];
     });
 
     // DB Sync
@@ -209,14 +228,14 @@ export const CartProvider = ({ children }) => {
                 .eq('user_id', currentUser.uid)
                 .eq('product_id', product.id);
             
-            if (product.selectedSize) {
-                query = query.eq('selected_size', product.selectedSize);
+            if (normalizedSize) {
+                query = query.eq('selected_size', normalizedSize);
             } else {
                 query = query.is('selected_size', null);
             }
 
-            if (product.selectedColor) {
-                query = query.eq('selected_color', product.selectedColor);
+            if (normalizedColor) {
+                query = query.eq('selected_color', normalizedColor);
             } else {
                 query = query.is('selected_color', null);
             }
@@ -236,8 +255,8 @@ export const CartProvider = ({ children }) => {
                         user_id: currentUser.uid, 
                         product_id: product.id, 
                         quantity: 1,
-                        selected_size: product.selectedSize || null,
-                        selected_color: product.selectedColor || null
+                        selected_size: normalizedSize,
+                        selected_color: normalizedColor
                     });
             }
         } catch (error) {
@@ -248,7 +267,18 @@ export const CartProvider = ({ children }) => {
   };
 
   const removeFromCart = async (productId, selectedSize = null, selectedColor = null) => {
-    setCart(prevCart => prevCart.filter(item => !(item.id === productId && item.selectedSize === selectedSize && item.selectedColor === selectedColor)));
+    // Normalize arguments
+    const targetSize = selectedSize || null;
+    const targetColor = selectedColor || null;
+
+    setCart(prevCart => prevCart.filter(item => {
+        // Keep item if ANY condition FAILS (not same ID, or not same size, or not same color)
+        // We want to REMOVE if ALL match.
+        const isMatch = item.id === productId && 
+                        (item.selectedSize || null) === targetSize && 
+                        (item.selectedColor || null) === targetColor;
+        return !isMatch;
+    }));
     
     if (currentUser?.uid) {
         try {
@@ -258,14 +288,14 @@ export const CartProvider = ({ children }) => {
                 .eq('user_id', currentUser.uid)
                 .eq('product_id', productId);
             
-            if (selectedSize) {
-                query = query.eq('selected_size', selectedSize);
+            if (targetSize) {
+                query = query.eq('selected_size', targetSize);
             } else {
                 query = query.is('selected_size', null);
             }
             
-            if (selectedColor) {
-                query = query.eq('selected_color', selectedColor);
+            if (targetColor) {
+                query = query.eq('selected_color', targetColor);
             } else {
                 query = query.is('selected_color', null);
             }
@@ -690,6 +720,7 @@ export const CartProvider = ({ children }) => {
   return (
     <CartContext.Provider value={{
       cart,
+      cartLoading: loading || isFetchingCart, // Expose loading state
       addToCart,
       removeFromCart,
       updateQuantity,

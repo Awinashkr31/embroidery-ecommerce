@@ -66,7 +66,7 @@ const Cart = () => {
                                         <h3 className="text-lg font-heading font-medium text-stone-900 mb-1 truncate pr-4">{item.name}</h3>
                                         {/* Mobile Remove (Top Right) */}
                                         <button
-                                            onClick={() => removeFromCart(item.id, item.selectedSize)}
+                                            onClick={() => removeFromCart(item.id, item.selectedSize, item.selectedColor)}
                                             className="text-stone-400 hover:text-rose-900 transition-colors p-1 -mt-1 -mr-1 lg:hidden"
                                             title="Remove Item"
                                         >

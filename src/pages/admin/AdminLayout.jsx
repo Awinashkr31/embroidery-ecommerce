@@ -77,7 +77,7 @@ const AdminLayout = () => {
       `}>
         <div className="h-16 flex items-center justify-center border-b border-gray-100">
           <Link to="/" className="text-xl font-medium text-gray-800">
-            Admin <span className="text-deep-rose">Panel</span>
+            Admin <span className="text-rose-900">Panel</span>
           </Link>
         </div>
 
@@ -94,8 +94,8 @@ const AdminLayout = () => {
                 className={`
                   flex items-center px-4 py-3 rounded-lg transition-colors
                   ${isActive 
-                    ? 'bg-deep-rose/10 text-deep-rose font-medium' 
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-deep-rose'}
+                    ? 'bg-rose-900/10 text-rose-900 font-medium' 
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-rose-900'}
                 `}
               >
                 <Icon className="w-5 h-5 mr-3" />
@@ -126,10 +126,10 @@ const AdminLayout = () => {
           </button>
 
           <div className="ml-auto flex items-center space-x-4">
-             <Link to="/" target="_blank" className="text-sm text-gray-600 hover:text-deep-rose">
+             <Link to="/" target="_blank" className="text-sm text-gray-600 hover:text-rose-900">
                 View Site
              </Link>
-             <div className="w-8 h-8 rounded-full bg-deep-rose/10 flex items-center justify-center text-deep-rose">
+             <div className="w-8 h-8 rounded-full bg-rose-900/10 flex items-center justify-center text-rose-900">
                 <User size={18} />
              </div>
           </div>
