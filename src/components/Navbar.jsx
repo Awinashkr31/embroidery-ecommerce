@@ -154,8 +154,8 @@ const Navbar = () => {
     <nav
   className={`fixed top-0 w-full z-50 transition-all duration-500 ease-in-out
     ${isScrolled
-      ? 'bg-white/90 backdrop-blur-md border-b border-stone-100 shadow-sm py-2 px-6 md:px-12 lg:px-20'
-      : 'bg-white/50 backdrop-blur-sm py-3 px-6 md:px-12 lg:px-20'
+      ? 'bg-white/90 backdrop-blur-md border-b border-stone-100 shadow-sm py-2 px-2 md:px-12 lg:px-20'
+      : 'bg-white/50 backdrop-blur-sm py-3 px-2 md:px-12 lg:px-20'
     }`}
     >
       <div className="container-custom">
@@ -224,7 +224,7 @@ const Navbar = () => {
                     </button>
 
                     {isNotifOpen && (
-                        <div className="absolute right-0 mt-4 w-80 bg-white rounded-2xl shadow-xl py-2 ring-1 ring-black ring-opacity-5 origin-top-right transform transition-all duration-300 z-50 overflow-hidden border border-stone-100">
+                        <div className="absolute right-0 mt-4 w-72 md:w-80 bg-white rounded-2xl shadow-xl py-2 ring-1 ring-black ring-opacity-5 origin-top-right transform transition-all duration-300 z-50 overflow-hidden border border-stone-100">
                            <div className="px-5 py-3 border-b border-stone-50 flex justify-between items-center bg-stone-50/50">
                                 <h3 className="font-heading font-bold text-sm text-stone-900">Notifications</h3>
                                 <span className="px-2 py-0.5 bg-rose-100 text-rose-800 text-[10px] rounded-full font-bold">{unreadCount} New</span>

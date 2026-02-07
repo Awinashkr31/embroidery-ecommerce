@@ -5,6 +5,18 @@ const OrderSuccess = () => {
     const location = useLocation();
     const orderId = location.state?.orderId; // Safe access
 
+    // Debugging
+    React.useEffect(() => {
+        console.log("OrderSuccess Mounted. OrderID:", orderId, "Type:", typeof orderId);
+        if (typeof orderId === 'object') {
+            console.warn("OrderSuccess: orderId is an object! This might cause a crash if rendered directly.");
+        }
+    }, [orderId]);
+
+    const displayOrderId = (typeof orderId === 'object' && orderId !== null) 
+        ? (orderId.id || JSON.stringify(orderId)) 
+        : orderId;
+
     return (
         <div className="min-h-screen bg-stone-50 flex flex-col items-center justify-center p-4 pt-24">
             <div className="bg-white p-8 rounded-2xl shadow-lg max-w-md w-full text-center border border-green-100">
@@ -17,10 +29,10 @@ const OrderSuccess = () => {
                     Thank you so much for your purchase. We are processing it now.
                 </p>
 
-                {orderId && (
+                {displayOrderId && (
                     <div className="bg-gray-50 border border-gray-200 rounded p-3 mb-6">
                         <p className="text-xs text-gray-500 uppercase tracking-wide">Order ID</p>
-                        <p className="font-mono font-bold text-gray-800">{orderId}</p>
+                        <p className="font-mono font-bold text-gray-800 break-all">{displayOrderId}</p>
                     </div>
                 )}
 

@@ -65,7 +65,7 @@ const AdminCoupons = () => {
         <div className="lg:col-span-1">
             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 sticky top-6">
                 <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                    <Plus className="w-5 h-5 mr-2 text-deep-rose" />
+                    <Plus className="w-5 h-5 mr-2 text-rose-900" />
                     Create New Coupon
                 </h2>
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -77,7 +77,7 @@ const AdminCoupons = () => {
                                 type="text"
                                 required
                                 placeholder="SUMMER20"
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-deep-rose focus:border-deep-rose outline-none uppercase text-sm"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-900 focus:border-rose-900 outline-none uppercase text-sm"
                                 value={formData.code}
                                 onChange={(e) => setFormData({...formData, code: e.target.value})}
                             />
@@ -85,7 +85,7 @@ const AdminCoupons = () => {
                         <div>
                             <label className="block text-xs font-medium text-gray-700 mb-1">Type</label>
                             <select
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-deep-rose focus:border-deep-rose outline-none text-sm"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-900 focus:border-rose-900 outline-none text-sm"
                                 value={formData.type}
                                 onChange={(e) => setFormData({...formData, type: e.target.value})}
                             >
@@ -106,7 +106,7 @@ const AdminCoupons = () => {
                                 required
                                 min="1"
                                 placeholder={formData.type === 'percentage' ? "20" : "500"}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-deep-rose focus:border-deep-rose outline-none text-sm"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-900 focus:border-rose-900 outline-none text-sm"
                                 value={formData.discount}
                                 onChange={(e) => setFormData({...formData, discount: e.target.value})}
                             />
@@ -118,7 +118,7 @@ const AdminCoupons = () => {
                                 min="0"
                                 disabled={formData.type === 'flat'}
                                 placeholder={formData.type === 'flat' ? "N/A" : "Optional"}
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-deep-rose focus:border-deep-rose outline-none text-sm disabled:bg-gray-100"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-900 focus:border-rose-900 outline-none text-sm disabled:bg-gray-100"
                                 value={formData.maxDiscount}
                                 onChange={(e) => setFormData({...formData, maxDiscount: e.target.value})}
                             />
@@ -132,7 +132,7 @@ const AdminCoupons = () => {
                             type="number"
                             min="0"
                             placeholder="Cart must be at least..."
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-deep-rose focus:border-deep-rose outline-none text-sm"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-900 focus:border-rose-900 outline-none text-sm"
                             value={formData.minOrder}
                             onChange={(e) => setFormData({...formData, minOrder: e.target.value})}
                         />
@@ -144,7 +144,7 @@ const AdminCoupons = () => {
                             <label className="block text-xs font-medium text-gray-700 mb-1">Start Date</label>
                             <input
                                 type="date"
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-deep-rose focus:border-deep-rose outline-none text-sm"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-900 focus:border-rose-900 outline-none text-sm"
                                 value={formData.startDate}
                                 onChange={(e) => setFormData({...formData, startDate: e.target.value})}
                             />
@@ -154,7 +154,7 @@ const AdminCoupons = () => {
                             <input
                                 type="date"
                                 required
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-deep-rose focus:border-deep-rose outline-none text-sm"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-900 focus:border-rose-900 outline-none text-sm"
                                 value={formData.expiry}
                                 onChange={(e) => setFormData({...formData, expiry: e.target.value})}
                             />
@@ -169,7 +169,7 @@ const AdminCoupons = () => {
                                 type="number"
                                 min="0"
                                 placeholder="Total global uses"
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-deep-rose focus:border-deep-rose outline-none text-sm"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-900 focus:border-rose-900 outline-none text-sm"
                                 value={formData.usageLimit}
                                 onChange={(e) => setFormData({...formData, usageLimit: e.target.value})}
                             />
@@ -180,7 +180,7 @@ const AdminCoupons = () => {
                                 type="number"
                                 min="0"
                                 placeholder="Uses per customer"
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-deep-rose focus:border-deep-rose outline-none text-sm"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-rose-900 focus:border-rose-900 outline-none text-sm"
                                 value={formData.perUserLimit}
                                 onChange={(e) => setFormData({...formData, perUserLimit: e.target.value})}
                             />
@@ -197,7 +197,7 @@ const AdminCoupons = () => {
                                         type="checkbox"
                                         checked={formData.includedCategories.includes(cat.id)}
                                         onChange={() => toggleCategory(cat.id)}
-                                        className="rounded text-deep-rose focus:ring-deep-rose"
+                                        className="rounded text-rose-900 focus:ring-rose-900"
                                     />
                                     <span className="text-gray-700">{cat.label}</span>
                                 </label>
@@ -207,7 +207,7 @@ const AdminCoupons = () => {
 
                     <button
                         type="submit"
-                        className="w-full py-2 bg-deep-rose text-white rounded-lg hover:bg-opacity-90 transition-colors font-medium"
+                        className="w-full py-2 bg-rose-900 text-white rounded-lg hover:bg-opacity-90 transition-colors font-medium"
                     >
                         Create Coupon
                     </button>
@@ -220,7 +220,7 @@ const AdminCoupons = () => {
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="p-6 border-b border-gray-100">
                     <h2 className="text-lg font-semibold text-gray-800 flex items-center">
-                        <Tag className="w-5 h-5 mr-2 text-deep-rose" />
+                        <Tag className="w-5 h-5 mr-2 text-rose-900" />
                         Active Coupons
                     </h2>
                 </div>
@@ -250,7 +250,7 @@ const AdminCoupons = () => {
                                                 <div className="font-bold text-gray-900">{coupon.code}</div>
                                                 <div className="text-xs text-gray-500">{coupon.type === 'flat' ? 'Flat Amount' : 'Percentage'}</div>
                                             </td>
-                                            <td className="px-6 py-4 text-deep-rose font-bold">
+                                            <td className="px-6 py-4 text-rose-900 font-bold">
                                                 {coupon.type === 'flat' ? `₹${coupon.discount}` : `${coupon.discount}%`}
                                             </td>
                                             <td className="px-6 py-4">

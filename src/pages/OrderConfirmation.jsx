@@ -9,19 +9,57 @@ import SEO from '../components/SEO';
 const OrderConfirmation = () => {
     const { state } = useLocation();
     const navigate = useNavigate();
-    const { cart, cartTotal, subtotal, shippingCharge, discountAmount, appliedCoupon, placeOrder } = useCart();
+    const { cart, cartTotal, subtotal, shippingCharge, discountAmount, appliedCoupon, placeOrder, cartLoading } = useCart();
     const { addToast } = useToast();
     const { currentUser } = useAuth();
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // Debugging Logs
+    React.useEffect(() => {
+        console.log("OrderConfirmation Debug:", { state, cartLength: cart.length, cartLoading });
+    }, [state, cart, cartLoading]);
+
     // Redirect to cart if no state (direct access) or empty cart
     React.useEffect(() => {
-        if (!state || cart.length === 0) {
-            navigate('/cart');
+        if (!cartLoading && (!state || cart.length === 0)) {
+            console.warn("OrderConfirmation: Conditions not met. State:", !!state, "Cart:", cart.length);
+            // navigate('/cart'); // DISABLED REDIRECT FOR DEBUGGING
         }
-    }, [state, cart, navigate]);
+    }, [state, cart, navigate, cartLoading]);
 
-    if (!state || cart.length === 0) return null;
+    if (cartLoading) {
+        return (
+            <div className="min-h-screen bg-[#fdfbf7] flex items-center justify-center font-body pt-20">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-rose-900 mx-auto mb-4"></div>
+                    <p className="text-stone-600">Loading order details...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (!state || cart.length === 0) {
+        return (
+             <div className="min-h-screen bg-[#fdfbf7] flex items-center justify-center font-body pt-20">
+                <div className="text-center p-8 bg-white shadow-lg rounded-2xl max-w-md mx-4">
+                    <AlertTriangle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
+                    <h2 className="text-xl font-bold text-stone-900 mb-2">Something is missing</h2>
+                    <p className="text-stone-600 mb-6">
+                        {!state ? "No order details found. " : ""}
+                        {cart.length === 0 ? "Your cart appears empty. " : ""}
+                    </p>
+                    <div className="text-xs text-stone-400 mb-6 font-mono bg-stone-50 p-2 rounded">
+                        State: {state ? 'Present' : 'Missing'}<br/>
+                        Cart: {cart.length} items<br/>
+                        Loading: {cartLoading ? 'Yes' : 'No'}
+                    </div>
+                    <Link to="/cart" className="inline-block bg-rose-900 text-white px-6 py-3 rounded-xl font-bold uppercase tracking-wider hover:bg-rose-800 transition-colors">
+                        Return to Cart
+                    </Link>
+                </div>
+            </div>
+        );
+    }
 
     const { formData } = state;
 

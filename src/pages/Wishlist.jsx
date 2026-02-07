@@ -12,11 +12,11 @@ const Wishlist = () => {
         return (
             <div className="min-h-[60vh] flex flex-col items-center justify-center bg-warm-beige/30 font-sofia p-4">
                 <div className="bg-rose-gold/10 p-8 rounded-full mb-6">
-                    <Heart className="w-12 h-12 text-deep-rose" />
+                    <Heart className="w-12 h-12 text-rose-900" />
                 </div>
                 <h1 className="text-2xl font-medium text-gray-800 mb-4">Your wishlist is empty</h1>
                 <p className="text-gray-600 mb-8">Save items you love to revisit later.</p>
-                <Link to="/shop" className="bg-deep-rose text-white px-8 py-3 rounded-full font-semibold hover:bg-deep-rose/90 transition-all">
+                <Link to="/shop" className="bg-rose-900 text-white px-8 py-3 rounded-full font-semibold hover:bg-rose-900/90 transition-all">
                     Start Shopping
                 </Link>
             </div>
@@ -27,7 +27,7 @@ const Wishlist = () => {
         <div className="bg-warm-beige/30 min-h-screen font-sofia py-12">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <h1 className="text-3xl font-light text-gray-800 mb-8 flex items-center gap-3">
-                    <Heart className="text-deep-rose fill-current" />
+                    <Heart className="text-rose-900 fill-current" />
                     My Wishlist
                 </h1>
 
@@ -52,7 +52,7 @@ const Wishlist = () => {
                             <div className="p-4">
                                 <h3 className="text-lg font-medium text-gray-800 mb-1">{product.name}</h3>
                                 <div className="flex items-center gap-2 mb-4">
-                                    <span className="text-deep-rose font-medium">₹{product.price.toLocaleString()}</span>
+                                    <span className="text-rose-900 font-medium">₹{product.price.toLocaleString()}</span>
                                     {product.originalPrice && (
                                         <>
                                             <span className="text-sm text-gray-400 line-through">₹{product.originalPrice.toLocaleString()}</span>
