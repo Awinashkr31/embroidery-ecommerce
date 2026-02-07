@@ -9,7 +9,7 @@ const BottomNavigation = () => {
   const cartItemCount = cart.length;
 
   // Hide on Cart and Checkout pages to prevent overlap with sticky buttons
-  if (['/cart', '/checkout'].includes(location.pathname)) {
+  if (['/cart', '/checkout', '/mehndi-booking'].includes(location.pathname)) {
     return null;
   }
 

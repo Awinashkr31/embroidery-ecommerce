@@ -65,12 +65,17 @@ export const WishlistProvider = ({ children }) => {
   }, [wishlist, currentUser]);
 
   const addToWishlist = async (product) => {
-    setWishlist(prev => {
-      if (prev.some(item => item.id === product.id)) {
+    // Check if already in wishlist to prevent duplicates (and double toasts)
+    if (isInWishlist(product.id)) {
         addToast('Already in wishlist!', 'info');
-        return prev;
-      }
-      addToast('Added to wishlist!', 'success');
+        return;
+    }
+    
+    addToast('Added to wishlist!', 'success');
+    
+    setWishlist(prev => {
+      // Double check inside setter just for state consistency, but no side effects here
+      if (prev.some(item => item.id === product.id)) return prev;
       return [...prev, product];
     });
 
@@ -90,8 +95,8 @@ export const WishlistProvider = ({ children }) => {
   };
 
   const removeFromWishlist = async (productId) => {
-    setWishlist(prev => prev.filter(item => item.id !== productId));
     addToast('Removed from wishlist', 'info');
+    setWishlist(prev => prev.filter(item => item.id !== productId));
 
     if (currentUser?.uid) {
         try {
