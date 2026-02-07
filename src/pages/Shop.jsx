@@ -94,7 +94,7 @@ const Shop = () => {
 
     return (
         <div className="bg-[#fdfbf7] min-h-screen pb-32 font-body selection:bg-rose-100 selection:text-rose-900">
-            <div className="container-custom pb-20 pt-28 md:pt-32">
+            <div className="container-custom pb-20 pt-20 md:pt-32">
 
                 <div className="flex flex-col lg:flex-row gap-12 items-start">
 
@@ -243,38 +243,38 @@ const Shop = () => {
                     {/* Product Grid - with Sticky Header */}
                     <div className="flex-1 w-full relative">
                         {/* Sticky Toolbar: Search, Sort, & Count */}
-                        <div className="sticky top-20 lg:top-24 z-20 bg-white/95 backdrop-blur-md py-4 mb-8 border-y border-stone-200 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4 transition-all duration-300 px-4 md:px-0 rounded-xl md:rounded-none mt-[-1rem] md:mt-0">
+                        <div className="sticky top-[60px] lg:top-24 z-30 bg-white/80 backdrop-blur-md py-2 md:py-4 mb-3 md:mb-8 border-b border-stone-200/60 shadow-sm md:shadow-none md:border-y md:border-stone-200 flex flex-row justify-between items-center gap-3 md:gap-4 transition-all duration-300 -mx-4 px-4 md:mx-0 md:px-0 md:rounded-none">
                              {/* Result Count (Desktop) */}
                             <div className="hidden md:block text-sm font-medium text-stone-500 pl-4">
                                 Showing {allFilteredProducts.length} results
                             </div>
 
-                            <div className="flex items-center gap-4 w-full md:w-auto pr-4">
+                            <div className="flex items-center gap-3 w-full md:w-auto md:pr-4">
                                 {/* Search */}
-                                <div className="relative flex-1 md:w-64 group">
+                                <div className="relative flex-[2] md:w-64 group">
                                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 group-focus-within:text-rose-900 transition-colors" />
                                     <input 
                                         type="text"
                                         placeholder="Search..."
                                         value={searchQuery}
                                         onChange={(e) => setSearchQuery(e.target.value)}
-                                        className="w-full pl-9 pr-4 py-2 bg-stone-50 border border-stone-200 rounded-full text-sm focus:border-rose-900 focus:bg-white focus:ring-1 focus:ring-rose-900 focus:outline-none transition-all placeholder:text-stone-400 font-medium hover:border-stone-300"
+                                        className="w-full pl-9 pr-4 py-2 bg-stone-100/50 border border-stone-200 rounded-lg md:rounded-full text-sm focus:border-rose-900 focus:bg-white focus:ring-1 focus:ring-rose-900 focus:outline-none transition-all placeholder:text-stone-400 font-medium hover:border-stone-300"
                                     />
                                 </div>
                                 
                                 {/* Sort */}
-                                <div className="relative group min-w-[160px]">
+                                <div className="relative group flex-1 md:min-w-[160px]">
                                     <select
                                         value={sortBy}
                                         onChange={(e) => setSortBy(e.target.value)}
-                                        className="w-full appearance-none pl-4 pr-10 py-2 bg-stone-50 border border-stone-200 rounded-full text-sm font-medium text-stone-600 focus:outline-none focus:border-rose-900 focus:bg-white focus:ring-1 focus:ring-rose-900 cursor-pointer hover:border-stone-300 transition-all"
+                                        className="w-full appearance-none pl-3 pr-8 py-2 bg-stone-100/50 border border-stone-200 rounded-lg md:rounded-full text-sm font-medium text-stone-600 focus:outline-none focus:border-rose-900 focus:bg-white focus:ring-1 focus:ring-rose-900 cursor-pointer hover:border-stone-300 transition-all truncate"
                                     >
                                         <option value="featured">Featured</option>
                                         <option value="newest">Newest</option>
                                         <option value="price-low">Price: Low to High</option>
                                         <option value="price-high">Price: High to Low</option>
                                     </select>
-                                    <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 pointer-events-none group-hover:text-stone-900 transition-colors" />
+                                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 pointer-events-none group-hover:text-stone-900 transition-colors" />
                                 </div>
                             </div>
                         </div>
@@ -335,11 +335,12 @@ const Shop = () => {
                                                 <button 
                                                     onClick={(e) => {
                                                         e.preventDefault();
+                                                        e.stopPropagation(); // Stop propagation just in case
                                                         toggleWishlist(product);
                                                     }}
-                                                    className="absolute top-2 right-2 md:top-3 md:right-3 p-1.5 md:p-2 bg-white/90 rounded-full text-stone-500 hover:text-rose-600 transition-all opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 duration-300 shadow-sm"
+                                                    className="absolute top-2 right-2 md:top-3 md:right-3 p-2 bg-white/90 rounded-full text-stone-500 hover:text-rose-600 transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100 translate-y-0 md:translate-y-2 md:group-hover:translate-y-0 duration-300 shadow-sm"
                                                 >
-                                                    <Heart className={`w-3.5 h-3.5 md:w-4 md:h-4 ${isInWishlist(product.id) ? 'fill-rose-600 text-rose-600' : ''}`} />
+                                                    <Heart className={`w-4 h-4 md:w-4 md:h-4 ${isInWishlist(product.id) ? 'fill-rose-600 text-rose-600' : ''}`} />
                                                 </button>
 
                                                 {/* Add to Cart Overlay Removed */}

@@ -67,15 +67,27 @@ export const CartProvider = ({ children }) => {
                                  query = query.is('selected_color', null);
                              }
                              
-                             const { data: existing } = await query.single();
+                             const { data: existing, error: fetchError } = await query.maybeSingle();
+
+                             if (fetchError) {
+                                console.error("Error checking check existing item:", fetchError);
+                                // If error checking, maybe better to skip this item or try insert anyway?
+                                // Trying insert might duplicate if consistency read failed.
+                                // But let's log and try to proceed if it's just a 'not found' (which maybeSingle handles)
+                             }
 
                              if (existing) {
-                                 await supabase
+                                 console.log(`Updating existing item ${existing.id} quantity by ${item.quantity}`);
+                                 const { error: updateError } = await supabase
                                     .from('cart_items')
                                     .update({ quantity: existing.quantity + item.quantity })
                                     .eq('id', existing.id);
+                                 
+                                 if (updateError) console.error("Error updating item:", updateError);
+
                              } else {
-                                 await supabase
+                                console.log(`Inserting new item ${item.id}`);
+                                 const { error: insertError } = await supabase
                                     .from('cart_items')
                                     .insert({ 
                                         user_id: currentUser.uid, 
@@ -84,6 +96,8 @@ export const CartProvider = ({ children }) => {
                                         selected_size: item.selectedSize || null,
                                         selected_color: item.selectedColor || null
                                     });
+
+                                 if (insertError) console.error("Error inserting item:", insertError);
                              }
                         } catch (err) {
                             console.error(`Failed to merge item ${item.id}`, err);
@@ -126,8 +140,12 @@ export const CartProvider = ({ children }) => {
                         }
                     }
 
+                    // Normalize Image
+                    const displayImage = p.images && p.images.length > 0 ? p.images[0] : p.image;
+
                     return {
                         ...p,
+                        image: displayImage, // Ensure image is set
                         price: finalPrice, // Override base price
                         quantity: item.quantity,
                         selectedSize: item.selected_size,
@@ -174,6 +192,7 @@ export const CartProvider = ({ children }) => {
     // Normalize properties to ensure consistency (Wishlist items might have undefined)
     const normalizedSize = product.selectedSize || null;
     const normalizedColor = product.selectedColor || null;
+    const normalizedImage = product.images && product.images.length > 0 ? product.images[0] : product.image;
 
     // Check Stock
     // UNIQUE IDENTIFIER: Product ID + Selected Size + Selected Color
@@ -212,6 +231,7 @@ export const CartProvider = ({ children }) => {
       }
       return [...prevCart, { 
           ...product, 
+          image: normalizedImage, // Ensure image is set correctly
           selectedSize: normalizedSize,
           selectedColor: normalizedColor,
           quantity: 1 

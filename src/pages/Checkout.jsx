@@ -28,9 +28,11 @@ const Checkout = () => {
     // Filter addresses for current user
     const userAddresses = savedAddresses.filter(addr => addr.userId === currentUser?.uid);
 
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isZipLoading, setIsZipLoading] = useState(false);
+
     const [formData, setFormData] = useState({
-        firstName: '',
-        lastName: '',
+        fullName: '',
         email: currentUser?.email || '',
         phone: '',
         address: '',
@@ -39,8 +41,6 @@ const Checkout = () => {
         zipCode: '',
         paymentMethod: 'cod'
     });
-    
-    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleAddressSelect = (id) => {
         setSelectedAddressId(id);
@@ -49,8 +49,7 @@ const Checkout = () => {
             if (addr) {
                 setFormData(prev => ({
                     ...prev,
-                    firstName: addr.firstName,
-                    lastName: addr.lastName,
+                    fullName: `${addr.firstName} ${addr.lastName}`,
                     phone: addr.phone,
                     address: addr.address,
                     city: addr.city,
@@ -61,12 +60,42 @@ const Checkout = () => {
         } else {
              setFormData(prev => ({
                 ...prev,
+                fullName: '',
                 phone: '',
                 address: '',
                 city: '',
                 state: '',
                 zipCode: ''
             }));
+        }
+    };
+
+    const handleZipChange = async (e) => {
+        const zip = e.target.value.replace(/\D/g, '').slice(0, 6); // Allow only numbers, max 6 digits
+        setFormData({ ...formData, zipCode: zip });
+
+        if (zip.length === 6) {
+            setIsZipLoading(true);
+            try {
+                const response = await fetch(`https://api.postalpincode.in/pincode/${zip}`);
+                const data = await response.json();
+
+                if (data && data[0] && data[0].Status === 'Success') {
+                    const { District, State } = data[0].PostOffice[0];
+                    setFormData(prev => ({
+                        ...prev,
+                        zipCode: zip,
+                        city: District,
+                        state: State
+                    }));
+                } else {
+                    addToast('Invalid Pincode', 'error');
+                }
+            } catch (error) {
+                console.error("Error fetching pincode details:", error);
+            } finally {
+                setIsZipLoading(false);
+            }
         }
     };
 
@@ -112,15 +141,26 @@ const Checkout = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!formData.address || !formData.phone || !formData.firstName) {
+        if (!formData.address || !formData.phone || !formData.fullName) {
             addToast('Please fill in all required fields.', 'error');
             return;
         }
 
         setIsSubmitting(true);
 
+        // Split Full Name
+        const nameParts = formData.fullName.trim().split(' ');
+        const firstName = nameParts[0];
+        const lastName = nameParts.slice(1).join(' ') || '';
+
+        const submissionData = {
+            ...formData,
+            firstName,
+            lastName
+        };
+
         if (currentUser && shouldSaveAddress && selectedAddressId === 'new') {
-            saveAddress(formData, currentUser.uid);
+            saveAddress(submissionData, currentUser.uid);
         }
 
         try {
@@ -151,7 +191,7 @@ const Checkout = () => {
                     description: "Handcrafted Embroidery",
                     order_id: orderData.id,
                     prefill: {
-                        name: `${formData.firstName} ${formData.lastName}`,
+                        name: formData.fullName,
                         email: formData.email,
                         contact: formData.phone
                     },
@@ -176,7 +216,7 @@ const Checkout = () => {
 
                             // 5. Place Order in Database
                             const orderResult = await placeOrder({
-                                ...formData,
+                                ...submissionData,
                                 userId: currentUser?.uid,
                                 email: currentUser?.email || formData.email
                             }, {
@@ -207,7 +247,7 @@ const Checkout = () => {
                 navigate('/order-confirmation', { 
                     state: { 
                         formData: {
-                            ...formData,
+                            ...submissionData,
                             paymentMethod: 'cod' 
                         } 
                     } 
@@ -276,54 +316,28 @@ const Checkout = () => {
                         )}
                         
                         <form onSubmit={handleSubmit} className="space-y-6">
-                            <div className="grid grid-cols-2 gap-6">
-                                <div>
-                                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">First Name</label>
-                                    <input
-                                        type="text"
-                                        name="firstName"
-                                        required
-                                        value={formData.firstName}
-                                        onChange={handleChange}
-                                        className="w-full px-4 py-3 border-2 border-stone-100 rounded-xl focus:border-rose-900 focus:bg-white bg-stone-50 outline-none transition-all font-medium text-stone-900"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Last Name</label>
-                                    <input
-                                        type="text"
-                                        name="lastName"
-                                        required
-                                        value={formData.lastName}
-                                        onChange={handleChange}
-                                        className="w-full px-4 py-3 border-2 border-stone-100 rounded-xl focus:border-rose-900 focus:bg-white bg-stone-50 outline-none transition-all font-medium text-stone-900"
-                                    />
-                                </div>
+                            <div>
+                                <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Full Name</label>
+                                <input
+                                    type="text"
+                                    name="fullName"
+                                    required
+                                    value={formData.fullName}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-3 border-2 border-stone-100 rounded-xl focus:border-rose-900 focus:bg-white bg-stone-50 outline-none transition-all font-medium text-stone-900"
+                                />
                             </div>
 
-                            <div className="grid grid-cols-2 gap-6">
-                                <div>
-                                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Email</label>
-                                    <input
-                                        type="email"
-                                        name="email"
-                                        required
-                                        value={formData.email}
-                                        onChange={handleChange}
-                                        className="w-full px-4 py-3 border-2 border-stone-100 rounded-xl focus:border-rose-900 focus:bg-white bg-stone-50 outline-none transition-all font-medium text-stone-900"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Phone</label>
-                                    <input
-                                        type="tel"
-                                        name="phone"
-                                        required
-                                        value={formData.phone}
-                                        onChange={handleChange}
-                                        className="w-full px-4 py-3 border-2 border-stone-100 rounded-xl focus:border-rose-900 focus:bg-white bg-stone-50 outline-none transition-all font-medium text-stone-900"
-                                    />
-                                </div>
+                            <div>
+                                <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Phone</label>
+                                <input
+                                    type="tel"
+                                    name="phone"
+                                    required
+                                    value={formData.phone}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-3 border-2 border-stone-100 rounded-xl focus:border-rose-900 focus:bg-white bg-stone-50 outline-none transition-all font-medium text-stone-900"
+                                />
                             </div>
 
                             <div>
@@ -331,23 +345,42 @@ const Checkout = () => {
                                 <textarea
                                     name="address"
                                     required
-                                    rows="3"
+                                    rows="2"
                                     value={formData.address}
                                     onChange={handleChange}
                                     className="w-full px-4 py-3 border-2 border-stone-100 rounded-xl focus:border-rose-900 focus:bg-white bg-stone-50 outline-none transition-all font-medium text-stone-900 resize-none"
                                 ></textarea>
                             </div>
 
-                            <div className="grid grid-cols-3 gap-6">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="col-span-2">
+                                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Pincode (Zip)</label>
+                                    <div className="relative">
+                                        <input
+                                            type="text"
+                                            name="zipCode"
+                                            required
+                                            maxLength="6"
+                                            value={formData.zipCode}
+                                            onChange={handleZipChange}
+                                            className="w-full px-4 py-3 border-2 border-stone-100 rounded-xl focus:border-rose-900 focus:bg-white bg-stone-50 outline-none transition-all font-medium text-stone-900"
+                                        />
+                                        {isZipLoading && (
+                                            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-rose-900"></div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
                                 <div>
                                     <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">City</label>
                                     <input
                                         type="text"
                                         name="city"
                                         required
+                                        readOnly
                                         value={formData.city}
-                                        onChange={handleChange}
-                                        className="w-full px-4 py-3 border-2 border-stone-100 rounded-xl focus:border-rose-900 focus:bg-white bg-stone-50 outline-none transition-all font-medium text-stone-900"
+                                        className="w-full px-4 py-3 border-2 border-stone-100 rounded-xl bg-stone-100 text-stone-600 outline-none cursor-not-allowed font-medium"
                                     />
                                 </div>
                                 <div>
@@ -356,20 +389,9 @@ const Checkout = () => {
                                         type="text"
                                         name="state"
                                         required
+                                        readOnly
                                         value={formData.state}
-                                        onChange={handleChange}
-                                        className="w-full px-4 py-3 border-2 border-stone-100 rounded-xl focus:border-rose-900 focus:bg-white bg-stone-50 outline-none transition-all font-medium text-stone-900"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">ZIP</label>
-                                    <input
-                                        type="text"
-                                        name="zipCode"
-                                        required
-                                        value={formData.zipCode}
-                                        onChange={handleChange}
-                                        className="w-full px-4 py-3 border-2 border-stone-100 rounded-xl focus:border-rose-900 focus:bg-white bg-stone-50 outline-none transition-all font-medium text-stone-900"
+                                        className="w-full px-4 py-3 border-2 border-stone-100 rounded-xl bg-stone-100 text-stone-600 outline-none cursor-not-allowed font-medium"
                                     />
                                 </div>
                             </div>

@@ -26,61 +26,81 @@ const Wishlist = () => {
     return (
         <div className="bg-warm-beige/30 min-h-screen font-sofia py-12">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <h1 className="text-3xl font-light text-gray-800 mb-8 flex items-center gap-3">
-                    <Heart className="text-rose-900 fill-current" />
+                <h1 className="text-2xl md:text-3xl font-heading font-bold text-stone-900 mb-6 md:mb-8 flex items-center gap-3">
+                    <Heart className="text-rose-900 fill-current w-6 h-6 md:w-8 md:h-8" />
                     My Wishlist
                 </h1>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                    {wishlist.map(product => (
-                        <div key={product.id} className="bg-white rounded-xl shadow-sm overflow-hidden group">
-                            <div className="relative aspect-square overflow-hidden">
-                                <img
-                                    src={product.image}
-                                    alt={product.name}
-                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                />
-                                <button
-                                    onClick={() => removeFromWishlist(product.id)}
-                                    className="absolute top-2 right-2 p-2 bg-white/90 rounded-full shadow-sm hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors"
-                                    title="Remove from wishlist"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                </button>
-                            </div>
-                            
-                            <div className="p-4">
-                                <h3 className="text-lg font-medium text-gray-800 mb-1">{product.name}</h3>
-                                <div className="flex items-center gap-2 mb-4">
-                                    <span className="text-rose-900 font-medium">₹{product.price.toLocaleString()}</span>
-                                    {product.originalPrice && (
-                                        <>
-                                            <span className="text-sm text-gray-400 line-through">₹{product.originalPrice.toLocaleString()}</span>
-                                            <span className="text-xs font-bold text-green-600 border border-green-200 px-1.5 rounded bg-green-50">
-                                                {product.discountPercentage}% off
-                                            </span>
-                                        </>
-                                    )}
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6">
+                    {wishlist.map(product => {
+                        // Helper for Image
+                        const displayImage = product.images && product.images.length > 0 
+                            ? product.images[0] 
+                            : product.image;
+
+                        // Helper for Stock
+                        // Check multiple possible fields for stock
+                        const stockCount = product.stock_quantity !== undefined 
+                            ? product.stock_quantity 
+                            : (product.stock !== undefined ? product.stock : 0);
+                        
+                        const inStock = stockCount > 0;
+
+                        return (
+                            <div key={product.id || product.wishlistItemId} className="group relative">
+                                {/* Image Container */}
+                                <div className="relative aspect-[3/4] rounded-xl overflow-hidden bg-stone-100 mb-3">
+                                    <Link to={`/product/${product.id}`}>
+                                        <img
+                                            src={displayImage}
+                                            alt={product.name}
+                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                        />
+                                    </Link>
+                                    <button
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            removeFromWishlist(product.id);
+                                        }}
+                                        className="absolute top-2 right-2 p-1.5 bg-white/80 backdrop-blur-sm rounded-full text-stone-400 hover:text-rose-600 transition-colors z-10"
+                                    >
+                                        <Trash2 size={16} />
+                                    </button>
+                                    
+                                    {/* Quick Add Button */}
+                                    <button
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            addToCart(product);
+                                            removeFromWishlist(product.id);
+                                        }}
+                                        disabled={!inStock}
+                                        className={`absolute bottom-2 right-2 left-2 md:translate-y-full md:opacity-0 md:group-hover:translate-y-0 md:group-hover:opacity-100 transition-all duration-300 py-2 rounded-lg text-xs font-bold uppercase tracking-wider shadow-lg flex items-center justify-center gap-2 ${
+                                            inStock
+                                            ? 'bg-white text-stone-900 hover:bg-stone-50'
+                                            : 'bg-stone-200 text-stone-400 cursor-not-allowed'
+                                        }`}
+                                    >
+                                        <ShoppingBag size={14} />
+                                        {inStock ? 'Add to Cart' : 'Sold Out'}
+                                    </button>
                                 </div>
                                 
-                                <button
-                                    onClick={() => {
-                                        addToCart(product);
-                                        removeFromWishlist(product.id);
-                                    }}
-                                    disabled={!product.inStock}
-                                    className={`w-full flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium transition-colors ${
-                                        product.inStock
-                                        ? 'bg-gray-900 text-white hover:bg-gray-800'
-                                        : 'bg-gray-200 text-gray-500 cursor-not-allowed'
-                                    }`}
-                                >
-                                    <ShoppingBag className="w-4 h-4" />
-                                    {product.inStock ? 'Move to Cart' : 'Out of Stock'}
-                                </button>
+                                {/* Content */}
+                                <div>
+                                    <h3 className="text-sm font-bold text-stone-900 truncate leading-tight mb-0.5">
+                                        <Link to={`/product/${product.id}`}>{product.name}</Link>
+                                    </h3>
+                                    <div className="flex items-center flex-wrap gap-2">
+                                        <span className="text-sm font-medium text-stone-600">₹{product.price.toLocaleString()}</span>
+                                        {product.originalPrice && (
+                                            <span className="text-xs text-stone-400 line-through">₹{product.originalPrice.toLocaleString()}</span>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </div>
         </div>

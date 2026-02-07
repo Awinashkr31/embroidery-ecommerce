@@ -1,6 +1,7 @@
 console.log('[DEBUG] 4. App File Executing');
 import React, { Suspense, lazy } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import ScrollToTop from './components/ScrollToTop'
 
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
@@ -73,6 +74,7 @@ function App() {
       <CartProvider>
       <ProductProvider>
         <Router>
+          <ScrollToTop />
           <Suspense fallback={<PageLoader />}>
             <Routes>
               {/* Admin Routes */}
