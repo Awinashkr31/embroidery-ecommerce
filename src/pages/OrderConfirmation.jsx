@@ -181,9 +181,17 @@ const OrderConfirmation = () => {
                             </div>
                         </div>
 
-                        <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 flex gap-3 text-amber-800 text-sm">
+                        <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-3 text-amber-800 text-sm">
                              <AlertTriangle className="w-5 h-5 shrink-0" />
-                             <p>By placing this order, you agree to pay <strong>₹{cartTotal.toLocaleString()}</strong> in cash upon delivery.</p>
+                             <div className="space-y-2">
+                                 <p>By placing this order, you agree to pay <strong>₹{cartTotal.toLocaleString()}</strong> in cash upon delivery.</p>
+                                 <div className="border-t border-amber-200/50 pt-2 mt-2">
+                                     <p className="font-bold text-xs uppercase tracking-wider mb-1">Important:</p>
+                                     <p className="text-xs leading-relaxed">
+                                         A clear <strong>Unboxing Video</strong> is mandatory for any returns or replacements. Please record one when opening your package.
+                                     </p>
+                                 </div>
+                             </div>
                         </div>
 
                         <button

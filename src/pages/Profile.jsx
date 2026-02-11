@@ -116,6 +116,7 @@ const Profile = () => {
             setAddressForm({ firstName: '', lastName: '', phone: '', zipCode: '', address: '', city: '', state: '' });
             addToast('Address saved successfully!', 'success');
         } catch (error) {
+            console.error(error);
             addToast('Failed to save address', 'error');
         } finally {
             setSubmittingAddress(false);
@@ -303,6 +304,17 @@ const Profile = () => {
                                     <span className="text-sm text-stone-500 font-medium">{orders.length} Orders</span>
                                 </div>
                                 
+                                {/* Unboxing Video Reminder */}
+                                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-3 text-amber-800 text-sm mb-4">
+                                     <AlertTriangle className="w-5 h-5 shrink-0" />
+                                     <div>
+                                         <p className="font-bold">Important Policy:</p>
+                                         <p className="text-xs leading-relaxed mt-1">
+                                             For any return or replacement requests, an <strong>unboxing video is mandatory</strong>. Please ensure you record a video while opening your package.
+                                         </p>
+                                     </div>
+                                </div>
+
                                 <OrderList 
                                     orders={orders} 
                                     loading={loading} 

@@ -470,34 +470,62 @@ const Orders = () => {
             
             <div className="p-6 space-y-8">
                 {/* Status Control */}
-                <div className="bg-white rounded-xl border border-stone-200 p-4 shadow-sm">
-                    <label className="text-xs font-bold text-stone-500 uppercase tracking-widest block mb-2">Order Status</label>
-                    <select 
-                        value={selectedOrder.status}
-                        onChange={(e) => updateOrderStatus(selectedOrder.id, e.target.value)}
-                        className={`w-full px-4 py-2 rounded-lg font-bold border-2 focus:ring-0 cursor-pointer capitalize ${getStatusColor(selectedOrder.status)}`}
-                    >
-                        {statusOptions.map(status => (
-                            <option key={status} value={status}>{status.charAt(0).toUpperCase() + status.slice(1)}</option>
-                        ))}
-                    </select>
+                {/* Status Control */}
+                <div className="bg-white rounded-xl border border-stone-200 p-4 shadow-sm space-y-4">
+                    <div>
+                        <label className="text-xs font-bold text-stone-500 uppercase tracking-widest block mb-2">Order Status</label>
+                        <select 
+                            value={selectedOrder.status}
+                            onChange={(e) => updateOrderStatus(selectedOrder.id, e.target.value)}
+                            className={`w-full px-4 py-2 rounded-lg font-bold border-2 focus:ring-0 cursor-pointer capitalize ${getStatusColor(selectedOrder.status)}`}
+                        >
+                            {statusOptions.map(status => (
+                                <option key={status} value={status}>{status.charAt(0).toUpperCase() + status.slice(1)}</option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* Logistics Management (Manual Overrides) */}
+                    <div className="pt-4 border-t border-stone-100">
+                        <label className="text-xs font-bold text-stone-500 uppercase tracking-widest block mb-3">Logistics & Estimates</label>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label className="text-[10px] font-bold text-stone-400 uppercase block mb-1">Est. Shipping Date</label>
+                                <input 
+                                    type="date" 
+                                    value={selectedOrder.estimated_shipping_date ? new Date(selectedOrder.estimated_shipping_date).toISOString().split('T')[0] : ''}
+                                    onChange={(e) => updateOrderStatus(selectedOrder.id, selectedOrder.status, { estimated_shipping_date: e.target.value })}
+                                    className="w-full px-3 py-2 rounded-lg border border-stone-200 text-sm font-medium focus:ring-2 focus:ring-rose-900/10"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-[10px] font-bold text-stone-400 uppercase block mb-1">Expected Delivery</label>
+                                <input 
+                                    type="date" 
+                                    value={selectedOrder.expected_delivery_date ? new Date(selectedOrder.expected_delivery_date).toISOString().split('T')[0] : ''}
+                                    onChange={(e) => updateOrderStatus(selectedOrder.id, selectedOrder.status, { expected_delivery_date: e.target.value })}
+                                    className="w-full px-3 py-2 rounded-lg border border-stone-200 text-sm font-medium focus:ring-2 focus:ring-rose-900/10"
+                                />
+                            </div>
+                            <div>
+                                <label className="text-[10px] font-bold text-stone-400 uppercase block mb-1">Courier Partner</label>
+                                <input 
+                                    type="text" 
+                                    value={selectedOrder.courier_name || ''}
+                                    placeholder="e.g. Xpressbees"
+                                    onChange={(e) => updateOrderStatus(selectedOrder.id, selectedOrder.status, { courier_name: e.target.value })}
+                                    className="w-full px-3 py-2 rounded-lg border border-stone-200 text-sm font-medium focus:ring-2 focus:ring-rose-900/10"
+                                />
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
-                 {/* Shipping/Tracking Info */}
-                 {selectedOrder.waybillId ? (
-                     <div className="bg-purple-50 rounded-xl border border-purple-100 p-4 shadow-sm">
-                        <h4 className="flex items-center gap-2 text-sm font-bold text-purple-900 uppercase tracking-wide mb-2">
-                             <Truck className="w-4 h-4" />
-                             Shipping Details
-                        </h4>
-                        <div className="text-sm text-purple-800 space-y-1">
-                            <p><strong>Courier:</strong> {selectedOrder.courier_name || 'Delhivery'}</p>
-                            <p><strong>Tracking:</strong> <span className="font-mono bg-white px-1.5 py-0.5 rounded border border-purple-100 select-all">{selectedOrder.waybillId}</span></p>
-                            {selectedOrder.trackingUrl && <a href={selectedOrder.trackingUrl} target="_blank" className="underline text-blue-600">Track Shipment</a>}
-                        </div>
-                     </div>
-                 ) : (
-                    /* Create Shipment Section */
+                 {/* Shipment Creator (Only show if not shipped/no waybill, or keep as alternative?) 
+                     Actually, if we have manual overrides above, this might be redundant if the user just wants to type. 
+                     But this is useful for API integration. Let's keep it but maybe collapse it if valid data exists?
+                 */}
+                 {!selectedOrder.waybill_id && (
                     <ShipmentCreator selectedOrder={selectedOrder} onShipmentCreated={(details) => {
                         // Optimistic Update
                         const updatedOrders = orders.map(o => 
