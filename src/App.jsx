@@ -57,6 +57,7 @@ const Settings = lazy(() => import('./pages/admin/Settings'));
 const AdminGallery = lazy(() => import('./pages/admin/AdminGallery'));
 
 import ProtectedRoute from './components/admin/ProtectedRoute'
+import ConditionalLayout from './components/ConditionalLayout'
 
 // Loading Component
 const PageLoader = () => (
@@ -103,39 +104,39 @@ function App() {
                 </Route>
               </Route>
 
-              {/* Public Routes */}
+            {/* Public Routes */}
               <Route path="*" element={
                 <div className="flex flex-col min-h-screen pb-16 md:pb-0">
-                  <Navbar />
-                  <main className="flex-grow pt-20">
-                    <Suspense fallback={<PageLoader />}>
-                      <Routes>
-                        <Route path="/" element={<Home />} />
-                        <Route path="/about" element={<About />} />
-                        <Route path="/shop" element={<Shop />} />
+                  <ConditionalLayout>
+                    <Navbar />
+                    <main className="flex-grow pt-20">
+                      <Suspense fallback={<PageLoader />}>
+                        <Routes>
+                          <Route path="/" element={<Home />} />
+                          <Route path="/about" element={<About />} />
+                          <Route path="/shop" element={<Shop />} />
 
-                        <Route path="/product/:id" element={<ProductDetails />} />
-                        <Route path="/custom-design" element={<CustomDesign />} />
-                        <Route path="/mehndi-booking" element={<MehndiBooking />} />
-                        <Route path="/gallery" element={<Gallery />} />
-                        <Route path="/support" element={<Contact />} />
-                        <Route path="/cart" element={<Cart />} />
-                        <Route path="/checkout" element={<Checkout />} />
-                        <Route path="/login" element={<LoginSignup />} />
-                        <Route path="/forgot-password" element={<ForgotPassword />} />
-                        <Route path="/reset-password" element={<ResetPassword />} />
+                          <Route path="/product/:id" element={<ProductDetails />} />
+                          <Route path="/custom-design" element={<CustomDesign />} />
+                          <Route path="/mehndi-booking" element={<MehndiBooking />} />
+                          <Route path="/gallery" element={<Gallery />} />
+                          <Route path="/support" element={<Contact />} />
+                          <Route path="/cart" element={<Cart />} />
+                          <Route path="/checkout" element={<Checkout />} />
+                          <Route path="/login" element={<LoginSignup />} />
+                          <Route path="/forgot-password" element={<ForgotPassword />} />
+                          <Route path="/reset-password" element={<ResetPassword />} />
 
-                        <Route path="/register" element={<Navigate to="/login" replace />} />
-                        <Route path="/profile" element={<Profile />} />
-                        <Route path="/wishlist" element={<Wishlist />} />
-                        <Route path="/order-success" element={<OrderSuccess />} />
-                        <Route path="/order-confirmation" element={<OrderConfirmation />} />
-                        <Route path="/order/:id" element={<OrderDetails />} />
-                      </Routes>
-                    </Suspense>
-                  </main>
-                  <Footer />
-                  <BottomNavigation />
+                          <Route path="/register" element={<Navigate to="/login" replace />} />
+                          <Route path="/profile" element={<Profile />} />
+                          <Route path="/wishlist" element={<Wishlist />} />
+                          <Route path="/order-success" element={<OrderSuccess />} />
+                          <Route path="/order-confirmation" element={<OrderConfirmation />} />
+                          <Route path="/order/:id" element={<OrderDetails />} />
+                        </Routes>
+                      </Suspense>
+                    </main>
+                  </ConditionalLayout>
                 </div>
               } />
             </Routes>

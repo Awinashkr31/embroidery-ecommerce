@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Package, MapPin, CreditCard, Clock, Calendar, AlertTriangle, Printer, Download, Star, Loader } from 'lucide-react';
+import { ChevronLeft, Package, MapPin, CreditCard, Clock, Calendar, AlertTriangle, Printer, Download, Star, Loader, HelpCircle, RotateCcw, MessageSquare } from 'lucide-react';
 import { supabase } from '../config/supabase';
 import OrderStatusStepper from '../components/orders/OrderStatusStepper';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { getEstimatedDeliveryDate } from '../utils/dateUtils';
+
 
 const OrderDetails = () => {
     const { id } = useParams();
@@ -107,6 +107,8 @@ const OrderDetails = () => {
 
     if (!order) return null;
 
+    const isDelivered = order.status?.toLowerCase() === 'delivered' || order.status?.toLowerCase() === 'completed';
+
     return (
         <div className="min-h-screen bg-[#fdfbf7] pt-28 pb-12 font-body">
             <div className="container-custom max-w-5xl">
@@ -125,6 +127,23 @@ const OrderDetails = () => {
                                 <div>
                                     <h1 className="text-2xl font-heading font-bold text-stone-900 mb-1">Order #{order.id.slice(0, 8)}</h1>
                                     <p className="text-stone-500 text-sm">Placed on {new Date(order.created_at).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                                    
+                                    {/* Dynamic Status Text */}
+                                    <div className="mt-2 text-sm font-medium">
+                                        {isDelivered ? (
+                                            <span className="text-emerald-700 flex items-center gap-1.5">
+                                                <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
+                                                Delivered on {new Date(order.order_status_logs?.[0]?.timestamp || Date.now()).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                            </span>
+                                        ) : (
+                                            <span className="text-blue-700 flex items-center gap-1.5">
+                                                <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+                                                {order.expected_delivery 
+                                                    ? `Arriving by ${new Date(order.expected_delivery).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}`
+                                                    : 'Arriving Soon'}
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                                 <div className="flex gap-3">
                                     <button onClick={() => window.print()} className="flex items-center gap-2 px-4 py-2 border border-stone-200 rounded-lg text-stone-600 font-bold text-sm hover:bg-stone-50 transition-colors">
@@ -133,35 +152,30 @@ const OrderDetails = () => {
                                 </div>
                             </div>
                             
-                            {/* Stepper with integrated logs */}
-                            <div className="px-6 py-8 bg-stone-50/30 border-b border-stone-100">
-                                <OrderStatusStepper currentStatus={order.status} logs={order.order_status_logs} />
+                            {/* Detailed Stepper */}
+                            <div className="px-4 md:px-8 py-8 bg-white border-b border-stone-100">
+                                <OrderStatusStepper currentStatus={order.status} logs={order.order_status_logs} order={order} />
                             </div>
 
-                            {/* Tracking Info Block */}
-                            {order.waybill_id && (
-                                <div className="px-6 py-4 bg-purple-50/50 flex flex-col sm:flex-row justify-between items-center gap-4">
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-2 bg-purple-100 text-purple-600 rounded-lg">
-                                            <Package className="w-5 h-5" />
-                                        </div>
-                                        <div>
-                                            <p className="text-xs font-bold text-purple-900 uppercase tracking-wide">Shipped via {order.courier_name || 'Delhivery'}</p>
-                                            <p className="text-sm font-medium text-purple-700">Tracking ID: {order.waybill_id}</p>
-                                        </div>
-                                    </div>
-                                    {order.tracking_url && (
-                                        <a 
-                                            href={order.tracking_url} 
-                                            target="_blank" 
-                                            rel="noopener noreferrer"
-                                            className="px-4 py-2 bg-white border border-purple-200 text-purple-700 font-bold text-sm rounded-lg hover:bg-purple-50 transition-colors shadow-sm"
-                                        >
-                                            Track Shipment
-                                        </a>
+                            {/* Action Buttons (Support / Return / Rate) */}
+                            <div className="p-6 bg-stone-50/50 flex flex-wrap gap-4 justify-between items-center">
+                                <div className="flex gap-3 flex-wrap">
+                                    {isDelivered && (
+                                        <>
+                                            <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-stone-200 rounded-xl text-stone-700 font-bold text-sm hover:bg-stone-50 hover:border-stone-300 transition-all shadow-sm">
+                                                <Star className="w-4 h-4 text-amber-400 fill-current" /> Rate Purchase
+                                            </button>
+                                            <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-stone-200 rounded-xl text-stone-700 font-bold text-sm hover:bg-stone-50 hover:border-stone-300 transition-all shadow-sm">
+                                                <RotateCcw className="w-4 h-4 text-stone-500" /> Return / Replace
+                                            </button>
+                                        </>
                                     )}
                                 </div>
-                            )}
+                                
+                                <button className="flex items-center gap-2 px-4 py-2.5 text-rose-900 font-bold text-sm hover:bg-rose-50 rounded-xl transition-colors">
+                                    <HelpCircle className="w-4 h-4" /> Need Help?
+                                </button>
+                            </div>
                         </div>
 
                         {/* Items List */}
@@ -257,12 +271,6 @@ const OrderDetails = () => {
                                 <div className="flex justify-between items-center text-lg font-bold text-stone-900 pt-2 border-t border-stone-200 mt-2">
                                     <span>Grand Total:</span>
                                     <span>₹{order.total?.toLocaleString()}</span>
-                                </div>
-                                
-                                {/* Estimated Delivery (Keep this as extra helpful info?) user didn't explicitly forbid it, but image doesn't have it. I'll keep it subtle or remove? Image is strict "like this". I'll keep it separate or remove to be safe. Let's keep it but maybe below/separate. */}
-                                <div className="flex justify-between text-stone-500 text-xs border-t border-stone-100 pt-3 mt-2">
-                                    <span>Estimated Delivery:</span>
-                                    <span className="font-bold">{getEstimatedDeliveryDate()}</span>
                                 </div>
                             </div>
                         </div>
