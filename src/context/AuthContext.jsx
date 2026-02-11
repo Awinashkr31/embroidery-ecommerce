@@ -71,7 +71,7 @@ export const AuthProvider = ({ children }) => {
         }
 
         // 2. Listen for Firebase Auth Changes (User)
-        firebaseUnsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+        firebaseUnsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
             if (firebaseUser) {
                 console.log("Auth: Firebase User Found", firebaseUser.email);
                 // Map Firebase user to a structure compatible with our app
@@ -89,7 +89,8 @@ export const AuthProvider = ({ children }) => {
             } else {
                 // If no Firebase user, check if we still have a Supabase session
                 // If neither, then user is null
-                if (!supabase.auth.getSession().then(({data}) => data.session)) {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) {
                      setCurrentUser(null);
                 }
                 setLoading(false);
@@ -97,15 +98,17 @@ export const AuthProvider = ({ children }) => {
         });
 
         // 3. Listen for Supabase Auth Changes
-        const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+        const { data } = supabase.auth.onAuthStateChange(async (_event, session) => {
             if (session?.user) {
                 console.log("Auth: Supabase Auth Changed -> User Logged In");
                 setCurrentUser(session.user);
                 // If Supabase logs in, we might want to ensure Firebase is ignored or signOut? 
                 // For now, Supabase (Admin) takes precedence in UI logic usually
-            } else if (!auth.currentUser) {
-                // Only clear if Firebase is also null
-                setCurrentUser(null);
+            } else {
+                // Check Firebase
+                if (!auth.currentUser) {
+                    setCurrentUser(null);
+                }
             }
         });
         supabaseSubscription = data.subscription;
