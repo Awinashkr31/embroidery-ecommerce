@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Truck, ArrowRight, Package, Info } from 'lucide-react';
 import { supabase } from '../../config/supabase';
+
 import { DelhiveryService } from '../../services/delhivery';
+import { XpressbeesService } from '../../services/xpressbees';
 
 const ShipmentCreator = ({ selectedOrder, onShipmentCreated }) => {
-    const [activeTab, setActiveTab] = useState('delhivery');
+    const [activeTab, setActiveTab] = useState('integrated');
+    const [integratedProvider, setIntegratedProvider] = useState('Delhivery'); // 'Delhivery' or 'Xpressbees'
     
     // --- Delhivery State ---
     const [shippingRates, setShippingRates] = useState(null);
@@ -20,7 +23,7 @@ const ShipmentCreator = ({ selectedOrder, onShipmentCreated }) => {
 
     const courierOptions = ['DTDC', 'Bluedart', 'Speed Post', 'XpressBees', 'Shadowfax', 'Ecom Express', 'Other'];
 
-    // --- Delhivery Logic ---
+    // --- Integrated Logic (Delhivery & Xpressbees) ---
     useEffect(() => {
         // Reset rates and sync payment mode when order changes
         setShippingRates(null);
@@ -28,6 +31,8 @@ const ShipmentCreator = ({ selectedOrder, onShipmentCreated }) => {
             setPaymentMode(selectedOrder.paymentMethod === 'cod' ? 'cod' : 'prepaid');
         }
     }, [selectedOrder.id]);
+
+
 
     const handleCheckRates = async () => {
         if (!selectedOrder) return;
@@ -45,7 +50,13 @@ const ShipmentCreator = ({ selectedOrder, onShipmentCreated }) => {
                 amount: selectedOrder.total
             };
 
-            const rates = await DelhiveryService.calculateShipping(params);
+            let rates;
+            if (integratedProvider === 'Delhivery') {
+                rates = await DelhiveryService.calculateShipping(params);
+            } else {
+                rates = await XpressbeesService.calculateShipping(params);
+            }
+            
             setShippingRates({ ...rates, weight_used: weight });
         } catch (err) {
             console.error("Rate Check Error:", err);
@@ -74,56 +85,71 @@ const ShipmentCreator = ({ selectedOrder, onShipmentCreated }) => {
                 mode: 'S'
             };
 
-            const response = await DelhiveryService.createOrder(orderDetails);
-            
-            if (response && response.packages && response.packages.length > 0) {
-                const packageData = response.packages[0];
-                const waybill = packageData.waybill;
+            let response;
+            let waybill;
 
-                if (packageData.status === 'Fail') {
-                    const remarks = packageData.remarks || "Unknown Error";
-                    if (remarks.toLowerCase().includes('balance')) {
-                        throw new Error(`Insufficient Delhivery Wallet Balance. Please recharge your account.\nDetails: ${remarks}`);
+            if (integratedProvider === 'Delhivery') {
+                response = await DelhiveryService.createOrder(orderDetails);
+                
+                if (response && response.packages && response.packages.length > 0) {
+                    const packageData = response.packages[0];
+                    waybill = packageData.waybill;
+
+                    if (packageData.status === 'Fail') {
+                        const remarks = packageData.remarks || "Unknown Error";
+                        if (remarks.toLowerCase().includes('balance')) {
+                            throw new Error(`Insufficient Delhivery Wallet Balance. Please recharge your account.\nDetails: ${remarks}`);
+                        }
+                        throw new Error(remarks);
                     }
-                    throw new Error(remarks);
+                    if (!waybill) throw new Error(`Waybill not generated. Remarks: ${packageData.remarks || 'None'}`);
+                } else {
+                     throw new Error(response?.error || "Unknown error from Delhivery");
                 }
-
-                if (!waybill) throw new Error(`Waybill not generated. Remarks: ${packageData.remarks || 'None'}`);
-
-                // Update Supabase
-                const updates = { 
-                    waybill_id: waybill,
-                    tracking_url: `https://www.delhivery.com/track/package/${waybill}`,
-                    courier_name: 'Delhivery',
-                    status: 'shipped',
-                    estimated_shipping_cost: shippingRates?.total_amount || 0,
-                    final_shipping_cost: 0,
-                    charged_weight: shippingRates?.weight_used || 500,
-                    pricing_checked_at: new Date().toISOString()
-                };
-
-                const { error } = await supabase
-                    .from('orders')
-                    .update(updates)
-                    .eq('id', selectedOrder.id);
-
-                if (error) throw error;
-
-                // Notify User
-                await supabase.from('notifications').insert([{
-                    user_email: selectedOrder.customer.email,
-                    title: 'Order Shipped!',
-                    message: `Your order #${selectedOrder.id.slice(0,8)} has been shipped via Delhivery. Tracking Number: ${waybill}`,
-                    type: 'success',
-                    is_read: false
-                }]);
-
-                onShipmentCreated(updates);
-                alert(`Shipment Created Successfully! Waybill: ${waybill}`);
-
             } else {
-                 throw new Error(response?.error || "Unknown error from Delhivery");
+                // Xpressbees
+                response = await XpressbeesService.createOrder(orderDetails);
+                // Adjust based on actual Xpressbees response structure
+                if (response.status && response.data) {
+                    waybill = response.data.awb_number || response.data.waybill;
+                    if (!waybill) throw new Error("Xpressbees did not return an AWB Number");
+                } else {
+                    throw new Error(response.message || "Unknown error from Xpressbees");
+                }
             }
+
+            // Update Supabase
+            const updates = { 
+                waybill_id: waybill,
+                tracking_url: integratedProvider === 'Delhivery' 
+                    ? `https://www.delhivery.com/track/package/${waybill}`
+                    : `https://www.xpressbees.com/track?awb=${waybill}`,
+                courier_name: integratedProvider,
+                status: 'shipped',
+                estimated_shipping_cost: shippingRates?.total_amount || 0,
+                final_shipping_cost: 0,
+                charged_weight: shippingRates?.weight_used || 500,
+                pricing_checked_at: new Date().toISOString()
+            };
+
+            const { error } = await supabase
+                .from('orders')
+                .update(updates)
+                .eq('id', selectedOrder.id);
+
+            if (error) throw error;
+
+            // Notify User
+            await supabase.from('notifications').insert([{
+                user_email: selectedOrder.customer.email,
+                title: 'Order Shipped!',
+                message: `Your order #${selectedOrder.id.slice(0,8)} has been shipped via ${integratedProvider}. Tracking Number: ${waybill}`,
+                type: 'success',
+                is_read: false
+            }]);
+
+            onShipmentCreated(updates);
+            alert(`Shipment Created Successfully! Waybill: ${waybill}`);
 
         } catch (err) {
             console.error("Generate Waybill Error:", err);
@@ -193,14 +219,14 @@ const ShipmentCreator = ({ selectedOrder, onShipmentCreated }) => {
         <div className="bg-stone-50 rounded-xl border border-stone-200 shadow-sm overflow-hidden">
              {/* Header / Tabs */}
              <div className="flex border-b border-stone-200 bg-stone-100/50">
-                 <button 
-                    onClick={() => setActiveTab('delhivery')}
-                    className={`flex-1 py-3 text-sm font-bold flex items-center justify-center gap-2 transition-colors ${
-                        activeTab === 'delhivery' ? 'bg-white text-stone-900 border-r border-stone-200 shadow-sm' : 'text-stone-500 hover:bg-stone-100 hover:text-stone-700'
-                    }`}
-                >
-                     <Truck className="w-4 h-4" /> Integrated (Delhivery)
-                 </button>
+                  <button 
+                     onClick={() => setActiveTab('integrated')}
+                     className={`flex-1 py-3 text-sm font-bold flex items-center justify-center gap-2 transition-colors ${
+                         activeTab === 'integrated' ? 'bg-white text-stone-900 border-r border-stone-200 shadow-sm' : 'text-stone-500 hover:bg-stone-100 hover:text-stone-700'
+                     }`}
+                 >
+                      <Truck className="w-4 h-4" /> Integrated
+                  </button>
                  <button 
                     onClick={() => setActiveTab('manual')}
                     className={`flex-1 py-3 text-sm font-bold flex items-center justify-center gap-2 transition-colors ${
@@ -212,8 +238,24 @@ const ShipmentCreator = ({ selectedOrder, onShipmentCreated }) => {
              </div>
 
              <div className="p-4">
-                 {activeTab === 'delhivery' ? (
+                 {activeTab === 'integrated' ? (
                      <div className="space-y-4">
+                         {/* Provider Selector */}
+                         <div className="flex gap-2 mb-2">
+                             {['Delhivery', 'Xpressbees'].map(provider => (
+                                 <button
+                                     key={provider}
+                                     onClick={() => setIntegratedProvider(provider)}
+                                     className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${
+                                         integratedProvider === provider 
+                                         ? 'bg-stone-900 text-white border-stone-900' 
+                                         : 'bg-white text-stone-500 border-stone-200 hover:border-stone-300'
+                                     }`}
+                                 >
+                                     {provider}
+                                 </button>
+                             ))}
+                         </div>
                          {/* Payment Mode Selector */}
                          <div className="flex bg-white rounded-lg border border-stone-200 p-1">
                             <button
