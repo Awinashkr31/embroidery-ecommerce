@@ -137,6 +137,17 @@ const OrderSuccess = () => {
                                 <p className="mt-2 text-stone-500">{order.customer_phone}</p>
                             </div>
                         </div>
+
+                        {/* Unboxing Video Reminder */}
+                        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 flex gap-4">
+                            <AlertTriangle className="w-6 h-6 text-amber-600 shrink-0" />
+                            <div>
+                                <h3 className="font-bold text-amber-900 text-sm mb-1">Important: Unboxing Video Required</h3>
+                                <p className="text-sm text-amber-800 leading-relaxed">
+                                    Please record a clear video while unboxing your package. This is <strong>mandatory</strong> if you need to request a return or replacement later.
+                                </p>
+                            </div>
+                        </div>
                     </div>
 
                     {/* Right Column: Items Summary */}

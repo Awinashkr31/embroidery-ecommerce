@@ -8,7 +8,6 @@ const OrderStatusStepper = ({ currentStatus, logs = [], order }) => {
     
     // Determine active step index
     let activeStepIndex = 0;
-    let isError = false;
 
     if (s.includes('delivered') || s.includes('completed')) {
         activeStepIndex = 3;
@@ -17,8 +16,7 @@ const OrderStatusStepper = ({ currentStatus, logs = [], order }) => {
     } else if (s.includes('processing') || s.includes('confirmed') || s.includes('manifested') || s.includes('in transit') || s.includes('dispatched') || s.includes('picked up') || s.includes('order processed')) {
         activeStepIndex = 1;
     } else if (s.includes('rto') || s.includes('delivery failed') || s.includes('undelivered') || s.includes('returned')) {
-        activeStepIndex = 2; // Show progress up to shipped, but mark error
-        isError = true;
+        activeStepIndex = 2; // Show progress up to shipped
     } else if (s === 'cancelled') {
         return (
             <div className="w-full py-8 text-center bg-red-50 rounded-xl border border-red-100">
@@ -36,41 +34,189 @@ const OrderStatusStepper = ({ currentStatus, logs = [], order }) => {
     }
 
     const steps = [
-        { id: 'placed', label: 'Order Placed', icon: ShoppingBag, color: 'text-blue-600', bg: 'bg-blue-100', border: 'border-blue-600' },
-        { id: 'processing', label: 'Processing', icon: Package, color: 'text-amber-600', bg: 'bg-amber-100', border: 'border-amber-600' }, 
-        { id: 'shipped', label: 'Shipped', icon: Truck, color: 'text-purple-600', bg: 'bg-purple-100', border: 'border-purple-600' },
+        { id: 'placed', label: 'Order Placed', icon: ShoppingBag, color: 'text-emerald-600', bg: 'bg-emerald-100', border: 'border-emerald-600' },
+        { id: 'processing', label: 'Processing', icon: Package, color: 'text-stone-900', bg: 'bg-stone-100', border: 'border-stone-900' }, 
+        { id: 'shipped', label: 'Shipped', icon: Truck, color: 'text-emerald-600', bg: 'bg-emerald-100', border: 'border-emerald-600' },
         { id: 'delivered', label: 'Delivered', icon: Check, color: 'text-emerald-600', bg: 'bg-emerald-100', border: 'border-emerald-600' }
     ];
 
+
+
+    // helper to add days to a date
+    const addDays = (dateString, days) => {
+        if (!dateString) return null;
+        const d = new Date(dateString);
+        d.setDate(d.getDate() + days);
+        return d;
+    };
+
+    // Helper to format dates like "February 10, 2026"
+    const formatDate = (dateInput) => {
+        if (!dateInput) return '';
+        const d = new Date(dateInput);
+        return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    };
+
+    const formatDateTime = (dateInput) => {
+        if (!dateInput) return '';
+        const d = new Date(dateInput);
+        return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) + 
+               ' at ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    };
+
+    // Auto-calculate estimates if missing
+    const createdDate = order.created_at ? new Date(order.created_at) : new Date();
+    
+    // Rule: Estimated Shipping = Created + 2 days
+    const autoEstShipping = order.estimated_shipping_date 
+        ? new Date(order.estimated_shipping_date) 
+        : addDays(createdDate, 2);
+
+    // Rule: Estimated Delivery = Shipping (Est or Actual) + 7 days
+    // If shipped, use actual shipping time if available, or estimated.
+    // We don't have exact "actual shipping date" column, but we can infer from logs or updated_at if status is shipped.
+    // For now, use expected_delivery_date from DB, or calc relative to shipping.
+    const shippingDateBase = order.estimated_shipping_date || autoEstShipping; 
+    const autoEstDelivery = order.expected_delivery_date 
+        ? new Date(order.expected_delivery_date) 
+        : addDays(shippingDateBase, 7);
+
+
     // Helper to get logs for a specific step
     const getStepDetails = (stepId) => {
-        // Special case: "Shipped" step should show Courier Info if available
-        if (stepId === 'shipped' && (activeStepIndex >= 2)) {
-             // If we are at shipped or delivered, show courier info
-             // But only if we actually have it
-             if (order?.waybill_id) {
+        // Standard Log finding
+        const relevantLogs = logs.filter(log => {
+             const { title } = getTrackingStatus(log.status);
+             const t = (title || '').toLowerCase();
+             if (stepId === 'placed') return t.includes('placed');
+             if (stepId === 'processing') return t.includes('confirmed') || t.includes('processed') || t.includes('picked up') || t.includes('manifested');
+             if (stepId === 'shipped') return t.includes('shipped') || t.includes('in transit') || t.includes('dispatched');
+             if (stepId === 'delivered') return t.includes('delivered') || t.includes('completed');
+             return false;
+        }).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+        const latestLogDate = relevantLogs.length > 0 ? relevantLogs[0].timestamp : null;
+
+        // --- PLACED ---
+        if (stepId === 'placed') {
+            return {
+                customContent: (
+                    <p className="text-sm text-black font-medium mt-1">
+                        Confirmed on {formatDateTime(order.created_at)}
+                    </p>
+                )
+            };
+        }
+
+        // --- PROCESSING ---
+        if (stepId === 'processing') {
+            // "add processing time date"
+            // If active or completed, show date.
+            if (activeStepIndex >= 1) {
+                 const procDate = latestLogDate || order.updated_at; // Fallback
                  return {
-                     showCourier: true,
-                     courier: order.courier_name || 'Delhivery',
-                     trackingId: order.waybill_id,
-                     trackingUrl: order.tracking_url
+                    customContent: (
+                        <p className="text-sm text-black font-medium mt-1">
+                            Processing started on {formatDate(procDate)}
+                        </p>
+                    )
+                 };
+            }
+        }
+
+        // --- SHIPPED ---
+        if (stepId === 'shipped') {
+             const isShipped = activeStepIndex >= 2;
+             
+             // If Pending (Not yet shipped) -> Show Estimated Shipping Date
+             if (!isShipped) {
+                 return {
+                     customContent: (
+                         <div className="mt-2">
+                             <p className="text-sm text-stone-500 font-medium">Pending</p>
+                             <p className="text-sm text-black font-bold mt-1">
+                                 Estimated Shipping Date: {formatDate(autoEstShipping)}
+                             </p>
+                         </div>
+                     )
+                 };
+             }
+
+             // If Shipped (Active or Completed) -> Hide Estimated, Show Actual Shipping Date
+             if (isShipped) {
+                 const shipDate = latestLogDate || (order.status === 'shipped' ? order.updated_at : autoEstShipping);
+                 return {
+                     customContent: (
+                         <div className="mt-2 space-y-1">
+                             {/* Show Actual Shipping Date */}
+                             <p className="text-sm text-black">
+                                <span className="font-medium text-stone-500">Shipped Date:</span> <span className="font-bold">{formatDate(shipDate)}</span>
+                             </p>
+
+                             {order.courier_name && (
+                                <p className="text-sm text-black">
+                                    <span className="font-medium text-stone-500">Courier Partner:</span> <span className="font-bold">{order.courier_name}</span>
+                                </p>
+                             )}
+                             {order.waybill_id && (
+                                <p className="text-sm text-black">
+                                    <span className="font-medium text-stone-500">Tracking ID:</span> <span className="font-mono font-bold">{order.waybill_id}</span>
+                                </p>
+                             )}
+
+                             {order.tracking_url && (
+                                 <div className="pt-2">
+                                     <a 
+                                         href={order.tracking_url} 
+                                         target="_blank" 
+                                         rel="noopener noreferrer"
+                                         className="inline-flex items-center gap-2 px-4 py-2 bg-stone-900 text-white text-xs font-bold rounded-lg hover:bg-stone-800 transition-colors shadow-sm"
+                                     >
+                                         <Truck className="w-3 h-3" /> Track Package
+                                     </a>
+                                 </div>
+                             )}
+                             
+                             <p className="text-xs text-stone-400 mt-2 italic">
+                                 Shipment is on the way. You can track it on the courier's website.
+                             </p>
+                         </div>
+                     )
                  };
              }
         }
 
-        // Standard Log mapping
-        const relevantLogs = logs.filter(log => {
-             const { title } = getTrackingStatus(log.status);
-             const t = (title || '').toLowerCase();
+        // --- DELIVERED ---
+        if (stepId === 'delivered') {
+             const isDelivered = activeStepIndex === 3;
              
-             if (stepId === 'placed') return t.includes('placed');
-             if (stepId === 'processing') return t.includes('confirmed') || t.includes('processed') || t.includes('picked up') || t.includes('manifested');
-             if (stepId === 'shipped') return t.includes('shipped') || t.includes('in transit') || t.includes('arrived') || t.includes('dispatched');
-             if (stepId === 'delivered') return t.includes('out for delivery') || t.includes('delivered') || t.includes('completed');
-             return false;
-        }).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+             if (isDelivered) {
+                  return {
+                     customContent: (
+                        <div className="mt-2">
+                             <p className="text-sm text-black font-bold">
+                                Delivered on {formatDate(latestLogDate || order.updated_at)}
+                             </p>
+                        </div>
+                     )
+                 };
+             }
 
-        return { relevantLogs };
+             // If not delivered yet -> Show Estimated Delivery Date
+             if (!isDelivered) {
+                 return {
+                     customContent: (
+                        <div className="mt-2">
+                             <p className="text-sm text-black">
+                                <span className="font-medium text-stone-500">Estimated Delivery Date:</span> <span className="font-bold">{formatDate(autoEstDelivery)}</span>
+                             </p>
+                        </div>
+                     )
+                 };
+             }
+        }
+
+        return { customContent: null };
     };
 
     return (
@@ -83,29 +229,26 @@ const OrderStatusStepper = ({ currentStatus, logs = [], order }) => {
                     const isLast = index === steps.length - 1;
                     const Icon = step.icon;
                     
-                    const { relevantLogs, showCourier, courier, trackingId, trackingUrl } = getStepDetails(step.id, isCurrent);
+                    const { customContent } = getStepDetails(step.id);
                     
-                    // Determine Status Color Logic
-                    let statusColorClass = isPending ? 'text-stone-300' : 'text-stone-800'; // Default text
+                    // Color Logic
                     let circleClass = '';
                     let lineClass = '';
-                    
+                    // Always Black Heading text
+                    const labelColor = 'text-black';
+
                     if (isCompleted) {
+                        // Past steps -> Green
                         circleClass = 'bg-emerald-500 border-emerald-500 text-white';
                         lineClass = 'bg-emerald-500';
                     } else if (isCurrent) {
-                        circleClass = 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-200';
-                        statusColorClass = 'text-blue-700';
-                        lineClass = 'bg-stone-200'; // Upcoming line is grey
+                        // Current step -> Black
+                        circleClass = 'bg-stone-900 border-stone-900 text-white shadow-lg shadow-stone-200';
+                        lineClass = 'bg-stone-200'; 
                     } else {
-                        circleClass = 'bg-white border-stone-200 text-stone-300';
+                        // Upcoming -> Light Black (Stone-300)
+                        circleClass = 'bg-white border-stone-300 text-stone-300';
                         lineClass = 'bg-stone-200';
-                    }
-
-                    // Override for error state
-                    if (isError && index === activeStepIndex) {
-                         circleClass = 'bg-red-500 border-red-500 text-white';
-                         statusColorClass = 'text-red-700';
                     }
 
                     return (
@@ -124,95 +267,14 @@ const OrderStatusStepper = ({ currentStatus, logs = [], order }) => {
                             </div>
 
                             {/* Right Column: Content */}
-                            <div className={`pt-1 md:pt-2 flex-1 ${isPending ? 'opacity-50 grayscale' : 'opacity-100'}`}>
-                                <div className="flex justify-between items-start">
-                                    <div>
-                                        <h4 className={`text-lg font-bold uppercase tracking-wide ${statusColorClass} mb-1`}>
-                                            {step.label}
-                                        </h4>
-                                        <p className="text-sm font-medium text-stone-500">
-                                            {isCompleted ? 'Completed' : isCurrent ? 'In Progress' : 'Pending'}
-                                        </p>
-                                    </div>
+                            <div className={`pt-1 md:pt-2 flex-1 ${isPending && step.id !== 'shipped' && step.id !== 'delivered' ? 'opacity-50 grayscale' : 'opacity-100'}`}> 
+                                <div className="flex flex-col items-start">
+                                    <h4 className={`text-lg font-bold uppercase tracking-wide ${labelColor} mb-1`}>
+                                        {step.label}
+                                    </h4>
                                     
-                                    {/* Timestamp for the LATEST log in this step (if any) */}
-                                    {relevantLogs && relevantLogs.length > 0 && (
-                                        <div className="text-right hidden sm:block">
-                                            <p className="text-sm font-bold text-stone-800">
-                                                {new Date(relevantLogs[0].timestamp).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
-                                            </p>
-                                            <p className="text-xs text-stone-500">
-                                                {new Date(relevantLogs[0].timestamp).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
-                                            </p>
-                                        </div>
-                                    )}
+                                    {customContent}
                                 </div>
-
-                                {/* Custom Content for Shipped Step (Courier Info) */}
-                                {showCourier && (
-                                    <div className="mt-4 p-4 bg-purple-50 rounded-xl border border-purple-100 max-w-md animate-in slide-in-from-left-2">
-                                        <div className="flex justify-between items-start gap-4">
-                                            <div>
-                                                <p className="text-xs font-bold text-purple-900 uppercase tracking-wider mb-1">Courier Partner</p>
-                                                <p className="text-sm font-bold text-stone-800 flex items-center gap-2">
-                                                    <Truck className="w-4 h-4 text-purple-600" /> {courier}
-                                                </p>
-                                                
-                                                <div className="mt-3">
-                                                    <p className="text-xs font-bold text-purple-900 uppercase tracking-wider mb-1">Tracking ID</p>
-                                                    <p className="text-sm font-mono bg-white px-2 py-1 rounded border border-purple-200 inline-block text-purple-700">
-                                                        {trackingId}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            
-                                            {trackingUrl && (
-                                                <a 
-                                                    href={trackingUrl} 
-                                                    target="_blank" 
-                                                    rel="noopener noreferrer"
-                                                    className="px-4 py-2 bg-purple-600 text-white text-xs font-bold rounded-lg hover:bg-purple-700 transition-colors shadow-sm whitespace-nowrap"
-                                                >
-                                                    Track Package
-                                                </a>
-                                            )}
-                                        </div>
-                                        {order?.expected_delivery && (
-                                            <div className="mt-3 pt-3 border-t border-purple-100 flex items-center gap-2 text-xs text-purple-800 font-medium">
-                                                <Clock className="w-3.5 h-3.5" />
-                                                Expected Delivery: {new Date(order.expected_delivery).toLocaleDateString()}
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-
-                                {/* Logs List */}
-                                {relevantLogs && relevantLogs.length > 0 && (
-                                    <div className="mt-4 space-y-4">
-                                        {relevantLogs.map((log, i) => {
-                                            const { message } = getTrackingStatus(log.status);
-                                            return (
-                                                <div key={i} className="flex gap-3 items-start p-3 bg-stone-50 rounded-lg border border-stone-100">
-                                                    <div className={`mt-1 w-2 h-2 rounded-full shrink-0 ${i === 0 && isCurrent ? 'bg-blue-500 animate-pulse' : 'bg-stone-300'}`}></div>
-                                                    <div>
-                                                        <p className="text-sm font-medium text-stone-800">{message}</p>
-                                                        {/* Mobile Timestamp */}
-                                                        <p className="text-xs text-stone-400 mt-1 sm:hidden">
-                                                            {new Date(log.timestamp).toLocaleString(undefined, {
-                                                                day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'
-                                                            })}
-                                                        </p>
-                                                        {log.location && (
-                                                            <p className="text-xs text-stone-500 mt-1 flex items-center gap-1">
-                                                                <MapPin className="w-3 h-3" /> {log.location}
-                                                            </p>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                )}
                             </div>
                         </div>
                     );

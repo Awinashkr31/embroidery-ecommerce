@@ -97,6 +97,74 @@ const OrderDetails = () => {
         }
     }, [currentUser, id, addToast, navigate]);
 
+    // --- Return / Replace Logic ---
+    const [isReturnModalOpen, setIsReturnModalOpen] = useState(false);
+    const [returnType, setReturnType] = useState('replace'); // 'replace' | 'return'
+    const [returnReason, setReturnReason] = useState('');
+    const [hasUnboxingVideo, setHasUnboxingVideo] = useState(false);
+    const [isSubmittingReturn, setIsSubmittingReturn] = useState(false);
+
+    const handleReturnSubmit = async () => {
+        if (!hasUnboxingVideo) {
+            addToast('You must confirm you have an unboxing video.', 'error');
+            return;
+        }
+        if (!returnReason.trim()) {
+            addToast('Please provide a reason.', 'error');
+            return;
+        }
+
+        setIsSubmittingReturn(true);
+        try {
+            const status = returnType === 'replace' ? 'replacement_requested' : 'return_requested';
+            const processDate = new Date();
+            processDate.setDate(processDate.getDate() + 2); // +2 days logic
+
+            // 1. Update Order Status
+            const { error: updateError } = await supabase
+                .from('orders')
+                .update({ 
+                    status: status,
+                    expected_delivery_date: returnType === 'replace' ? processDate.toISOString() : order.expected_delivery_date // Update delivery date if replacement
+                })
+                .eq('id', order.id);
+
+            if (updateError) throw updateError;
+
+            // 2. Add Log Entry
+            const { error: logError } = await supabase
+                .from('order_status_logs')
+                .insert([{
+                    order_id: order.id,
+                    status: status,
+                    timestamp: new Date().toISOString(),
+                    location: 'Customer Portal',
+                    description: `User requested ${returnType}. Reason: ${returnReason}. Video Confirmed: Yes.`
+                }]);
+
+            if (logError) console.warn('Log insert failed', logError); // Non-blocking
+
+            addToast(`${returnType === 'replace' ? 'Replacement' : 'Return'} requested successfully.`, 'success');
+            setIsReturnModalOpen(false);
+            
+            // Optimistic Update
+            setOrder(prev => ({ ...prev, status: status }));
+
+        } catch (error) {
+            console.error('Return request failed:', error);
+            addToast('Failed to submit request. Please try again.', 'error');
+        } finally {
+            setIsSubmittingReturn(false);
+        }
+    };
+
+    const getProjectedDateV2 = () => {
+        const d = new Date();
+        d.setDate(d.getDate() + 2);
+        return d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+    };
+
+
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-[#fdfbf7]">
@@ -165,7 +233,10 @@ const OrderDetails = () => {
                                             <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-stone-200 rounded-xl text-stone-700 font-bold text-sm hover:bg-stone-50 hover:border-stone-300 transition-all shadow-sm">
                                                 <Star className="w-4 h-4 text-amber-400 fill-current" /> Rate Purchase
                                             </button>
-                                            <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-stone-200 rounded-xl text-stone-700 font-bold text-sm hover:bg-stone-50 hover:border-stone-300 transition-all shadow-sm">
+                                            <button 
+                                                onClick={() => setIsReturnModalOpen(true)}
+                                                className="flex items-center gap-2 px-4 py-2.5 bg-white border border-stone-200 rounded-xl text-stone-700 font-bold text-sm hover:bg-stone-50 hover:border-stone-300 transition-all shadow-sm"
+                                            >
                                                 <RotateCcw className="w-4 h-4 text-stone-500" /> Return / Replace
                                             </button>
                                         </>
@@ -315,6 +386,116 @@ const OrderDetails = () => {
                     </div>
                 </div>
             </div>
+
+            {/* Return / Replace Modal */}
+            {isReturnModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                        <div className="p-6 border-b border-stone-100 flex justify-between items-center">
+                            <h2 className="text-lg font-bold text-stone-900">Return or Replace Item</h2>
+                            <button 
+                                onClick={() => setIsReturnModalOpen(false)}
+                                className="p-2 hover:bg-stone-50 rounded-full transition-colors text-stone-500"
+                            >
+                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                        
+                        <div className="p-6 space-y-6">
+                            
+                            {/* 1. Unboxing Video Warning - IMPORTANT */}
+                            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-3">
+                                <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                                <div>
+                                    <h4 className="font-bold text-amber-800 text-sm">Unboxing Video Required</h4>
+                                    <p className="text-xs text-amber-700 mt-1 leading-relaxed">
+                                        To process any return or replacement, you <strong>must</strong> have a clear unboxing video of the package. Without this video, we cannot accept your request.
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* 2. Type Selection */}
+                            <div>
+                                <label className="block text-sm font-bold text-stone-700 mb-2">I want to:</label>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <button 
+                                        type="button"
+                                        onClick={() => setReturnType('replace')}
+                                        className={`px-4 py-3 rounded-xl border text-sm font-bold transition-all ${returnType === 'replace' ? 'bg-rose-50 border-rose-500 text-rose-700' : 'bg-white border-stone-200 text-stone-600 hover:border-stone-300'}`}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            <RotateCcw className="w-4 h-4" /> Replace Item
+                                        </div>
+                                    </button>
+                                    <button 
+                                        type="button"
+                                        onClick={() => setReturnType('return')}
+                                        className={`px-4 py-3 rounded-xl border text-sm font-bold transition-all ${returnType === 'return' ? 'bg-rose-50 border-rose-500 text-rose-700' : 'bg-white border-stone-200 text-stone-600 hover:border-stone-300'}`}
+                                    >
+                                        <div className="flex items-center justify-center gap-2">
+                                            <RotateCcw className="w-4 h-4" /> Return for Refund
+                                        </div>
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* 3. Reason */}
+                            <div>
+                                <label className="block text-sm font-bold text-stone-700 mb-2">Reason for {returnType}:</label>
+                                <textarea 
+                                    value={returnReason}
+                                    onChange={(e) => setReturnReason(e.target.value)}
+                                    placeholder="Please describe the issue..."
+                                    className="w-full px-4 py-3 rounded-xl border border-stone-200 text-sm focus:ring-2 focus:ring-rose-900/10 min-h-[100px]"
+                                />
+                            </div>
+
+                            {/* 4. Mandatory Checkbox */}
+                            <label className="flex items-start gap-3 p-3 rounded-xl hover:bg-stone-50 cursor-pointer transition-colors border border-transparent hover:border-stone-200">
+                                <div className="relative flex items-center">
+                                    <input 
+                                        type="checkbox" 
+                                        checked={hasUnboxingVideo}
+                                        onChange={(e) => setHasUnboxingVideo(e.target.checked)}
+                                        className="w-5 h-5 rounded border-stone-300 text-rose-600 focus:ring-rose-500 mt-0.5"
+                                    />
+                                </div>
+                                <span className="text-sm text-stone-700">
+                                    I confirm that I have recorded a clear unboxing video of the package and can provide it if requested.
+                                </span>
+                            </label>
+
+                            {/* 5. Date Info */}
+                            <div className="bg-stone-50 p-4 rounded-xl flex items-center gap-3">
+                                <Calendar className="w-5 h-5 text-stone-400" />
+                                <div>
+                                    <p className="text-xs font-bold text-stone-500 uppercase tracking-wider">Estimated {returnType === 'replace' ? 'Replacement Delivery' : 'Pickup'} Date</p>
+                                    <p className="text-sm font-bold text-stone-900 mt-1">{getProjectedDateV2()}</p>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div className="p-6 bg-stone-50 border-t border-stone-100 flex justify-end gap-3">
+                            <button 
+                                onClick={() => setIsReturnModalOpen(false)}
+                                className="px-5 py-2.5 rounded-xl font-bold text-stone-500 hover:bg-stone-100 transition-colors text-sm"
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                onClick={handleReturnSubmit}
+                                disabled={isSubmittingReturn || !hasUnboxingVideo || !returnReason.trim()}
+                                className="px-6 py-2.5 bg-rose-900 text-white rounded-xl font-bold text-sm hover:bg-rose-800 transition-all shadow-lg shadow-rose-900/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                            >
+                                {isSubmittingReturn ? <Loader className="w-4 h-4 animate-spin" /> : 'Confirm Request'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

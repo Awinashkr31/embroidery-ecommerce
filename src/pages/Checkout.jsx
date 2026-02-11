@@ -487,6 +487,17 @@ const Checkout = () => {
                                 </div>
                             </div>
 
+                            {/* Unboxing Video Warning */}
+                            <div className="mt-6 bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-3 text-amber-800 text-sm">
+                                 <AlertTriangle className="w-5 h-5 shrink-0" />
+                                 <div>
+                                     <p className="font-bold">Unboxing Video Required</p>
+                                     <p className="mt-1 text-xs leading-relaxed">
+                                         A clear unboxing video is <strong>mandatory</strong> for any return or replacement requests. Please record one when you receive your package.
+                                     </p>
+                                 </div>
+                            </div>
+
                             <button
                                 type="submit"
                                 disabled={isSubmitting}
