@@ -26,5 +26,5 @@ If you try to login and get an error saying **"Email not confirmed"**, or if you
     WHERE email = 'awinashkr31@gmail.com';
     ```
 
-## 4. Emergency Account Re-creation
-If you still cannot access the account, you can delete the user from the Supabase Dashboard (Authentication > Users) and then visit **`/sadmin/register`** to create it again with a new password.
+## 5. Account Re-creation (Last Resort)
+If you still cannot access the account, you can delete the user from the Supabase Dashboard (Authentication > Users) and then visit **`/sadmin/register`** to create it again. Note: This will create a NEW user ID, so previous associations might break if not handled carefully.
