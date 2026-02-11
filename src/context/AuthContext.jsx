@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-// Firebase imports removed or kept only if strictly needed for specific legacy features temporarily.
-// import { auth, googleProvider } from '../config/firebase'; 
+import { auth, googleProvider } from '../config/firebase'; 
+import { signInWithPopup, signOut as firebaseSignOut, onAuthStateChanged, updateProfile } from "firebase/auth";
 import { supabase } from '../config/supabase';
 
 const AuthContext = createContext();
@@ -11,19 +11,43 @@ export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Legacy Firebase Wrappers (Optional: you can keep them if you want to support legacy users or migrate slowly, 
-  // but for "Unified" goal, strict replacement is better. 
-  // We will stub them or remove them.)
-
+  // Unified Logout
   const logout = async () => {
-    return supabase.auth.signOut();
+    try {
+        await firebaseSignOut(auth); // Sign out from Firebase
+        await supabase.auth.signOut(); // Sign out from Supabase
+        setCurrentUser(null);
+    } catch (error) {
+        console.error("Logout Error:", error);
+    }
   };
 
   const updateUser = async (displayName, photoURL) => {
-     // Supabase specific update
+     if (auth.currentUser) {
+         // Firebase Update
+         await updateProfile(auth.currentUser, {
+             displayName: displayName,
+             photoURL: photoURL
+         });
+
+         // Update local state immediately
+         setCurrentUser(prev => ({
+             ...prev,
+             displayName: displayName,
+             photoURL: photoURL,
+             user_metadata: {
+                 ...prev?.user_metadata,
+                 full_name: displayName,
+                 avatar_url: photoURL
+             }
+         }));
+         return;
+     }
+
+     // Supabase specific update (Admin only mostly)
      const updates = {};
      if (displayName) updates.full_name = displayName;
-     if (photoURL) updates.avatar_url = photoURL; // Supabase uses avatar_url usually in metadata
+     if (photoURL) updates.avatar_url = photoURL; 
 
      const { data, error } = await supabase.auth.updateUser({
          data: updates
@@ -33,33 +57,81 @@ export const AuthProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    // Check active session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setCurrentUser(session?.user ?? null);
-      setLoading(false);
-    });
+    let firebaseUnsubscribe;
+    let supabaseSubscription;
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setCurrentUser(session?.user ?? null);
-      setLoading(false);
-    });
+    const initAuth = async () => {
+        // 1. Check Supabase Session (Priority: Admin)
+        const { data: { session: supabaseSession } } = await supabase.auth.getSession();
+        
+        if (supabaseSession?.user) {
+            console.log("Auth: Supabase Session Found (Admin)", supabaseSession.user.email);
+            setCurrentUser(supabaseSession.user);
+            setLoading(false);
+        }
 
-    return () => subscription.unsubscribe();
+        // 2. Listen for Firebase Auth Changes (User)
+        firebaseUnsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+            if (firebaseUser) {
+                console.log("Auth: Firebase User Found", firebaseUser.email);
+                // Map Firebase user to a structure compatible with our app
+                setCurrentUser({
+                    ...firebaseUser,
+                    id: firebaseUser.uid, 
+                    email: firebaseUser.email,
+                    user_metadata: {
+                        full_name: firebaseUser.displayName,
+                        avatar_url: firebaseUser.photoURL
+                    },
+                    app_metadata: { provider: 'google' } 
+                });
+                setLoading(false);
+            } else {
+                // If no Firebase user, check if we still have a Supabase session
+                // If neither, then user is null
+                if (!supabase.auth.getSession().then(({data}) => data.session)) {
+                     setCurrentUser(null);
+                }
+                setLoading(false);
+            }
+        });
+
+        // 3. Listen for Supabase Auth Changes
+        const { data } = supabase.auth.onAuthStateChange((_event, session) => {
+            if (session?.user) {
+                console.log("Auth: Supabase Auth Changed -> User Logged In");
+                setCurrentUser(session.user);
+                // If Supabase logs in, we might want to ensure Firebase is ignored or signOut? 
+                // For now, Supabase (Admin) takes precedence in UI logic usually
+            } else if (!auth.currentUser) {
+                // Only clear if Firebase is also null
+                setCurrentUser(null);
+            }
+        });
+        supabaseSubscription = data.subscription;
+    };
+
+    initAuth();
+
+    return () => {
+        if (firebaseUnsubscribe) firebaseUnsubscribe();
+        if (supabaseSubscription) supabaseSubscription.unsubscribe();
+    };
   }, []);
 
   const signInWithGoogle = async () => {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-          provider: 'google',
-          options: {
-              redirectTo: window.location.origin // Redirect back to home/current page
-          }
-      });
-      if (error) throw error;
-      return data;
+      // Use Firebase for Google Sign In
+      try {
+        const result = await signInWithPopup(auth, googleProvider);
+        const user = result.user;
+        return user;
+      } catch (error) {
+        console.error("Firebase Google Sign In Error:", error);
+        throw error;
+      }
   };
     
-  // Supabase OTP Functions
+  // Supabase OTP Functions (Keep for Admin/Legacy)
   const loginWithOtp = async (email) => {
       return supabase.auth.signInWithOtp({ email });
   };
