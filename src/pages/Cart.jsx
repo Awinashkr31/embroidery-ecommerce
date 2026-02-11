@@ -4,9 +4,24 @@ import { Trash2, ArrowRight, Tag, X, User } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import SEO from '../components/SEO';
+import { getEstimatedDeliveryDate } from '../utils/dateUtils';
 
 const Cart = () => {
-    const { cart, removeFromCart, updateQuantity, cartTotal, subtotal, shippingCharge, applyCoupon, removeCoupon, appliedCoupon, discountAmount } = useCart();
+    const { 
+        cart, 
+        removeFromCart, 
+        updateQuantity, 
+        cartTotal, 
+        subtotal, 
+        shippingCharge, 
+        applyCoupon, 
+        removeCoupon, 
+        appliedCoupon, 
+        discountAmount,
+        MIN_ORDER_VALUE,
+        FREE_DELIVERY_THRESHOLD,
+        isOrderDeployable
+    } = useCart();
     const { currentUser } = useAuth();
     const navigate = useNavigate();
     const [couponCode, setCouponCode] = useState('');
@@ -43,6 +58,52 @@ const Cart = () => {
             <SEO title="Shopping Cart" description="Review your selected items and proceed to checkout." />
             <div className="container-custom">
                 <h1 className="text-3xl lg:text-4xl font-heading font-bold text-stone-900 mb-8">Shopping Cart</h1>
+
+                {/* Minimum Order Warning */}
+                {!isOrderDeployable && (
+                    <div className="bg-red-50 border border-red-100 rounded-xl p-4 mb-6 flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
+                        <div className="p-2 bg-red-100 rounded-full text-red-600 shrink-0">
+                            <Tag className="w-4 h-4" />
+                        </div>
+                        <div>
+                            <h3 className="text-sm font-bold text-red-900">Minimum Order Value is ₹{MIN_ORDER_VALUE}</h3>
+                            <p className="text-xs text-red-700 mt-0.5">
+                                Please add items worth ₹{MIN_ORDER_VALUE - subtotal} more to place your order.
+                            </p>
+                        </div>
+                    </div>
+                )}
+
+                {/* Free Delivery Progress */}
+                {isOrderDeployable && subtotal < FREE_DELIVERY_THRESHOLD && (
+                    <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-6 flex items-center gap-4 animate-in fade-in slide-in-from-top-2">
+                        <div className="p-2 bg-blue-100 rounded-full text-blue-600 shrink-0">
+                            <Tag className="w-4 h-4" />
+                        </div>
+                        <div className="flex-1">
+                            <div className="flex justify-between text-xs font-bold text-blue-900 mb-1.5">
+                                <span>Add ₹{FREE_DELIVERY_THRESHOLD - subtotal} for Free Delivery</span>
+                                <span>{Math.round((subtotal / FREE_DELIVERY_THRESHOLD) * 100)}%</span>
+                            </div>
+                            <div className="h-2 bg-blue-100 rounded-full overflow-hidden">
+                                <div 
+                                    className="h-full bg-blue-500 rounded-full transition-all duration-500"
+                                    style={{ width: `${(subtotal / FREE_DELIVERY_THRESHOLD) * 100}%` }}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                )}
+                
+                {/* Free Delivery Qualified */}
+                {subtotal >= FREE_DELIVERY_THRESHOLD && (
+                     <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-3 mb-6 flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
+                        <div className="p-1.5 bg-emerald-100 rounded-full text-emerald-600 shrink-0">
+                            <Tag className="w-3 h-3" />
+                        </div>
+                        <p className="text-xs font-bold text-emerald-800">Yay! You've unlocked Free Delivery.</p>
+                    </div>
+                )}
 
                 <div className="flex flex-col lg:flex-row gap-12">
                     {/* Cart Items */}
@@ -175,8 +236,16 @@ const Cart = () => {
                                         {shippingCharge === 0 ? 'Free' : `₹${shippingCharge}`}
                                     </span>
                                 </div>
+
+                                <div className="flex justify-between text-stone-600">
+                                    <span>Estimated Delivery</span>
+                                    <span className="text-stone-900 font-medium">{getEstimatedDeliveryDate()}</span>
+                                </div>
                                 <div className="border-t border-stone-100 pt-4 flex justify-between text-lg font-heading font-bold text-stone-900">
-                                    <span>Total</span>
+                                    <div className="flex flex-col">
+                                        <span>Total</span>
+                                        <span className="text-[10px] text-stone-400 font-normal mt-0.5">(Incl. of all taxes)</span>
+                                    </div>
                                     <span className="text-rose-900">₹{cartTotal.toLocaleString()}</span>
                                 </div>
                             </div>
@@ -217,10 +286,15 @@ const Cart = () => {
 
                             <button
                                 onClick={() => navigate('/checkout')}
-                                className="w-full bg-rose-900 text-white py-4 rounded-xl font-bold uppercase tracking-widest hover:bg-rose-800 transition-all flex items-center justify-center gap-3 shadow-lg shadow-rose-900/20 group transform hover:-translate-y-0.5"
+                                disabled={!isOrderDeployable}
+                                className={`w-full py-4 rounded-xl font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-3 shadow-lg group transform ${
+                                    isOrderDeployable 
+                                    ? 'bg-rose-900 text-white hover:bg-rose-800 hover:-translate-y-0.5 shadow-rose-900/20' 
+                                    : 'bg-stone-200 text-stone-400 cursor-not-allowed shadow-none'
+                                }`}
                             >
-                                <span>Checkout Now</span>
-                                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                                <span>{isOrderDeployable ? 'Checkout Now' : `Add items worth ₹${MIN_ORDER_VALUE - subtotal} more`}</span>
+                                {isOrderDeployable && <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />}
                             </button>
                             
                             {!currentUser && (
@@ -300,10 +374,15 @@ const Cart = () => {
                     </div>
                     <button
                         onClick={() => navigate('/checkout')}
-                        className="flex-1 bg-rose-900 text-white py-3 rounded-xl font-bold uppercase tracking-widest hover:bg-rose-800 transition-all flex items-center justify-center gap-2 shadow-lg shadow-rose-900/20"
+                        disabled={!isOrderDeployable}
+                        className={`flex-1 py-3 rounded-xl font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2 shadow-lg ${
+                            isOrderDeployable
+                            ? 'bg-rose-900 text-white hover:bg-rose-800 shadow-rose-900/20'
+                            : 'bg-stone-200 text-stone-400 cursor-not-allowed shadow-none'
+                        }`}
                     >
                         <span>Checkout</span>
-                        <ArrowRight className="w-4 h-4" />
+                        {isOrderDeployable && <ArrowRight className="w-4 h-4" />}
                     </button>
                  </div>
             </div>

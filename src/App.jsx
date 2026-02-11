@@ -15,14 +15,15 @@ import { SettingsProvider } from './context/SettingsContext'
 import { CategoryProvider } from './context/CategoryContext'
 
 // Lazy Load Page Components for Performance
-const Login = lazy(() => import('./pages/Login'));
+const LoginSignup = lazy(() => import('./pages/LoginSignup'));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
 const ResetPassword = lazy(() => import('./pages/ResetPassword'));
-const Register = lazy(() => import('./pages/Register'));
+// const Register = lazy(() => import('./pages/Register'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Wishlist = lazy(() => import('./pages/Wishlist'));
 const OrderSuccess = lazy(() => import('./pages/OrderSuccess'));
 const OrderConfirmation = lazy(() => import('./pages/OrderConfirmation'));
+const OrderDetails = lazy(() => import('./pages/OrderDetails'));
 
 const Home = lazy(() => import('./pages/Home'));
 const About = lazy(() => import('./pages/About'));
@@ -120,15 +121,16 @@ function App() {
                         <Route path="/support" element={<Contact />} />
                         <Route path="/cart" element={<Cart />} />
                         <Route path="/checkout" element={<Checkout />} />
-                        <Route path="/login" element={<Login />} />
+                        <Route path="/login" element={<LoginSignup />} />
                         <Route path="/forgot-password" element={<ForgotPassword />} />
                         <Route path="/reset-password" element={<ResetPassword />} />
 
-                        <Route path="/register" element={<Register />} />
+                        <Route path="/register" element={<Navigate to="/login" replace />} />
                         <Route path="/profile" element={<Profile />} />
                         <Route path="/wishlist" element={<Wishlist />} />
                         <Route path="/order-success" element={<OrderSuccess />} />
                         <Route path="/order-confirmation" element={<OrderConfirmation />} />
+                        <Route path="/order/:id" element={<OrderDetails />} />
                       </Routes>
                     </Suspense>
                   </main>

@@ -1,48 +1,203 @@
-import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { CheckCircle, Package, MapPin, ArrowRight, Loader } from 'lucide-react';
+import { supabase } from '../config/supabase';
+import { getEstimatedDeliveryDate } from '../utils/dateUtils';
+import SEO from '../components/SEO';
 
 const OrderSuccess = () => {
     const location = useLocation();
-    const orderId = location.state?.orderId; // Safe access
+    const navigate = useNavigate();
+    const [order, setOrder] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-    // Debugging
-    React.useEffect(() => {
-        console.log("OrderSuccess Mounted. OrderID:", orderId, "Type:", typeof orderId);
-        if (typeof orderId === 'object') {
-            console.warn("OrderSuccess: orderId is an object! This might cause a crash if rendered directly.");
+    const stateOrderId = location.state?.orderId;
+    // Handle both object (if passed fully) and string ID
+    const orderId = typeof stateOrderId === 'object' ? stateOrderId?.id : stateOrderId;
+
+    useEffect(() => {
+        if (!orderId) {
+            // content not found, redirect
+            const timer = setTimeout(() => navigate('/shop'), 3000);
+            return () => clearTimeout(timer);
         }
-    }, [orderId]);
 
-    const displayOrderId = (typeof orderId === 'object' && orderId !== null) 
-        ? (orderId.id || JSON.stringify(orderId)) 
-        : orderId;
+        const fetchOrder = async () => {
+            try {
+                // Fetch full details if we just have ID
+                const { data, error } = await supabase
+                    .from('orders')
+                    .select('*, items, shipping_address') // Select JSON columns directly
+                    .eq('id', orderId)
+                    .single();
+
+                if (error) throw error;
+                setOrder(data);
+            } catch (err) {
+                console.error("Error fetching order details:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        if (orderId) {
+            fetchOrder();
+        }
+    }, [orderId, navigate]);
+
+    if (!orderId) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-[#fdfbf7]">
+                <p className="text-stone-500">Redirecting to shop...</p>
+            </div>
+        );
+    }
+
+    if (loading) {
+         return (
+            <div className="min-h-screen bg-[#fdfbf7] flex items-center justify-center font-body pt-20">
+                <div className="text-center">
+                    <Loader className="animate-spin h-10 w-10 text-rose-900 mx-auto mb-4" />
+                    <p className="text-stone-600">Loading order details...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (!order) {
+         return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-[#fdfbf7] p-4">
+                <div className="text-center">
+                    <h1 className="text-2xl font-bold text-stone-900 mb-2">Order Confirmed!</h1>
+                    <p className="text-stone-600 mb-6">Your order ID is <span className="font-mono font-bold">{orderId}</span>.</p>
+                    <p className="text-sm text-stone-500 mb-8">We couldn't load the details right now, but your order has been placed successfully.</p>
+                    <Link to="/profile" className="btn-primary">View My Orders</Link>
+                </div>
+            </div>
+        );
+    }
 
     return (
-        <div className="min-h-screen bg-stone-50 flex flex-col items-center justify-center p-4 pt-24">
-            <div className="bg-white p-8 rounded-2xl shadow-lg max-w-md w-full text-center border border-green-100">
-                <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <span className="text-4xl">✓</span>
-                </div>
-                
-                <h1 className="text-3xl font-bold text-gray-800 mb-2">Order Confirmed!</h1>
-                <p className="text-gray-600 mb-6">
-                    Thank you so much for your purchase. We are processing it now.
-                </p>
-
-                {displayOrderId && (
-                    <div className="bg-gray-50 border border-gray-200 rounded p-3 mb-6">
-                        <p className="text-xs text-gray-500 uppercase tracking-wide">Order ID</p>
-                        <p className="font-mono font-bold text-gray-800 break-all">{displayOrderId}</p>
+        <div className="min-h-screen bg-[#fdfbf7] font-body pt-32 pb-24">
+            <SEO title="Order Confirmed" description="Your order has been placed successfully." />
+            
+            <div className="container-custom max-w-4xl">
+                {/* Success Header */}
+                <div className="text-center mb-12">
+                    <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 animate-in zoom-in-50 duration-500">
+                        <CheckCircle className="w-10 h-10 text-green-600" />
                     </div>
-                )}
+                    <h1 className="text-3xl md:text-4xl font-heading font-bold text-stone-900 mb-4">Order Placed Successfully!</h1>
+                    <p className="text-stone-600 max-w-lg mx-auto text-lg">
+                        Thank you for your purchase. We've received your order and will begin processing it right away.
+                    </p>
+                </div>
 
-                <div className="space-y-3">
-                     <Link to="/profile" className="block w-full bg-white border border-gray-300 text-gray-700 py-3 rounded-lg hover:bg-gray-50 transition font-medium">
-                        View My Order
-                    </Link>
-                    <Link to="/shop" className="block w-full bg-rose-900 text-white py-3 rounded-lg hover:bg-rose-800 transition font-bold shadow-md">
-                        Continue Shopping
-                    </Link>
+                <div className="grid md:grid-cols-2 gap-8 items-start">
+                    {/* Left Column: Order Details */}
+                    <div className="space-y-6">
+                        {/* Order Info Card */}
+                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-stone-100">
+                            <h2 className="text-lg font-heading font-bold text-stone-900 mb-4 flex items-center gap-2">
+                                <Package className="w-5 h-5 text-rose-900" />
+                                Order Details
+                            </h2>
+                            <div className="space-y-3 text-sm">
+                                <div className="flex justify-between py-2 border-b border-stone-50">
+                                    <span className="text-stone-500">Order ID</span>
+                                    <span className="font-mono font-bold text-stone-900">{order.id}</span>
+                                </div>
+                                <div className="flex justify-between py-2 border-b border-stone-50">
+                                    <span className="text-stone-500">Date</span>
+                                    <span className="text-stone-900 font-medium">
+                                        {new Date(order.created_at).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                    </span>
+                                </div>
+                                <div className="flex justify-between py-2 border-b border-stone-50">
+                                    <span className="text-stone-500">Estimated Delivery</span>
+                                    <span className="text-stone-900 font-bold">{getEstimatedDeliveryDate()}</span>
+                                </div>
+                                <div className="flex justify-between py-2">
+                                    <span className="text-stone-500">Payment Method</span>
+                                    <span className="text-stone-900 font-medium capitalize">{order.payment_method === 'cod' ? 'Cash on Delivery' : order.payment_method}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Shipping Address Card */}
+                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-stone-100">
+                             <h2 className="text-lg font-heading font-bold text-stone-900 mb-4 flex items-center gap-2">
+                                <MapPin className="w-5 h-5 text-rose-900" />
+                                Delivery Address
+                            </h2>
+                            <div className="text-stone-600 text-sm leading-relaxed">
+                                <p className="font-bold text-stone-900 mb-1">{order.customer_name}</p>
+                                <p>{order.shipping_address?.address}</p>
+                                <p>{order.shipping_address?.city}, {order.shipping_address?.state} {order.shipping_address?.zipCode}</p>
+                                <p className="mt-2 text-stone-500">{order.customer_phone}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Right Column: Items Summary */}
+                     <div className="bg-white p-6 rounded-2xl shadow-sm border border-stone-100">
+                        <h2 className="text-lg font-heading font-bold text-stone-900 mb-6">Items Ordered</h2>
+                        
+                        <div className="space-y-4 mb-6 max-h-80 overflow-y-auto custom-scrollbar pr-2">
+                            {order.items && order.items.map((item, idx) => (
+                                <div key={idx} className="flex gap-4 py-2 border-b border-stone-50 last:border-0">
+                                    <div className="w-16 h-16 rounded-lg bg-stone-100 overflow-hidden shrink-0">
+                                        <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <h4 className="font-bold text-stone-800 text-sm truncate">{item.name}</h4>
+                                        <div className="text-xs text-stone-500 mt-1">
+                                            {item.selectedSize && <span className="mr-2">Size: {item.selectedSize}</span>}
+                                            <span>Qty: {item.quantity}</span>
+                                        </div>
+                                    </div>
+                                    <div className="text-right">
+                                        <p className="font-bold text-stone-900 text-sm">₹{(item.price * item.quantity).toLocaleString()}</p>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="space-y-2 pt-4 border-t border-stone-100">
+                            <div className="flex justify-between text-stone-600 text-sm">
+                                <span>Subtotal</span>
+                                <span>₹{order.subtotal?.toLocaleString()}</span>
+                            </div>
+                             <div className="flex justify-between text-stone-600 text-sm">
+                                <span>Shipping</span>
+                                <span className={order.shipping_cost === 0 ? "text-emerald-700 font-bold" : ""}>
+                                    {order.shipping_cost === 0 ? 'Free' : `₹${order.shipping_cost}`}
+                                </span>
+                            </div>
+                            {order.discount > 0 && (
+                                <div className="flex justify-between text-emerald-600 text-sm font-bold">
+                                    <span>Discount</span>
+                                    <span>-₹{order.discount.toLocaleString()}</span>
+                                </div>
+                            )}
+                            <div className="flex justify-between text-lg font-heading font-bold text-stone-900 pt-3 border-t border-stone-100 mt-2">
+                                <div className="flex flex-col">
+                                    <span>Total</span>
+                                    <span className="text-[10px] text-stone-400 font-normal mt-0.5">(Incl. of all taxes)</span>
+                                </div>
+                                <span className="text-rose-900">₹{order.total?.toLocaleString()}</span>
+                            </div>
+                        </div>
+                        
+                        <div className="mt-8 space-y-3">
+                             <Link to="/profile" className="block w-full bg-stone-900 text-white py-3 rounded-xl hover:bg-stone-800 transition font-bold text-center uppercase tracking-wide text-sm">
+                                View Order Details
+                            </Link>
+                            <Link to="/shop" className="block w-full bg-white border border-stone-200 text-stone-700 py-3 rounded-xl hover:bg-stone-50 transition font-bold text-center uppercase tracking-wide text-sm">
+                                Continue Shopping
+                            </Link>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

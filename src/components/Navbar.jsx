@@ -288,8 +288,8 @@ const Navbar = () => {
                   </div>
                 </button>
               ) : (
-                <Link to="/login" className="ml-2 btn-primary !px-6 !py-2 !text-xs">
-                  Login
+                <Link to="/login" className="ml-2 btn-primary !px-6 !py-2 !text-xs whitespace-nowrap">
+                  Login / Sign Up
                 </Link>
               )}
 
@@ -404,10 +404,7 @@ const Navbar = () => {
                             </div>
                         </>
                      ) : (
-                         <div className="grid grid-cols-2 gap-4">
-                            <Link to="/login" className="btn-primary flex items-center justify-center !px-0 text-xs py-2.5">Login</Link>
-                            <Link to="/register" className="btn-outline flex items-center justify-center !px-0 text-xs py-2.5">Sign Up</Link>
-                         </div>
+                            <Link to="/login" className="col-span-2 btn-primary flex items-center justify-center !px-0 text-xs py-2.5">Login / Sign Up</Link>
                      )}
                 </div>
             </div>

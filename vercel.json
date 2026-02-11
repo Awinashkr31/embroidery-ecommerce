@@ -1,9 +1,12 @@
 {
   "rewrites": [
     {
+      "source": "/delhivery-api/:path*",
+      "destination": "https://track.delhivery.com/:path*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
-  ],
-  "installCommand": "npm install --legacy-peer-deps"
+  ]
 }

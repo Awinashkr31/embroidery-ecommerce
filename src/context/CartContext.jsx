@@ -734,13 +734,19 @@ export const CartProvider = ({ children }) => {
       
       return Math.round(discount);
   })() : 0;
-  const shippingCharge = subtotal < 499 ? 50 : 0;
+  // Shipping Rules
+  const MIN_ORDER_VALUE = 200;
+  const FREE_DELIVERY_THRESHOLD = 499;
+  const DELIVERY_CHARGE = 50;
+
+  const shippingCharge = subtotal < FREE_DELIVERY_THRESHOLD ? DELIVERY_CHARGE : 0;
   const cartTotal = subtotal - discountAmount + shippingCharge;
+  const isOrderDeployable = subtotal >= MIN_ORDER_VALUE;
 
   return (
     <CartContext.Provider value={{
       cart,
-      cartLoading: loading || isFetchingCart, // Expose loading state
+      cartLoading: loading || isFetchingCart,
       addToCart,
       removeFromCart,
       updateQuantity,
@@ -759,7 +765,12 @@ export const CartProvider = ({ children }) => {
       subtotal,
       savedAddresses,
       saveAddress,
-      deleteAddress
+      deleteAddress,
+      // Rules
+      MIN_ORDER_VALUE,
+      FREE_DELIVERY_THRESHOLD,
+      DELIVERY_CHARGE,
+      isOrderDeployable
     }}>
       {children}
     </CartContext.Provider>
