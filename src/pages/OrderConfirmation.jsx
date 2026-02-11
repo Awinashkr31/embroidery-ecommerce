@@ -5,6 +5,7 @@ import { useToast } from '../context/ToastContext';
 import { useAuth } from '../context/AuthContext';
 import { ArrowLeft, CheckCircle, MapPin, Package, AlertTriangle } from 'lucide-react';
 import SEO from '../components/SEO';
+import { getEstimatedDeliveryDate } from '../utils/dateUtils';
 
 const OrderConfirmation = () => {
     const { state } = useLocation();
@@ -169,6 +170,13 @@ const OrderConfirmation = () => {
                                 <div className="flex justify-between text-xl font-heading font-bold text-stone-900 pt-4 border-t border-stone-100 mt-2">
                                     <span>Total Pay</span>
                                     <span className="text-rose-900">₹{cartTotal.toLocaleString()}</span>
+                                </div>
+                                <div className="text-xs text-stone-400 text-right font-medium">
+                                    (Incl. of all taxes)
+                                </div>
+                                <div className="flex justify-between text-stone-600 text-sm border-t border-stone-200 pt-3 mt-3">
+                                    <span>Estimated Delivery</span>
+                                    <span className="text-stone-900 font-bold">{getEstimatedDeliveryDate()}</span>
                                 </div>
                             </div>
                         </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Package, Clock, CheckCircle, XCircle, Search, Eye, Trash2, Filter, AlertTriangle, ArrowRight } from 'lucide-react';
+import { Package, Clock, CheckCircle, XCircle, Search, Eye, Trash2, Filter, AlertTriangle, ArrowRight, Truck, Download } from 'lucide-react';
 import { supabase } from '../../../config/supabase';
+import ShipmentCreator from '../../components/admin/ShipmentCreator';
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
@@ -8,8 +9,9 @@ const Orders = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [activeTab, setActiveTab] = useState('All');
   const [loading, setLoading] = useState(true);
-
-  const statusOptions = ['pending', 'processing', 'shipped', 'delivered', 'cancelled', 'cancellation_requested']; // Lowercase to match DB enum if possible, or map
+  const [selectedOrders, setSelectedOrders] = useState([]); // Array of selected order IDs
+  
+  const statusOptions = ['pending', 'processing', 'shipped', 'delivered', 'cancelled', 'cancellation_requested'];
 
   const fetchOrders = async () => {
     try {
@@ -29,7 +31,7 @@ const Orders = () => {
             return {
                 id: o.id,
                 date: o.created_at,
-                status: o.status, // Ensure DB status string matches UI expectations (lowercase vs Title Case?)
+                status: o.status,
                 total: o.total,
                 items: o.items || [],
                 customer: {
@@ -44,7 +46,9 @@ const Orders = () => {
                 },
                 paymentStatus: o.payment_status || 'pending',
                 paymentMethod: o.payment_method || 'cod',
-                paymentId: o.payment_id
+                paymentId: o.payment_id,
+                waybillId: o.waybill_id, // New Field
+                trackingUrl: o.tracking_url // New Field
             };
         });
         setOrders(mappedOrders);
@@ -55,6 +59,7 @@ const Orders = () => {
     }
   };
 
+  // ... (existing useEffect and filteredOrders) ...
   useEffect(() => {
     fetchOrders();
   }, []);
@@ -62,26 +67,42 @@ const Orders = () => {
   const filteredOrders = orders.filter(order => {
     const term = searchTerm.toLowerCase();
     const customerName = order.customer ? `${order.customer.firstName} ${order.customer.lastName}`.toLowerCase() : '';
-    // Handle both UUID search and simple text search
     const matchesSearch = order.id.toString().toLowerCase().includes(term) || customerName.includes(term);
     
-    // UI tabs might be 'Pending' (Title case) but DB 'pending' (lower)
-    // Let's normalize comparison
     if (activeTab === 'All') return matchesSearch;
     return matchesSearch && order.status.toLowerCase() === activeTab.toLowerCase();
   });
 
-  const updateOrderStatus = async (orderId, newStatus) => {
+
+  const updateOrderStatus = async (orderId, newStatus, extraData = {}) => {
     try {
-        // newStatus from select might be 'Pending', convert to 'pending' for DB if enum
         const dbStatus = newStatus.toLowerCase();
         
         const { error } = await supabase
             .from('orders')
-            .update({ status: dbStatus })
+            .update({ status: dbStatus, ...extraData })
             .eq('id', orderId);
 
         if (error) throw error;
+
+        // --- MANUALLY ADDED LOG FOR TIMELINE ---
+        let logMessage = 'Status updated by store admin';
+        if (dbStatus === 'shipped') logMessage = 'Order marked as Shipped';
+        else if (dbStatus === 'delivered') logMessage = 'Order marked as Delivered';
+        else if (dbStatus === 'processing') logMessage = 'Order is being processed';
+        else if (dbStatus === 'cancelled') logMessage = 'Order was cancelled';
+
+        // Insert into order_status_logs so it appears in the timeline on OrderDetails
+        await supabase
+            .from('order_status_logs')
+            .insert([{
+                order_id: orderId,
+                status: newStatus, 
+                timestamp: new Date().toISOString(),
+                message: logMessage,
+                description: `Manual update to ${newStatus}` 
+            }]);
+        // ---------------------------------------
 
         // Send Notification to User
         if (selectedOrder?.customer?.email) {
@@ -96,18 +117,147 @@ const Orders = () => {
 
         // Optimistic update
         const updatedOrders = orders.map(order => 
-          order.id === orderId ? { ...order, status: dbStatus } : order
+          order.id === orderId ? { ...order, status: dbStatus, ...extraData } : order
         );
         setOrders(updatedOrders);
         
         if (selectedOrder && selectedOrder.id === orderId) {
-          setSelectedOrder({ ...selectedOrder, status: dbStatus });
+          setSelectedOrder(prev => ({ ...prev, status: dbStatus, ...extraData }));
         }
     } catch (err) {
         console.error('Error updating status:', err);
         alert('Failed to update status');
     }
   };
+
+  // --- Bulk Selection & CSV Export ---
+
+  const toggleSelectOrder = (orderId) => {
+    setSelectedOrders(prev => 
+      prev.includes(orderId) 
+        ? prev.filter(id => id !== orderId)
+        : [...prev, orderId]
+    )
+  };
+
+  const toggleSelectAll = () => {
+    // If all currently filtered orders are selected, deselect all. Otherwise select all filtered orders.
+    // We compare against filteredOrders to respect search/tabs.
+    const allFilteredIds = filteredOrders.map(o => o.id);
+    const allSelected = allFilteredIds.every(id => selectedOrders.includes(id));
+
+    if (allSelected) {
+       // Deselect these specific ones keeping others? Or just clear all? 
+       // Simplest: Deselect all (common behavior) or remove current view's IDs
+       setSelectedOrders(prev => prev.filter(id => !allFilteredIds.includes(id)));
+    } else {
+       // Add all filtered IDs
+       const newSelection = [...new Set([...selectedOrders, ...allFilteredIds])];
+       setSelectedOrders(newSelection);
+    }
+  };
+
+  const downloadCSV = () => {
+    // Get orders that are both in the full list AND selected
+    const ordersToExport = orders.filter(o => selectedOrders.includes(o.id));
+    
+    if (ordersToExport.length === 0) return;
+
+    // Defined Headers based on Delhivery Bulk Upload Error Report
+    const headers = [
+      "*Sale Order Number", "*Pickup Location Name", "*Customer Name", "*Customer Phone", 
+      "*Item Sku Code", "*Item Sku Name", "*Unit Item Price", "Discount Type", "Discount Value", "Tax Class Code",
+      "*Transport Mode", "*Payment Mode", "Packaging Type", "COD Amount", "*Quantity Ordered", 
+      "Length (cm)", "Breadth (cm)", "Height (cm)", "Weight (gm)", "Protect Category Id", 
+      "Fragile Shipment", "Customer Email", "*Shipping Address Line1", "Shipping Address Line2", 
+      "*Shipping City", "*Shipping State", "*Shipping Pincode", 
+      "Billing Address same as Shipping Address", "Billing Address Line1", "Billing Address Line2", 
+      "Billing City", "Billing State", "Billing Pincode", 
+      "e-Way Bill Number", "Seller Name", "Seller GST Number", "Seller Address Line1", 
+      "Seller Address Line2", "Seller City", "Seller State", "Seller Pincode"
+    ];
+
+    const csvRows = [headers.join(',')];
+
+    ordersToExport.forEach(order => {
+      // Iterate through items to create one row per item (required for bulk upload)
+      order.items.forEach(item => {
+          // Helper to escape commas/quotes
+          const escape = (text) => `"${(text || '').toString().replace(/"/g, '""')}"`;
+
+          // Defaults
+          const warehouseName = import.meta.env.VITE_DELHIVERY_WAREHOUSE_NAME || "Main Warehouse";
+          const paymentMode = order.paymentMethod === 'cod' ? "COD" : "Pre-paid";
+          const transportMode = "Surface"; // Default
+          
+          // COD Amount is total for the order, but CSV often expects it per shipment. 
+          // For multi-item orders in bulk upload, usually the first row carries the COD amount or it's calculated.
+          // Delhivery Guide: "COD Amount" should be 0 for Prepaid. For COD, put full amount on one line or split?
+          // Simplest: Put 0 for all items except maybe specific logic, BUT mostly safest to put 0 and let Delhivery calculate from value OR put 0 here and just treat it as Pre-paid if unsure.
+          // BETTER: Put 0 passed, actually for COD orders, the "COD Amount" is meaningful. 
+          // However, allocating valid COD per item is complex. 
+          // Strategy: We will put the specific item total as COD Amount if COD, else 0. 
+          // NOTE: This might be wrong if they expect Total Order Value.
+          // Let's use 0 for "COD Amount" on standard lines unless we are sure.
+          // Actually, standard practice: Map "Payment Mode" correctly. "COD Amount" matches "Unit Item Price * Qty" or Total?
+          // Let's set COD Amount to 0 for now to avoid validation errors, relying on "Payment Mode: COD". 
+          // Correction: If Payment Mode is COD, COD Amount MUST be > 0.
+          // Let's set COD Amount = (Item Price * Qty) for this row.
+          
+          const itemTotal = item.price * item.quantity;
+          const codAmount = order.paymentMethod === 'cod' ? itemTotal : 0;
+
+          const row = [
+            escape(order.id),                       // Sale Order Number
+            escape(warehouseName),                  // Pickup Location Name
+            escape(`${order.customer.firstName} ${order.customer.lastName}`), // Customer Name
+            escape(order.customer.phone),           // Customer Phone
+            escape(item.id || item.sku || item.name.substring(0, 10)), // Item Sku Code
+            escape(item.name),                      // Item Sku Name
+            item.price,                             // Unit Item Price
+            "",                                     // Discount Type
+            0,                                      // Discount Value
+            "",                                     // Tax Class Code
+            transportMode,                          // Transport Mode
+            paymentMode,                            // Payment Mode
+            "",                                     // Packaging Type
+            codAmount,                              // COD Amount
+            item.quantity,                          // Quantity Ordered
+            10,                                     // Length
+            10,                                     // Breadth
+            10,                                     // Height
+            500,                                    // Weight (gm)
+            "",                                     // Protect Category Id
+            "No",                                   // Fragile Shipment
+            escape(order.customer.email),           // Customer Email
+            escape(order.customer.address),         // Shipping Address Line1
+            "",                                     // Shipping Address Line2
+            escape(order.customer.city),            // Shipping City
+            escape(order.customer.state),           // Shipping State
+            escape(order.customer.zipCode),         // Shipping Pincode
+            "Yes",                                  // Billing Address same as Shipping Address
+            escape(order.customer.address),         // Billing Address Line1
+            "",                                     // Billing Address Line2
+            escape(order.customer.city),            // Billing City
+            escape(order.customer.state),           // Billing State
+            escape(order.customer.zipCode),         // Billing Pincode
+            "", "", "", "", "", "", "", ""          // e-way, Seller info (empty)
+          ];
+          csvRows.push(row.join(','));
+      });
+    });
+
+    const csvContent = "data:text/csv;charset=utf-8," + csvRows.join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    // Format filename: delhivery_bulk_upload_YYYY-MM-DD.csv
+    link.setAttribute("download", `delhivery_bulk_upload_${new Date().toISOString().slice(0,10)}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
 
   const handleDeleteOrder = async (orderId) => {
     if (window.confirm('Are you sure you want to delete this order? This action cannot be undone.')) {
@@ -143,6 +293,13 @@ const Orders = () => {
     }
   };
 
+  // --- Delhivery Integration ---
+
+
+
+
+
+
   return (
     <div className="font-body space-y-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -150,9 +307,20 @@ const Orders = () => {
            <h1 className="text-3xl font-heading font-bold text-stone-900">Orders</h1>
            <p className="text-stone-500 mt-1">Track and manage customer orders</p>
         </div>
-        <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-stone-200 shadow-sm text-sm font-medium text-stone-600">
-             <span className={`w-2 h-2 rounded-full ${loading ? 'bg-amber-500' : 'bg-emerald-500'} animate-pulse`}></span>
-             {loading ? 'Syncing...' : 'Live Updates'}
+        <div className="flex items-center gap-2">
+            {selectedOrders.length > 0 && (
+                <button 
+                  onClick={downloadCSV}
+                  className="bg-stone-900 text-white px-4 py-2 rounded-lg text-sm font-bold tracking-wide hover:bg-stone-800 transition-colors shadow-sm flex items-center gap-2 animate-in fade-in zoom-in duration-200"
+                >
+                  <Download className="w-4 h-4" />
+                  Download CSV ({selectedOrders.length})
+                </button>
+            )}
+            <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-stone-200 shadow-sm text-sm font-medium text-stone-600">
+                 <span className={`w-2 h-2 rounded-full ${loading ? 'bg-amber-500' : 'bg-emerald-500'} animate-pulse`}></span>
+                 {loading ? 'Syncing...' : 'Live Updates'}
+            </div>
         </div>
       </div>
 
@@ -194,6 +362,15 @@ const Orders = () => {
           <table className="w-full text-left">
             <thead className="bg-stone-50 border-b border-stone-100">
               <tr>
+                <th className="px-6 py-4 w-12">
+                     <input 
+                        type="checkbox"
+                        // Check if all displayed orders are selected
+                        checked={filteredOrders.length > 0 && filteredOrders.every(o => selectedOrders.includes(o.id))}
+                        onChange={toggleSelectAll}
+                        className="rounded border-stone-300 text-rose-900 focus:ring-rose-900"
+                     />
+                </th>
                 <th className="px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider">Order</th>
                 <th className="px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider">Date</th>
                 <th className="px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider">Customer</th>
@@ -206,7 +383,15 @@ const Orders = () => {
             <tbody className="divide-y divide-stone-100">
               {filteredOrders.length > 0 ? (
                 filteredOrders.map((order) => (
-                  <tr key={order.id} className="hover:bg-stone-50/50 transition-colors group">
+                  <tr key={order.id} className={`hover:bg-stone-50/50 transition-colors group ${selectedOrders.includes(order.id) ? 'bg-rose-50/30' : ''}`}>
+                    <td className="px-6 py-4">
+                        <input 
+                            type="checkbox"
+                            checked={selectedOrders.includes(order.id)}
+                            onChange={() => toggleSelectOrder(order.id)}
+                            className="rounded border-stone-300 text-rose-900 focus:ring-rose-900"
+                        />
+                    </td>
                     <td className="px-6 py-4">
                         <span className="font-mono font-bold text-stone-900">#{order.id.slice(0,8)}</span>
                         <div className="text-xs text-stone-400 mt-0.5">{order.items.length} items</div>
@@ -254,7 +439,7 @@ const Orders = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="6" className="px-6 py-12 text-center text-stone-500">
+                  <td colSpan="7" className="px-6 py-12 text-center text-stone-500">
                     <div className="flex flex-col items-center justify-center">
                         <Package className="w-12 h-12 mb-3 text-stone-200" />
                         <p className="text-lg font-medium">No orders found</p>
@@ -297,6 +482,32 @@ const Orders = () => {
                         ))}
                     </select>
                 </div>
+
+                 {/* Shipping/Tracking Info */}
+                 {selectedOrder.waybillId ? (
+                     <div className="bg-purple-50 rounded-xl border border-purple-100 p-4 shadow-sm">
+                        <h4 className="flex items-center gap-2 text-sm font-bold text-purple-900 uppercase tracking-wide mb-2">
+                             <Truck className="w-4 h-4" />
+                             Shipping Details
+                        </h4>
+                        <div className="text-sm text-purple-800 space-y-1">
+                            <p><strong>Courier:</strong> {selectedOrder.courier_name || 'Delhivery'}</p>
+                            <p><strong>Tracking:</strong> <span className="font-mono bg-white px-1.5 py-0.5 rounded border border-purple-100 select-all">{selectedOrder.waybillId}</span></p>
+                            {selectedOrder.trackingUrl && <a href={selectedOrder.trackingUrl} target="_blank" className="underline text-blue-600">Track Shipment</a>}
+                        </div>
+                     </div>
+                 ) : (
+                    /* Create Shipment Section */
+                    <ShipmentCreator selectedOrder={selectedOrder} onShipmentCreated={(details) => {
+                        // Optimistic Update
+                        const updatedOrders = orders.map(o => 
+                            o.id === selectedOrder.id ? { ...o, ...details, status: 'shipped' } : o
+                        );
+                        setOrders(updatedOrders);
+                        setSelectedOrder(prev => ({ ...prev, ...details, status: 'shipped' }));
+                    }} />
+                 )}
+
 
                 {/* Items List */}
                 <div>

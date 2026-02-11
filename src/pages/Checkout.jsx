@@ -5,6 +5,8 @@ import { useAuth } from '../context/AuthContext';
 import { ArrowLeft, CreditCard, Truck, MapPin, Plus, CheckCircle, Tag } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import { supabase } from '../config/supabase';
+import { DelhiveryService } from '../services/delhivery';
+import { getEstimatedDeliveryDate } from '../utils/dateUtils';
 
 const loadRazorpay = () => {
     return new Promise((resolve) => {
@@ -77,6 +79,20 @@ const Checkout = () => {
         if (zip.length === 6) {
             setIsZipLoading(true);
             try {
+                // 1. Check Delhivery Serviceability (Priority)
+                // We do this concurrently or first. Let's do it.
+                // Note: If no token is set, this returns { serviceable: true } to avoid blocking.
+                const sydneyCheck = await DelhiveryService.checkServiceability(zip);
+
+                if (sydneyCheck.serviceable === false) {
+                    addToast('We do not deliver to this Pincode.', 'error');
+                    setFormData(prev => ({ ...prev, city: '', state: '' })); // Clear invalid
+                    setIsZipLoading(false);
+                    return;
+                }
+
+                // 2. Fetch City/State Details (using postalpincode.in as it's reliable for names)
+                // We could use data from Delhivery if available, but let's stick to existing for names to be safe
                 const response = await fetch(`https://api.postalpincode.in/pincode/${zip}`);
                 const data = await response.json();
 
@@ -88,11 +104,20 @@ const Checkout = () => {
                         city: District,
                         state: State
                     }));
+                    
+                    if (sydneyCheck.codAvailable === false && formData.paymentMethod === 'cod') {
+                         addToast('COD is not available for this location. Please choose Online Payment.', 'info');
+                         // Optionally switch payment method or just warn
+                         setFormData(prev => ({ ...prev, paymentMethod: 'online' }));
+                    }
+
                 } else {
                     addToast('Invalid Pincode', 'error');
                 }
             } catch (error) {
                 console.error("Error fetching pincode details:", error);
+                // Fallback: If Delhivery fails but we have no token, specific logic is inside service
+                // If standard fetch fails, just warn
             } finally {
                 setIsZipLoading(false);
             }
@@ -529,6 +554,13 @@ const Checkout = () => {
                                 <div className="flex justify-between text-xl font-heading font-bold text-stone-900 pt-4 border-t border-stone-200 mt-2">
                                     <span>Total Pay</span>
                                     <span className="text-rose-900">₹{cartTotal.toLocaleString()}</span>
+                                </div>
+                                <div className="text-xs text-stone-400 text-right font-medium">
+                                    (Incl. of all taxes)
+                                </div>
+                                <div className="flex justify-between text-stone-600 text-sm border-t border-stone-200 pt-3 mt-3">
+                                    <span>Estimated Delivery</span>
+                                    <span className="text-stone-900 font-bold">{getEstimatedDeliveryDate()}</span>
                                 </div>
                             </div>
                         </div>

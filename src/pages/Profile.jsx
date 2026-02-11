@@ -6,6 +6,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
 import { useToast } from '../context/ToastContext';
 import { uploadImage, deleteImage } from '../utils/uploadUtils';
+import OrderList from '../components/orders/OrderList';
 
 
 const Profile = () => {
@@ -43,43 +44,45 @@ const Profile = () => {
     const [userReviews, setUserReviews] = useState(new Set());
 
     useEffect(() => {
+        const fetchOrders = async () => {
+            try {
+                const { data, error } = await supabase
+                    .from('orders')
+                    .select('*')
+                    .eq('customer_email', currentUser.email)
+                    .order('created_at', { ascending: false });
+                
+                if (error) throw error;
+                setOrders(data || []);
+            } catch (error) {
+                console.error('Error fetching orders:', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+    
+        const fetchUserReviews = async () => {
+            try {
+                const { data, error } = await supabase
+                    .from('reviews')
+                    .select('product_id')
+                    .eq('user_id', currentUser.uid);
+                
+                if (error) throw error;
+                const reviewedProductIds = new Set(data.map(r => r.product_id));
+                setUserReviews(reviewedProductIds);
+            } catch (error) {
+                console.error('Error fetching reviews:', error);
+            }
+        };
+
         if (currentUser) {
             fetchOrders();
             fetchUserReviews();
-        }
-    }, [currentUser]);
-
-    const fetchOrders = async () => {
-        try {
-            const { data, error } = await supabase
-                .from('orders')
-                .select('*')
-                .eq('customer_email', currentUser.email)
-                .order('created_at', { ascending: false });
-            
-            if (error) throw error;
-            setOrders(data || []);
-        } catch (error) {
-            console.error('Error fetching orders:', error);
-        } finally {
+        } else {
             setLoading(false);
         }
-    };
-
-    const fetchUserReviews = async () => {
-        try {
-            const { data, error } = await supabase
-                .from('reviews')
-                .select('product_id')
-                .eq('user_id', currentUser.uid);
-            
-            if (error) throw error;
-            const reviewedProductIds = new Set(data.map(r => r.product_id));
-            setUserReviews(reviewedProductIds);
-        } catch (error) {
-            console.error('Error fetching reviews:', error);
-        }
-    };
+    }, [currentUser]);
 
     const handleImageUpload = async (e) => {
         const file = e.target.files[0];
@@ -189,14 +192,7 @@ const Profile = () => {
         }
     };
 
-    const getStatusStyle = (status) => {
-        switch(status.toLowerCase()) {
-            case 'completed': return 'bg-green-100 text-green-700 border-green-200';
-            case 'cancelled': return 'bg-red-100 text-red-700 border-red-200';
-            case 'cancellation_requested': return 'bg-amber-100 text-amber-700 border-amber-200';
-            default: return 'bg-blue-100 text-blue-700 border-blue-200';
-        }
-    };
+
 
     if (loading) {
         return (
@@ -307,130 +303,13 @@ const Profile = () => {
                                     <span className="text-sm text-stone-500 font-medium">{orders.length} Orders</span>
                                 </div>
                                 
-                                {loading ? (
-                                    <div className="flex justify-center items-center py-20 bg-white rounded-2xl shadow-sm border border-stone-100">
-                                        <Loader className="w-8 h-8 text-rose-900 animate-spin" />
-                                    </div>
-                                ) : orders.length === 0 ? (
-                                    <div className="bg-white p-12 rounded-2xl shadow-sm border border-stone-100 text-center">
-                                        <div className="w-20 h-20 bg-stone-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                                            <Package className="w-10 h-10 text-stone-300" />
-                                        </div>
-                                        <h3 className="text-lg font-heading font-bold text-stone-900 mb-2">No orders yet</h3>
-                                        <p className="text-stone-500 mb-8 max-w-sm mx-auto">Looks like you haven't made any purchases. Explore our collection to find something you love.</p>
-                                        <Link to="/shop" className="btn-primary">Start Shopping</Link>
-                                    </div>
-                                ) : (
-                                    orders.map(order => (
-                                        <div key={order.id} className="bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden hover:shadow-md transition-shadow">
-                                            <div className="p-6 bg-stone-50/50 border-b border-stone-100 flex flex-wrap justify-between items-center gap-4">
-                                                <div className="space-y-1">
-                                                    <p className="text-xs font-bold uppercase tracking-wider text-stone-500">Order ID</p>
-                                                    <p className="font-mono font-bold text-stone-900">#{order.id.slice(0, 8)}</p>
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <p className="text-xs font-bold uppercase tracking-wider text-stone-500">Date Placed</p>
-                                                    <p className="font-medium text-stone-800">{new Date(order.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <p className="text-xs font-bold uppercase tracking-wider text-stone-500">Total Amount</p>
-                                                    <p className="font-bold text-rose-900">₹{order.total.toLocaleString()}</p>
-                                                </div>
-                                                <div className="space-y-1">
-                                                     <p className="text-xs font-bold uppercase tracking-wider text-stone-500">Payment</p>
-                                                     <span className={`text-xs font-bold uppercase ${order.payment_status === 'paid' ? 'text-emerald-600' : 'text-stone-500'}`}>
-                                                         {order.payment_method === 'cod' ? 'COD' : (order.payment_status || 'pending')}
-                                                     </span>
-                                                </div>
-                                                <div>
-                                                    <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider border ${getStatusStyle(order.status)}`}>
-                                                        {order.status.toLowerCase() === 'completed' && <CheckCircle className="w-3.5 h-3.5" />}
-                                                        {order.status.toLowerCase() === 'cancelled' && <AlertTriangle className="w-3.5 h-3.5" />}
-                                                        {order.status.toLowerCase() === 'pending' && <CheckCircle className="w-3.5 h-3.5" />}
-                                                        {order.status.toLowerCase() === 'pending' ? 'Order Confirmed' : order.status}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                            
-                                            <div className="p-6">
-                                                <div className="space-y-4">
-                                                    {order.items?.map((item, idx) => (
-                                                        <div key={idx} className="flex items-center gap-4 group">
-                                                            <div className="w-16 h-16 rounded-lg bg-stone-100 overflow-hidden border border-stone-200 shrink-0">
-                                                                <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
-                                                            </div>
-                                                            <div className="flex-1 min-w-0">
-                                                                <h4 className="font-bold text-stone-900 group-hover:text-rose-900 transition-colors truncate">{item.name}</h4>
-                                                                    <div className="flex flex-col text-sm text-stone-500">
-                                                                        <span>Qty: {item.quantity} × ₹{item.price.toLocaleString()}</span>
-                                                                        <div className="flex flex-wrap gap-2 mt-1">
-                                                                            {(item.selectedSize || item.selected_size) && (
-                                                                                <span className="text-[10px] font-bold text-stone-500 bg-stone-100 px-1.5 py-0.5 rounded border border-stone-200">
-                                                                                    {item.selectedSize || item.selected_size}
-                                                                                </span>
-                                                                            )}
-                                                                            {(item.selectedColor || item.selected_color) && (item.selectedColor !== 'NA' && item.selected_color !== 'NA') && (
-                                                                                <span className="flex items-center gap-1 text-[10px] font-bold text-stone-500 bg-stone-100 px-1.5 py-0.5 rounded border border-stone-200">
-                                                                                    <span className="w-2 h-2 rounded-full border border-stone-300" style={{ backgroundColor: (item.selectedColor || item.selected_color || '').toLowerCase() }}></span>
-                                                                                    {item.selectedColor || item.selected_color}
-                                                                                </span>
-                                                                            )}
-                                                                        </div>
-                                                                        {item.originalPrice && (
-                                                                            <span className="text-xs text-stone-400 line-through mt-0.5">MRP: ₹{item.originalPrice.toLocaleString()}</span>
-                                                                        )}
-                                                                    </div>
-                                                            </div>
-                                                            <div className="text-right">
-                                                                <p className="font-bold text-stone-900 mb-2">₹{(item.price * item.quantity).toLocaleString()}</p>
-                                                                
-                                                                {/* Write Review Button */}
-                                                                {/* Only show if active (not cancelled) - assuming 'pending' or 'completed' allows review */}
-                                                                {order.status !== 'cancelled' && (
-                                                                    userReviews.has(item.id) ? (
-                                                                        <span className="inline-flex items-center text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full border border-green-100">
-                                                                            <CheckCircle className="w-3 h-3 mr-1" /> Reviewed
-                                                                        </span>
-                                                                    ) : (
-                                                                        <button 
-                                                                            onClick={() => openReviewModal(item)}
-                                                                            className="inline-flex items-center text-xs font-bold text-rose-900 hover:text-white border border-rose-200 hover:bg-rose-900 px-3 py-1.5 rounded-full transition-colors"
-                                                                        >
-                                                                            <Star className="w-3 h-3 mr-1" /> Write Review
-                                                                        </button>
-                                                                    )
-                                                                )}
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                                </div>
-
-                                                {['pending', 'confirmed', 'processing', 'shipped'].includes(order.status.toLowerCase()) && (
-                                                    <div className="mt-6 pt-6 border-t border-stone-100 flex justify-end">
-                                                        <button 
-                                                            onClick={() => handleCancelOrder(order)}
-                                                            className={`px-4 py-2 rounded-lg border transition-all text-sm font-bold uppercase tracking-wide flex items-center gap-2 ${
-                                                                ['pending', 'confirmed'].includes(order.status.toLowerCase()) 
-                                                                ? 'text-red-600 border-red-200 hover:bg-red-600 hover:text-white' 
-                                                                : 'text-amber-600 border-amber-200 hover:bg-amber-600 hover:text-white'
-                                                            }`}
-                                                        >
-                                                            <Trash2 className="w-4 h-4" />
-                                                            {['pending', 'confirmed'].includes(order.status.toLowerCase()) ? 'Cancel Order' : 'Request Cancellation'}
-                                                        </button>
-                                                    </div>
-                                                )}
-                                                {order.status === 'cancellation_requested' && (
-                                                     <div className="mt-6 pt-6 border-t border-stone-100 flex justify-end">
-                                                        <span className="px-4 py-2 rounded-lg border border-stone-200 bg-stone-50 text-stone-400 text-sm font-bold uppercase tracking-wide cursor-not-allowed">
-                                                            Cancellation Pending
-                                                        </span>
-                                                     </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))
-                                )}
+                                <OrderList 
+                                    orders={orders} 
+                                    loading={loading} 
+                                    onCancelOrder={handleCancelOrder} 
+                                    onReviewOrder={openReviewModal}
+                                    userReviews={userReviews}
+                                />
                             </div>
                         ) : (
                             <div className="space-y-6">
