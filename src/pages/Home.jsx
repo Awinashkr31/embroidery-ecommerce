@@ -160,12 +160,14 @@ const Home = () => {
           <button 
                 onClick={() => setCurrentSlide((prev) => (prev - 1 + sliderImages.length) % sliderImages.length)}
                 className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 backdrop-blur-md hover:bg-white/20 text-white transition-all z-10 hidden md:block"
+                aria-label="Previous slide"
           >
               <ChevronLeft className="w-6 h-6" />
           </button>
           <button 
                 onClick={() => setCurrentSlide((prev) => (prev + 1) % sliderImages.length)}
                 className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/10 backdrop-blur-md hover:bg-white/20 text-white transition-all z-10 hidden md:block"
+                aria-label="Next slide"
           >
               <ChevronRight className="w-6 h-6" />
           </button>
@@ -257,7 +259,7 @@ const Home = () => {
                             />
                             {/* Actions Overlay */}
                             <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 translate-x-2 group-hover:translate-x-0">
-                                <button className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg text-stone-900 hover:text-rose-600 transition-colors">
+                                <button className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg text-stone-900 hover:text-rose-600 transition-colors" aria-label="Add to Wishlist">
                                     <Heart className="w-5 h-5" />
                                 </button>
                             </div>

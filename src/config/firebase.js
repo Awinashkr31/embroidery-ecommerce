@@ -1,6 +1,6 @@
 console.log('[DEBUG] 1. Firebase Config Executing');
 import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
+
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
 // Your web app's Firebase configuration
