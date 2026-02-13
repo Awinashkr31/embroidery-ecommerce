@@ -308,6 +308,8 @@ const Shop = () => {
                                                 <img
                                                     src={getOptimizedImageUrl(product.image, { width: 600, quality: 80 })}
                                                     alt={product.name}
+                                                    loading="lazy"
+                                                    decoding="async"
                                                     className={`w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 ${!product.inStock ? 'grayscale opacity-80' : ''}`}
                                                     onError={(e) => {
                                                         e.target.onerror = null;

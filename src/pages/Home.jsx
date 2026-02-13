@@ -2,6 +2,7 @@ import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useProducts } from '../context/ProductContext';
 import { useCategories } from '../context/CategoryContext';
+import { getOptimizedImageUrl } from '../utils/imageUtils';
 import { Star, ArrowRight, Flower, Heart, Scissors, PenTool, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useSettings } from '../context/SettingsContext';
@@ -24,10 +25,11 @@ const ScrollRevealSection = ({ children, className }) => {
       if (ref.current) {
         observer.observe(ref.current);
       }
-  
+      
+      const currentRef = ref.current;
       return () => {
-        if (ref.current) {
-          observer.unobserve(ref.current);
+        if (currentRef) {
+          observer.unobserve(currentRef);
         }
       };
     }, []);
@@ -95,7 +97,7 @@ const Home = () => {
         setCurrentSlide((prev) => (prev + 1) % sliderImages.length);
     }, 5000);
     return () => clearInterval(timer);
-  }, []);
+  }, [sliderImages.length]);
 
 
 
@@ -135,7 +137,14 @@ const Home = () => {
                   key={idx}
                   className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${idx === currentSlide ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
               >
-                  <img src={img} alt={`Slide ${idx + 1}`} className="w-full h-full object-cover opacity-80" />
+                  <img 
+                    src={getOptimizedImageUrl(img, { width: 1200, quality: 80 })} 
+                    alt={`Slide ${idx + 1}`} 
+                    className="w-full h-full object-cover opacity-80"
+                    loading={idx === 0 ? "eager" : "lazy"}
+                    fetchPriority={idx === 0 ? "high" : "low"}
+                    decoding={idx === 0 ? "sync" : "async"}
+                  />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-center justify-center">
                        {idx === 0 && (
                            <div className="text-center text-white animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300 px-4">
@@ -199,8 +208,10 @@ const Home = () => {
                     >
                         <div className="relative w-28 h-28 md:w-32 md:h-32 lg:w-40 lg:h-40 rounded-full overflow-hidden border-2 border-transparent group-hover:border-rose-200 transition-all duration-300 shadow-sm group-hover:shadow-lg">
                             <img 
-                                src={category.image} 
+                                src={getOptimizedImageUrl(category.image, { width: 300, quality: 80 })} 
                                 alt={category.label} 
+                                loading="lazy"
+                                decoding="async"
                                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
                             />
                         </div>
@@ -238,8 +249,10 @@ const Home = () => {
                     <Link key={product.id} to={`/product/${product.id}`} className="group min-w-[150px] w-[45vw] sm:w-[280px] flex-shrink-0 snap-center">
                         <div className="relative aspect-[3/4] bg-white rounded-2xl overflow-hidden mb-4 shadow-sm">
                             <img 
-                                src={product.image} 
+                                src={getOptimizedImageUrl(product.image, { width: 400, quality: 80 })} 
                                 alt={product.name} 
+                                loading="lazy"
+                                decoding="async"
                                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                             />
                             {/* Actions Overlay */}
@@ -309,8 +322,10 @@ const Home = () => {
                         <Link key={product.id} to={`/product/${product.id}`} className="group min-w-[150px] w-[45vw] sm:w-[280px] flex-shrink-0 snap-center">
                             <div className="relative aspect-[3/4] bg-white rounded-2xl overflow-hidden mb-4 shadow-sm border border-stone-100">
                                 <img 
-                                    src={product.image} 
+                                    src={getOptimizedImageUrl(product.image, { width: 400, quality: 80 })} 
                                     alt={product.name} 
+                                    loading="lazy"
+                                    decoding="async"
                                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                                 />
                                 {/* Actions Overlay */}
@@ -398,13 +413,17 @@ const Home = () => {
               <div className="relative mt-8 lg:mt-0">
                   <div className="aspect-square relative z-10">
                      <img 
-                        src={storyImage1} 
+                        src={getOptimizedImageUrl(storyImage1, { width: 600, quality: 80 })} 
                         alt="Artisan working" 
+                        loading="lazy"
+                        decoding="async"
                         className="w-1/2 absolute top-0 left-0 rounded-2xl shadow-2xl border-4 border-stone-800 hover:scale-105 transition-transform duration-500 z-20"
                      />
                      <img 
-                        src={storyImage2} 
+                        src={getOptimizedImageUrl(storyImage2, { width: 600, quality: 80 })} 
                         alt="Finished embroidery" 
+                        loading="lazy"
+                        decoding="async"
                         className="w-2/3 absolute bottom-0 right-0 rounded-2xl shadow-2xl border-4 border-stone-800 hover:scale-105 transition-transform duration-500 z-10"
                      />
                   </div>
