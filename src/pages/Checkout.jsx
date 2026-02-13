@@ -19,8 +19,8 @@ const loadRazorpay = () => {
 };
 
 const Checkout = () => {
-    const { cart, cartTotal, subtotal, shippingCharge, discountAmount, appliedCoupon, placeOrder, savedAddresses, saveAddress } = useCart();
-    const { currentUser } = useAuth();
+    const { cart, cartLoading, cartTotal, subtotal, shippingCharge, discountAmount, appliedCoupon, placeOrder, savedAddresses, saveAddress } = useCart();
+    const { currentUser, loading: authLoading } = useAuth();
     const { addToast } = useToast();
     const navigate = useNavigate();
     
@@ -28,7 +28,7 @@ const Checkout = () => {
     const [selectedAddressId, setSelectedAddressId] = useState('new'); // 'new' or address ID
 
     // Filter addresses for current user
-    const userAddresses = savedAddresses.filter(addr => addr.userId === currentUser?.uid);
+    const userAddresses = savedAddresses.filter(addr => addr.userId === currentUser?.id);
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isZipLoading, setIsZipLoading] = useState(false);
@@ -123,6 +123,16 @@ const Checkout = () => {
             }
         }
     };
+
+    // Show loading state while Auth or Cart is initializing
+    if (authLoading || (cartLoading && cart.length === 0)) {
+        return (
+            <div className="min-h-screen bg-[#fdfbf7] flex flex-col items-center justify-center font-body pt-20">
+                 <div className="w-12 h-12 border-4 border-stone-200 border-t-rose-900 rounded-full animate-spin mb-4"></div>
+                 <p className="text-stone-500 font-medium animate-pulse">Loading checkout...</p>
+            </div>
+        );
+    }
 
     if (!currentUser) {
         return (

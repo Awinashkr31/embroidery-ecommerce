@@ -8,8 +8,11 @@ const BottomNavigation = () => {
   const location = useLocation();
   const cartItemCount = cart.length;
 
-  // Hide on Cart and Checkout pages to prevent overlap with sticky buttons
-  if (['/cart', '/checkout', '/mehndi-booking'].includes(location.pathname)) {
+  // Hide on Checkout, Mehndi Booking, and Product Details pages.
+  // Hide on Cart ONLY if items exist.
+  if (['/checkout', '/mehndi-booking'].includes(location.pathname) || 
+      location.pathname.startsWith('/product/') ||
+      (location.pathname === '/cart' && cart.length > 0)) {
     return null;
   }
 

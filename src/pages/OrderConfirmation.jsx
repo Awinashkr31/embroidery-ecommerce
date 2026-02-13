@@ -81,15 +81,15 @@ const OrderConfirmation = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#fdfbf7] font-body pt-32 pb-24">
+        <div className="min-h-screen bg-[#fdfbf7] font-body pt-20 md:pt-32 pb-12 md:pb-24">
             <SEO title="Confirm Order" description="Review your order details before confirming." />
             <div className="container-custom max-w-4xl">
-                <Link to="/checkout" className="inline-flex items-center text-stone-500 hover:text-rose-900 mb-8 transition-colors text-sm font-bold uppercase tracking-wide">
+                <Link to="/checkout" className="hidden md:inline-flex items-center text-stone-500 hover:text-rose-900 mb-8 transition-colors text-sm font-bold uppercase tracking-wide">
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     Back to Checkout
                 </Link>
 
-                <div className="text-center mb-10">
+                <div className="text-center mb-6 md:mb-10">
                     <h1 className="text-3xl font-heading font-bold text-stone-900 mb-2">Review Your Order</h1>
                     <p className="text-stone-600">Please review your delivery details and items before confirming.</p>
                 </div>
