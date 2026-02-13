@@ -75,7 +75,7 @@ const Navbar = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [currentUser]);
+  }, [currentUser, addToast]);
 
   // Mark as Read
   const handleMarkRead = async (id) => {
@@ -163,12 +163,13 @@ const Navbar = () => {
 
 
           
-          {/* 1. Left: Mobile Menu Trigger (hidden on desktop) */}
+            {/* 1. Left: Mobile Menu Trigger (hidden on desktop) */}
           <div className="lg:hidden">
             <button
               type="button"
               className="p-2 text-stone-800 hover:text-rose-900 transition-colors rounded-full hover:bg-stone-100"
               onClick={() => setIsMobileMenuOpen(true)}
+              aria-label="Open menu"
             >
               <Menu className="w-5 h-5" />
             </button>
@@ -176,7 +177,7 @@ const Navbar = () => {
 
           {/* 2. Left: Logo (Desktop: Center/Left balanced) */}
            <div className="flex-shrink-0 flex items-center gap-2 lg:w-1/4">
-            <Link to="/" className="flex flex-col group">
+            <Link to="/" className="flex flex-col group" aria-label="Home">
               <img src="/logo.png" alt="Enbroidery By Sana" className="h-12 md:h-14 w-auto object-contain" />
             </Link>
           </div>
@@ -206,7 +207,7 @@ const Navbar = () => {
 
              
              {/* Wishlist */}
-            <Link to="/wishlist" className="p-2 text-stone-600 hover:text-rose-900 transition-colors rounded-full hover:bg-stone-100 hidden sm:block">
+            <Link to="/wishlist" className="p-2 text-stone-600 hover:text-rose-900 transition-colors rounded-full hover:bg-stone-100 hidden sm:block" aria-label="Wishlist">
                <Heart className="w-5 h-5" />
             </Link>
             
@@ -216,6 +217,7 @@ const Navbar = () => {
                     <button 
                         onClick={() => setIsNotifOpen(!isNotifOpen)}
                         className="relative p-2 text-stone-600 hover:text-rose-900 transition-colors rounded-full hover:bg-stone-100"
+                        aria-label="Notifications"
                     >
                         <Bell className="w-5 h-5" />
                         {unreadCount > 0 && (
@@ -242,6 +244,7 @@ const Navbar = () => {
                                                 <button 
                                                     onClick={(e) => handleDeleteNotification(notif.id, e)}
                                                     className="text-stone-300 hover:text-rose-600 transition-colors p-1"
+                                                    aria-label="Delete notification"
                                                 >
                                                     <Trash2 className="w-3 h-3" />
                                                 </button>
@@ -261,7 +264,7 @@ const Navbar = () => {
             )}
             
             {/* Cart */}
-            <Link to="/cart" className="relative p-2 text-stone-600 hover:text-rose-900 transition-colors rounded-full hover:bg-stone-100 group">
+            <Link to="/cart" className="relative p-2 text-stone-600 hover:text-rose-900 transition-colors rounded-full hover:bg-stone-100 group" aria-label="Cart">
               <ShoppingBag className="w-5 h-5 group-hover:scale-110 transition-transform" />
               {cartCount > 0 && (
                 <span className="absolute top-1 right-0.5 bg-rose-900 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center shadow-lg border-2 border-white">

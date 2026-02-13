@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /sadmin/
+Disallow: /profile/
+Disallow: /checkout/
+Disallow: /order-confirmation/
+Disallow: /order-success/
+
+Sitemap: https://www.embroiderybysana.live/sitemap.xml
