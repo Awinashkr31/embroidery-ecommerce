@@ -9,6 +9,7 @@ import { getEstimatedDeliveryDate } from '../utils/dateUtils';
 const Cart = () => {
     const { 
         cart, 
+        cartLoading, // Destructure loading state
         removeFromCart, 
         updateQuantity, 
         cartTotal, 
@@ -37,9 +38,20 @@ const Cart = () => {
         }
     };
 
+    // Show loading state if initializing to prevent "Empty Cart" flash
+    if (cartLoading && cart.length === 0) {
+        return (
+            <div className="min-h-[60vh] flex flex-col items-center justify-center bg-[#fdfbf7] font-body p-4">
+                <SEO title="Shopping Cart" description="Loading your cart..." />
+                <div className="w-12 h-12 border-4 border-stone-200 border-t-rose-900 rounded-full animate-spin mb-4"></div>
+                <p className="text-stone-500 font-medium animate-pulse">Loading your cart...</p>
+            </div>
+        );
+    }
+
     if (cart.length === 0) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center bg-[#fdfbf7] font-body p-4 pt-20">
+            <div className="min-h-[60vh] flex flex-col items-center justify-center bg-[#fdfbf7] font-body p-4">
                 <SEO title="Shopping Cart" description="Your shopping cart is empty. Explore our collection of handcrafted embroidery." />
                 <div className="bg-rose-50 p-8 rounded-full mb-6 animate-in zoom-in-50 duration-500">
                     <Trash2 className="w-12 h-12 text-rose-900" />
@@ -54,7 +66,7 @@ const Cart = () => {
     }
 
     return (
-        <div className="bg-[#fdfbf7] min-h-screen font-body pt-32 pb-32 lg:pb-24">
+        <div className="bg-[#fdfbf7] min-h-screen font-body pt-4 md:pt-12 pb-32 lg:pb-24">
             <SEO title="Shopping Cart" description="Review your selected items and proceed to checkout." />
             <div className="container-custom">
                 <h1 className="text-3xl lg:text-4xl font-heading font-bold text-stone-900 mb-8">Shopping Cart</h1>

@@ -135,6 +135,12 @@ const ProductDetails = () => {
      const currentStock = variantData && variantData.stock !== undefined ? parseInt(variantData.stock) : product.stock;
      const isCurrentVariantInStock = currentStock > 0;
 
+     // Stock Availability Logic
+     const isVariantSelected = selectedColor && (selectedSize || !hasSizes);
+     const isStockAvailable = isVariantSelected && info.variantStock 
+         ? isCurrentVariantInStock 
+         : product.inStock;
+
     // Validation Helper
     const validateSelection = () => {
         // 1. Check Color
@@ -161,7 +167,7 @@ const ProductDetails = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#fdfbf7] pt-7 pb-20 font-body selection:bg-rose-100 selection:text-rose-900">
+        <div className="min-h-screen bg-[#fdfbf7] pt-7 pb-28 lg:pb-20 font-body selection:bg-rose-100 selection:text-rose-900">
             <div className="container-custom">
                 {/* Breadcrumb - Minimal */}
                 <div className="mb-8 hidden lg:block">
@@ -415,59 +421,47 @@ const ProductDetails = () => {
                         )}
 
                         {/* Actions */}
-                        <div className="flex flex-col gap-4 mb-16">
+                        {/* Actions (Desktop) */}
+                        <div className="hidden lg:flex flex-col gap-4 mb-16">
                             <div className="flex gap-4">
-                                {(() => {
-                                    const isVariantSelected = selectedColor && (selectedSize || !hasSizes);
-                                    const isStockAvailable = isVariantSelected && info.variantStock 
-                                        ? isCurrentVariantInStock 
-                                        : product.inStock;
+                                <button
+                                    onClick={async () => {
+                                        if (isInCart) {
+                                            navigate('/cart');
+                                            return;
+                                        }
 
-                                    return (
-                                     <>
-                                        <button
-                                            onClick={async () => {
-                                                if (isInCart) {
-                                                    navigate('/cart');
-                                                    return;
-                                                }
-
-                                                if (!validateSelection()) return;
-                                                
-                                                // If no sizes, we pass null as size (or maybe implicit Standard?)
-                                                // Pass selectedSize which is null if !hasSizes
-                                                const success = await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice });
-                                                if (success) addToast(`Added ${product.name} to bag`, 'success');
-                                            }}
-                                            disabled={!isStockAvailable}
-                                            className={`flex-1 py-4 px-8 rounded-full font-bold uppercase tracking-widest text-xs lg:text-sm transition-all duration-300 flex items-center justify-center gap-3 ${
-                                                isStockAvailable
-                                                ? isInCart 
-                                                    ? 'bg-emerald-800 text-white hover:bg-emerald-900 shadow-lg shadow-emerald-900/10' 
-                                                    : 'bg-stone-900 text-white hover:bg-stone-800 shadow-xl shadow-stone-900/10 hover:-translate-y-0.5'
-                                                : 'bg-stone-200 text-stone-400 cursor-not-allowed'
-                                            }`}
-                                        >
-                                            <ShoppingBag className="w-4 h-4" />
-                                            {isStockAvailable ? (isInCart ? 'Go to Bag' : 'Add to Bag') : 'Sold Out'}
-                                        </button>
+                                        if (!validateSelection()) return;
                                         
-                                        <button 
-                                            onClick={async () => {
-                                                 if(isStockAvailable) {
-                                                    if (!validateSelection()) return;
-                                                    await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice });
-                                                    navigate('/cart');
-                                                 }
-                                            }}
-                                            disabled={!isStockAvailable}
-                                            className="px-8 py-4 rounded-full border border-stone-200 font-bold uppercase tracking-widest text-xs lg:text-sm hover:border-stone-900 hover:text-stone-900 transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-white"
-                                        >
-                                            Buy Now
-                                        </button>
-                                     </>
-                                    );
-                                })()}
+                                        const success = await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice });
+                                        if (success) addToast(`Added ${product.name} to bag`, 'success');
+                                    }}
+                                    disabled={!isStockAvailable}
+                                    className={`flex-1 py-4 px-8 rounded-full font-bold uppercase tracking-widest text-xs lg:text-sm transition-all duration-300 flex items-center justify-center gap-3 ${
+                                        isStockAvailable
+                                        ? isInCart 
+                                            ? 'bg-emerald-800 text-white hover:bg-emerald-900 shadow-lg shadow-emerald-900/10' 
+                                            : 'bg-stone-900 text-white hover:bg-stone-800 shadow-xl shadow-stone-900/10 hover:-translate-y-0.5'
+                                        : 'bg-stone-200 text-stone-400 cursor-not-allowed'
+                                    }`}
+                                >
+                                    <ShoppingBag className="w-4 h-4" />
+                                    {isStockAvailable ? (isInCart ? 'Go to Bag' : 'Add to Bag') : 'Sold Out'}
+                                </button>
+                                
+                                <button 
+                                    onClick={async () => {
+                                            if(isStockAvailable) {
+                                            if (!validateSelection()) return;
+                                            await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice });
+                                            navigate('/cart');
+                                            }
+                                    }}
+                                    disabled={!isStockAvailable}
+                                    className="px-8 py-4 rounded-full border border-stone-900 font-bold uppercase tracking-widest text-xs lg:text-sm text-stone-900 hover:bg-stone-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-white"
+                                >
+                                    Buy Now
+                                </button>
                             </div>
                         </div>
 
@@ -646,24 +640,60 @@ const ProductDetails = () => {
 
                 {/* Related Products Section */}
                 {relatedProducts.length > 0 && (
-                    <div className="border-t border-stone-200 pt-20">
+                    <div className="border-t border-stone-200 pt-16 pb-24">
                         <div className="text-center mb-12">
                             <h2 className="text-3xl lg:text-4xl font-heading font-medium text-stone-900 mb-4">You May Also Admire</h2>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-                            {relatedProducts.map(p => (
-                                <Link key={p.id} to={`/product/${p.id}`} className="group block">
-                                    <div className="aspect-[3/4] overflow-hidden bg-stone-100 rounded-lg mb-4">
-                                        <img 
-                                            src={p.image} 
-                                            alt={p.name} 
-                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
-                                        />
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8 lg:gap-8">
+                            {relatedProducts.map(p => {
+                                const discount = p.originalPrice ? Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100) : 0;
+                                return (
+                                    <div key={p.id} className="group relative">
+                                        <div className="aspect-[4/5] overflow-hidden bg-stone-100 rounded-2xl mb-3 relative">
+                                            <Link to={`/product/${p.id}`}>
+                                                <img 
+                                                    src={p.image} 
+                                                    alt={p.name} 
+                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                                                />
+                                            </Link>
+                                            
+                                            {/* Discount Badge */}
+                                            {discount > 0 && (
+                                                <div className="absolute top-3 left-3 bg-rose-900 text-white text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wide">
+                                                    {discount}% OFF
+                                                </div>
+                                            )}
+
+                                            {/* Wishlist Button */}
+                                            <button 
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    toggleWishlist(p);
+                                                }}
+                                                className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center bg-white rounded-full shadow-sm hover:scale-110 active:scale-95 transition-all"
+                                            >
+                                                <Heart className={`w-4 h-4 ${isInWishlist(p.id) ? 'fill-rose-600 text-rose-600' : 'text-stone-400'}`} />
+                                            </button>
+                                        </div>
+
+                                        <Link to={`/product/${p.id}`} className="block space-y-1">
+                                            <h3 className="font-heading font-bold text-sm lg:text-base text-stone-900 truncate pr-2 group-hover:text-rose-900 transition-colors">
+                                                {p.name}
+                                            </h3>
+                                            <div className="flex items-center flex-wrap gap-2 text-sm">
+                                                <span className="font-bold text-stone-900">₹{p.price.toLocaleString()}</span>
+                                                {p.originalPrice && (
+                                                    <>
+                                                        <span className="text-stone-400 line-through text-xs">₹{p.originalPrice.toLocaleString()}</span>
+                                                        <span className="text-[10px] font-bold text-rose-700">({discount}% OFF)</span>
+                                                    </>
+                                                )}
+                                            </div>
+                                        </Link>
                                     </div>
-                                    <h3 className="text-center font-heading text-lg text-stone-900 group-hover:text-rose-900 transition-colors">{p.name}</h3>
-                                    <p className="text-center text-stone-500 mt-1">₹{p.price.toLocaleString()}</p>
-                                </Link>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
                 )}
@@ -682,6 +712,47 @@ const ProductDetails = () => {
                     </div>
                 </div>
             )}
+            {/* Mobile Sticky Action Bar */}
+            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200 p-4 shadow-[0_-4px_10px_rgba(0,0,0,0.1)] lg:hidden z-50 flex gap-3 px-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+                <button
+                    onClick={async () => {
+                        if (isInCart) {
+                            navigate('/cart');
+                            return;
+                        }
+
+                        if (!validateSelection()) return;
+                        
+                        const success = await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice });
+                        if (success) addToast(`Added ${product.name} to bag`, 'success');
+                    }}
+                    disabled={!isStockAvailable}
+                    className={`flex-1 py-3 rounded-xl font-bold uppercase tracking-widest text-xs transition-all flex items-center justify-center gap-2 ${
+                        isStockAvailable
+                        ? isInCart 
+                            ? 'bg-emerald-800 text-white hover:bg-emerald-900 shadow-lg' 
+                            : 'bg-stone-900 text-white hover:bg-stone-800 shadow-xl'
+                        : 'bg-stone-200 text-stone-400 cursor-not-allowed'
+                    }`}
+                >
+                    <ShoppingBag className="w-4 h-4" />
+                    {isStockAvailable ? (isInCart ? 'Go to Bag' : 'Add to Bag') : 'Sold Out'}
+                </button>
+                
+                <button 
+                    onClick={async () => {
+                            if(isStockAvailable) {
+                            if (!validateSelection()) return;
+                            await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice });
+                            navigate('/cart');
+                            }
+                    }}
+                    disabled={!isStockAvailable}
+                    className="flex-1 py-3 rounded-xl border border-stone-900 font-bold uppercase tracking-widest text-xs text-stone-900 hover:bg-stone-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-white"
+                >
+                    Buy Now
+                </button>
+            </div>
         </div>
     );
 };

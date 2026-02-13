@@ -22,7 +22,11 @@ const ConditionalLayout = ({ children }) => {
   return (
     <>
       {children}
-      {!isDistractionFree && <Footer />}
+      {!isDistractionFree && (
+        <div className={(location.pathname === '/cart' || location.pathname.startsWith('/product/')) ? 'hidden md:block' : ''}>
+          <Footer />
+        </div>
+      )}
       {!isDistractionFree && <BottomNavigation />}
     </>
   );
