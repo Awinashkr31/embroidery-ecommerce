@@ -193,5 +193,30 @@ export const DelhiveryService = {
             
             throw error;
         }
+    },
+
+    /**
+     * Track Shipment
+     * @param {string} waybill 
+     */
+    trackShipment: async (waybill) => {
+        const token = import.meta.env.VITE_DELHIVERY_TOKEN;
+        if (!token) throw new Error("Token missing");
+
+        try {
+            const response = await fetch(`${BASE_URL}/api/v1/packages/json/?waybill=${waybill}&token=${token}`, {
+                method: 'GET'
+            });
+
+            if (!response.ok) throw new Error("Tracking API failed");
+            
+            const data = await response.json();
+            // Parse response to find status
+            // Response format: { Shipments: [ { Status: { Status: 'Delivered', ... }, Scans: [...] } ] }
+            return data;
+        } catch (error) {
+            console.error("Tracking Error:", error);
+            throw error;
+        }
     }
 };

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Package, Clock, CheckCircle, XCircle, Search, Eye, Trash2, Filter, AlertTriangle, ArrowRight, Truck, Download } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
+import { Package, Clock, CheckCircle, XCircle, Search, Eye, Trash2, Filter, AlertTriangle, ArrowRight, Truck, Download, RefreshCw } from 'lucide-react';
 import { supabase } from '../../../config/supabase';
 import ShipmentCreator from '../../components/admin/ShipmentCreator';
+import { generateXpressbeesCSV } from '../../services/xpressbeesCSV';
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
@@ -47,8 +49,11 @@ const Orders = () => {
                 paymentStatus: o.payment_status || 'pending',
                 paymentMethod: o.payment_method || 'cod',
                 paymentId: o.payment_id,
-                waybillId: o.waybill_id, // New Field
-                trackingUrl: o.tracking_url // New Field
+                waybillId: o.waybill_id, 
+                trackingUrl: o.tracking_url,
+                courierName: o.courier_name,
+                expectedDeliveryDate: o.expected_delivery_date,
+                estimatedShippingDate: o.estimated_shipping_date
             };
         });
         setOrders(mappedOrders);
@@ -63,6 +68,26 @@ const Orders = () => {
   useEffect(() => {
     fetchOrders();
   }, []);
+
+  const location = useLocation();
+
+  // Handle Deep Linking from Dashboard
+  useEffect(() => {
+    if (location.state?.orderId && orders.length > 0) {
+        const orderToOpen = orders.find(o => o.id === location.state.orderId);
+        if (orderToOpen) {
+            setSelectedOrder(orderToOpen);
+             // Verify this clears the state so refreshing doesn't keep reopening?
+             // Actually, react-router state persists on refresh, but that might be desired.
+             // If we want to clear it, we'd use history.replace with empty state.
+             // For now, let's keep it simple.
+             
+             // Optional: Clear state to avoid reopening on refresh (requires navigate)
+             // const navigate = useNavigate();
+             // navigate(location.pathname, { replace: true, state: {} });
+        }
+    }
+  }, [orders, location.state]);
 
   const filteredOrders = orders.filter(order => {
     const term = searchTerm.toLowerCase();
@@ -105,24 +130,33 @@ const Orders = () => {
         // ---------------------------------------
 
         // Send Notification to User
-        if (selectedOrder?.customer?.email) {
+        const targetOrder = orders.find(o => o.id === orderId);
+        if (targetOrder?.customer?.email) {
             await supabase.from('notifications').insert([{
-                user_email: selectedOrder.customer.email,
+                user_email: targetOrder.customer.email,
                 title: 'Order Status Updated',
-                message: `Your order #${selectedOrder.id.slice(0,8)} is now ${newStatus}.`,
+                message: `Your order #${orderId.slice(0,8)} is now ${newStatus}.`,
                 type: 'info',
                 is_read: false
             }]);
         }
 
         // Optimistic update
+        // We need to map snake_case db fields to camelCase state fields if they exist in extraData
+        const stateUpdates = { ...extraData, status: dbStatus };
+        if (extraData.courier_name) stateUpdates.courierName = extraData.courier_name;
+        if (extraData.estimated_shipping_date) stateUpdates.estimatedShippingDate = extraData.estimated_shipping_date;
+        if (extraData.expected_delivery_date) stateUpdates.expectedDeliveryDate = extraData.expected_delivery_date;
+        if (extraData.waybill_id) stateUpdates.waybillId = extraData.waybill_id;
+        if (extraData.tracking_url) stateUpdates.trackingUrl = extraData.tracking_url;
+
         const updatedOrders = orders.map(order => 
-          order.id === orderId ? { ...order, status: dbStatus, ...extraData } : order
+          order.id === orderId ? { ...order, ...stateUpdates } : order
         );
         setOrders(updatedOrders);
         
         if (selectedOrder && selectedOrder.id === orderId) {
-          setSelectedOrder(prev => ({ ...prev, status: dbStatus, ...extraData }));
+          setSelectedOrder(prev => ({ ...prev, ...stateUpdates }));
         }
     } catch (err) {
         console.error('Error updating status:', err);
@@ -154,6 +188,52 @@ const Orders = () => {
        // Add all filtered IDs
        const newSelection = [...new Set([...selectedOrders, ...allFilteredIds])];
        setSelectedOrders(newSelection);
+    }
+  };
+
+
+
+  const downloadXpressbeesCSV = async () => {
+    // Get orders that are both in the full list AND selected
+    const ordersToExport = orders.filter(o => selectedOrders.includes(o.id));
+    
+    if (ordersToExport.length === 0) return;
+
+    try {
+        const csvContent = generateXpressbeesCSV(ordersToExport);
+        if (!csvContent) {
+            alert("No valid orders to export.");
+            return;
+        }
+
+        const encodedUri = encodeURI("data:text/csv;charset=utf-8," + csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        
+        // Filename: xpressbees_bulk_orders_YYYYMMDD.csv
+        const dateStr = new Date().toISOString().slice(0,10).replace(/-/g, '');
+        link.setAttribute("download", `xpressbees_bulk_orders_${dateStr}.csv`);
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // 9. POST EXPORT - Mark as Processing / Exported
+        // Update status to 'processing' if pending
+        const updates = ordersToExport.map(async (order) => {
+            if (order.status === 'pending') {
+                await updateOrderStatus(order.id, 'processing', { 
+                    // extra metadata could go here
+                });
+            }
+        });
+        
+        await Promise.all(updates);
+        alert("Export successful! Orders marked as Processing.");
+
+    } catch (error) {
+        console.error("Export failed:", error);
+        alert("Failed to export CSV.");
     }
   };
 
@@ -309,13 +389,22 @@ const Orders = () => {
         </div>
         <div className="flex items-center gap-2">
             {selectedOrders.length > 0 && (
+                <>
+                <button 
+                  onClick={downloadXpressbeesCSV}
+                  className="bg-rose-900 text-white px-4 py-2 rounded-lg text-sm font-bold tracking-wide hover:bg-rose-800 transition-colors shadow-sm flex items-center gap-2 animate-in fade-in zoom-in duration-200"
+                >
+                  <Download className="w-4 h-4" />
+                  XpressBees ({selectedOrders.length})
+                </button>
                 <button 
                   onClick={downloadCSV}
                   className="bg-stone-900 text-white px-4 py-2 rounded-lg text-sm font-bold tracking-wide hover:bg-stone-800 transition-colors shadow-sm flex items-center gap-2 animate-in fade-in zoom-in duration-200"
                 >
                   <Download className="w-4 h-4" />
-                  Download CSV ({selectedOrders.length})
+                  Delhivery ({selectedOrders.length})
                 </button>
+                </>
             )}
             <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-stone-200 shadow-sm text-sm font-medium text-stone-600">
                  <span className={`w-2 h-2 rounded-full ${loading ? 'bg-amber-500' : 'bg-emerald-500'} animate-pulse`}></span>
@@ -430,7 +519,7 @@ const Orders = () => {
                     <td className="px-6 py-4 text-right">
                       <button 
                         onClick={() => setSelectedOrder(order)}
-                        className="p-2 text-rose-900 hover:bg-rose-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                        className="p-2 text-rose-900 hover:bg-rose-50 rounded-lg transition-colors"
                       >
                          <Eye className="w-4 h-4" />
                       </button>
@@ -493,7 +582,7 @@ const Orders = () => {
                                 <label className="text-[10px] font-bold text-stone-400 uppercase block mb-1">Est. Shipping Date</label>
                                 <input 
                                     type="date" 
-                                    value={selectedOrder.estimated_shipping_date ? new Date(selectedOrder.estimated_shipping_date).toISOString().split('T')[0] : ''}
+                                    value={selectedOrder.estimatedShippingDate ? new Date(selectedOrder.estimatedShippingDate).toISOString().split('T')[0] : ''}
                                     onChange={(e) => updateOrderStatus(selectedOrder.id, selectedOrder.status, { estimated_shipping_date: e.target.value })}
                                     className="w-full px-3 py-2 rounded-lg border border-stone-200 text-sm font-medium focus:ring-2 focus:ring-rose-900/10"
                                 />
@@ -502,7 +591,7 @@ const Orders = () => {
                                 <label className="text-[10px] font-bold text-stone-400 uppercase block mb-1">Expected Delivery</label>
                                 <input 
                                     type="date" 
-                                    value={selectedOrder.expected_delivery_date ? new Date(selectedOrder.expected_delivery_date).toISOString().split('T')[0] : ''}
+                                    value={selectedOrder.expectedDeliveryDate ? new Date(selectedOrder.expectedDeliveryDate).toISOString().split('T')[0] : ''}
                                     onChange={(e) => updateOrderStatus(selectedOrder.id, selectedOrder.status, { expected_delivery_date: e.target.value })}
                                     className="w-full px-3 py-2 rounded-lg border border-stone-200 text-sm font-medium focus:ring-2 focus:ring-rose-900/10"
                                 />
@@ -511,7 +600,7 @@ const Orders = () => {
                                 <label className="text-[10px] font-bold text-stone-400 uppercase block mb-1">Courier Partner</label>
                                 <input 
                                     type="text" 
-                                    value={selectedOrder.courier_name || ''}
+                                    value={selectedOrder.courierName || ''}
                                     placeholder="e.g. Xpressbees"
                                     onChange={(e) => updateOrderStatus(selectedOrder.id, selectedOrder.status, { courier_name: e.target.value })}
                                     className="w-full px-3 py-2 rounded-lg border border-stone-200 text-sm font-medium focus:ring-2 focus:ring-rose-900/10"
@@ -521,18 +610,91 @@ const Orders = () => {
                     </div>
                 </div>
 
+                {/* Tracking Sync Button */}
+                {selectedOrder.waybillId && (selectedOrder.courierName === 'Delhivery' || selectedOrder.courierName === 'Xpressbees') && (
+                    <div className="flex justify-end mt-4">
+                        <button
+                            onClick={async () => {
+                                if (!confirm('Fetch latest status from courier?')) return;
+                                try {
+                                    const { DelhiveryService } = await import('../../services/delhivery');
+                                    const { XpressbeesService } = await import('../../services/xpressbees');
+                                    
+                                    let data;
+                                    const courier = selectedOrder.courierName;
+                                    
+                                    if (courier === 'Delhivery') {
+                                        data = await DelhiveryService.trackShipment(selectedOrder.waybillId);
+                                        // Process Delhivery Data
+                                        // data.Shipments[0].Status.Status -> 'Delivered', 'In Transit'
+                                        if (data?.Shipments?.[0]?.Status?.Status) {
+                                            const newStatus = data.Shipments[0].Status.Status;
+                                            // Map to our status
+                                            let mapped = 'shipped';
+                                            if (newStatus === 'Delivered') mapped = 'delivered';
+                                            else if (newStatus === 'Manifested') mapped = 'processing';
+                                            
+                                            if (mapped !== selectedOrder.status) {
+                                                await updateOrderStatus(selectedOrder.id, mapped);
+                                                alert(`Status updated to: ${newStatus}`);
+                                            } else {
+                                                alert(`Status is already up to date: ${newStatus}`);
+                                            }
+                                        } else {
+                                            alert('No tracking info found or invalid response.');
+                                        }
+                                    } else if (courier === 'Xpressbees') {
+                                        data = await XpressbeesService.trackShipment(selectedOrder.waybillId);
+                                        // Process XB Data (Check Actual Response Structure)
+                                        const status = data?.data?.status || data?.status; // Example
+                                            if (status) {
+                                            let mapped = 'shipped';
+                                            if (status.toLowerCase().includes('delivered')) mapped = 'delivered';
+                                            
+                                            if (mapped !== selectedOrder.status) {
+                                                await updateOrderStatus(selectedOrder.id, mapped);
+                                                alert(`Status updated to: ${status}`);
+                                            } else {
+                                                alert(`Status is already up to date: ${status}`);
+                                            }
+                                        } else {
+                                             alert('No tracking info found or invalid response.');
+                                        }
+                                    }
+                                } catch (err) {
+                                    console.error(err);
+                                    alert('Failed to sync: ' + err.message);
+                                }
+                            }}
+                            className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1"
+                        >
+                            <RefreshCw className="w-3 h-3" /> Sync Status
+                        </button>
+                    </div>
+                )}
+
                  {/* Shipment Creator (Only show if not shipped/no waybill, or keep as alternative?) 
                      Actually, if we have manual overrides above, this might be redundant if the user just wants to type. 
                      But this is useful for API integration. Let's keep it but maybe collapse it if valid data exists?
                  */}
-                 {!selectedOrder.waybill_id && (
+                 {!selectedOrder.waybillId && (
                     <ShipmentCreator selectedOrder={selectedOrder} onShipmentCreated={(details) => {
-                        // Optimistic Update
+                        // Optimistic Update with Key Mapping (snake_case db -> camelCase state)
+                        const mappedDetails = {
+                            status: 'shipped',
+                            waybillId: details.waybill_id,
+                            trackingUrl: details.tracking_url,
+                            courierName: details.courier_name,
+                            estimatedShippingDate: details.estimated_shipping_date, // if returned
+                            // spread rest just in case
+                            ...details 
+                        };
+
                         const updatedOrders = orders.map(o => 
-                            o.id === selectedOrder.id ? { ...o, ...details, status: 'shipped' } : o
+                            o.id === selectedOrder.id ? { ...o, ...mappedDetails } : o
                         );
                         setOrders(updatedOrders);
-                        setSelectedOrder(prev => ({ ...prev, ...details, status: 'shipped' }));
+                        setSelectedOrder(prev => ({ ...prev, ...mappedDetails }));
                     }} />
                  )}
 

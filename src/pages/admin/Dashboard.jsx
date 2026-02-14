@@ -277,7 +277,12 @@ const Dashboard = () => {
             <div className="bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden">
                 <div className="p-6 border-b border-stone-100 flex justify-between items-center">
                     <h2 className="text-lg font-bold text-stone-900">Recent Orders</h2>
-                    <Link to="/admin/orders" className="text-sm font-bold text-rose-900 hover:text-rose-700 hover:underline">View All Orders</Link>
+                    <Link 
+                        to="/sadmin/orders" 
+                        className="px-4 py-2 bg-stone-900 text-white text-sm font-bold rounded-lg hover:bg-stone-700 transition-colors"
+                    >
+                        View All Orders
+                    </Link>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
@@ -288,6 +293,7 @@ const Dashboard = () => {
                                 <th className="px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider">Date</th>
                                 <th className="px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider">Amount</th>
                                 <th className="px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider">Status</th>
+                                <th className="px-6 py-4 text-xs font-bold text-stone-500 uppercase tracking-wider text-right">View</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-stone-100">
@@ -298,7 +304,8 @@ const Dashboard = () => {
                                             {order.id.slice(0, 8)}...
                                         </td>
                                         <td className="px-6 py-4 text-sm text-stone-600">
-                                            {order.customer_name}
+                                            {/* Handle name robustly if it's split or joined */}
+                                            {order.customer_name || `${order.customer?.firstName || ''} ${order.customer?.lastName || ''}`}
                                         </td>
                                         <td className="px-6 py-4 text-sm text-stone-600">
                                             {new Date(order.created_at).toLocaleDateString()}
@@ -310,16 +317,25 @@ const Dashboard = () => {
                                             <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${
                                                 order.status === 'completed' || order.status === 'delivered' ? 'bg-green-100 text-green-700' :
                                                 order.status === 'pending' ? 'bg-amber-100 text-amber-700' :
-                                                'bg-red-100 text-red-700'
+                                                'bg-stone-100 text-stone-700'
                                             }`}>
                                                 {order.status}
                                             </span>
+                                        </td>
+                                        <td className="px-6 py-4 text-right">
+                                            <Link 
+                                                to="/sadmin/orders" 
+                                                state={{ orderId: order.id }}
+                                                className="inline-block p-2 text-rose-900 hover:bg-rose-50 rounded-lg transition-colors"
+                                            >
+                                                <ArrowUpRight className="w-4 h-4" />
+                                            </Link>
                                         </td>
                                     </tr>
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan="5" className="px-6 py-8 text-center text-stone-500">No orders yet</td>
+                                    <td colSpan="6" className="px-6 py-8 text-center text-stone-500">No orders yet</td>
                                 </tr>
                             )}
                         </tbody>

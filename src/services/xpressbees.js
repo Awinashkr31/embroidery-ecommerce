@@ -143,5 +143,31 @@ export const XpressbeesService = {
             
             throw error;
         }
+    },
+
+    /**
+     * Track Shipment
+     * @param {string} waybill 
+     */
+    trackShipment: async (waybill) => {
+        const token = import.meta.env.VITE_XPRESSBEES_TOKEN;
+        if (!token) throw new Error("Token missing");
+
+        try {
+            const response = await fetch(`${BASE_URL}/shipments/track/${waybill}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!response.ok) throw new Error("Tracking API failed");
+
+            const data = await response.json();
+            return data;
+        } catch (error) {
+            console.error("Tracking Error:", error);
+            throw error;
+        }
     }
 };

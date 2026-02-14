@@ -72,6 +72,30 @@ const Checkout = () => {
         }
     };
 
+    // Set default address if available
+    React.useEffect(() => {
+        if (savedAddresses.length > 0 && selectedAddressId === 'new') {
+            const defaultAddr = savedAddresses.find(addr => addr.userId === currentUser?.id);
+            if (defaultAddr) {
+                // We can't call handleAddressSelect directly if it's not defined yet, 
+                // but here we are redefining it above.
+                // However, userAddresses is defined above.
+                // Let's just set state directly to avoid dependency issues or moving large blocks.
+                 setSelectedAddressId(defaultAddr.id);
+                 setFormData(prev => ({
+                    ...prev,
+                    fullName: `${defaultAddr.firstName} ${defaultAddr.lastName}`,
+                    phone: defaultAddr.phone,
+                    address: defaultAddr.address,
+                    city: defaultAddr.city,
+                    state: defaultAddr.state,
+                    zipCode: defaultAddr.zipCode
+                }));
+            }
+        }
+    }, [savedAddresses, currentUser, selectedAddressId]);
+
+
     const handleZipChange = async (e) => {
         const zip = e.target.value.replace(/\D/g, '').slice(0, 6); // Allow only numbers, max 6 digits
         setFormData({ ...formData, zipCode: zip });
@@ -295,18 +319,20 @@ const Checkout = () => {
         }
     };
 
+
+
     return (
-        <div className="min-h-screen bg-[#fdfbf7] font-body pt-32 pb-24">
+        <div className="min-h-screen bg-[#fdfbf7] font-body pt-24 md:pt-32 pb-12 md:pb-24">
             <div className="container-custom">
-                <Link to="/cart" className="inline-flex items-center text-stone-500 hover:text-rose-900 mb-8 transition-colors text-sm font-bold uppercase tracking-wide">
+                <Link to="/cart" className="hidden md:inline-flex items-center text-stone-500 hover:text-rose-900 mb-8 transition-colors text-sm font-bold uppercase tracking-wide">
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     Back to Cart
                 </Link>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-20">
                     {/* Checkout Form */}
-                    <div className="bg-white p-8 lg:p-10 rounded-2xl shadow-sm border border-stone-100">
-                        <h2 className="text-2xl font-heading font-bold text-stone-900 mb-8 flex items-center gap-3">
+                    <div className="bg-white p-6 lg:p-10 rounded-2xl shadow-sm border border-stone-100">
+                        <h2 className="text-xl md:text-2xl font-heading font-bold text-stone-900 mb-6 md:mb-8 flex items-center gap-3">
                             <div className="bg-rose-50 p-2 rounded-lg">
                                 <Truck className="text-rose-900 w-6 h-6" />
                             </div>
@@ -315,7 +341,7 @@ const Checkout = () => {
 
                         {/* Saved Addresses Selection */}
                         {currentUser && userAddresses.length > 0 && (
-                            <div className="mb-8 p-6 bg-stone-50/50 rounded-xl border border-stone-100">
+                            <div className="mb-8 p-4 md:p-6 bg-stone-50/50 rounded-xl border border-stone-100">
                                 <h3 className="font-bold text-stone-800 mb-4 flex items-center text-sm uppercase tracking-wider">
                                     <MapPin className="w-4 h-4 mr-2 text-rose-900" />
                                     Select Saved Address
@@ -351,99 +377,103 @@ const Checkout = () => {
                         )}
                         
                         <form onSubmit={handleSubmit} className="space-y-6">
-                            <div>
-                                <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Full Name</label>
-                                <input
-                                    type="text"
-                                    name="fullName"
-                                    required
-                                    value={formData.fullName}
-                                    onChange={handleChange}
-                                    className="w-full px-4 py-3 border-2 border-stone-100 rounded-xl focus:border-rose-900 focus:bg-white bg-stone-50 outline-none transition-all font-medium text-stone-900"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Phone</label>
-                                <input
-                                    type="tel"
-                                    name="phone"
-                                    required
-                                    value={formData.phone}
-                                    onChange={handleChange}
-                                    className="w-full px-4 py-3 border-2 border-stone-100 rounded-xl focus:border-rose-900 focus:bg-white bg-stone-50 outline-none transition-all font-medium text-stone-900"
-                                />
-                            </div>
-
-                            <div>
-                                <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Address</label>
-                                <textarea
-                                    name="address"
-                                    required
-                                    rows="2"
-                                    value={formData.address}
-                                    onChange={handleChange}
-                                    className="w-full px-4 py-3 border-2 border-stone-100 rounded-xl focus:border-rose-900 focus:bg-white bg-stone-50 outline-none transition-all font-medium text-stone-900 resize-none"
-                                ></textarea>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="col-span-2">
-                                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Pincode (Zip)</label>
-                                    <div className="relative">
+                            {selectedAddressId === 'new' && (
+                                <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-500">
+                                    <div>
+                                        <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Full Name</label>
                                         <input
                                             type="text"
-                                            name="zipCode"
+                                            name="fullName"
                                             required
-                                            maxLength="6"
-                                            value={formData.zipCode}
-                                            onChange={handleZipChange}
+                                            value={formData.fullName}
+                                            onChange={handleChange}
                                             className="w-full px-4 py-3 border-2 border-stone-100 rounded-xl focus:border-rose-900 focus:bg-white bg-stone-50 outline-none transition-all font-medium text-stone-900"
                                         />
-                                        {isZipLoading && (
-                                            <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                                                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-rose-900"></div>
-                                            </div>
-                                        )}
                                     </div>
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">City</label>
-                                    <input
-                                        type="text"
-                                        name="city"
-                                        required
-                                        readOnly
-                                        value={formData.city}
-                                        className="w-full px-4 py-3 border-2 border-stone-100 rounded-xl bg-stone-100 text-stone-600 outline-none cursor-not-allowed font-medium"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">State</label>
-                                    <input
-                                        type="text"
-                                        name="state"
-                                        required
-                                        readOnly
-                                        value={formData.state}
-                                        className="w-full px-4 py-3 border-2 border-stone-100 rounded-xl bg-stone-100 text-stone-600 outline-none cursor-not-allowed font-medium"
-                                    />
-                                </div>
-                            </div>
 
-                            {/* Save Address Checkbox */}
-                            {currentUser && selectedAddressId === 'new' && (
-                                <div className="flex items-center p-4 bg-stone-50 rounded-lg">
-                                    <input
-                                        id="save-address"
-                                        type="checkbox"
-                                        checked={shouldSaveAddress}
-                                        onChange={(e) => setShouldSaveAddress(e.target.checked)}
-                                        className="h-5 w-5 text-rose-900 focus:ring-rose-900 border-stone-300 rounded"
-                                    />
-                                    <label htmlFor="save-address" className="ml-3 text-sm font-medium text-stone-700 cursor-pointer select-none">
-                                        Save this address for future reference
-                                    </label>
+                                    <div>
+                                        <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Phone</label>
+                                        <input
+                                            type="tel"
+                                            name="phone"
+                                            required
+                                            value={formData.phone}
+                                            onChange={handleChange}
+                                            className="w-full px-4 py-3 border-2 border-stone-100 rounded-xl focus:border-rose-900 focus:bg-white bg-stone-50 outline-none transition-all font-medium text-stone-900"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Address</label>
+                                        <textarea
+                                            name="address"
+                                            required
+                                            rows="2"
+                                            value={formData.address}
+                                            onChange={handleChange}
+                                            className="w-full px-4 py-3 border-2 border-stone-100 rounded-xl focus:border-rose-900 focus:bg-white bg-stone-50 outline-none transition-all font-medium text-stone-900 resize-none"
+                                        ></textarea>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="col-span-2">
+                                            <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Pincode (Zip)</label>
+                                            <div className="relative">
+                                                <input
+                                                    type="text"
+                                                    name="zipCode"
+                                                    required
+                                                    maxLength="6"
+                                                    value={formData.zipCode}
+                                                    onChange={handleZipChange}
+                                                    className="w-full px-4 py-3 border-2 border-stone-100 rounded-xl focus:border-rose-900 focus:bg-white bg-stone-50 outline-none transition-all font-medium text-stone-900"
+                                                />
+                                                {isZipLoading && (
+                                                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-rose-900"></div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">City</label>
+                                            <input
+                                                type="text"
+                                                name="city"
+                                                required
+                                                readOnly
+                                                value={formData.city}
+                                                className="w-full px-4 py-3 border-2 border-stone-100 rounded-xl bg-stone-100 text-stone-600 outline-none cursor-not-allowed font-medium"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">State</label>
+                                            <input
+                                                type="text"
+                                                name="state"
+                                                required
+                                                readOnly
+                                                value={formData.state}
+                                                className="w-full px-4 py-3 border-2 border-stone-100 rounded-xl bg-stone-100 text-stone-600 outline-none cursor-not-allowed font-medium"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Save Address Checkbox */}
+                                    {currentUser && (
+                                        <div className="flex items-center p-4 bg-stone-50 rounded-lg">
+                                            <input
+                                                id="save-address"
+                                                type="checkbox"
+                                                checked={shouldSaveAddress}
+                                                onChange={(e) => setShouldSaveAddress(e.target.checked)}
+                                                className="h-5 w-5 text-rose-900 focus:ring-rose-900 border-stone-300 rounded"
+                                            />
+                                            <label htmlFor="save-address" className="ml-3 text-sm font-medium text-stone-700 cursor-pointer select-none">
+                                                Save this address for future reference
+                                            </label>
+                                        </div>
+                                    )}
                                 </div>
                             )}
 

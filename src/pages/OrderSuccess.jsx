@@ -46,9 +46,21 @@ const OrderSuccess = () => {
     }, [orderId, navigate]);
 
     if (!orderId) {
+        console.error("OrderSuccess: Missing Order ID in state", { locationState: location.state });
         return (
-            <div className="min-h-screen flex items-center justify-center bg-[#fdfbf7]">
-                <p className="text-stone-500">Redirecting to shop...</p>
+            <div className="min-h-screen flex flex-col items-center justify-center bg-[#fdfbf7] p-4 text-center">
+                <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mb-4">
+                    <Loader className="w-8 h-8 text-amber-600" />
+                </div>
+                <h1 className="text-xl font-bold text-stone-900 mb-2">Order Processing</h1>
+                <p className="text-stone-600 mb-6 max-w-md">
+                    We've received your order, but are waiting for the details to load. 
+                    <br/>If this takes too long, please check your profile.
+                </p>
+                <div className="flex gap-4 justify-center">
+                    <Link to="/profile" className="px-6 py-2 bg-stone-900 text-white rounded-lg font-bold text-sm">View My Orders</Link>
+                    <Link to="/shop" className="px-6 py-2 border border-stone-200 text-stone-700 rounded-lg font-bold text-sm">Continue Shopping</Link>
+                </div>
             </div>
         );
     }
@@ -71,7 +83,7 @@ const OrderSuccess = () => {
                     <h1 className="text-2xl font-bold text-stone-900 mb-2">Order Confirmed!</h1>
                     <p className="text-stone-600 mb-6">Your order ID is <span className="font-mono font-bold">{orderId}</span>.</p>
                     <p className="text-sm text-stone-500 mb-8">We couldn't load the details right now, but your order has been placed successfully.</p>
-                    <Link to="/profile" className="btn-primary">View My Orders</Link>
+                    <Link to="/profile" className="px-6 py-3 bg-stone-900 text-white rounded-xl font-bold uppercase tracking-wider text-sm hover:bg-stone-800 transition">View My Orders</Link>
                 </div>
             </div>
         );
@@ -155,23 +167,33 @@ const OrderSuccess = () => {
                         <h2 className="text-lg font-heading font-bold text-stone-900 mb-6">Items Ordered</h2>
                         
                         <div className="space-y-4 mb-6 max-h-80 overflow-y-auto custom-scrollbar pr-2">
-                            {order.items && order.items.map((item, idx) => (
-                                <div key={idx} className="flex gap-4 py-2 border-b border-stone-50 last:border-0">
-                                    <div className="w-16 h-16 rounded-lg bg-stone-100 overflow-hidden shrink-0">
-                                        <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                                    </div>
-                                    <div className="flex-1 min-w-0">
-                                        <h4 className="font-bold text-stone-800 text-sm truncate">{item.name}</h4>
-                                        <div className="text-xs text-stone-500 mt-1">
-                                            {item.selectedSize && <span className="mr-2">Size: {item.selectedSize}</span>}
-                                            <span>Qty: {item.quantity}</span>
+                            {Array.isArray(order.items) && order.items.length > 0 ? (
+                                order.items.map((item, idx) => (
+                                    <div key={idx} className="flex gap-4 py-2 border-b border-stone-50 last:border-0">
+                                        <div className="w-16 h-16 rounded-lg bg-stone-100 overflow-hidden shrink-0">
+                                            {item.image ? (
+                                                <img src={item.image} alt={item.name || 'Product'} className="w-full h-full object-cover" />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center bg-stone-200">
+                                                    <Package className="w-6 h-6 text-stone-400" />
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <h4 className="font-bold text-stone-800 text-sm truncate">{item.name || 'Unknown Item'}</h4>
+                                            <div className="text-xs text-stone-500 mt-1">
+                                                {item.selectedSize && <span className="mr-2">Size: {item.selectedSize}</span>}
+                                                <span>Qty: {item.quantity || 1}</span>
+                                            </div>
+                                        </div>
+                                        <div className="text-right">
+                                            <p className="font-bold text-stone-900 text-sm">₹{((item.price || 0) * (item.quantity || 1)).toLocaleString()}</p>
                                         </div>
                                     </div>
-                                    <div className="text-right">
-                                        <p className="font-bold text-stone-900 text-sm">₹{(item.price * item.quantity).toLocaleString()}</p>
-                                    </div>
-                                </div>
-                            ))}
+                                ))
+                            ) : (
+                                <p className="text-sm text-stone-500 italic">No items details available.</p>
+                            )}
                         </div>
 
                         <div className="space-y-2 pt-4 border-t border-stone-100">
