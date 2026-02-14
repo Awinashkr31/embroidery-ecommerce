@@ -18,7 +18,8 @@ export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState(() => {
     try {
       const localCart = localStorage.getItem('cart');
-      return localCart ? JSON.parse(localCart) : [];
+      const parsed = localCart ? JSON.parse(localCart) : [];
+      return Array.isArray(parsed) ? parsed : [];
     } catch (error) {
       console.error('Error parsing cart from localStorage:', error);
       return [];
@@ -41,10 +42,13 @@ export const CartProvider = ({ children }) => {
 
             // Check for local items to merge
             const localCartStr = localStorage.getItem('cart');
+            let failedItems = [];
+
             if (localCartStr) {
                 const localCart = JSON.parse(localCartStr);
                 if (localCart.length > 0) {
                     console.log("Merging local cart items...", localCart.length);
+                    
                     // Merge logic: Add local items to Supabase
                     for (const item of localCart) {
                         try {
@@ -70,10 +74,8 @@ export const CartProvider = ({ children }) => {
                              const { data: existing, error: fetchError } = await query.maybeSingle();
 
                              if (fetchError) {
-                                console.error("Error checking check existing item:", fetchError);
-                                // If error checking, maybe better to skip this item or try insert anyway?
-                                // Trying insert might duplicate if consistency read failed.
-                                // But let's log and try to proceed if it's just a 'not found' (which maybeSingle handles)
+                                console.error("Error checking existing item:", fetchError);
+                                throw fetchError;
                              }
 
                              if (existing) {
@@ -83,7 +85,7 @@ export const CartProvider = ({ children }) => {
                                     .update({ quantity: existing.quantity + item.quantity })
                                     .eq('id', existing.id);
                                  
-                                 if (updateError) console.error("Error updating item:", updateError);
+                                 if (updateError) throw updateError;
 
                              } else {
                                 console.log(`Inserting new item ${item.id}`);
@@ -97,14 +99,18 @@ export const CartProvider = ({ children }) => {
                                         selected_color: item.selectedColor || null
                                     });
 
-                                 if (insertError) console.error("Error inserting item:", insertError);
+                                 if (insertError) throw insertError;
                              }
                         } catch (err) {
                             console.error(`Failed to merge item ${item.id}`, err);
+                            failedItems.push(item);
                         }
                     }
-                    // Clear local cart after merging
-                    localStorage.removeItem('cart');
+                    
+                    // Update local storage: connect only failed items
+                    if (failedItems.length > 0) {
+                        console.warn("Some items failed to sync to DB.", failedItems.length);
+                    }
                 }
             }
 
@@ -117,11 +123,9 @@ export const CartProvider = ({ children }) => {
 
             console.log("Remote cart fetched:", data?.length);
 
-            if (data && mounted) {
-                // Merge remote cart items. 
-                // Note: The structure from DB join is slightly different (product details in 'products').
-                // We need to flatten it to match existing app structure { ...product, quantity }.
-                const mappedCart = data.map(item => {
+            if (mounted) {
+                // 1. Process Remote Items
+                const mappedCart = (data || []).map(item => {
                     const p = item.products;
                     
                     // Safety check: if product was deleted or FK broken
@@ -154,10 +158,32 @@ export const CartProvider = ({ children }) => {
                     };
                 }).filter(Boolean); // Filter out nulls
                 
-                setCart(mappedCart);
+                // 2. Merge with Failed Items (Deduplicate if necessary, though failed items shouldn't be in DB)
+                // We prefer DB items, but if an item failed to sync, it's NOT in DB, so we add it.
+                // However, check for ID overlap just in case.
+                
+                const finalCart = [...mappedCart];
+                failedItems.forEach(localItem => {
+                    const exists = finalCart.find(r => 
+                        r.id === localItem.id && 
+                        r.selectedSize === localItem.selectedSize && 
+                        r.selectedColor === localItem.selectedColor
+                    );
+                    if (!exists) {
+                        finalCart.push(localItem);
+                    }
+                });
+
+                if (failedItems.length > 0 && data?.length === 0) {
+                     addToast("Sync issue: Showing local cart items.", "info");
+                }
+
+                setCart(Array.isArray(finalCart) ? finalCart : []);
             }
         } catch (error) {
             console.error('Error fetching remote cart:', error);
+            // On critical error, fallback to local cart if meaningful? 
+            // Current logic already handles mixed state via failedItems if merge ran.
         } finally {
             if (mounted) setIsFetchingCart(false);
         }
@@ -179,14 +205,14 @@ export const CartProvider = ({ children }) => {
 
 
     return () => { mounted = false; };
-  }, [currentUser, loading]);
+  }, [currentUser, loading, addToast]);
 
-  // Sync to local storage only if guest AND not loading
+  // Sync to local storage whenever cart changes (Persistence Layer)
   useEffect(() => {
-    if (!loading && !currentUser) {
-        localStorage.setItem('cart', JSON.stringify(cart));
-    }
-  }, [cart, currentUser, loading]);
+    // We always persist the cart to local storage as a backup/cache
+    // This handles both guest users and logged-in users (offline support)
+    localStorage.setItem('cart', JSON.stringify(cart));
+  }, [cart]);
 
   const addToCart = async (product) => {
     // Normalize properties to ensure consistency (Wishlist items might have undefined)
@@ -204,9 +230,9 @@ export const CartProvider = ({ children }) => {
     const currentQty = currentItem ? currentItem.quantity : 0;
     
     let availableStock = 100;
-    if (product.clothingInformation?.sizes && normalizedSize) {
+    if (product?.clothingInformation?.sizes && normalizedSize) {
         availableStock = product.clothingInformation.sizes[normalizedSize] || 0;
-    } else {
+    } else if (product) {
          availableStock = product.stock !== undefined ? product.stock : (product.stock_quantity !== undefined ? product.stock_quantity : 100);
     }
 
@@ -281,6 +307,7 @@ export const CartProvider = ({ children }) => {
             }
         } catch (error) {
             console.error("Error syncing cart add:", error);
+            addToast("Saved locally (Sync pending)", "info");
         }
     }
     return true;
@@ -291,14 +318,16 @@ export const CartProvider = ({ children }) => {
     const targetSize = selectedSize || null;
     const targetColor = selectedColor || null;
 
-    setCart(prevCart => prevCart.filter(item => {
-        // Keep item if ANY condition FAILS (not same ID, or not same size, or not same color)
-        // We want to REMOVE if ALL match.
-        const isMatch = item.id === productId && 
-                        (item.selectedSize || null) === targetSize && 
-                        (item.selectedColor || null) === targetColor;
-        return !isMatch;
-    }));
+    let updatedCart = [];
+    setCart(prevCart => {
+        updatedCart = prevCart.filter(item => {
+            const isMatch = item.id === productId && 
+                            (item.selectedSize || null) === targetSize && 
+                            (item.selectedColor || null) === targetColor;
+            return !isMatch;
+        });
+        return updatedCart;
+    });
     
     if (currentUser?.uid) {
         try {
@@ -323,6 +352,7 @@ export const CartProvider = ({ children }) => {
             await query;
         } catch (error) {
             console.error("Error removing from cart DB:", error);
+            addToast("Removed locally (Sync pending)", "info");
         }
     }
   };
@@ -350,13 +380,15 @@ export const CartProvider = ({ children }) => {
         }
     }
     
-    setCart(prevCart =>
-      prevCart.map(item =>
+    let updatedCart = [];
+    setCart(prevCart => {
+      updatedCart = prevCart.map(item =>
         (item.id === productId && item.selectedSize === selectedSize && item.selectedColor === selectedColor)
           ? { ...item, quantity: Number(quantity) }
           : item
-      )
-    );
+      );
+      return updatedCart;
+    });
 
     if (currentUser?.uid) {
         try {
@@ -378,9 +410,11 @@ export const CartProvider = ({ children }) => {
                 query = query.is('selected_color', null);
             }
 
-            await query;
+            const { error } = await query;
+            if (error) throw error;
         } catch (error) {
              console.error("Error updating cart quantity:", error);
+             addToast("Updated locally (Sync pending)", "info");
         }
     }
   };
@@ -396,7 +430,7 @@ export const CartProvider = ({ children }) => {
   // Order Management
   const placeOrder = async (userDetails = {}, paymentOverrides = {}) => {
     // Basic validation
-    if (cart.length === 0) throw new Error("Cart is empty");
+    if (!Array.isArray(cart) || cart.length === 0) throw new Error("Cart is empty");
 
     const newOrder = {
       // let Supabase generate ID
@@ -698,8 +732,8 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
-  const subtotal = cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+  const cartCount = (cart || []).reduce((total, item) => total + (item.quantity || 0), 0);
+  const subtotal = (cart || []).reduce((total, item) => total + ((item.price || 0) * (item.quantity || 0)), 0);
   
   const discountAmount = appliedCoupon ? (() => {
       // 1. Validate General Rules

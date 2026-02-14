@@ -19,6 +19,8 @@ const ShipmentCreator = ({ selectedOrder, onShipmentCreated }) => {
     const [manualCourier, setManualCourier] = useState('DTDC');
     const [manualAWB, setManualAWB] = useState('');
     const [manualLink, setManualLink] = useState('');
+    const [manualDate, setManualDate] = useState('');
+    const [manualCost, setManualCost] = useState('');
     const [manualLoading, setManualLoading] = useState(false);
 
     const courierOptions = ['DTDC', 'Bluedart', 'Speed Post', 'XpressBees', 'Shadowfax', 'Ecom Express', 'Other'];
@@ -173,7 +175,8 @@ const ShipmentCreator = ({ selectedOrder, onShipmentCreated }) => {
                 tracking_url: manualLink || '', // Optional
                 courier_name: manualCourier,
                 status: 'shipped',
-                estimated_shipping_cost: 0, // Unknown
+                estimated_shipping_cost: Number(manualCost) || 0, // Using estimated field for manual cost tracking
+                expected_delivery_date: manualDate || null,
             };
 
             const { error } = await supabase
@@ -376,6 +379,28 @@ const ShipmentCreator = ({ selectedOrder, onShipmentCreated }) => {
                                 onChange={(e) => setManualLink(e.target.value)}
                                 className="w-full px-3 py-2 rounded-lg border border-stone-300 text-sm focus:ring-2 focus:ring-stone-200 focus:border-stone-400 outline-none transition-all"
                              />
+                         </div>
+
+                         <div className="grid grid-cols-2 gap-4">
+                             <div>
+                                <label className="block text-xs font-bold text-stone-500 uppercase mb-1">Est. Delivery Date</label>
+                                <input 
+                                    type="date"
+                                    value={manualDate}
+                                    onChange={(e) => setManualDate(e.target.value)}
+                                    className="w-full px-3 py-2 rounded-lg border border-stone-300 text-sm focus:ring-2 focus:ring-stone-200 focus:border-stone-400 outline-none transition-all"
+                                />
+                             </div>
+                             <div>
+                                <label className="block text-xs font-bold text-stone-500 uppercase mb-1">Shipping Cost (₹)</label>
+                                <input 
+                                    type="number"
+                                    placeholder="0"
+                                    value={manualCost}
+                                    onChange={(e) => setManualCost(e.target.value)}
+                                    className="w-full px-3 py-2 rounded-lg border border-stone-300 text-sm focus:ring-2 focus:ring-stone-200 focus:border-stone-400 outline-none transition-all"
+                                />
+                             </div>
                          </div>
 
                          <div className="pt-2">
