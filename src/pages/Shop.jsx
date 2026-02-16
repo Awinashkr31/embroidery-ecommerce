@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getOptimizedImageUrl } from '../utils/imageUtils';
-import { Package, Heart, Search, ChevronDown, Sparkles } from 'lucide-react';
+import { Package, Heart, Search, ChevronDown, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 // import { useCart } from '../context/CartContext';
 import { useProducts } from '../context/ProductContext';
 import { useCategories } from '../context/CategoryContext';
@@ -25,6 +25,14 @@ const Shop = () => {
     
     const [currentPage, setCurrentPage] = useState(1);
     const ITEMS_PER_PAGE = 12;
+
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -78,10 +86,12 @@ const Shop = () => {
     });
 
     const totalPages = Math.ceil(allFilteredProducts.length / ITEMS_PER_PAGE);
-    const paginatedProducts = allFilteredProducts.slice(
-        (currentPage - 1) * ITEMS_PER_PAGE,
-        currentPage * ITEMS_PER_PAGE
-    );
+    const paginatedProducts = isMobile 
+        ? allFilteredProducts.slice(0, currentPage * ITEMS_PER_PAGE) 
+        : allFilteredProducts.slice(
+            (currentPage - 1) * ITEMS_PER_PAGE,
+            currentPage * ITEMS_PER_PAGE
+        );
 
     const categories = [
         { id: 'all', label: 'All Creations' },
@@ -97,42 +107,44 @@ const Shop = () => {
 
     return (
         <div className="bg-[#fdfbf7] min-h-screen pb-32 font-body selection:bg-rose-100 selection:text-rose-900">
-            <div className="container-custom pb-20 pt-16 md:pt-32">
+            <div className="container-custom pb-20 pt-4 md:pt-32">
 
                 {/* Mobile Category Circles */}
-                <div className="lg:hidden mb-4 overflow-x-auto no-scrollbar pb-2 -mx-4 px-4">
+                <div className="lg:hidden mb-4 overflow-x-auto no-scrollbar py-2 -mx-4 px-4">
                     <div className="flex gap-4">
                         {categories.map(cat => {
                             let catImage = '/logo.png';
                             if (cat.id === 'all') {
-                                // Use first product image for 'All' or a specific asset if available
-                                catImage = products[0]?.image || '/logo.png';
+                                // Use project's auth image which is likely a good embroidery photo
+                                catImage = '/auth-side-image.png';
                             } else {
                                 const normalize = (str) => (str || '').toLowerCase().trim();
                                 catImage = products.find(p => normalize(p.category) === normalize(cat.id))?.image || '/logo.png';
                             }
-
+                            const isSelected = filter === cat.id;
+                            
                             return (
-                                <button
+                                <button 
                                     key={cat.id}
                                     onClick={() => setFilter(cat.id)}
-                                    className="flex flex-col items-center gap-2 min-w-[72px] group"
+                                    className="flex flex-col items-center gap-3 min-w-[80px] group transition-all duration-300"
                                 >
-                                    <div className={`w-16 h-16 rounded-full p-0.5 border-2 transition-all ${
-                                        filter === cat.id 
-                                            ? 'border-rose-900 scale-105' 
-                                            : 'border-emerald-900/10'
-                                    }`}>
-                                        <div className="w-full h-full rounded-full overflow-hidden bg-stone-100 flex items-center justify-center">
-                                            {cat.id === 'all' && productsLoading ? ( // Show logo or simple icon if loading
-                                                 <Sparkles className="w-6 h-6 text-stone-300" />
-                                            ) : (
-                                                <img 
-                                                    src={getOptimizedImageUrl(catImage, { width: 100, height: 100 })} 
-                                                    alt={cat.label}
-                                                    className="w-full h-full object-cover"
-                                                />
-                                            )}
+                                    <div className={`
+                                        w-20 h-20 md:w-24 md:h-24 rounded-full p-1 transition-all duration-300 relative
+                                        ${isSelected 
+                                            ? 'bg-gradient-to-tr from-rose-900 via-rose-600 to-rose-900 shadow-lg shadow-rose-900/30 scale-110' 
+                                            : 'bg-gradient-to-tr from-rose-100 to-rose-50 hover:from-rose-200 hover:to-rose-100'}
+                                    `}>
+                                        <div className="w-full h-full rounded-full overflow-hidden bg-white border-2 border-white relative z-10">
+                                            <img 
+                                                src={getOptimizedImageUrl(catImage, { width: 100, height: 100 })} 
+                                                alt={cat.label}
+                                                onError={(e) => e.currentTarget.src = '/logo.png'}
+                                                className={`
+                                                    w-full h-full object-cover transition-transform duration-500
+                                                    ${isSelected ? 'scale-110' : 'group-hover:scale-110'}
+                                                `}
+                                            />
                                         </div>
                                     </div>
                                     <span className={`text-[10px] font-bold text-center leading-tight max-w-[80px] ${
@@ -421,24 +433,58 @@ const Shop = () => {
                                     ))}
                                 </div>
 
-                                {/* Pagination */}
-                                {totalPages > 1 && (
-                                    <div className="flex justify-center gap-2 mt-20">
-                                        {Array.from({ length: totalPages }).map((_, i) => (
+                                {/* Load More (Mobile) */}
+                                {isMobile && currentPage < totalPages && (
+                                    <div className="flex justify-center mt-8 mb-12">
+                                        <button 
+                                            onClick={() => setCurrentPage(prev => prev + 1)}
+                                            className="w-full max-w-xs py-3 rounded-xl bg-stone-900 text-white font-bold shadow-lg shadow-stone-900/20 active:scale-95 transition-all flex items-center justify-center gap-2"
+                                        >
+                                            View More Products
+                                            <ChevronDown className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                )}
+
+                                {/* Pagination (Desktop Only) */}
+                                {!isMobile && totalPages > 1 && (
+                                    <div className="flex flex-col md:flex-row justify-center items-center gap-4 mt-12 mb-8 animate-in fade-in slide-in-from-bottom-4">
+                                        <div className="flex items-center gap-2">
                                             <button
-                                                key={i}
-                                                onClick={() => {
-                                                    setCurrentPage(i + 1);
-                                                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                                                }}
-                                                className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                                                    currentPage === i + 1 
-                                                    ? 'bg-rose-900 w-6' 
-                                                    : 'bg-stone-300 hover:bg-stone-400'
-                                                }`}
-                                                aria-label={`Page ${i + 1}`}
-                                            />
-                                        ))}
+                                                onClick={() => { setCurrentPage(curr => Math.max(1, curr - 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                                                disabled={currentPage === 1}
+                                                className="p-2 rounded-lg border border-stone-200 hover:bg-rose-50 hover:border-rose-200 hover:text-rose-900 transition-all disabled:opacity-30 disabled:hover:bg-transparent bg-white"
+                                                aria-label="Previous Page"
+                                            >
+                                                <ChevronLeft className="w-5 h-5" />
+                                            </button>
+
+                                            {/* Desktop Numbers */}
+                                            <div className="flex gap-1">
+                                                {Array.from({ length: totalPages }).map((_, i) => (
+                                                    <button
+                                                        key={i}
+                                                        onClick={() => { setCurrentPage(i + 1); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                                                        className={`w-10 h-10 rounded-lg text-sm font-bold transition-all ${
+                                                            currentPage === i + 1 
+                                                            ? 'bg-rose-900 text-white shadow-lg shadow-rose-900/20 scale-105' 
+                                                            : 'text-stone-600 hover:bg-stone-100 bg-white border border-transparent hover:border-stone-200'
+                                                        }`}
+                                                    >
+                                                        {i + 1}
+                                                    </button>
+                                                ))}
+                                            </div>
+
+                                            <button
+                                                onClick={() => { setCurrentPage(curr => Math.min(totalPages, curr + 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+                                                disabled={currentPage === totalPages}
+                                                className="p-2 rounded-lg border border-stone-200 hover:bg-rose-50 hover:border-rose-200 hover:text-rose-900 transition-all disabled:opacity-30 disabled:hover:bg-transparent bg-white"
+                                                aria-label="Next Page"
+                                            >
+                                                <ChevronRight className="w-5 h-5" />
+                                            </button>
+                                        </div>
                                     </div>
                                 )}
                             </>
