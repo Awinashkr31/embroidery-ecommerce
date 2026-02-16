@@ -108,7 +108,8 @@ const Home = () => {
   // Dynamic Categories Logic
   const dynamicCategories = useMemo(() => {
     return categories.map(cat => {
-        const product = products.find(p => p.category === cat.label && (p.image || p.images?.length > 0));
+        const normalize = (str) => (str || '').toLowerCase().trim();
+        const product = products.find(p => normalize(p.category) === normalize(cat.label) && (p.image || p.images?.length > 0));
         return {
             id: cat.id,
             label: cat.label,
@@ -307,7 +308,8 @@ const Home = () => {
 
       {/* ================= CATEGORY SECTIONS ================= */}
       {categories.map((category) => {
-        const categoryProducts = products.filter(p => p.category === category.label).slice(0, 8);
+        const normalize = (str) => (str || '').toLowerCase().trim();
+        const categoryProducts = products.filter(p => normalize(p.category) === normalize(category.label)).slice(0, 8);
         
         if (categoryProducts.length === 0) return null;
 

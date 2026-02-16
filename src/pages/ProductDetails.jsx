@@ -114,8 +114,13 @@ const ProductDetails = () => {
         );
     }
 
-    const relatedProducts = products
-        .filter(p => p.category === product.category && p.id !== product.id)
+    // Get products from same category first, then others to ensure variety
+    const normalize = (str) => (str || '').toLowerCase().trim();
+    const sameCategoryProducts = products.filter(p => normalize(p.category) === normalize(product.category) && p.id !== product.id);
+    const otherCategoryProducts = products.filter(p => normalize(p.category) !== normalize(product.category) && p.id !== product.id);
+    
+    // Combine: prioritized same category, then fill with others. Limit to 20 total.
+    const relatedProducts = [...sameCategoryProducts, ...otherCategoryProducts].slice(0, 20);
 
 
     const averageRating = reviews.length > 0 
@@ -176,7 +181,7 @@ const ProductDetails = () => {
                     </Link>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-[40%_60%] gap-12 xl:gap-24 mb-32">
+                <div className="grid grid-cols-1 lg:grid-cols-[40%_60%] gap-8 lg:gap-12 xl:gap-24 mb-16 lg:mb-32">
                     {/* ... Image Section (Same as before) ... */}
                     <div className="relative h-fit lg:sticky lg:top-28 space-y-4 lg:space-y-0 lg:flex lg:gap-6">
                         {/* Desktop Thumbnails (Left Side) */}
@@ -599,7 +604,7 @@ const ProductDetails = () => {
                         </div>
 
                         {/* Reviews - now cleaner */}
-                        <div id="reviews" className="border-t border-stone-200 pt-12 mt-12 mb-32">
+                        <div id="reviews" className="border-t border-stone-200 pt-8 lg:pt-12 mt-8 lg:mt-12 mb-12 lg:mb-32">
                             <div className="flex items-center justify-between mb-8">
                                 <h3 className="font-heading text-2xl font-medium text-stone-900">Client Reviews</h3>
                                 <div className="text-right">
@@ -613,7 +618,7 @@ const ProductDetails = () => {
                             </div>
                             
                             {reviews.length === 0 ? (
-                                <div className="text-center py-12 bg-stone-50 rounded-xl border border-dashed border-stone-200">
+                                <div className="text-center py-8 lg:py-12 bg-stone-50 rounded-xl border border-dashed border-stone-200">
                                     <p className="text-stone-500 italic">No reviews yet. Be the first to share your thoughts.</p>
                                 </div>
                             ) : (
@@ -640,8 +645,8 @@ const ProductDetails = () => {
 
                 {/* Related Products Section */}
                 {relatedProducts.length > 0 && (
-                    <div className="border-t border-stone-200 pt-16 pb-24">
-                        <div className="text-center mb-12">
+                    <div className="border-t border-stone-200 pt-8 lg:pt-16 pb-24">
+                        <div className="text-center mb-8 lg:mb-12">
                             <h2 className="text-3xl lg:text-4xl font-heading font-medium text-stone-900 mb-4">You May Also Admire</h2>
                         </div>
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8 lg:gap-8">

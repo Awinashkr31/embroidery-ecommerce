@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { ArrowLeft, CreditCard, Truck, MapPin, Plus, CheckCircle, Tag, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, CreditCard, Truck, MapPin, Plus, CheckCircle, Tag, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import { supabase } from '../config/supabase';
 import { DelhiveryService } from '../services/delhivery';
@@ -32,6 +32,7 @@ const Checkout = () => {
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isZipLoading, setIsZipLoading] = useState(false);
+    const [isSummaryOpen, setIsSummaryOpen] = useState(false);
 
     const [formData, setFormData] = useState({
         fullName: '',
@@ -93,7 +94,7 @@ const Checkout = () => {
                 }));
             }
         }
-    }, [savedAddresses, currentUser, selectedAddressId]);
+    }, [savedAddresses, currentUser]);
 
 
     const handleZipChange = async (e) => {
@@ -322,36 +323,100 @@ const Checkout = () => {
 
 
     return (
-        <div className="min-h-screen bg-[#fdfbf7] font-body pt-24 md:pt-32 pb-12 md:pb-24">
-            <div className="container-custom">
+        <div className="min-h-screen bg-[#fdfbf7] font-body pb-32 md:pb-24">
+            {/* Mobile Header */}
+            <div className="md:hidden sticky top-0 z-40 bg-white border-b border-stone-100 px-4 py-3 flex items-center justify-between shadow-sm">
+                <Link to="/cart" className="flex items-center text-stone-800">
+                    <ArrowLeft className="w-5 h-5 mr-2" />
+                    <span className="font-heading font-bold text-lg">Checkout</span>
+                </Link>
+                <div className="w-8"></div> {/* Spacer for center alignment feel if needed */}
+            </div>
+
+            <div className="container-custom pt-6 md:pt-12">
                 <Link to="/cart" className="hidden md:inline-flex items-center text-stone-500 hover:text-rose-900 mb-8 transition-colors text-sm font-bold uppercase tracking-wide">
                     <ArrowLeft className="w-4 h-4 mr-2" />
                     Back to Cart
                 </Link>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-20">
+                <div className="flex flex-col md:grid md:grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-20">
+                    
+                    {/* Order Summary - Mobile Collapsible */}
+                    <div className="md:hidden bg-white rounded-xl shadow-sm border border-stone-100 overflow-hidden mb-2">
+                        <div 
+                            onClick={() => setIsSummaryOpen(!isSummaryOpen)}
+                            className="p-4 flex items-center justify-between cursor-pointer bg-stone-50"
+                        >
+                            <div className="flex items-center gap-2">
+                                <span className="font-bold text-stone-700 text-sm">Order Summary</span>
+                                <ChevronDown className={`w-4 h-4 text-stone-500 transition-transform ${isSummaryOpen ? 'rotate-180' : ''}`} />
+                            </div>
+                            <span className="font-bold text-rose-900">₹{cartTotal.toLocaleString()}</span>
+                        </div>
+                        
+                        {isSummaryOpen && (
+                            <div className="p-4 border-t border-stone-100 bg-white animate-in slide-in-from-top-2">
+                                <div className="space-y-4 max-h-60 overflow-y-auto custom-scrollbar pr-1">
+                                    {cart.map((item, idx) => (
+                                        <div key={`${item.id}-${item.selectedSize || 'nosize'}-${item.selectedColor || 'nocolor'}-${idx}`} className="flex gap-3 py-2 border-b border-stone-50 last:border-0">
+                                            <div className="w-12 h-12 rounded bg-stone-100 overflow-hidden shrink-0 border border-stone-200">
+                                                <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <h4 className="font-bold text-stone-800 text-xs truncate">{item.name}</h4>
+                                                <p className="text-[10px] text-stone-500 mt-0.5">Qty: {item.quantity}</p>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="font-bold text-stone-900 text-xs">₹{(item.price * item.quantity).toLocaleString()}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="space-y-2 pt-3 border-t border-stone-100 mt-3 text-sm">
+                                    <div className="flex justify-between text-stone-500 text-xs">
+                                        <span>Subtotal</span>
+                                        <span>₹{subtotal.toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between text-stone-500 text-xs">
+                                        <span>Shipping</span>
+                                        <span className={shippingCharge === 0 ? "text-emerald-700 font-bold" : ""}>
+                                            {shippingCharge === 0 ? 'Free' : `₹${shippingCharge}`}
+                                        </span>
+                                    </div>
+                                    {appliedCoupon && (
+                                        <div className="flex justify-between text-emerald-600 text-xs">
+                                            <span>Discount</span>
+                                            <span>-₹{discountAmount.toLocaleString()}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
                     {/* Checkout Form */}
-                    <div className="bg-white p-6 lg:p-10 rounded-2xl shadow-sm border border-stone-100">
-                        <h2 className="text-xl md:text-2xl font-heading font-bold text-stone-900 mb-6 md:mb-8 flex items-center gap-3">
+                    <div className="bg-white p-5 md:p-10 rounded-2xl shadow-sm border border-stone-100 order-2 md:order-1">
+                        <h2 className="text-lg md:text-2xl font-heading font-bold text-stone-900 mb-6 flex items-center gap-3">
                             <div className="bg-rose-50 p-2 rounded-lg">
-                                <Truck className="text-rose-900 w-6 h-6" />
+                                <Truck className="text-rose-900 w-5 h-5 md:w-6 md:h-6" />
                             </div>
                             Shipping Details
                         </h2>
 
                         {/* Saved Addresses Selection */}
                         {currentUser && userAddresses.length > 0 && (
-                            <div className="mb-8 p-4 md:p-6 bg-stone-50/50 rounded-xl border border-stone-100">
-                                <h3 className="font-bold text-stone-800 mb-4 flex items-center text-sm uppercase tracking-wider">
+                            <div className="mb-8">
+                                <h3 className="font-bold text-stone-800 mb-4 flex items-center text-xs md:text-sm uppercase tracking-wider">
                                     <MapPin className="w-4 h-4 mr-2 text-rose-900" />
                                     Select Saved Address
                                 </h3>
-                                <div className="grid gap-3 sm:grid-cols-2">
+                                {/* Horizontal scroll on mobile */}
+                                <div className="flex md:grid md:grid-cols-2 gap-3 overflow-x-auto pb-4 md:pb-0 -mx-5 px-5 md:mx-0 md:px-0 scrollbar-hide snap-x">
                                     {userAddresses.map(addr => (
                                         <div 
                                             key={addr.id}
                                             onClick={() => handleAddressSelect(addr.id)}
-                                            className={`p-4 rounded-xl border cursor-pointer transition-all ${
+                                            className={`flex-none w-64 md:w-auto p-4 rounded-xl border cursor-pointer transition-all snap-start ${
                                                 selectedAddressId === addr.id 
                                                 ? 'border-rose-900 bg-white ring-1 ring-rose-900 shadow-md' 
                                                 : 'border-stone-200 hover:border-rose-300 bg-white'
@@ -363,22 +428,22 @@ const Checkout = () => {
                                     ))}
                                     <div 
                                         onClick={() => handleAddressSelect('new')}
-                                        className={`p-4 rounded-xl border-2 border-dashed cursor-pointer transition-all flex flex-col items-center justify-center gap-2 ${
+                                        className={`flex-none w-32 md:w-auto p-4 rounded-xl border-2 border-dashed cursor-pointer transition-all flex flex-col items-center justify-center gap-2 snap-start ${
                                             selectedAddressId === 'new' 
                                             ? 'border-rose-900 bg-rose-50/50 text-rose-900' 
                                             : 'border-stone-200 hover:border-rose-300 text-stone-400 hover:text-rose-900'
                                         }`}
                                     >
                                         <Plus className="w-5 h-5" />
-                                        <span className="text-xs font-bold uppercase">Add New</span>
+                                        <span className="text-xs font-bold uppercase whitespace-nowrap">Add New</span>
                                     </div>
                                 </div>
                             </div>
                         )}
                         
-                        <form onSubmit={handleSubmit} className="space-y-6">
+                        <form onSubmit={handleSubmit} className="space-y-5 md:space-y-6">
                             {selectedAddressId === 'new' && (
-                                <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-500">
+                                <div className="space-y-5 animate-in fade-in slide-in-from-top-4 duration-500">
                                     <div>
                                         <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Full Name</label>
                                         <input
@@ -387,7 +452,8 @@ const Checkout = () => {
                                             required
                                             value={formData.fullName}
                                             onChange={handleChange}
-                                            className="w-full px-4 py-3 border-2 border-stone-100 rounded-xl focus:border-rose-900 focus:bg-white bg-stone-50 outline-none transition-all font-medium text-stone-900"
+                                            className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:border-rose-900 focus:ring-1 focus:ring-rose-900 bg-white outline-none transition-all font-medium text-stone-900 placeholder:text-stone-300"
+                                            placeholder="John Doe"
                                         />
                                     </div>
 
@@ -399,7 +465,8 @@ const Checkout = () => {
                                             required
                                             value={formData.phone}
                                             onChange={handleChange}
-                                            className="w-full px-4 py-3 border-2 border-stone-100 rounded-xl focus:border-rose-900 focus:bg-white bg-stone-50 outline-none transition-all font-medium text-stone-900"
+                                            className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:border-rose-900 focus:ring-1 focus:ring-rose-900 bg-white outline-none transition-all font-medium text-stone-900 placeholder:text-stone-300"
+                                            placeholder="10-digit mobile number"
                                         />
                                     </div>
 
@@ -408,25 +475,29 @@ const Checkout = () => {
                                         <textarea
                                             name="address"
                                             required
-                                            rows="2"
+                                            rows="3"
                                             value={formData.address}
                                             onChange={handleChange}
-                                            className="w-full px-4 py-3 border-2 border-stone-100 rounded-xl focus:border-rose-900 focus:bg-white bg-stone-50 outline-none transition-all font-medium text-stone-900 resize-none"
+                                            className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:border-rose-900 focus:ring-1 focus:ring-rose-900 bg-white outline-none transition-all font-medium text-stone-900 resize-none placeholder:text-stone-300"
+                                            placeholder="House No, Building, Street Area"
                                         ></textarea>
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="col-span-2">
-                                            <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Pincode (Zip)</label>
+                                            <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Pincode</label>
                                             <div className="relative">
                                                 <input
                                                     type="text"
                                                     name="zipCode"
                                                     required
                                                     maxLength="6"
+                                                    pattern="[0-9]*"
+                                                    inputMode="numeric"
                                                     value={formData.zipCode}
                                                     onChange={handleZipChange}
-                                                    className="w-full px-4 py-3 border-2 border-stone-100 rounded-xl focus:border-rose-900 focus:bg-white bg-stone-50 outline-none transition-all font-medium text-stone-900"
+                                                    className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:border-rose-900 focus:ring-1 focus:ring-rose-900 bg-white outline-none transition-all font-medium text-stone-900 tracking-wide"
+                                                    placeholder="000000"
                                                 />
                                                 {isZipLoading && (
                                                     <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -443,7 +514,7 @@ const Checkout = () => {
                                                 required
                                                 readOnly
                                                 value={formData.city}
-                                                className="w-full px-4 py-3 border-2 border-stone-100 rounded-xl bg-stone-100 text-stone-600 outline-none cursor-not-allowed font-medium"
+                                                className="w-full px-4 py-3 border border-stone-200 rounded-xl bg-stone-50 text-stone-600 outline-none cursor-not-allowed font-medium"
                                             />
                                         </div>
                                         <div>
@@ -454,14 +525,14 @@ const Checkout = () => {
                                                 required
                                                 readOnly
                                                 value={formData.state}
-                                                className="w-full px-4 py-3 border-2 border-stone-100 rounded-xl bg-stone-100 text-stone-600 outline-none cursor-not-allowed font-medium"
+                                                className="w-full px-4 py-3 border border-stone-200 rounded-xl bg-stone-50 text-stone-600 outline-none cursor-not-allowed font-medium"
                                             />
                                         </div>
                                     </div>
 
                                     {/* Save Address Checkbox */}
                                     {currentUser && (
-                                        <div className="flex items-center p-4 bg-stone-50 rounded-lg">
+                                        <div className="flex items-center p-4 bg-stone-50 rounded-lg border border-stone-100">
                                             <input
                                                 id="save-address"
                                                 type="checkbox"
@@ -470,7 +541,7 @@ const Checkout = () => {
                                                 className="h-5 w-5 text-rose-900 focus:ring-rose-900 border-stone-300 rounded"
                                             />
                                             <label htmlFor="save-address" className="ml-3 text-sm font-medium text-stone-700 cursor-pointer select-none">
-                                                Save this address for future reference
+                                                Save address for future?
                                             </label>
                                         </div>
                                     )}
@@ -479,14 +550,14 @@ const Checkout = () => {
 
                             {/* Payment Method */}
                             <div className="pt-8 mt-8 border-t border-stone-100">
-                                <h3 className="text-xl font-heading font-bold text-stone-900 mb-6 flex items-center gap-3">
+                                <h3 className="text-lg md:text-xl font-heading font-bold text-stone-900 mb-6 flex items-center gap-3">
                                     <div className="bg-rose-50 p-2 rounded-lg">
-                                        <CreditCard className="text-rose-900 w-6 h-6" />
+                                        <CreditCard className="text-rose-900 w-5 h-5 md:w-6 md:h-6" />
                                     </div>
                                     Payment Method
                                 </h3>
                                 <div className="space-y-4">
-                                    <label className="flex items-center p-5 border-2 border-rose-900 bg-rose-50/30 rounded-xl cursor-pointer transition-all relative overflow-hidden group">
+                                    <label className="flex items-center p-4 md:p-5 border-2 border-rose-900 bg-rose-50/30 rounded-xl cursor-pointer transition-all relative overflow-hidden group">
                                         <div className="absolute inset-0 bg-white/50 group-hover:bg-transparent transition-colors"></div>
                                         <input
                                             type="radio"
@@ -497,12 +568,12 @@ const Checkout = () => {
                                             className="text-rose-900 focus:ring-rose-900 w-5 h-5 relative z-10"
                                         />
                                         <div className="ml-4 relative z-10">
-                                            <span className="block font-bold text-stone-900">Cash on Delivery (COD)</span>
-                                            <span className="text-xs text-stone-500">Pay when you receive your order</span>
+                                            <span className="block font-bold text-stone-900">Cash on Delivery</span>
+                                            <span className="text-xs text-stone-500">Pay cash upon delivery</span>
                                         </div>
                                         <CheckCircle className="ml-auto w-5 h-5 text-rose-900 relative z-10" />
                                     </label>
-                                    <label className={`flex items-center p-5 border-2 rounded-xl cursor-pointer transition-all relative overflow-hidden group ${
+                                    <label className={`flex items-center p-4 md:p-5 border-2 rounded-xl cursor-pointer transition-all relative overflow-hidden group ${
                                         formData.paymentMethod === 'online' 
                                         ? 'border-emerald-600 bg-emerald-50/30' 
                                         : 'border-stone-100 hover:border-emerald-200'
@@ -518,7 +589,7 @@ const Checkout = () => {
                                         />
                                         <div className="ml-4 relative z-10">
                                             <span className={`block font-bold ${formData.paymentMethod === 'online' ? 'text-emerald-800' : 'text-stone-900'}`}>Online Payment</span>
-                                            <span className="text-xs text-stone-500">Secure payment via Razorpay</span>
+                                            <span className="text-xs text-stone-500">Fast & Secure</span>
                                         </div>
                                         {formData.paymentMethod === 'online' && (
                                             <CheckCircle className="ml-auto w-5 h-5 text-emerald-600 relative z-10" />
@@ -527,29 +598,30 @@ const Checkout = () => {
                                 </div>
                             </div>
 
-                            {/* Unboxing Video Warning */}
+                            {/* Unboxing Video Warning - Mobile Friendly */}
                             <div className="mt-6 bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-3 text-amber-800 text-sm">
                                  <AlertTriangle className="w-5 h-5 shrink-0" />
-                                 <div>
+                                 <div className="text-xs md:text-sm">
                                      <p className="font-bold">Unboxing Video Required</p>
-                                     <p className="mt-1 text-xs leading-relaxed">
-                                         A clear unboxing video is <strong>mandatory</strong> for any return or replacement requests. Please record one when you receive your package.
+                                     <p className="mt-1 leading-relaxed opacity-90">
+                                         Mandatory for returns/replacements. Record while opening package.
                                      </p>
                                  </div>
                             </div>
 
+                            {/* Desktop Submit Button (Hidden on Mobile) */}
                             <button
                                 type="submit"
                                 disabled={isSubmitting}
-                                className={`w-full bg-rose-900 text-white py-4 rounded-xl font-bold text-lg uppercase tracking-widest hover:bg-rose-800 transition-all shadow-lg hover:shadow-rose-900/30 transform hover:-translate-y-0.5 mt-4 ${isSubmitting ? 'opacity-75 cursor-not-allowed' : ''}`}
+                                className={`hidden md:block w-full bg-rose-900 text-white py-4 rounded-xl font-bold text-lg uppercase tracking-widest hover:bg-rose-800 transition-all shadow-lg hover:shadow-rose-900/30 transform hover:-translate-y-0.5 mt-4 ${isSubmitting ? 'opacity-75 cursor-not-allowed' : ''}`}
                             >
                                 {isSubmitting ? 'Processing...' : `Place Order (₹${cartTotal.toLocaleString()})`}
                             </button>
                         </form>
                     </div>
 
-                    {/* Order Summary */}
-                    <div className="lg:w-auto">
+                    {/* Order Summary - Desktop Sider */}
+                    <div className="hidden md:block lg:w-auto order-1 md:order-2">
                         <div className="bg-white p-8 rounded-2xl shadow-lg border border-stone-100 sticky top-28">
                             <h2 className="text-xl font-heading font-bold text-stone-900 mb-6 border-b border-stone-100 pb-4">Order Summary</h2>
                             <div className="space-y-4 mb-6 max-h-[calc(100vh-400px)] overflow-y-auto custom-scrollbar pr-2">
@@ -616,6 +688,23 @@ const Checkout = () => {
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            {/* Mobile Sticky Bottom Action Bar */}
+            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] md:hidden z-50">
+                <div className="flex items-center gap-4">
+                    <div className="flex-1">
+                        <p className="text-xs text-stone-500 font-bold uppercase tracking-wider">Total to Pay</p>
+                        <p className="text-xl font-heading font-bold text-rose-900">₹{cartTotal.toLocaleString()}</p>
+                    </div>
+                    <button
+                        onClick={handleSubmit}
+                        disabled={isSubmitting}
+                        className={`flex-1 bg-rose-900 text-white py-3.5 px-6 rounded-xl font-bold uppercase tracking-wide text-sm shadow-lg shadow-rose-900/20 active:scale-95 transition-all ${isSubmitting ? 'opacity-75' : ''}`}
+                    >
+                        {isSubmitting ? 'Processing...' : 'Place Order'}
+                    </button>
                 </div>
             </div>
         </div>

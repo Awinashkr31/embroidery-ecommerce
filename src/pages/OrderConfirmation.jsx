@@ -16,9 +16,9 @@ const OrderConfirmation = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Debugging Logs
-    React.useEffect(() => {
-        console.log("OrderConfirmation Debug:", { state, cartLength: cart.length, cartLoading });
-    }, [state, cart, cartLoading]);
+    // React.useEffect(() => {
+    //      console.log("OrderConfirmation Debug:", { state, cartLength: cart.length, cartLoading });
+    // }, [state, cart, cartLoading]);
 
     // Redirect to cart if no state (direct access) or empty cart
     React.useEffect(() => {
@@ -39,7 +39,7 @@ const OrderConfirmation = () => {
         );
     }
 
-    if (!state || cart.length === 0) {
+    if (!isSubmitting && (!state || cart.length === 0)) {
         return (
              <div className="min-h-screen bg-[#fdfbf7] flex items-center justify-center font-body pt-20">
                 <div className="text-center p-8 bg-white shadow-lg rounded-2xl max-w-md mx-4">
@@ -72,16 +72,30 @@ const OrderConfirmation = () => {
                 userId: currentUser?.uid,
                 email: currentUser?.email || formData.email
             });
-            navigate('/order-success', { state: { orderId: orderResult } });
+            
+            // Navigate only if we have a result
+            if (orderResult) {
+                navigate('/order-success', { state: { orderId: orderResult } });
+                // Don't reset isSubmitting here to prevent "Empty Cart" flash during navigation
+            } else {
+                throw new Error("Order placed but no ID returned.");
+            }
         } catch (error) {
             console.error('Order placement failed:', error);
-            addToast(error.message || 'Failed to place order. Please try again.', 'error');
-            setIsSubmitting(false);
+            
+            // Safe Error Handling
+            let msg = 'Failed to place order. Please try again.';
+            if (typeof error === 'string') msg = error;
+            else if (error?.message) msg = error.message;
+            else if (error?.error_description) msg = error.error_description;
+            
+            addToast(msg, 'error');
+            setIsSubmitting(false); // Only stop loading on error
         }
     };
 
     return (
-        <div className="min-h-screen bg-[#fdfbf7] font-body pt-20 md:pt-32 pb-12 md:pb-24">
+        <div className="min-h-screen bg-[#fdfbf7] font-body pt-6 md:pt-12 pb-12 md:pb-24">
             <SEO title="Confirm Order" description="Review your order details before confirming." />
             <div className="container-custom max-w-4xl">
                 <Link to="/checkout" className="hidden md:inline-flex items-center text-stone-500 hover:text-rose-900 mb-8 transition-colors text-sm font-bold uppercase tracking-wide">

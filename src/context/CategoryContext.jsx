@@ -114,12 +114,26 @@ export const CategoryProvider = ({ children }) => {
         return await saveCategories(newCategories);
     };
 
+    const moveCategory = async (id, direction) => {
+        const index = categories.findIndex(c => c.id === id);
+        if (index === -1) return;
+
+        const newCategories = [...categories];
+        const newIndex = direction === 'up' ? index - 1 : index + 1;
+
+        if (newIndex >= 0 && newIndex < newCategories.length) {
+            [newCategories[index], newCategories[newIndex]] = [newCategories[newIndex], newCategories[index]];
+            return await saveCategories(newCategories);
+        }
+    };
+
     const value = {
         categories,
         loading,
         addCategory,
         updateCategory,
         deleteCategory,
+        moveCategory,
         refreshCategories: fetchCategories
     };
 

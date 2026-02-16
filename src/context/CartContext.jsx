@@ -455,13 +455,22 @@ export const CartProvider = ({ children }) => {
     };
 
     try {
+      // payload must match the argument name in the SQL function: place_order(order_data JSONB)
       const { data, error } = await supabase
         .rpc('place_order', { order_data: newOrder });
         
       if (error) throw error;
       
+      // The function returns the order object (or just ID if we simpler)
+      // Our SQL returns the whole object as JSONB
+      const createdOrder = data;
+
+      if (!createdOrder || !createdOrder.id) {
+          throw new Error("Order creation failed: No ID returned");
+      }
+      
       clearCart();
-      return data;
+      return createdOrder.id; // Return just the ID as the component expects
     } catch (error) {
       console.error('Error placing order:', error);
       throw error;
