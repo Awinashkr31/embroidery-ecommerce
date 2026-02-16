@@ -66,7 +66,7 @@ const Cart = () => {
     }
 
     return (
-        <div className="bg-[#fdfbf7] min-h-screen font-body pt-4 md:pt-12 pb-32 lg:pb-24">
+        <div className="bg-[#fdfbf7] min-h-screen font-body pt-4 md:pt-12 pb-24 lg:pb-24">
             <SEO title="Shopping Cart" description="Review your selected items and proceed to checkout." />
             <div className="container-custom">
                 <h1 className="text-3xl lg:text-4xl font-heading font-bold text-stone-900 mb-8">Shopping Cart</h1>

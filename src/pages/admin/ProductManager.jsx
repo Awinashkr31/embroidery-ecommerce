@@ -4,14 +4,14 @@ import { useCategories } from '../../context/CategoryContext';
 import { 
     Plus, Edit2, Trash2, X, Image as ImageIcon, Search, Filter, 
     Upload, Shirt, Save, ChevronRight, Package, Tag, 
-    Layers, Truck, Globe, Calculator, AlertCircle
+    Layers, Truck, Globe, Calculator, AlertCircle, ArrowUp, ArrowDown
 } from 'lucide-react';
 import { uploadImage } from '../../utils/uploadUtils';
 import ImageCropper from '../../components/ImageCropper';
 
 const ProductManager = () => {
     const { products, addProduct, updateProduct, deleteProduct, toggleStock } = useProducts();
-    const { categories: categoryObjects, addCategory, deleteCategory } = useCategories();
+    const { categories: categoryObjects, addCategory, deleteCategory, moveCategory } = useCategories();
     
     // UI State
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -982,10 +982,26 @@ const ProductManager = () => {
                             <button onClick={() => { if(newCategory) { addCategory(newCategory); setNewCategory(''); }}} className="px-4 bg-rose-900 text-white rounded-xl"><Plus className="w-5 h-5" /></button>
                         </div>
                         <div className="space-y-2 max-h-64 overflow-y-auto">
-                            {categoryObjects.map(cat => (
-                                <div key={cat.id} className="flex justify-between items-center p-3 bg-stone-50 rounded-lg">
+                            {categoryObjects.map((cat, index) => (
+                                <div key={cat.id} className="flex justify-between items-center p-3 bg-stone-50 rounded-lg group">
                                     <span className="font-medium">{cat.label}</span>
-                                    <button onClick={() => deleteCategory(cat.id)} className="text-stone-400 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
+                                    <div className="flex gap-1 transition-opacity">
+                                        <button 
+                                            onClick={() => moveCategory(cat.id, 'up')} 
+                                            disabled={index === 0}
+                                            className="p-1.5 text-stone-400 hover:text-stone-900 hover:bg-stone-200 rounded disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-stone-400"
+                                        >
+                                            <ArrowUp className="w-4 h-4" />
+                                        </button>
+                                        <button 
+                                            onClick={() => moveCategory(cat.id, 'down')} 
+                                            disabled={index === categoryObjects.length - 1}
+                                            className="p-1.5 text-stone-400 hover:text-stone-900 hover:bg-stone-200 rounded disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-stone-400"
+                                        >
+                                            <ArrowDown className="w-4 h-4" />
+                                        </button>
+                                        <button onClick={() => deleteCategory(cat.id)} className="p-1.5 text-stone-400 hover:text-red-500 hover:bg-red-50 rounded ml-1"><Trash2 className="w-4 h-4" /></button>
+                                    </div>
                                 </div>
                             ))}
                         </div>

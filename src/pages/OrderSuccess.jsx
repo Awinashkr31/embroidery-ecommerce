@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { CheckCircle, Package, MapPin, ArrowRight, Loader } from 'lucide-react';
+import { CheckCircle, Package, MapPin, ArrowRight, Loader, AlertTriangle } from 'lucide-react';
 import { supabase } from '../config/supabase';
 import { getEstimatedDeliveryDate } from '../utils/dateUtils';
 import SEO from '../components/SEO';
@@ -54,12 +54,12 @@ const OrderSuccess = () => {
                 </div>
                 <h1 className="text-xl font-bold text-stone-900 mb-2">Order Processing</h1>
                 <p className="text-stone-600 mb-6 max-w-md">
-                    We've received your order, but are waiting for the details to load. 
-                    <br/>If this takes too long, please check your profile.
+                    We've received your request, but are waiting for the order details to sync.
+                    <br/>If this persists, please check your profile for the latest status.
                 </p>
                 <div className="flex gap-4 justify-center">
                     <Link to="/profile" className="px-6 py-2 bg-stone-900 text-white rounded-lg font-bold text-sm">View My Orders</Link>
-                    <Link to="/shop" className="px-6 py-2 border border-stone-200 text-stone-700 rounded-lg font-bold text-sm">Continue Shopping</Link>
+                    <button onClick={() => navigate('/shop')} className="px-6 py-2 border border-stone-200 text-stone-700 rounded-lg font-bold text-sm">Continue Shopping</button>
                 </div>
             </div>
         );
@@ -90,7 +90,7 @@ const OrderSuccess = () => {
     }
 
     return (
-        <div className="min-h-screen bg-[#fdfbf7] font-body pt-32 pb-24">
+        <div className="min-h-screen bg-[#fdfbf7] font-body pt-6 md:pt-12 pb-12 md:pb-24">
             <SEO title="Order Confirmed" description="Your order has been placed successfully." />
             
             <div className="container-custom max-w-4xl">

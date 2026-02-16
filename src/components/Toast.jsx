@@ -35,9 +35,9 @@ const Toast = ({ message, type, onClose, action }) => {
     <div 
       className={`
         flex items-center gap-3 px-4 py-3 md:px-5 md:py-4 rounded-lg shadow-xl border border-stone-100 
-        w-auto max-w-[90vw] md:min-w-[320px] md:max-w-md
+        w-full max-w-[90vw] md:w-auto md:min-w-[320px] md:max-w-md
         transform transition-all duration-500 ease-out font-body bg-white backdrop-blur-sm bg-white/95
-        ${isVisible ? 'translate-y-0 opacity-100 scale-100' : '-translate-y-4 opacity-0 scale-95'}
+        ${isVisible ? 'translate-y-0 opacity-100 scale-100' : '-translate-y-4 md:translate-y-4 opacity-0 scale-95'}
         ${getStyles()}
       `}
       role="alert"

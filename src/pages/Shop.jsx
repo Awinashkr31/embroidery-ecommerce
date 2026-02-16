@@ -52,7 +52,10 @@ const Shop = () => {
         }
 
         // Category Filter
-        if (filter !== 'all' && product.category !== filter) return false;
+        if (filter !== 'all') {
+            const normalize = (str) => (str || '').toLowerCase().trim();
+            if (normalize(product.category) !== normalize(filter)) return false;
+        }
 
         // Price Range Filter
         if (priceRange !== 'all') {
@@ -94,7 +97,54 @@ const Shop = () => {
 
     return (
         <div className="bg-[#fdfbf7] min-h-screen pb-32 font-body selection:bg-rose-100 selection:text-rose-900">
-            <div className="container-custom pb-20 pt-20 md:pt-32">
+            <div className="container-custom pb-20 pt-16 md:pt-32">
+
+                {/* Mobile Category Circles */}
+                <div className="lg:hidden mb-4 overflow-x-auto no-scrollbar pb-2 -mx-4 px-4">
+                    <div className="flex gap-4">
+                        {categories.map(cat => {
+                            let catImage = '/logo.png';
+                            if (cat.id === 'all') {
+                                // Use first product image for 'All' or a specific asset if available
+                                catImage = products[0]?.image || '/logo.png';
+                            } else {
+                                const normalize = (str) => (str || '').toLowerCase().trim();
+                                catImage = products.find(p => normalize(p.category) === normalize(cat.id))?.image || '/logo.png';
+                            }
+
+                            return (
+                                <button
+                                    key={cat.id}
+                                    onClick={() => setFilter(cat.id)}
+                                    className="flex flex-col items-center gap-2 min-w-[72px] group"
+                                >
+                                    <div className={`w-16 h-16 rounded-full p-0.5 border-2 transition-all ${
+                                        filter === cat.id 
+                                            ? 'border-rose-900 scale-105' 
+                                            : 'border-emerald-900/10'
+                                    }`}>
+                                        <div className="w-full h-full rounded-full overflow-hidden bg-stone-100 flex items-center justify-center">
+                                            {cat.id === 'all' && productsLoading ? ( // Show logo or simple icon if loading
+                                                 <Sparkles className="w-6 h-6 text-stone-300" />
+                                            ) : (
+                                                <img 
+                                                    src={getOptimizedImageUrl(catImage, { width: 100, height: 100 })} 
+                                                    alt={cat.label}
+                                                    className="w-full h-full object-cover"
+                                                />
+                                            )}
+                                        </div>
+                                    </div>
+                                    <span className={`text-[10px] font-bold text-center leading-tight max-w-[80px] ${
+                                        filter === cat.id ? 'text-rose-900' : 'text-stone-600'
+                                    }`}>
+                                        {cat.label}
+                                    </span>
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
 
                 <div className="flex flex-col lg:flex-row gap-12 items-start">
 

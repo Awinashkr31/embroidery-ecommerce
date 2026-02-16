@@ -23,7 +23,7 @@ const ConditionalLayout = ({ children }) => {
     <>
       {children}
       {!isDistractionFree && (
-        <div className={(location.pathname === '/cart' || location.pathname.startsWith('/product/')) ? 'hidden md:block' : ''}>
+        <div className={(location.pathname === '/cart' || location.pathname === '/shop' || location.pathname.startsWith('/product/')) ? 'hidden md:block' : ''}>
           <Footer />
         </div>
       )}
