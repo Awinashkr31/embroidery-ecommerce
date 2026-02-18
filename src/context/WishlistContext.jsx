@@ -25,7 +25,36 @@ export const WishlistProvider = ({ children }) => {
     let mounted = true;
     const fetchRemoteWishlist = async () => {
         if (!currentUser?.uid) return;
+        
         try {
+            // 1. Merge Local Items into DB (Sync on Login)
+            const localWishlistStr = localStorage.getItem('wishlist');
+            if (localWishlistStr) {
+                const localWishlist = JSON.parse(localWishlistStr);
+                if (localWishlist.length > 0) {
+                    // Get existing DB items first to avoid duplicates
+                    const { data: existingDB } = await supabase
+                        .from('wishlist_items')
+                        .select('product_id')
+                        .eq('user_id', currentUser.uid);
+
+                    const existingIds = new Set((existingDB || []).map(i => i.product_id));
+                    const itemsToSync = localWishlist.filter(item => !existingIds.has(item.id));
+
+                    if (itemsToSync.length > 0) {
+                        const { error: syncError } = await supabase
+                            .from('wishlist_items')
+                            .insert(itemsToSync.map(item => ({
+                                user_id: currentUser.uid,
+                                product_id: item.id
+                            })));
+                        
+                        if (syncError) console.error("Error syncing wishlist items:", syncError);
+                    }
+                }
+            }
+
+            // 2. Fetch Final Merged List
             const { data, error } = await supabase
                 .from('wishlist_items')
                 .select('*, products(*)')
@@ -38,12 +67,20 @@ export const WishlistProvider = ({ children }) => {
                     ...item.products,
                     wishlistItemId: item.id
                 }));
+                
+                // 3. Update State & Clear Local Storage (as per spec)
                 setWishlist(mappedWishlist);
+                localStorage.removeItem('wishlist'); 
             }
         } catch (error) {
             console.error('Error fetching remote wishlist:', error);
         }
     };
+
+    const handleOnline = () => {
+        if (currentUser) fetchRemoteWishlist();
+    };
+    window.addEventListener('online', handleOnline);
 
     if (currentUser) {
         fetchRemoteWishlist();
@@ -55,11 +92,14 @@ export const WishlistProvider = ({ children }) => {
             console.error(e);
         }
     }
-    return () => { mounted = false; };
+    return () => { 
+        mounted = false; 
+        window.removeEventListener('online', handleOnline);
+    };
   }, [currentUser]);
 
   useEffect(() => {
-    if (!currentUser) {
+    if (!currentUser && wishlist.length > 0) {
         localStorage.setItem('wishlist', JSON.stringify(wishlist));
     }
   }, [wishlist, currentUser]);

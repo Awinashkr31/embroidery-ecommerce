@@ -5,7 +5,7 @@ import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useToast } from '../context/ToastContext';
 import { supabase } from '../../config/supabase';
-import { Heart, ShoppingBag, ArrowLeft, Truck, Shield, Star, Award, Search, Sparkles, Plus, Minus, ChevronDown, Share2 } from 'lucide-react';
+import { Heart, ShoppingBag, ArrowLeft, Truck, Shield, Star, Award, Search, Sparkles, Plus, Minus, ChevronDown, Share2, X } from 'lucide-react';
 
 const ProductDetails = () => {
     const { id } = useParams();
@@ -36,6 +36,23 @@ const ProductDetails = () => {
         setOpenSection(openSection === section ? null : section);
     };
 
+    // Variant Logic Extraction (Moved up for Hooks)
+    const variants = product?.variants || [];
+    const isVariantSystemActive = variants.length > 0;
+    
+    // Determine Selected Variant Object
+    const selectedVariant = isVariantSystemActive && selectedColor 
+       ? variants.find(v => v.color === selectedColor) 
+       : null;
+
+    // derived state for Image Update
+    useEffect(() => {
+        if (selectedVariant && selectedVariant.images && selectedVariant.images.length > 0) {
+            setSelectedImage(selectedVariant.images[0]);
+        }
+    }, [selectedColor, selectedVariant]);
+
+
     // Check if item is in cart (reactive to size selection for clothing)
     const isInCart = product && cart.some(item => 
         item.id === product.id && 
@@ -48,14 +65,20 @@ const ProductDetails = () => {
     const info = product?.clothingInformation || {};
     const sizes = info.sizes || {};
     const hasSizes = Object.keys(sizes).length > 0;
-    // Fallback: if 'availableSizes' array exists in info (new format), use it to generate mock qty if sizes obj empty
-    // But ProductManager saves `sizes` object based on availableSizes list, so it should be fine.
     
     const singleSizeKey = Object.keys(sizes).length === 1 && Object.keys(sizes)[0];
     const shouldHideSizeSelector = singleSizeKey === 'NA';
     const shouldAutoSelectSize = singleSizeKey === 'NA' || singleSizeKey === 'Free';
 
-    const hasOnlyNAColor = info.colors && info.colors.length === 1 && info.colors[0] === 'NA';
+    // Color Logic
+    const associatedColors = variants.map(v => v.color).filter(Boolean);
+    const legacyColors = info.colors || [];
+    const allColors = [...new Set([...associatedColors, ...legacyColors])];
+    const availableColors = (allColors.length > 1 && allColors.includes('NA')) 
+       ? allColors.filter(c => c !== 'NA') 
+       : allColors;
+
+    const hasOnlyNAColor = availableColors.length === 1 && availableColors[0] === 'NA';
 
     useEffect(() => {
         if (shouldAutoSelectSize && singleSizeKey) {
@@ -122,34 +145,54 @@ const ProductDetails = () => {
     // Combine: prioritized same category, then fill with others. Limit to 20 total.
     const relatedProducts = [...sameCategoryProducts, ...otherCategoryProducts].slice(0, 20);
 
-
     const averageRating = reviews.length > 0 
         ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1) 
         : 0;
 
-    // Variant Logic
-     // If no sizes defined, we assume 'Standard' for variant lookup if colors exist
+    // Selection Logic Part 2
      const effectiveSize = selectedSize || (!hasSizes ? 'Standard' : null);
-     const variantKey = (selectedColor && effectiveSize) ? `${selectedColor}-${effectiveSize}` : null;
-     const variantData = variantKey && info.variantStock ? info.variantStock[variantKey] : null;
-
-     // Price Display Logic
-     const currentPrice = variantData && variantData.price ? parseInt(variantData.price) : product.price;
      
-     // Stock Logic for Current Selection
-     const currentStock = variantData && variantData.stock !== undefined ? parseInt(variantData.stock) : product.stock;
-     const isCurrentVariantInStock = currentStock > 0;
+     // Variant-Specific Images for Display
+     const displayImages = (selectedVariant && selectedVariant.images && selectedVariant.images.length > 0 && selectedVariant.images[0])
+        ? selectedVariant.images
+        : (product.images && product.images.length > 0 ? product.images : [product.image]);
 
-     // Stock Availability Logic
-     const isVariantSelected = selectedColor && (selectedSize || !hasSizes);
-     const isStockAvailable = isVariantSelected && info.variantStock 
-         ? isCurrentVariantInStock 
-         : product.inStock;
+     // Price Logic
+     const matrixKey = (selectedColor && effectiveSize) ? `${selectedColor}-${effectiveSize}` : null;
+     const matrixData = matrixKey && info.variantStock ? info.variantStock[matrixKey] : null;
+
+     let currentPrice = product.price;
+     if (matrixData && matrixData.price) {
+         currentPrice = parseInt(matrixData.price);
+     } else if (selectedVariant && selectedVariant.price) {
+         currentPrice = parseInt(selectedVariant.price);
+     }
+
+     // Stock Logic
+     let currentStock = product.stock;
+     
+     if (hasSizes && matrixData && matrixData.stock !== undefined) {
+          currentStock = parseInt(matrixData.stock);
+     } else if (hasSizes && (!matrixData || matrixData.stock === undefined)) {
+         if (selectedSize && sizes && sizes[selectedSize] !== undefined) {
+             currentStock = sizes[selectedSize];
+         } else {
+             currentStock = 0; 
+         }
+     } else if (!hasSizes && selectedVariant && selectedVariant.stock !== undefined) {
+         currentStock = parseInt(selectedVariant.stock);
+     } else if (!hasSizes && !selectedVariant) {
+         currentStock = product.stock;
+     }
+
+     const isCurrentVariantInStock = currentStock > 0;
+     const isStockAvailable = isCurrentVariantInStock;
 
     // Validation Helper
     const validateSelection = () => {
         // 1. Check Color
-        if (product.clothingInformation && info.colors && info.colors.length > 0 && !hasOnlyNAColor && !selectedColor) {
+        // Use availableColors instead of info.colors to check if colors are relevant
+        if (product.clothingInformation && availableColors.length > 0 && !hasOnlyNAColor && !selectedColor) {
             setColorError(true);
             addToast('Please select a color first', 'error');
             const el = document.getElementById('color-selector');
@@ -158,8 +201,6 @@ const ProductDetails = () => {
         }
 
         // 2. Check Size
-        // If "Size & Fit" is enabled (hasSizes is true), size selection is MANDATORY.
-        // We enforce this if clothingInformation exists AND sizes exist.
         if (product.clothingInformation && hasSizes && !shouldHideSizeSelector && !selectedSize) {
             setSizeError(true);
             addToast('Please select a size first', 'error');
@@ -182,18 +223,18 @@ const ProductDetails = () => {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-[40%_60%] gap-8 lg:gap-12 xl:gap-24 mb-16 lg:mb-32">
-                    {/* ... Image Section (Same as before) ... */}
+                    {/* ... Image Section ... */}
                     <div className="relative h-fit lg:sticky lg:top-28 space-y-4 lg:space-y-0 lg:flex lg:gap-6">
                         {/* Desktop Thumbnails (Left Side) */}
-                        {product.images && product.images.length > 1 && (
+                        {displayImages && displayImages.length > 1 && (
                             <div className="hidden lg:flex flex-col gap-4 w-24 flex-shrink-0 max-h-[70vh] overflow-y-auto no-scrollbar py-1">
-                                {product.images.map((img, idx) => (
+                                {displayImages.map((img, idx) => (
                                     img && (
                                         <button 
                                             key={idx}
                                             onClick={() => setSelectedImage(img)}
                                             className={`aspect-[3/4] rounded-lg overflow-hidden border-2 transition-all duration-300 ${
-                                                (selectedImage || product.image) === img 
+                                                (selectedImage || displayImages[0]) === img 
                                                 ? 'border-blue-600 shadow-md ring-2 ring-blue-100' 
                                                 : 'border-transparent opacity-70 hover:opacity-100 hover:border-gray-200'
                                             }`}
@@ -209,7 +250,7 @@ const ProductDetails = () => {
                         <div className="flex-1 rounded-lg overflow-hidden relative shadow-sm group bg-stone-100 aspect-[4/5]">
                             <div className="hidden lg:block w-full h-full"> 
                                 <img 
-                                    src={selectedImage || product.image} 
+                                    src={selectedImage || displayImages[0] || product.image || 'https://via.placeholder.com/500'} 
                                     alt={product.name} 
                                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
                                 />
@@ -223,7 +264,7 @@ const ProductDetails = () => {
                                 </div>
                             </div>
                             <div className="lg:hidden flex overflow-x-auto snap-x snap-mandatory w-full h-full no-scrollbar">
-                                {(product.images && product.images.length > 0 ? product.images : [product.image]).map((img, idx) => (
+                                {(displayImages.length > 0 ? displayImages : [product.image]).map((img, idx) => (
                                     <div key={idx} className="w-full h-full flex-shrink-0 snap-center relative">
                                         <img 
                                             src={img} 
@@ -241,9 +282,9 @@ const ProductDetails = () => {
                                     </div>
                                 ))}
                             </div>
-                            {product.images && product.images.length > 1 && (
+                            {displayImages && displayImages.length > 1 && (
                                 <div className="lg:hidden absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                                    {product.images.map((_, idx) => (
+                                    {displayImages.map((_, idx) => (
                                         <div key={idx} className={`w-1.5 h-1.5 rounded-full transition-all ${'bg-white/80 shadow-sm'}`}></div>
                                     ))}
                                 </div>
@@ -295,7 +336,6 @@ const ProductDetails = () => {
                                         <span className="text-xl text-stone-400 line-through font-light">
                                             ₹{product.originalPrice.toLocaleString()}
                                         </span>
-                                        {/* Dynamic Discount if price changed? For now keep base discount display logic or recalc */}
                                         {product.discountPercentage > 0 && (
                                             <span className="text-sm font-bold text-rose-900 bg-rose-50 px-2 py-1 rounded">
                                                 SAVE {product.discountPercentage}%
@@ -311,12 +351,12 @@ const ProductDetails = () => {
                         {/* Selector Section: Color & Size */}
                         {product.clothingInformation && (
                             <div className="mb-10 space-y-6">
-                                {/* Color Selector */}
-                                {info.colors && info.colors.length > 0 && !hasOnlyNAColor && (
+                                {/* Color Selector Using availableColors */}
+                                {availableColors && availableColors.length > 0 && !hasOnlyNAColor && (
                                     <div className="space-y-4" id="color-selector">
                                         <h3 className="text-xs font-bold text-stone-900 uppercase tracking-widest">Select Color</h3>
                                         <div className="flex flex-wrap gap-3">
-                                            {info.colors.map((color) => {
+                                            {availableColors.map((color) => {
                                                 const isSelected = selectedColor === color;
                                                 return (
                                                     <button
@@ -376,10 +416,10 @@ const ProductDetails = () => {
                                                              isAvailable = parseInt(info.variantStock[vKey].stock) > 0;
                                                          }
                                                      }
-                                                     // If no color selected yet, maybe check if ANY color has stock for this size?
-                                                     // For simplicity, default to available unless strictly 0 everywhere (complex).
-                                                     // Let's just rely on user picking color first if colors exist.
-                                                     // NOTE: Best UX: disable sizes that are OOS for selected color.
+                                                     // If no color selected yet, keep available unless logic dictates otherwise
+                                                } else if (selectedVariant) {
+                                                    // Fallback to variant level stock if no matrix
+                                                    isAvailable = (selectedVariant.stock || 0) > 0;
                                                 } else {
                                                     // Legacy fallback
                                                     isAvailable = _legacyQty > 0;

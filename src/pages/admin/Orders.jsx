@@ -103,9 +103,17 @@ const Orders = () => {
     try {
         const dbStatus = newStatus.toLowerCase();
         
+        // Auto-update Payment Status for COD on Delivery
+        const orderToUpdate = orders.find(o => o.id === orderId);
+        let additionalUpdates = {};
+        
+        if (dbStatus === 'delivered' && orderToUpdate?.paymentMethod === 'cod' && orderToUpdate?.paymentStatus !== 'paid') {
+            additionalUpdates.payment_status = 'paid';
+        }
+
         const { error } = await supabase
             .from('orders')
-            .update({ status: dbStatus, ...extraData })
+            .update({ status: dbStatus, ...extraData, ...additionalUpdates })
             .eq('id', orderId);
 
         if (error) throw error;
@@ -149,6 +157,11 @@ const Orders = () => {
         if (extraData.expected_delivery_date) stateUpdates.expectedDeliveryDate = extraData.expected_delivery_date;
         if (extraData.waybill_id) stateUpdates.waybillId = extraData.waybill_id;
         if (extraData.tracking_url) stateUpdates.trackingUrl = extraData.tracking_url;
+
+        // Auto-update Payment Status mapping
+        if (additionalUpdates.payment_status) {
+            stateUpdates.paymentStatus = additionalUpdates.payment_status;
+        }
 
         const updatedOrders = orders.map(order => 
           order.id === orderId ? { ...order, ...stateUpdates } : order
