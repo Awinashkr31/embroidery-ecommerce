@@ -32,7 +32,8 @@ export const ProductProvider = ({ children }) => {
                 originalPrice: p.original_price,
                 discountPercentage: (p.original_price && p.original_price > p.price)
                     ? Math.round(((p.original_price - p.price) / p.original_price) * 100)
-                    : 0
+                    : 0,
+                variants: p.variants || []
             }));
 
             setProducts(mappedProducts);
@@ -61,6 +62,7 @@ export const ProductProvider = ({ children }) => {
                 stock_quantity: parseInt(product.stockQuantity) || 10, // Use input or default
                 fabric: product.fabric, // Legacy field support (optional)
                 clothing_information: product.clothingInformation || null, // New JSONB field
+                variants: product.variants || [], // New Variants JSONB field
                 active: true
             };
 
@@ -111,6 +113,7 @@ export const ProductProvider = ({ children }) => {
             if (updatedData.stockQuantity !== undefined) updates.stock_quantity = parseInt(updatedData.stockQuantity);
             if (updatedData.fabric) updates.fabric = updatedData.fabric;
             if (updatedData.clothingInformation !== undefined) updates.clothing_information = updatedData.clothingInformation;
+            if (updatedData.variants !== undefined) updates.variants = updatedData.variants;
 
             const { data, error } = await supabase
                 .from('products')

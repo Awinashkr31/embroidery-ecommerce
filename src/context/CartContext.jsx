@@ -30,13 +30,13 @@ export const CartProvider = ({ children }) => {
   useEffect(() => {
     let mounted = true;
 
-    const fetchRemoteCart = async () => {
+    const fetchRemoteCart = async (isBackground = false) => {
         if (!currentUser?.id) {
-             setIsFetchingCart(false);
+             if (!isBackground) setIsFetchingCart(false);
              return;
         }
         
-        setIsFetchingCart(true);
+        if (!isBackground) setIsFetchingCart(true);
         try {
             console.log("Fetching remote cart for user:", currentUser.id);
 
@@ -51,6 +51,9 @@ export const CartProvider = ({ children }) => {
                     
                     // Merge logic: Add local items to Supabase
                     for (const item of localCart) {
+                        // Skip items that are already synced (flag or existing DB ID)
+                        if (item.isSynced || item.cartItemId) continue;
+
                         try {
                              // Check if item already exists in DB to update quantity
                              let query = supabase
@@ -134,18 +137,26 @@ export const CartProvider = ({ children }) => {
                         return null;
                     }
 
-                    // Calculate Variant Price
+                    // Calculate Variant Price & Image
                     let finalPrice = p.price;
-                    if (p.clothingInformation?.variantStock && item.selected_size && item.selected_color) {
+                    let displayImage = p.images && p.images.length > 0 ? p.images[0] : p.image;
+
+                    // 1. Check for new "Variants" (Color-based)
+                    if (item.variant_id && p.variants && Array.isArray(p.variants)) {
+                         const variant = p.variants.find(v => v.id === item.variant_id);
+                         if (variant) {
+                             if (variant.price) finalPrice = parseInt(variant.price);
+                             if (variant.images && variant.images.length > 0) displayImage = variant.images[0];
+                         }
+                    } 
+                    // 2. Fallback to old "Clothing Information" variants if applicable
+                    else if (p.clothingInformation?.variantStock && item.selected_size && item.selected_color) {
                         const key = `${item.selected_color}-${item.selected_size}`;
                         const variant = p.clothingInformation.variantStock[key];
                         if (variant && variant.price) {
                             finalPrice = parseInt(variant.price);
                         }
                     }
-
-                    // Normalize Image
-                    const displayImage = p.images && p.images.length > 0 ? p.images[0] : p.image;
 
                     return {
                         ...p,
@@ -154,7 +165,9 @@ export const CartProvider = ({ children }) => {
                         quantity: item.quantity,
                         selectedSize: item.selected_size,
                         selectedColor: item.selected_color,
-                        cartItemId: item.id
+                        variantId: item.variant_id, // New Field
+                        cartItemId: item.id,
+                        isSynced: true // Mark as synced since it came from DB
                     };
                 }).filter(Boolean); // Filter out nulls
                 
@@ -185,9 +198,16 @@ export const CartProvider = ({ children }) => {
             // On critical error, fallback to local cart if meaningful? 
             // Current logic already handles mixed state via failedItems if merge ran.
         } finally {
-            if (mounted) setIsFetchingCart(false);
+            if (mounted && !isBackground) setIsFetchingCart(false);
         }
     };
+
+    // Auto-Sync on Network Reconnect
+    const handleOnline = () => {
+        console.log("Network back online, syncing cart...");
+        if (currentUser) fetchRemoteCart(true);
+    };
+    window.addEventListener('online', handleOnline);
 
     if (currentUser) {
         fetchRemoteCart();
@@ -202,9 +222,10 @@ export const CartProvider = ({ children }) => {
         setIsFetchingCart(false);
     }
 
-
-
-    return () => { mounted = false; };
+    return () => { 
+        mounted = false; 
+        window.removeEventListener('online', handleOnline);
+    };
   }, [currentUser, loading, addToast]);
 
   // Sync to local storage whenever cart changes (Persistence Layer)
@@ -221,16 +242,22 @@ export const CartProvider = ({ children }) => {
     const normalizedImage = product.images && product.images.length > 0 ? product.images[0] : product.image;
 
     // Check Stock
-    // UNIQUE IDENTIFIER: Product ID + Selected Size + Selected Color
+    // UNIQUE IDENTIFIER: Product ID + Variant ID + Selected Size + Selected Color
     const currentItem = cart.find(item => 
         item.id === product.id && 
+        (item.variantId || null) === (product.variantId || null) &&
         (item.selectedSize || null) === normalizedSize &&
         (item.selectedColor || null) === normalizedColor
     );
     const currentQty = currentItem ? currentItem.quantity : 0;
     
     let availableStock = 100;
-    if (product?.clothingInformation?.sizes && normalizedSize) {
+    
+    // prioritzation: 1. Variant Stock, 2. Clothing Size Stock, 3. General Stock
+    if (product.variantId && product.variants) {
+         const variant = product.variants.find(v => v.id === product.variantId);
+         if (variant && variant.stock !== undefined) availableStock = parseInt(variant.stock);
+    } else if (product?.clothingInformation?.sizes && normalizedSize) {
         availableStock = product.clothingInformation.sizes[normalizedSize] || 0;
     } else if (product) {
          availableStock = product.stock !== undefined ? product.stock : (product.stock_quantity !== undefined ? product.stock_quantity : 100);
@@ -245,12 +272,13 @@ export const CartProvider = ({ children }) => {
     setCart(prevCart => {
       const existingItem = prevCart.find(item => 
           item.id === product.id && 
+          (item.variantId || null) === (product.variantId || null) &&
           (item.selectedSize || null) === normalizedSize &&
           (item.selectedColor || null) === normalizedColor
       );
       if (existingItem) {
         return prevCart.map(item =>
-          (item.id === product.id && (item.selectedSize || null) === normalizedSize && (item.selectedColor || null) === normalizedColor)
+          (item.id === product.id && (item.variantId || null) === (product.variantId || null) && (item.selectedSize || null) === normalizedSize && (item.selectedColor || null) === normalizedColor)
             ? { ...item, quantity: item.quantity + 1 }
             : item
         );
@@ -260,7 +288,9 @@ export const CartProvider = ({ children }) => {
           image: normalizedImage, // Ensure image is set correctly
           selectedSize: normalizedSize,
           selectedColor: normalizedColor,
-          quantity: 1 
+          variantId: product.variantId || null,
+          quantity: 1,
+          isSynced: false // Default to false until DB confirms
       }];
     });
 
@@ -286,6 +316,12 @@ export const CartProvider = ({ children }) => {
                 query = query.is('selected_color', null);
             }
 
+            if (product.variantId) {
+                query = query.eq('variant_id', product.variantId);
+            } else {
+                query = query.is('variant_id', null);
+            }
+
             const { data: existingItems } = await query;
             const existingItem = existingItems && existingItems.length > 0 ? existingItems[0] : null;
 
@@ -302,9 +338,20 @@ export const CartProvider = ({ children }) => {
                         product_id: product.id, 
                         quantity: 1,
                         selected_size: normalizedSize,
-                        selected_color: normalizedColor
+                        selected_color: normalizedColor,
+                        variant_id: product.variantId || null
                     });
             }
+
+            // Sync Successful: Mark local item as synced
+            setCart(prev => prev.map(item => 
+                (item.id === product.id && 
+                (item.variantId || null) === (product.variantId || null) &&
+                (item.selectedSize || null) === normalizedSize &&
+                (item.selectedColor || null) === normalizedColor)
+                ? { ...item, isSynced: true }
+                : item
+            ));
         } catch (error) {
             console.error("Error syncing cart add:", error);
             addToast("Saved locally (Sync pending)", "info");
@@ -313,17 +360,19 @@ export const CartProvider = ({ children }) => {
     return true;
   };
 
-  const removeFromCart = async (productId, selectedSize = null, selectedColor = null) => {
+  const removeFromCart = async (productId, selectedSize = null, selectedColor = null, variantId = null) => {
     // Normalize arguments
     const targetSize = selectedSize || null;
     const targetColor = selectedColor || null;
+    const targetVariantId = variantId || null;
 
     let updatedCart = [];
     setCart(prevCart => {
         updatedCart = prevCart.filter(item => {
             const isMatch = item.id === productId && 
                             (item.selectedSize || null) === targetSize && 
-                            (item.selectedColor || null) === targetColor;
+                            (item.selectedColor || null) === targetColor &&
+                            (item.variantId || null) === targetVariantId;
             return !isMatch;
         });
         return updatedCart;
@@ -348,6 +397,12 @@ export const CartProvider = ({ children }) => {
             } else {
                 query = query.is('selected_color', null);
             }
+
+            if (targetVariantId) {
+                query = query.eq('variant_id', targetVariantId);
+            } else {
+                query = query.is('variant_id', null);
+            }
             
             await query;
         } catch (error) {
@@ -357,14 +412,14 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  const updateQuantity = async (productId, quantity, selectedSize = null, selectedColor = null) => {
+  const updateQuantity = async (productId, quantity, selectedSize = null, selectedColor = null, variantId = null) => {
     if (quantity < 1) {
-      removeFromCart(productId, selectedSize, selectedColor);
+      removeFromCart(productId, selectedSize, selectedColor, variantId);
       return;
     }
 
     // Check Stock for increase
-    const item = cart.find(i => i.id === productId && i.selectedSize === selectedSize && i.selectedColor === selectedColor);
+    const item = cart.find(i => i.id === productId && i.selectedSize === selectedSize && i.selectedColor === selectedColor && (i.variantId || null) === (variantId || null));
     
     if (item && quantity > item.quantity) { 
         let availableStock = 100;
@@ -383,8 +438,8 @@ export const CartProvider = ({ children }) => {
     let updatedCart = [];
     setCart(prevCart => {
       updatedCart = prevCart.map(item =>
-        (item.id === productId && item.selectedSize === selectedSize && item.selectedColor === selectedColor)
-          ? { ...item, quantity: Number(quantity) }
+        (item.id === productId && item.selectedSize === selectedSize && item.selectedColor === selectedColor && (item.variantId || null) === (variantId || null))
+          ? { ...item, quantity: Number(quantity), isSynced: false } // Mark optimistic update as unsynced
           : item
       );
       return updatedCart;
@@ -410,8 +465,21 @@ export const CartProvider = ({ children }) => {
                 query = query.is('selected_color', null);
             }
 
+            if (variantId) {
+                query = query.eq('variant_id', variantId);
+            } else {
+                query = query.is('variant_id', null);
+            }
+
             const { error } = await query;
             if (error) throw error;
+            
+             // Sync Successful: Mark local item as synced
+             setCart(prev => prev.map(item => 
+                (item.id === productId && item.selectedSize === selectedSize && item.selectedColor === selectedColor && (item.variantId || null) === (variantId || null))
+                ? { ...item, isSynced: true }
+                : item
+            ));
         } catch (error) {
              console.error("Error updating cart quantity:", error);
              addToast("Updated locally (Sync pending)", "info");

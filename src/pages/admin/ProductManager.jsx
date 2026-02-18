@@ -4,7 +4,7 @@ import { useCategories } from '../../context/CategoryContext';
 import { 
     Plus, Edit2, Trash2, X, Image as ImageIcon, Search, Filter, 
     Upload, Shirt, Save, ChevronRight, Package, Tag, 
-    Layers, Truck, Globe, Calculator, AlertCircle, ArrowUp, ArrowDown
+    Layers, Truck, Globe, Calculator, AlertCircle, ArrowUp, ArrowDown, Download
 } from 'lucide-react';
 import { uploadImage } from '../../utils/uploadUtils';
 import ImageCropper from '../../components/ImageCropper';
@@ -68,12 +68,9 @@ const ProductManager = () => {
         keyFeatures: [], // Array of strings
         
         // 7. Variants
-        colors: [], // ['Red', 'Blue']
-        colorsInput: '', // Temp string for input
-        // Simplification: We store total stock in DB `stock_quantity`.
-        // Variant stock logic would be complex here, so keeping it tied to simple size map for now
-        // or just plain colors list.
-        variantStock: {}, // Future proofing: { 'Red-S': 5 }
+        variants: [], // [{ id, color, price, stock, images: [] }]
+        colorsInput: '', // Deprecated but kept for legacy view support if needed
+        variantStock: {}, // Deprecated
         
         // 8. Inventory & Shipping
         stockQuantity: 10,
@@ -99,6 +96,15 @@ const ProductManager = () => {
     const [formData, setFormData] = useState(initialFormState);
     const [tempFeature, setTempFeature] = useState('');
     const [newCategory, setNewCategory] = useState('');
+    
+    // Variant Management State
+    const [editingVariantIndex, setEditingVariantIndex] = useState(-1); // -1 = New, 0+ = Edit
+    const [tempVariant, setTempVariant] = useState({
+        color: '',
+        price: '',
+        stock: 10,
+        images: ['', '', '', '']
+    });
 
     // Derived Lists
     const sizesList = ["XS", "S", "M", "L", "XL", "XXL", "3XL", "Free"];
@@ -151,9 +157,8 @@ const ProductManager = () => {
                 keyFeatures: clothing.keyFeatures || [],
                 
                 // Variants
-                colors: clothing.colors || [],
-                colorsInput: (clothing.colors || []).join(', '),
-                variantStock: clothing.variantStock || {},
+                variants: product.variants || [], // New strict variants
+                colorsInput: '', // Legacy support or just clearing it
                 
                 // Inventory
                 stockQuantity: product.stock,
@@ -261,11 +266,21 @@ const ProductManager = () => {
             price: formData.sellingPrice,
             originalPrice: formData.mrp,
             category: formData.category,
-            images: formData.images.filter(img => img !== ''), // Filter empty
+            images: (() => {
+                const defaultImgs = formData.images.filter(img => img !== '');
+                if (defaultImgs.length > 0) return defaultImgs;
+                // Fallback to first variant image
+                if (formData.variants && formData.variants.length > 0) {
+                    const firstVarImg = formData.variants.find(v => v.images && v.images.length > 0 && v.images[0])?.images[0];
+                    if (firstVarImg) return [firstVarImg];
+                }
+                return [];
+            })(), 
             stockQuantity: finalStock,
             featured: formData.featured,
             fabric: formData.fabric, // Legacy top level
-            clothingInformation: hasClothingData ? clothingInfo : null
+            clothingInformation: hasClothingData ? clothingInfo : null,
+            variants: formData.variants // Save the new variants structure
         };
 
         try {
@@ -310,6 +325,10 @@ const ProductManager = () => {
                 setFormData(prev => ({ ...prev, images: newImages }));
             } else if (cropTarget.field === 'sizeChart') {
                 setFormData(prev => ({ ...prev, sizeChart: url }));
+            } else if (cropTarget.field === 'variant-temp') {
+                const newImgs = [...tempVariant.images];
+                newImgs[cropTarget.index] = url;
+                setTempVariant(prev => ({ ...prev, images: newImgs }));
             }
         } catch (err) {
             console.error(err);
@@ -317,6 +336,24 @@ const ProductManager = () => {
         } finally {
 
             setCropImageSrc(null);
+        }
+    };
+
+    const handleDownloadImage = async (url, filename) => {
+        try {
+            const response = await fetch(url);
+            const blob = await response.blob();
+            const blobUrl = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = filename || 'image.jpg';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(blobUrl);
+        } catch (error) {
+            console.error('Download failed:', error);
+            window.open(url, '_blank');
         }
     };
 
@@ -679,6 +716,7 @@ const ProductManager = () => {
 
                                     {formData.isClothing && (
 
+                                    <React.Fragment>
                                     <div className="space-y-6">
                                         <h3 className="section-title">Fit & Sizing</h3>
                                         <div className="grid grid-cols-2 gap-4">
@@ -721,6 +759,27 @@ const ProductManager = () => {
                                              </div>
                                         </div>
                                     </div>
+
+                                    <div className="space-y-4 border-t border-stone-100 pt-6">
+                                        <label className="label">Size Chart Image</label>
+                                        <div className="flex gap-4 items-center">
+                                            <div className="w-24 h-24 bg-stone-100 rounded-xl border-2 border-dashed border-stone-200 flex items-center justify-center relative overflow-hidden">
+                                                {formData.sizeChart ? (
+                                                    <img src={formData.sizeChart} alt="" className="w-full h-full object-cover" />
+                                                ) : <Upload className="w-6 h-6 text-stone-400" />}
+                                                <label className="absolute inset-0 cursor-pointer">
+                                                    <input type="file" className="hidden" onChange={e => handleImageSelect(e, 'sizeChart')} />
+                                                </label>
+                                            </div>
+                                            <div className="space-y-2">
+                                                 <p className="text-xs text-stone-500 max-w-xs">Upload a size guide image.</p>
+                                                 {formData.sizeChart && (
+                                                     <button type="button" onClick={() => setFormData(prev => ({...prev, sizeChart: ''}))} className="text-xs text-red-500 font-bold hover:underline">Remove Image</button>
+                                                 )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    </React.Fragment>
                                     )}
                                 </div>
                             )}
@@ -728,9 +787,10 @@ const ProductManager = () => {
                             {/* TAB: VARIANTS & MEDIA */}
                             {activeTab === 'variants' && (
                                 <div className="space-y-8">
-                                    {/* Images Grid */}
+                                    {/* Main Product Images */}
                                     <div className="space-y-4">
-                                        <h3 className="section-title">Product Imagery (4 Views)</h3>
+                                        <h3 className="section-title">Default Product Images</h3>
+                                        <p className="text-sm text-stone-500">These images show if no specific variant is selected. <span className="text-rose-600 font-medium">Leave empty to automatically use the first variant's image.</span></p>
                                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                             {formData.images.map((img, idx) => (
                                                 <div key={idx} className="space-y-2">
@@ -738,13 +798,30 @@ const ProductManager = () => {
                                                         {img ? (
                                                             <>
                                                                 <img src={img} alt="" className="w-full h-full object-cover" />
-                                                                <button onClick={() => {
-                                                                    const newImages = [...formData.images];
-                                                                    newImages[idx] = '';
-                                                                    setFormData({...formData, images: newImages});
-                                                                }} className="absolute top-2 right-2 bg-white/90 p-1.5 rounded-full text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                                    <Trash2 className="w-4 h-4" />
-                                                                </button>
+                                                                <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                    <button 
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            handleDownloadImage(img, `product-${idx}.jpg`);
+                                                                        }} 
+                                                                        className="bg-white/90 p-1.5 rounded-full text-stone-600 hover:text-stone-900 shadow-sm"
+                                                                        title="Download"
+                                                                    >
+                                                                        <Download className="w-4 h-4" />
+                                                                    </button>
+                                                                    <button 
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            const newImages = [...formData.images];
+                                                                            newImages[idx] = '';
+                                                                            setFormData({...formData, images: newImages});
+                                                                        }} 
+                                                                        className="bg-white/90 p-1.5 rounded-full text-red-500 hover:text-red-700 shadow-sm"
+                                                                        title="Delete"
+                                                                    >
+                                                                        <Trash2 className="w-4 h-4" />
+                                                                    </button>
+                                                                </div>
                                                             </>
                                                         ) : (
                                                             <div className="text-center text-stone-400">
@@ -761,149 +838,190 @@ const ProductManager = () => {
                                         </div>
                                     </div>
 
-                                    {/* Colors - Available for all product types */}
-                                    <div className="space-y-4 border-t border-stone-100 pt-8">
-                                        <label className="label">Available Colors (Comma Separated)</label>
-                                        <input 
-                                            type="text" 
-                                            className="input-field" 
-                                            value={formData.colorsInput} 
-                                            onChange={e => setFormData({...formData, colorsInput: e.target.value})}
-                                            placeholder="Red, Blue, Green, NA"
-                                        />
-                                        <div className="flex gap-2 flex-wrap">
-                                            {formData.colorsInput ? formData.colorsInput.split(',').map(c => c.trim()).filter(Boolean).map((c, i) => (
-                                                <span key={i} className="px-3 py-1 bg-stone-100 text-stone-700 rounded-lg text-sm font-bold">{c}</span>
-                                            )) : <span className="text-xs text-stone-400">No colors added</span>}
+                                    <hr className="border-stone-100" />
+
+                                    {/* Color Variants Manager */}
+                                    <div className="space-y-6">
+                                        <div className="flex justify-between items-center">
+                                            <div>
+                                                <h3 className="section-title">Color Variants</h3>
+                                                <p className="text-sm text-stone-500">Manage separate images, price, and stock for each color.</p>
+                                            </div>
                                         </div>
-                                    </div>
 
-                                    {/* Variant Inventory Table */}
-                                    {(formData.availableSizes.length > 0 || formData.colorsInput.split(',').filter(c=>c.trim()).length > 0) && (
-                                        <div className="space-y-4 border-t border-stone-100 pt-8">
-                                            <h3 className="section-title">Variant Pricing & Inventory</h3>
-                                            <div className="overflow-x-auto border border-stone-200 rounded-xl">
-                                                <table className="w-full text-sm text-left">
-                                                    <thead className="bg-stone-50 text-stone-500 font-bold uppercase text-xs">
-                                                        <tr>
-                                                            <th className="px-4 py-3">Variant</th>
-                                                            <th className="px-4 py-3">Price (₹)</th>
-                                                            <th className="px-4 py-3">Stock</th>
-                                                            <th className="px-4 py-3">SKU Suffix</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody className="divide-y divide-stone-100">
-                                                        {(() => {
-                                                            const colors = formData.colorsInput ? formData.colorsInput.split(',').map(c => c.trim()).filter(Boolean) : ['Standard'];
-                                                            const sizes = formData.availableSizes.length > 0 ? formData.availableSizes : ['Standard'];
-                                                            
-                                                            // If both are empty/standard, don't show table or just show 1 row? 
-                                                            // If checks above passed, we have at least some variants.
-                                                            const variants = [];
-                                                            colors.forEach(color => {
-                                                                sizes.forEach(size => {
-                                                                    if(color === 'Standard' && size === 'Standard') return; // Skip if no variants actually
-                                                                    variants.push({ color, size, key: `${color}-${size}` });
-                                                                });
-                                                            });
+                                        {/* Variants Box */}
+                                        <div className="bg-stone-50 rounded-2xl p-6 border border-stone-100 space-y-6">
+                                            
+                                            {/* Editor Form */}
+                                            <div className="bg-white p-4 rounded-xl shadow-sm border border-stone-200">
+                                                <h4 className="font-bold text-stone-800 mb-4 text-sm uppercase tracking-wide">
+                                                    {editingVariantIndex > -1 ? 'Edit Variant' : 'Add New Variant'}
+                                                </h4>
+                                                
+                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                                    <div>
+                                                        <label className="label">Color Name</label>
+                                                        <input 
+                                                            type="text" 
+                                                            className="input-field" 
+                                                            placeholder="e.g. Midnight Blue" 
+                                                            value={tempVariant.color}
+                                                            onChange={e => setTempVariant({...tempVariant, color: e.target.value})}
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="label">Variant Price (₹)</label>
+                                                        <input 
+                                                            type="number" 
+                                                            className="input-field" 
+                                                            placeholder="Same as base" 
+                                                            value={tempVariant.price}
+                                                            onChange={e => setTempVariant({...tempVariant, price: e.target.value})}
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="label">Variant Stock</label>
+                                                        <input 
+                                                            type="number" 
+                                                            className="input-field" 
+                                                            value={tempVariant.stock}
+                                                            onChange={e => setTempVariant({...tempVariant, stock: e.target.value})}
+                                                        />
+                                                    </div>
+                                                </div>
 
-                                                            if(variants.length === 0) return <tr><td colSpan="4" className="px-4 py-3 text-center text-stone-400">Add Colors or Sizes to generate variants</td></tr>;
+                                                <div className="mb-4">
+                                                    <label className="label mb-2 block">Variant Images</label>
+                                                    <div className="grid grid-cols-4 gap-2">
+                                                        {tempVariant.images.map((img, idx) => (
+                                                            <div key={idx} className="aspect-[3/4] bg-stone-50 rounded-lg border border-dashed border-stone-200 flex items-center justify-center relative group overflow-hidden">
+                                                                {img ? (
+                                                                    <>
+                                                                        <img src={img} alt="" className="w-full h-full object-cover" />
+                                                                        <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                            <button 
+                                                                                onClick={(e) => {
+                                                                                    e.stopPropagation();
+                                                                                    handleDownloadImage(img, `variant-${tempVariant.color}-${idx}.jpg`);
+                                                                                }} 
+                                                                                className="bg-white/90 p-1 rounded-full text-stone-600 hover:text-stone-900 shadow-sm"
+                                                                            >
+                                                                                <Download className="w-3 h-3" />
+                                                                            </button>
+                                                                            <button 
+                                                                                onClick={(e) => {
+                                                                                    e.stopPropagation();
+                                                                                    const newImgs = [...tempVariant.images];
+                                                                                    newImgs[idx] = '';
+                                                                                    setTempVariant({...tempVariant, images: newImgs});
+                                                                                }} 
+                                                                                className="bg-white/90 p-1 rounded-full text-red-500 hover:text-red-700 shadow-sm"
+                                                                            >
+                                                                                <Trash2 className="w-3 h-3" />
+                                                                            </button>
+                                                                        </div>
+                                                                    </>
+                                                                ) : (
+                                                                    <div className="text-center text-stone-300">
+                                                                        <Plus className="w-4 h-4 mx-auto" />
+                                                                    </div>
+                                                                )}
+                                                                <label className="absolute inset-0 cursor-pointer">
+                                                                    <input type="file" className="hidden" onChange={e => handleImageSelect(e, `variant-temp`, idx)} />
+                                                                </label>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
 
-                                                            return variants.map((v) => {
-                                                                const currentData = formData.variantStock[v.key] || {};
-                                                                return (
-                                                                    <tr key={v.key} className="bg-white hover:bg-stone-50">
-                                                                        <td className="px-4 py-3 font-bold text-stone-800">
-                                                                            {v.color !== 'Standard' && <span className="mr-2 text-rose-600">{v.color}</span>}
-                                                                            {v.size !== 'Standard' && <span className="px-2 py-0.5 bg-stone-100 rounded text-stone-600">{v.size}</span>}
-                                                                        </td>
-                                                                        <td className="px-4 py-2">
-                                                                            <input 
-                                                                                type="number" 
-                                                                                className="w-24 px-2 py-1 border rounded text-right font-medium" 
-                                                                                placeholder={formData.sellingPrice}
-                                                                                value={currentData.price || ''}
-                                                                                onChange={(e) => {
-                                                                                    const val = e.target.value;
-                                                                                    setFormData(prev => ({
-                                                                                        ...prev,
-                                                                                        variantStock: {
-                                                                                            ...prev.variantStock,
-                                                                                            [v.key]: { ...(prev.variantStock[v.key] || {}), price: val }
-                                                                                        }
-                                                                                    }));
-                                                                                }}
-                                                                            />
-                                                                        </td>
-                                                                        <td className="px-4 py-2">
-                                                                            <input 
-                                                                                type="number" 
-                                                                                className="w-20 px-2 py-1 border rounded text-right" 
-                                                                                placeholder="10"
-                                                                                value={currentData.stock !== undefined ? currentData.stock : ''}
-                                                                                onChange={(e) => {
-                                                                                    const val = e.target.value;
-                                                                                    setFormData(prev => ({
-                                                                                        ...prev,
-                                                                                        variantStock: {
-                                                                                            ...prev.variantStock,
-                                                                                            [v.key]: { ...(prev.variantStock[v.key] || {}), stock: val }
-                                                                                        }
-                                                                                    }));
-                                                                                }}
-                                                                            />
-                                                                        </td>
-                                                                        <td className="px-4 py-2">
-                                                                            <input 
-                                                                                type="text" 
-                                                                                className="w-full px-2 py-1 border rounded text-xs" 
-                                                                                placeholder={`-${v.color.substring(0,2).toUpperCase()}-${v.size}`}
-                                                                                value={currentData.sku || ''}
-                                                                                onChange={(e) => {
-                                                                                    const val = e.target.value;
-                                                                                    setFormData(prev => ({
-                                                                                        ...prev,
-                                                                                        variantStock: {
-                                                                                            ...prev.variantStock,
-                                                                                            [v.key]: { ...(prev.variantStock[v.key] || {}), sku: val }
-                                                                                        }
-                                                                                    }));
-                                                                                }}
-                                                                            />
-                                                                        </td>
-                                                                    </tr>
-                                                                );
-                                                            });
-                                                        })()}
-                                                    </tbody>
-                                                </table>
+                                                <button 
+                                                    type="button"
+                                                    onClick={() => {
+                                                        if (!tempVariant.color) return alert("Color name is required");
+                                                        
+                                                        // Generate ID if new
+                                                        const variantToSave = {
+                                                            ...tempVariant,
+                                                            id: tempVariant.id || crypto.randomUUID(),
+                                                            // Filter empty images
+                                                            images: tempVariant.images
+                                                        };
+
+                                                        let newVariants = [...formData.variants];
+                                                        if (editingVariantIndex > -1) {
+                                                            newVariants[editingVariantIndex] = variantToSave;
+                                                        } else {
+                                                            newVariants.push(variantToSave);
+                                                        }
+
+                                                        setFormData({...formData, variants: newVariants});
+                                                        
+                                                        // Reset
+                                                        setTempVariant({ color: '', price: '', stock: 10, images: ['', '', '', ''] });
+                                                        setEditingVariantIndex(-1);
+                                                    }}
+                                                    className="w-full py-2 bg-stone-900 text-white rounded-lg font-bold hover:bg-stone-800 transition-colors"
+                                                >
+                                                    {editingVariantIndex > -1 ? 'Update Variant' : 'Add Variant'}
+                                                </button>
                                             </div>
-                                            <p className="text-xs text-stone-400 text-center">Leave Price blank to use Base Price. Leave Stock blank to use Global Stock (or default 0).</p>
-                                        </div>
-                                    )}
 
-                                    {/* Size Chart Image (Clothing Only) */}
-                                    <div className="space-y-4 border-t border-stone-100 pt-8">
-                                        <label className="label">Size Chart Image</label>
-                                        <div className="flex gap-4 items-center">
-                                            <div className="w-32 h-32 bg-stone-100 rounded-xl border-2 border-dashed border-stone-200 flex items-center justify-center relative overflow-hidden">
-                                                {formData.sizeChart ? (
-                                                    <img src={formData.sizeChart} alt="" className="w-full h-full object-cover" />
-                                                ) : <Upload className="w-6 h-6 text-stone-400" />}
-                                                <label className="absolute inset-0 cursor-pointer">
-                                                    <input type="file" className="hidden" onChange={e => handleImageSelect(e, 'sizeChart')} />
-                                                </label>
-                                            </div>
-                                            <div className="space-y-2">
-                                                 <p className="text-sm text-stone-500 max-w-xs">Upload a size guide image to help customers choose better fit.</p>
-                                                 {formData.sizeChart && (
-                                                     <button type="button" onClick={() => setFormData(prev => ({...prev, sizeChart: ''}))} className="text-xs text-red-500 font-bold hover:underline">Remove Image</button>
-                                                 )}
-                                            </div>
+                                            {/* List of Variants */}
+                                            {formData.variants.length > 0 ? (
+                                                <div className="space-y-2">
+                                                    {formData.variants.map((v, i) => (
+                                                        <div key={i} className="flex items-center gap-4 bg-white p-3 rounded-xl border border-stone-200">
+                                                            <div className="w-12 h-16 bg-stone-100 rounded-lg overflow-hidden border border-stone-100 shrink-0">
+                                                                {v.images && v.images.find(img => img) ? (
+                                                                    <img src={v.images.find(img => img)} alt={v.color} className="w-full h-full object-cover" />
+                                                                ) : (
+                                                                    <div className="w-full h-full flex items-center justify-center text-stone-300"><ImageIcon className="w-4 h-4" /></div>
+                                                                )}
+                                                            </div>
+                                                            <div className="flex-1">
+                                                                <p className="font-bold text-stone-900">{v.color}</p>
+                                                                <p className="text-xs text-stone-500">
+                                                                    ₹{v.price || formData.sellingPrice} | Stock: {v.stock}
+                                                                </p>
+                                                            </div>
+                                                            <div className="flex gap-2">
+                                                                <button 
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        const existingImgs = [...v.images];
+                                                                        // Pad details
+                                                                        while(existingImgs.length < 4) existingImgs.push('');
+                                                                        setTempVariant({...v, images: existingImgs});
+                                                                        setEditingVariantIndex(i);
+                                                                    }} 
+                                                                    className="p-2 hover:bg-stone-100 rounded-lg text-blue-600"
+                                                                >
+                                                                    <Edit2 className="w-4 h-4" />
+                                                                </button>
+                                                                <button 
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        const newV = formData.variants.filter((_, idx) => idx !== i);
+                                                                        setFormData({...formData, variants: newV});
+                                                                    }}
+                                                                    className="p-2 hover:bg-stone-100 rounded-lg text-red-600"
+                                                                >
+                                                                    <Trash2 className="w-4 h-4" />
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <div className="text-center text-stone-400 py-8">
+                                                    <p>No variants added yet.</p>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
-                            )}
+                            )} 
+
 
                             {/* TAB: SEO & POLICY */}
                             {activeTab === 'seo' && (
