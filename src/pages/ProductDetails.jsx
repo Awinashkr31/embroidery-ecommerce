@@ -213,30 +213,34 @@ const ProductDetails = () => {
     };
 
     return (
-        <div className="min-h-screen bg-[#fdfbf7] pt-7 pb-28 lg:pb-20 font-body selection:bg-rose-100 selection:text-rose-900">
+        <div className="min-h-screen bg-[#fdfbf7] pt-4 md:pt-8 pb-28 lg:pb-20 font-body selection:bg-rose-100 selection:text-rose-900">
             <div className="container-custom">
-                {/* Breadcrumb - Minimal */}
-                <div className="mb-8 hidden lg:block">
-                    <Link to="/shop" className="inline-flex items-center gap-2 text-stone-500 hover:text-rose-900 transition-colors text-sm font-medium tracking-wide group">
-                        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" /> Back to Collection
-                    </Link>
+                {/* Breadcrumb */}
+                <div className="mb-6 md:mb-10">
+                    <div className="flex items-center gap-2 text-sm text-stone-400">
+                        <Link to="/" className="hover:text-rose-900 transition-colors">Home</Link>
+                        <span>/</span>
+                        <Link to="/shop" className="hover:text-rose-900 transition-colors">Shop</Link>
+                        <span>/</span>
+                        <span className="text-stone-700 font-medium truncate max-w-[200px]">{product.name}</span>
+                    </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-[40%_60%] gap-8 lg:gap-12 xl:gap-24 mb-16 lg:mb-32">
+                <div className="grid grid-cols-1 lg:grid-cols-[48%_52%] gap-8 lg:gap-16 xl:gap-20 mb-16 lg:mb-32">
                     {/* ... Image Section ... */}
                     <div className="relative h-fit lg:sticky lg:top-28 space-y-4 lg:space-y-0 lg:flex lg:gap-6">
                         {/* Desktop Thumbnails (Left Side) */}
                         {displayImages && displayImages.length > 1 && (
-                            <div className="hidden lg:flex flex-col gap-4 w-24 flex-shrink-0 max-h-[70vh] overflow-y-auto no-scrollbar py-1">
+                            <div className="hidden lg:flex flex-col gap-3 w-20 flex-shrink-0 max-h-[70vh] overflow-y-auto no-scrollbar py-1">
                                 {displayImages.map((img, idx) => (
                                     img && (
                                         <button 
                                             key={idx}
                                             onClick={() => setSelectedImage(img)}
-                                            className={`aspect-[3/4] rounded-lg overflow-hidden border-2 transition-all duration-300 ${
+                                            className={`aspect-[3/4] rounded-xl overflow-hidden border-2 transition-all duration-300 ${
                                                 (selectedImage || displayImages[0]) === img 
-                                                ? 'border-blue-600 shadow-md ring-2 ring-blue-100' 
-                                                : 'border-transparent opacity-70 hover:opacity-100 hover:border-gray-200'
+                                                ? 'border-rose-900 shadow-md ring-2 ring-rose-100' 
+                                                : 'border-transparent opacity-60 hover:opacity-100 hover:border-stone-300'
                                             }`}
                                         >
                                             <img src={img} alt={`View ${idx + 1}`} className="w-full h-full object-cover" />
@@ -283,9 +287,13 @@ const ProductDetails = () => {
                                 ))}
                             </div>
                             {displayImages && displayImages.length > 1 && (
-                                <div className="lg:hidden absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                                    {displayImages.map((_, idx) => (
-                                        <div key={idx} className={`w-1.5 h-1.5 rounded-full transition-all ${'bg-white/80 shadow-sm'}`}></div>
+                                <div className="lg:hidden absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                                    {displayImages.map((img, idx) => (
+                                        <div key={idx} className={`rounded-full transition-all ${
+                                            (selectedImage || displayImages[0]) === img
+                                            ? 'w-4 h-1.5 bg-white'
+                                            : 'w-1.5 h-1.5 bg-white/60'
+                                        }`}></div>
                                     ))}
                                 </div>
                             )}
@@ -294,57 +302,74 @@ const ProductDetails = () => {
 
                     {/* Details Section - Clean Typography */}
                     <div className="lg:pt-4 pl-0 lg:pl-8"> 
-                        <div className="mb-8 space-y-4">
+                        <div className="mb-6 space-y-3">
                              <div className="flex items-center justify-between">
-                                <span className="text-xs font-bold tracking-[0.2em] uppercase text-rose-900 bg-rose-50 px-3 py-1 rounded-sm">
+                                <span className="inline-flex items-center text-xs font-bold tracking-[0.18em] uppercase text-rose-900 bg-rose-50 border border-rose-100 px-3 py-1.5 rounded-full">
                                     {product.category}
                                 </span>
-                                <button className="text-stone-400 hover:text-stone-600 transition-colors">
-                                    <Share2 className="w-5 h-5" />
+                                <button
+                                    onClick={async () => {
+                                        const shareData = {
+                                            title: product.name,
+                                            text: `Check out ${product.name} on Enbroidery`,
+                                            url: window.location.href,
+                                        };
+                                        if (navigator.share) {
+                                            try { await navigator.share(shareData); } catch { /* user cancelled */ }
+                                        } else {
+                                            await navigator.clipboard.writeText(window.location.href);
+                                            addToast('Link copied to clipboard!', 'success');
+                                        }
+                                    }}
+                                    className="flex items-center gap-1.5 text-stone-400 hover:text-stone-700 transition-colors text-xs font-medium"
+                                >
+                                    <Share2 className="w-4 h-4" />
+                                    <span className="hidden lg:inline">Share</span>
                                 </button>
                             </div>
 
-                            <h1 className="text-4xl lg:text-5xl font-heading font-medium text-stone-900 leading-tight">
+                            <h1 className="text-3xl lg:text-4xl font-heading font-semibold text-stone-900 leading-tight break-words">
                                 {product.name}
                             </h1>
                             
                             {info.shortDescription && (
-                                <p className="text-stone-500 font-light text-lg">{info.shortDescription}</p>
+                                <p className="text-stone-500 text-base leading-relaxed">{info.shortDescription}</p>
                             )}
 
-                            <div className="flex items-center gap-4">
-                                <div className="flex text-amber-500 gap-0.5">
+                            <div className="flex items-center gap-3 pt-1">
+                                <div className="flex items-center gap-0.5">
                                     {[...Array(5)].map((_, i) => (
-                                        <Star key={i} className={`w-4 h-4 ${i < Math.round(averageRating) ? 'fill-current' : 'text-stone-200'}`} />
+                                        <Star key={i} className={`w-4 h-4 ${i < Math.round(averageRating) ? 'fill-amber-400 text-amber-400' : 'text-stone-200'}`} />
                                     ))}
                                 </div>
-                                <span className="text-sm text-stone-500 font-medium">
-                                    {reviews.length} Reviews
-                                </span>
+                                <span className="text-sm font-semibold text-stone-700">{averageRating}</span>
+                                <span className="text-stone-300">·</span>
+                                <a href="#reviews" className="text-sm text-stone-500 hover:text-rose-900 transition-colors">
+                                    {reviews.length} {reviews.length === 1 ? 'Review' : 'Reviews'}
+                                </a>
                             </div>
                         </div>
 
                         {/* Price Area */}
-                        <div className="mb-10 pb-8 border-b border-stone-100">
-                            <div className="flex items-baseline gap-4 mb-2">
-                                <span className="text-3xl font-heading font-medium text-stone-900 relative">
-                                    <span className="text-sm absolute -top-2 -left-3 text-stone-400 font-sans">₹</span>
-                                    {currentPrice.toLocaleString()}
+                        <div className="mb-8 pb-8 border-b border-stone-100">
+                            <div className="flex items-end gap-4 mb-1.5">
+                                <span className="text-4xl lg:text-5xl font-heading font-semibold text-stone-900 tracking-tight">
+                                    <span className="text-xl text-stone-400 font-sans mr-0.5">₹</span>{currentPrice.toLocaleString()}
                                 </span>
                                 {product.originalPrice && (
                                     <>
-                                        <span className="text-xl text-stone-400 line-through font-light">
+                                        <span className="text-xl text-stone-400 line-through font-light mb-1">
                                             ₹{product.originalPrice.toLocaleString()}
                                         </span>
                                         {product.discountPercentage > 0 && (
-                                            <span className="text-sm font-bold text-rose-900 bg-rose-50 px-2 py-1 rounded">
-                                                SAVE {product.discountPercentage}%
+                                            <span className="mb-1 text-sm font-bold text-white bg-rose-700 px-3 py-1 rounded-full">
+                                                {product.discountPercentage}% OFF
                                             </span>
                                         )}
                                     </>
                                 )}
                             </div>
-                            <p className="text-stone-500 text-sm">Inclusive of all taxes</p>
+                            <p className="text-stone-400 text-xs">Inclusive of all taxes · Free delivery above ₹999</p>
                         </div>
                    
                         
@@ -465,10 +490,25 @@ const ProductDetails = () => {
                             </div>
                         )}
 
-                        {/* Actions */}
+                        {/* Trust strip — desktop only */}
+                        <div className="hidden lg:grid grid-cols-3 gap-3 mb-6 p-4 bg-stone-50 rounded-2xl border border-stone-100">
+                            <div className="flex items-center gap-2">
+                                <Truck className="w-4 h-4 text-rose-900 shrink-0" />
+                                <span className="text-[11px] font-semibold text-stone-600">Free shipping ₹999+</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Shield className="w-4 h-4 text-rose-900 shrink-0" />
+                                <span className="text-[11px] font-semibold text-stone-600">7-day returns</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Award className="w-4 h-4 text-rose-900 shrink-0" />
+                                <span className="text-[11px] font-semibold text-stone-600">100% authentic</span>
+                            </div>
+                        </div>
+
                         {/* Actions (Desktop) */}
-                        <div className="hidden lg:flex flex-col gap-4 mb-16">
-                            <div className="flex gap-4">
+                        <div className="hidden lg:flex flex-col gap-3 mb-12">
+                            <div className="flex gap-3">
                                 <button
                                     onClick={async () => {
                                         if (isInCart) {
@@ -482,11 +522,11 @@ const ProductDetails = () => {
                                         if (success) addToast(`Added ${product.name} to bag`, 'success');
                                     }}
                                     disabled={!isStockAvailable}
-                                    className={`flex-1 py-4 px-8 rounded-full font-bold uppercase tracking-widest text-xs lg:text-sm transition-all duration-300 flex items-center justify-center gap-3 ${
+                                    className={`flex-1 py-4 px-8 rounded-2xl font-bold uppercase tracking-widest text-sm transition-all duration-200 flex items-center justify-center gap-3 ${
                                         isStockAvailable
                                         ? isInCart 
-                                            ? 'bg-emerald-800 text-white hover:bg-emerald-900 shadow-lg shadow-emerald-900/10' 
-                                            : 'bg-stone-900 text-white hover:bg-stone-800 shadow-xl shadow-stone-900/10 hover:-translate-y-0.5'
+                                            ? 'bg-emerald-700 text-white hover:bg-emerald-800 shadow-lg shadow-emerald-900/15' 
+                                            : 'bg-stone-900 text-white hover:bg-stone-800 shadow-xl shadow-stone-900/15 hover:-translate-y-0.5'
                                         : 'bg-stone-200 text-stone-400 cursor-not-allowed'
                                     }`}
                                 >
@@ -503,9 +543,20 @@ const ProductDetails = () => {
                                             }
                                     }}
                                     disabled={!isStockAvailable}
-                                    className="px-8 py-4 rounded-full border border-stone-900 font-bold uppercase tracking-widest text-xs lg:text-sm text-stone-900 hover:bg-stone-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-white"
+                                    className="px-8 py-4 rounded-2xl border-2 border-stone-900 font-bold uppercase tracking-widest text-sm text-stone-900 hover:bg-stone-900 hover:text-white transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed bg-white"
                                 >
                                     Buy Now
+                                </button>
+
+                                <button
+                                    onClick={() => toggleWishlist(product)}
+                                    className={`p-4 rounded-2xl border-2 transition-all duration-200 ${
+                                        isInWishlist(product.id) 
+                                        ? 'border-rose-200 bg-rose-50 text-rose-600' 
+                                        : 'border-stone-200 text-stone-400 hover:border-rose-200 hover:text-rose-500 hover:bg-rose-50'
+                                    }`}
+                                >
+                                    <Heart className={`w-5 h-5 ${isInWishlist(product.id) ? 'fill-rose-500' : ''}`} />
                                 </button>
                             </div>
                         </div>
@@ -521,7 +572,7 @@ const ProductDetails = () => {
                                     <span className="font-heading font-medium text-lg text-stone-900">Description</span>
                                     {openSection === 'description' ? <Minus className="w-4 h-4 text-rose-900" /> : <Plus className="w-4 h-4 text-stone-400 group-hover:text-rose-900 transition-colors" />}
                                 </button>
-                                <div className={`overflow-hidden transition-all duration-300 ease-in-out ${openSection === 'description' ? 'max-h-96 opacity-100 mb-6' : 'max-h-0 opacity-0'}`}>
+                                <div className={`overflow-hidden transition-all duration-300 ease-in-out ${openSection === 'description' ? 'max-h-[2000px] opacity-100 mb-6' : 'max-h-0 opacity-0'}`}>
                                     <p className="text-stone-600 leading-relaxed font-light mb-4 text-sm md:text-base">
                                         {product.description}
                                     </p>
@@ -643,38 +694,56 @@ const ProductDetails = () => {
                             </div>
                         </div>
 
-                        {/* Reviews - now cleaner */}
-                        <div id="reviews" className="border-t border-stone-200 pt-8 lg:pt-12 mt-8 lg:mt-12 mb-12 lg:mb-32">
-                            <div className="flex items-center justify-between mb-8">
-                                <h3 className="font-heading text-2xl font-medium text-stone-900">Client Reviews</h3>
-                                <div className="text-right">
-                                    <div className="text-3xl font-heading font-bold text-stone-900">{averageRating}</div>
-                                    <div className="flex text-amber-500 text-xs">
+                        {/* Reviews */}
+                        <div id="reviews" className="border-t border-stone-100 pt-8 lg:pt-12 mt-8 lg:mt-12 mb-12 lg:mb-32">
+                            <div className="flex items-end justify-between mb-8">
+                                <div>
+                                    <h3 className="font-heading text-2xl font-semibold text-stone-900">Customer Reviews</h3>
+                                    <p className="text-stone-500 text-sm mt-1">{reviews.length} verified purchase{reviews.length !== 1 ? 's' : ''}</p>
+                                </div>
+                                <div className="text-right hidden sm:block">
+                                    <div className="text-4xl font-heading font-bold text-stone-900 leading-none">{averageRating}</div>
+                                    <div className="flex justify-end text-amber-400 mt-1">
                                         {[...Array(5)].map((_, i) => (
-                                            <Star key={i} className={`w-3 h-3 ${i < Math.round(averageRating) ? 'fill-current' : 'text-stone-200'}`} />
+                                            <Star key={i} className={`w-3.5 h-3.5 ${i < Math.round(averageRating) ? 'fill-current' : 'text-stone-200'}`} />
                                         ))}
                                     </div>
+                                    <p className="text-xs text-stone-400 mt-1">out of 5</p>
                                 </div>
                             </div>
                             
                             {reviews.length === 0 ? (
-                                <div className="text-center py-8 lg:py-12 bg-stone-50 rounded-xl border border-dashed border-stone-200">
-                                    <p className="text-stone-500 italic">No reviews yet. Be the first to share your thoughts.</p>
+                                <div className="text-center py-12 bg-stone-50 rounded-2xl border border-dashed border-stone-200">
+                                    <Star className="w-8 h-8 text-stone-200 mx-auto mb-3" />
+                                    <p className="text-stone-500 font-medium">No reviews yet</p>
+                                    <p className="text-stone-400 text-sm mt-1">Be the first to share your thoughts.</p>
                                 </div>
                             ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                     {reviews.map(review => (
-                                        <div key={review.id} className="bg-white p-6 rounded-xl border border-stone-100 shadow-sm hover:shadow-md transition-shadow">
-                                            <div className="flex items-center justify-between mb-3">
-                                                <h4 className="font-bold text-stone-900">{review.user_name}</h4>
-                                                <span className="text-xs text-stone-400">{new Date(review.created_at).toLocaleDateString()}</span>
+                                        <div key={review.id} className="bg-white p-6 rounded-2xl border border-stone-100 shadow-sm hover:shadow-md transition-all duration-200">
+                                            <div className="flex items-start justify-between mb-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-9 h-9 rounded-full bg-rose-100 flex items-center justify-center shrink-0">
+                                                        <span className="text-rose-900 font-bold text-sm">
+                                                            {review.user_name?.charAt(0).toUpperCase() || '?'}
+                                                        </span>
+                                                    </div>
+                                                    <div>
+                                                        <div className="flex items-center gap-2">
+                                                            <h4 className="font-bold text-stone-900 text-sm">{review.user_name}</h4>
+                                                            <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-full">Verified</span>
+                                                        </div>
+                                                        <span className="text-xs text-stone-400">{new Date(review.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                                                    </div>
+                                                </div>
+                                                <div className="flex text-amber-400">
+                                                    {[...Array(5)].map((_, i) => (
+                                                        <Star key={i} className={`w-3.5 h-3.5 ${i < review.rating ? 'fill-current' : 'text-stone-200'}`} />
+                                                    ))}
+                                                </div>
                                             </div>
-                                            <div className="flex text-amber-400 mb-3">
-                                                {[...Array(5)].map((_, i) => (
-                                                    <Star key={i} className={`w-3 h-3 ${i < review.rating ? 'fill-current' : 'text-stone-200'}`} />
-                                                ))}
-                                            </div>
-                                            <p className="text-stone-600 leading-relaxed font-light text-sm">"{review.comment}"</p>
+                                            <p className="text-stone-600 leading-relaxed text-sm">“{review.comment}”</p>
                                         </div>
                                     ))}
                                 </div>
@@ -685,9 +754,11 @@ const ProductDetails = () => {
 
                 {/* Related Products Section */}
                 {relatedProducts.length > 0 && (
-                    <div className="border-t border-stone-200 pt-8 lg:pt-16 pb-24">
-                        <div className="text-center mb-8 lg:mb-12">
-                            <h2 className="text-3xl lg:text-4xl font-heading font-medium text-stone-900 mb-4">You May Also Admire</h2>
+                    <div className="border-t border-stone-100 pt-12 lg:pt-20 pb-24">
+                        <div className="flex items-center gap-4 mb-10 lg:mb-14">
+                            <div className="flex-1 h-px bg-stone-100" />
+                            <h2 className="text-2xl lg:text-3xl font-heading font-semibold text-stone-900 text-center whitespace-nowrap">You May Also Love</h2>
+                            <div className="flex-1 h-px bg-stone-100" />
                         </div>
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8 lg:gap-8">
                             {relatedProducts.map(p => {

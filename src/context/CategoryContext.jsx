@@ -6,16 +6,21 @@ const CategoryContext = createContext();
 
 export const useCategories = () => useContext(CategoryContext);
 
+// Generates a stable slug-like ID from a label.
+// This ensures renaming a category only updates the label, not the ID.
+const slugify = (text) =>
+    text.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+
 const DEFAULT_CATEGORIES = [
-    { id: 'Home Decor', label: 'Home Decor' },
-    { id: 'Accessories', label: 'Accessories' },
-    { id: 'Art', label: 'Art' },
-    { id: 'Gifts', label: 'Gifts' },
-    { id: 'Hoop Art', label: 'Hoop Art' },
-    { id: 'Bridal', label: 'Bridal' },
-    { id: 'Clothing', label: 'Clothing' },
-    { id: 'Mens Ethnic', label: 'Mens Ethnic' },
-    { id: 'Womens Ethnic', label: 'Womens Ethnic' }
+    { id: 'home-decor', label: 'Home Decor' },
+    { id: 'accessories', label: 'Accessories' },
+    { id: 'art', label: 'Art' },
+    { id: 'gifts', label: 'Gifts' },
+    { id: 'hoop-art', label: 'Hoop Art' },
+    { id: 'bridal', label: 'Bridal' },
+    { id: 'clothing', label: 'Clothing' },
+    { id: 'mens-ethnic', label: 'Mens Ethnic' },
+    { id: 'womens-ethnic', label: 'Womens Ethnic' }
 ];
 
 export const CategoryProvider = ({ children }) => {
@@ -36,22 +41,20 @@ export const CategoryProvider = ({ children }) => {
             if (data && data.setting_value) {
                 // Ensure it's an array
                 const parsed = Array.isArray(data.setting_value) ? data.setting_value : JSON.parse(data.setting_value);
-                
-                // Auto-capitalize existing categories on load
-                const formatted = parsed.map(cat => ({
+
+                // Migrate legacy categories: if id === label (old format), assign a stable slug id
+                const migrated = parsed.map(cat => ({
                     ...cat,
+                    id: cat.id === cat.label ? slugify(cat.label) : cat.id,
                     label: cat.label.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ')
                 }));
-                
-                setCategories(formatted);
+
+                setCategories(migrated);
             } else {
-                // If not found, use defaults and save them (optional, but good for first run)
                 setCategories(DEFAULT_CATEGORIES);
-                // We don't auto-save to DB here to avoid unintentional writes on every load if RLS blocks it
             }
         } catch (error) {
             console.error('Error fetching categories:', error);
-            // Fallback to defaults
             setCategories(DEFAULT_CATEGORIES);
         } finally {
             setLoading(false);
@@ -66,14 +69,14 @@ export const CategoryProvider = ({ children }) => {
         try {
             const { error } = await supabase
                 .from('website_settings')
-                .upsert({ 
-                    setting_key: 'product_categories', 
+                .upsert({
+                    setting_key: 'product_categories',
                     setting_value: newCategories,
                     updated_at: new Date().toISOString()
                 }, { onConflict: 'setting_key' });
 
             if (error) throw error;
-            
+
             setCategories(newCategories);
             addToast('Categories updated successfully', 'success');
             return true;
@@ -91,9 +94,12 @@ export const CategoryProvider = ({ children }) => {
             .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
             .join(' ');
 
-        const id = label; // Simple ID generation, or use label as ID
+        // Use a stable slug as the ID — NOT the label string.
+        // This means renaming the category won't break existing product references.
+        const id = slugify(label);
         const newCat = { id, label };
-        // Check duplicate
+
+        // Check duplicate by ID
         if (categories.some(c => c.id === id)) {
             addToast('Category already exists', 'error');
             return false;
@@ -103,8 +109,15 @@ export const CategoryProvider = ({ children }) => {
     };
 
     const updateCategory = async (oldId, newLabel) => {
-        const newCategories = categories.map(c => 
-            c.id === oldId ? { id: newLabel, label: newLabel } : c // updating ID too for simplicity since ID is used as value
+        // Key fix: ONLY update the label, never the id.
+        // This prevents existing products assigned to oldId from becoming orphaned.
+        const capitalizedLabel = newLabel
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .join(' ');
+
+        const newCategories = categories.map(c =>
+            c.id === oldId ? { ...c, label: capitalizedLabel } : c
         );
         return await saveCategories(newCategories);
     };

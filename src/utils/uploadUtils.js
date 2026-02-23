@@ -20,7 +20,7 @@ export const compressImage = async (file, maxWidth = 1920) => {
     return compressedFile;
   } catch (error) {
     console.error("Compression failed:", error);
-    // Fallback: return original if compression fails (or handle differently)
+    // Fallback: return original if compression fails
     return file;
   }
 };
@@ -30,6 +30,7 @@ export const compressImage = async (file, maxWidth = 1920) => {
  * @param {File} file 
  * @param {string} bucketName - storage bucket (default 'images')
  * @param {string} folder - optional subfolder
+ * @returns {Promise<string>} Public URL of the uploaded image
  */
 export const uploadImage = async (file, bucketName = 'images', folder = '') => {
   try {
@@ -66,22 +67,47 @@ export const uploadImage = async (file, bucketName = 'images', folder = '') => {
 };
 
 /**
- * Deletes an image from Supabase storage
+ * Deletes an image from Supabase storage.
+ * Automatically infers the bucket name from the public URL.
+ * The URL format is: .../storage/v1/object/public/{bucketName}/{path}
+ *
  * @param {string} publicUrl - The full public URL of the image
+ * @param {string} [bucketName] - Optional explicit bucket override (defaults to auto-detect from URL)
  * @returns {Promise<boolean>} - Success status
  */
-export const deleteImage = async (publicUrl) => {
+export const deleteImage = async (publicUrl, bucketName) => {
     if (!publicUrl) return false;
-    
+
     try {
-        // Extract path from URL
-        // Format: .../storage/v1/object/public/images/folder/file.jpg
-        const path = publicUrl.split('/images/')[1];
-        if (!path) return false;
+        // Auto-detect bucket from URL if not provided.
+        // URL format: https://{project}.supabase.co/storage/v1/object/public/{bucket}/{path}
+        let bucket = bucketName;
+        let filePath;
+
+        if (!bucket) {
+            const storagePrefix = '/storage/v1/object/public/';
+            const storageIndex = publicUrl.indexOf(storagePrefix);
+            if (storageIndex === -1) return false;
+
+            const afterPrefix = publicUrl.slice(storageIndex + storagePrefix.length);
+            const slashIndex = afterPrefix.indexOf('/');
+            if (slashIndex === -1) return false;
+
+            bucket = afterPrefix.slice(0, slashIndex);
+            filePath = afterPrefix.slice(slashIndex + 1);
+        } else {
+            // Use provided bucket, extract path after bucket segment
+            const bucketSegment = `/public/${bucket}/`;
+            const pathIndex = publicUrl.indexOf(bucketSegment);
+            if (pathIndex === -1) return false;
+            filePath = publicUrl.slice(pathIndex + bucketSegment.length);
+        }
+
+        if (!filePath) return false;
 
         const { error } = await supabase.storage
-            .from('images')
-            .remove([path]);
+            .from(bucket)
+            .remove([filePath]);
 
         if (error) {
             console.error('Error deleting image:', error);

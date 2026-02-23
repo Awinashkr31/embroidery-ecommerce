@@ -38,7 +38,7 @@ export const CartProvider = ({ children }) => {
         
         if (!isBackground) setIsFetchingCart(true);
         try {
-            console.log("Fetching remote cart for user:", currentUser.id);
+
 
             // Check for local items to merge
             const localCartStr = localStorage.getItem('cart');
@@ -47,7 +47,6 @@ export const CartProvider = ({ children }) => {
             if (localCartStr) {
                 const localCart = JSON.parse(localCartStr);
                 if (localCart.length > 0) {
-                    console.log("Merging local cart items...", localCart.length);
                     
                     // Merge logic: Add local items to Supabase
                     for (const item of localCart) {
@@ -73,6 +72,12 @@ export const CartProvider = ({ children }) => {
                              } else {
                                  query = query.is('selected_color', null);
                              }
+
+                             if (item.variantId) {
+                                 query = query.eq('variant_id', item.variantId);
+                             } else {
+                                 query = query.is('variant_id', null);
+                             }
                              
                              const { data: existing, error: fetchError } = await query.maybeSingle();
 
@@ -82,7 +87,7 @@ export const CartProvider = ({ children }) => {
                              }
 
                              if (existing) {
-                                 console.log(`Updating existing item ${existing.id} quantity by ${item.quantity}`);
+
                                  const { error: updateError } = await supabase
                                     .from('cart_items')
                                     .update({ quantity: existing.quantity + item.quantity })
@@ -99,7 +104,8 @@ export const CartProvider = ({ children }) => {
                                         product_id: item.id, 
                                         quantity: item.quantity,
                                         selected_size: item.selectedSize || null,
-                                        selected_color: item.selectedColor || null
+                                        selected_color: item.selectedColor || null,
+                                        variant_id: item.variantId || null
                                     });
 
                                  if (insertError) throw insertError;
@@ -124,7 +130,7 @@ export const CartProvider = ({ children }) => {
 
             if (error) throw error;
 
-            console.log("Remote cart fetched:", data?.length);
+
 
             if (mounted) {
                 // 1. Process Remote Items
@@ -378,7 +384,7 @@ export const CartProvider = ({ children }) => {
         return updatedCart;
     });
     
-    if (currentUser?.uid) {
+    if (currentUser?.id) {
         try {
             let query = supabase
                 .from('cart_items')
@@ -445,7 +451,7 @@ export const CartProvider = ({ children }) => {
       return updatedCart;
     });
 
-    if (currentUser?.uid) {
+    if (currentUser?.id) {
         try {
             let query = supabase
                 .from('cart_items')
@@ -489,7 +495,6 @@ export const CartProvider = ({ children }) => {
 
   const clearCart = async () => {
     setCart([]);
-    setCart([]);
     if (currentUser?.id) {
         await supabase.from('cart_items').delete().eq('user_id', currentUser.id);
     }
@@ -518,8 +523,10 @@ export const CartProvider = ({ children }) => {
       total: cartTotal,
       status: 'pending',
       payment_method: userDetails.paymentMethod,
-      payment_status: paymentOverrides.status || 'pending', // Use override or default
-      payment_id: paymentOverrides.paymentId || null // Store Razorpay ID if provided
+      payment_status: paymentOverrides.status || 'pending',
+      payment_id: paymentOverrides.paymentId || null,
+      // Store user identity for RLS and order history lookup
+      user_id: userDetails.userId || null,
     };
 
     try {
@@ -574,7 +581,7 @@ export const CartProvider = ({ children }) => {
                   includedCategories: c.included_categories
               }));
               setCoupons(mappedCoupons);
-              console.log("Coupons loaded:", mappedCoupons.length);
+
           }
       } catch (error) {
           console.error("Error fetching coupons:", error);
@@ -654,9 +661,7 @@ export const CartProvider = ({ children }) => {
   const applyCoupon = (code) => {
     const normalizedCode = code.trim().toUpperCase();
     
-    // Debugging Logs
-    console.log(`Applying coupon: "${normalizedCode}"`);
-    console.log("Available Coupons:", coupons.map(c => c.code));
+
 
     const coupon = coupons.find(c => c.code.toUpperCase() === normalizedCode);
     

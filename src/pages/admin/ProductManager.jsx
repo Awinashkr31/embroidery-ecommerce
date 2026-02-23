@@ -19,6 +19,8 @@ const ProductManager = () => {
     const [activeTab, setActiveTab] = useState('general');
     const [searchTerm, setSearchTerm] = useState('');
     const [categoryFilter, setCategoryFilter] = useState('All');
+    const [deleteConfirmId, setDeleteConfirmId] = useState(null);
+    const [formError, setFormError] = useState('');
     
     // Cropping State
     const [cropModalOpen, setCropModalOpen] = useState(false);
@@ -193,12 +195,25 @@ const ProductManager = () => {
     };
 
     // Handler: Submit
+    const handleDeleteProduct = (id) => {
+        if (deleteConfirmId === id) {
+            deleteProduct(id);
+            setDeleteConfirmId(null);
+        } else {
+            setDeleteConfirmId(id);
+            // Auto-cancel after 3s
+            setTimeout(() => setDeleteConfirmId(prev => prev === id ? null : prev), 3000);
+        }
+    };
+
     const handleSubmit = async (e) => {
         if (e) e.preventDefault();
+        setFormError('');
         
         // Basic Validation
         if (!formData.name || !formData.category || !formData.sellingPrice) {
-            alert("Please fill in all required fields (Name, Price, Category).");
+            setFormError('Please fill in all required fields: Name, Price, and Category.');
+            setActiveTab('general');
             return;
         }
 
@@ -290,10 +305,9 @@ const ProductManager = () => {
                 await addProduct(finalData);
             }
             setIsModalOpen(false);
-            // alert('Product saved successfully');
         } catch (error) {
             console.error(error);
-            alert(`Failed to save product: ${error.message || error.details || 'Unknown DB Error'}`);
+            setFormError(`Failed to save: ${error.message || error.details || 'Unknown error'}`);
         }
     };
 
@@ -407,7 +421,65 @@ const ProductManager = () => {
                 </div>
 
                 {/* Table */}
-                <div className="overflow-x-auto">
+                <div>
+                    {/* Mobile: product cards */}
+                    <div className="md:hidden divide-y divide-stone-50">
+                        {filteredProducts.length === 0 ? (
+                            <div className="py-12 text-center">
+                                <Package className="w-10 h-10 mx-auto mb-3 text-stone-200" />
+                                <p className="text-stone-500 font-medium text-sm">No products found</p>
+                            </div>
+                        ) : filteredProducts.map(p => (
+                            <div key={p.id} className="flex items-center gap-3 p-4">
+                                <div className="relative shrink-0">
+                                    <img
+                                        src={p.image || p.images?.[0]}
+                                        className="w-14 h-14 rounded-xl object-cover bg-stone-100 border border-stone-200"
+                                        alt=""
+                                    />
+                                    {p.featured && (
+                                        <span className="absolute -top-1 -right-1 text-xs">⭐</span>
+                                    )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="font-bold text-stone-900 text-sm truncate">{p.name}</p>
+                                    <div className="flex items-center gap-2 mt-0.5">
+                                        <span className="text-[10px] font-semibold text-stone-400 bg-stone-100 px-2 py-0.5 rounded-full">{p.category}</span>
+                                        <span className="text-[10px] font-bold text-stone-700">₹{p.price.toLocaleString()}</span>
+                                    </div>
+                                    <button
+                                        onClick={() => toggleStock(p.id)}
+                                        className={`mt-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                                            p.inStock ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'
+                                        }`}
+                                    >
+                                        {p.inStock ? `In Stock · ${p.stock}` : `Out · ${p.stock}`}
+                                    </button>
+                                </div>
+                                <div className="flex flex-col gap-1 shrink-0">
+                                    <button
+                                        onClick={() => handleOpenModal(p)}
+                                        className="p-2 text-stone-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                    >
+                                        <Edit2 className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                        onClick={() => handleDeleteProduct(p.id)}
+                                        className={`p-2 rounded-lg transition-all text-xs font-bold ${
+                                            deleteConfirmId === p.id
+                                                ? 'bg-red-600 text-white'
+                                                : 'text-stone-400 hover:text-red-600 hover:bg-red-50'
+                                        }`}
+                                    >
+                                        {deleteConfirmId === p.id ? '✓' : <Trash2 className="w-4 h-4" />}
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* Desktop: full table */}
+                    <div className="hidden md:block overflow-x-auto">
                     <table className="w-full text-left">
                          <thead className="bg-stone-50 border-b border-stone-100">
                             <tr>
@@ -418,36 +490,86 @@ const ProductManager = () => {
                                 <th className="px-6 py-4 text-xs font-bold text-stone-500 uppercase text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-stone-100">
-                            {filteredProducts.map(p => (
-                                <tr key={p.id} className="hover:bg-stone-50/50">
-                                    <td className="px-6 py-4 flex items-center gap-4">
-                                        <img src={p.image} className="w-12 h-12 rounded-lg bg-stone-100 object-cover border border-stone-200" alt="" />
-                                        <div>
-                                            <div className="font-bold text-stone-900">{p.name}</div>
+                        <tbody className="divide-y divide-stone-50">
+                            {filteredProducts.length === 0 ? (
+                                <tr>
+                                    <td colSpan="5" className="px-6 py-14 text-center">
+                                        <Package className="w-10 h-10 mx-auto mb-3 text-stone-200" />
+                                        <p className="text-stone-500 font-medium">No products found</p>
+                                        <p className="text-xs text-stone-400 mt-1">Try changing the search or category filter</p>
+                                    </td>
+                                </tr>
+                            ) : filteredProducts.map(p => (
+                                <tr key={p.id} className="hover:bg-stone-50/60 transition-colors group">
+                                    <td className="px-6 py-3.5">
+                                        <div className="flex items-center gap-4">
+                                            <div className="relative shrink-0">
+                                                <img
+                                                    src={p.image || p.images?.[0]}
+                                                    className="w-12 h-12 rounded-xl bg-stone-100 object-cover border border-stone-200"
+                                                    alt=""
+                                                />
+                                                {p.featured && (
+                                                    <span className="absolute -top-1.5 -right-1.5 text-amber-500 text-sm" title="Featured">⭐</span>
+                                                )}
+                                            </div>
+                                            <div>
+                                                <div className="font-bold text-stone-900 text-sm">{p.name}</div>
+                                                {p.variants?.length > 0 && (
+                                                    <div className="text-[10px] text-stone-400 mt-0.5">{p.variants.length} variant{p.variants.length > 1 ? 's' : ''}</div>
+                                                )}
+                                            </div>
                                         </div>
-
                                     </td>
-                                    <td className="px-6 py-4 text-stone-600 font-medium text-sm">{p.category}</td>
-                                    <td className="px-6 py-4 font-bold text-stone-900">₹{p.price.toLocaleString()}</td>
-                                    <td className="px-6 py-4">
-                                        <button 
+                                    <td className="px-6 py-3.5">
+                                        <span className="text-xs font-semibold text-stone-500 bg-stone-100 px-2.5 py-1 rounded-full">{p.category}</span>
+                                    </td>
+                                    <td className="px-6 py-3.5">
+                                        <div className="font-bold text-stone-900 text-sm">₹{p.price.toLocaleString()}</div>
+                                        {p.originalPrice > p.price && (
+                                            <div className="text-[10px] text-stone-400 line-through">{p.originalPrice.toLocaleString()}</div>
+                                        )}
+                                    </td>
+                                    <td className="px-6 py-3.5">
+                                        <button
                                             onClick={() => toggleStock(p.id)}
-                                            className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${p.inStock ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}
+                                            className={`px-3 py-1.5 rounded-full text-[11px] font-bold uppercase transition-all ${
+                                                p.inStock
+                                                    ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
+                                                    : 'bg-red-100 text-red-700 hover:bg-red-200'
+                                            }`}
                                         >
-                                            {p.inStock ? 'In Stock' : 'Out Stock'}
+                                            {p.inStock ? `In Stock · ${p.stock}` : `Out · ${p.stock}`}
                                         </button>
-                                        <span className="text-xs text-stone-400 ml-2">({p.stock})</span>
                                     </td>
-                                    <td className="px-6 py-4 text-right space-x-2">
-                                        <button onClick={() => handleOpenModal(p)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"><Edit2 className="w-4 h-4" /></button>
-                                        <button onClick={() => { if(window.confirm('Delete?')) deleteProduct(p.id) }} className="p-2 text-red-600 hover:bg-red-50 rounded-lg"><Trash2 className="w-4 h-4" /></button>
+                                    <td className="px-6 py-3.5 text-right">
+                                        <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button
+                                                onClick={() => handleOpenModal(p)}
+                                                className="p-2 text-stone-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                                title="Edit"
+                                            >
+                                                <Edit2 className="w-4 h-4" />
+                                            </button>
+                                            <button
+                                                onClick={() => handleDeleteProduct(p.id)}
+                                                className={`p-2 rounded-lg transition-all text-xs font-bold ${
+                                                    deleteConfirmId === p.id
+                                                        ? 'bg-red-600 text-white px-3'
+                                                        : 'text-stone-400 hover:text-red-600 hover:bg-red-50'
+                                                }`}
+                                                title={deleteConfirmId === p.id ? 'Click again to confirm delete' : 'Delete'}
+                                            >
+                                                {deleteConfirmId === p.id ? 'Confirm?' : <Trash2 className="w-4 h-4" />}
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
-                </div>
+                    </div>{/* end hidden md:block */}
+                </div>{/* end {/* Table */} */}
             </div>
 
             {/* ================= MODAL ================= */}
@@ -456,16 +578,29 @@ const ProductManager = () => {
                     <div className="absolute inset-0 bg-stone-900/40 backdrop-blur-sm" onClick={() => setIsModalOpen(false)} />
                     <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
                         {/* Modal Header */}
-                        <div className="px-8 py-5 border-b border-stone-100 flex justify-between items-center bg-white z-10 shrink-0">
+                        <div className="px-8 py-4 border-b border-stone-100 flex justify-between items-center bg-white z-10 shrink-0">
                             <div>
-                                <h2 className="text-xl font-heading font-bold text-stone-800 flex items-center gap-2">
-                                    {editingId ? 'Edit Product' : 'New Product'}
+                                <h2 className="text-base font-heading font-bold text-stone-900">
+                                    {editingId ? '✏️ Edit Product' : '➕ New Product'}
                                 </h2>
-
-
+                                {formError && (
+                                    <p className="text-xs text-red-600 font-medium mt-0.5 flex items-center gap-1">
+                                        <AlertCircle className="w-3 h-3" /> {formError}
+                                    </p>
+                                )}
                             </div>
-                            <div className="flex gap-3">
-                                <button onClick={() => setIsModalOpen(false)} className="p-2 rounded-full hover:bg-stone-100 transition-colors text-stone-400"><X className="w-5 h-5" /></button>
+                            <div className="flex items-center gap-2">
+                                <button
+                                    type="button"
+                                    onClick={handleSubmit}
+                                    className="px-5 py-2 bg-rose-900 text-white text-sm font-bold rounded-xl hover:bg-rose-800 transition-colors flex items-center gap-2 shadow-sm"
+                                >
+                                    <Save className="w-4 h-4" />
+                                    {editingId ? 'Save Changes' : 'Publish'}
+                                </button>
+                                <button onClick={() => { setIsModalOpen(false); setFormError(''); }} className="p-2 rounded-xl hover:bg-stone-100 transition-colors text-stone-400">
+                                    <X className="w-5 h-5" />
+                                </button>
                             </div>
                         </div>
 

@@ -1,6 +1,6 @@
-console.log('[DEBUG] 4. App File Executing');
+
 import React, { Suspense, lazy } from 'react'
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import ScrollToTop from './components/ScrollToTop'
 
 import Navbar from './components/Navbar'
@@ -104,41 +104,39 @@ function App() {
                 </Route>
               </Route>
 
-            {/* Public Routes */}
-              <Route path="*" element={
+              {/* Public Routes — all wrapped in the shared layout */}
+              <Route element={
                 <div className="flex flex-col min-h-screen pb-16 md:pb-0">
                   <ConditionalLayout>
                     <Navbar />
                     <main className="flex-grow pt-20">
                       <Suspense fallback={<PageLoader />}>
-                        <Routes>
-                          <Route path="/" element={<Home />} />
-                          <Route path="/about" element={<About />} />
-                          <Route path="/shop" element={<Shop />} />
-
-                          <Route path="/product/:id" element={<ProductDetails />} />
-                          <Route path="/custom-design" element={<CustomDesign />} />
-                          <Route path="/mehndi-booking" element={<MehndiBooking />} />
-                          <Route path="/gallery" element={<Gallery />} />
-                          <Route path="/support" element={<Contact />} />
-                          <Route path="/cart" element={<Cart />} />
-                          <Route path="/checkout" element={<Checkout />} />
-                          <Route path="/login" element={<LoginSignup />} />
-                          <Route path="/forgot-password" element={<ForgotPassword />} />
-                          <Route path="/reset-password" element={<ResetPassword />} />
-
-                          <Route path="/register" element={<Navigate to="/login" replace />} />
-                          <Route path="/profile" element={<Profile />} />
-                          <Route path="/wishlist" element={<Wishlist />} />
-                          <Route path="/order-success" element={<OrderSuccess />} />
-                          <Route path="/order-confirmation" element={<OrderConfirmation />} />
-                          <Route path="/order/:id" element={<OrderDetails />} />
-                        </Routes>
+                        <Outlet />
                       </Suspense>
                     </main>
                   </ConditionalLayout>
                 </div>
-              } />
+              }>
+                <Route path="/" element={<Home />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/shop" element={<Shop />} />
+                <Route path="/product/:id" element={<ProductDetails />} />
+                <Route path="/custom-design" element={<CustomDesign />} />
+                <Route path="/mehndi-booking" element={<MehndiBooking />} />
+                <Route path="/gallery" element={<Gallery />} />
+                <Route path="/support" element={<Contact />} />
+                <Route path="/cart" element={<Cart />} />
+                <Route path="/checkout" element={<Checkout />} />
+                <Route path="/login" element={<LoginSignup />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/register" element={<Navigate to="/login" replace />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/wishlist" element={<Wishlist />} />
+                <Route path="/order-success" element={<OrderSuccess />} />
+                <Route path="/order-confirmation" element={<OrderConfirmation />} />
+                <Route path="/order/:id" element={<OrderDetails />} />
+              </Route>
             </Routes>
           </Suspense>
         </Router>

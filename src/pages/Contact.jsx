@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Mail, Phone, MapPin, Instagram, Facebook, MessageCircle, Send } from 'lucide-react';
 import { supabase } from '../../config/supabase';
+import { useToast } from '../context/ToastContext';
 
 const Contact = () => {
+  const { addToast } = useToast();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -26,11 +28,11 @@ const Contact = () => {
 
       if (error) throw error;
 
-      alert('Message sent successfully! We will get back to you soon.');
+      addToast('Message sent! We will get back to you soon.', 'success');
       setFormData({ name: '', email: '', subject: '', message: '' });
     } catch (error) {
       console.error('Error sending message:', error);
-      alert('Failed to send message. Please try again.');
+      addToast('Failed to send message. Please try again.', 'error');
     }
   };
 
@@ -39,7 +41,7 @@ const Contact = () => {
   };
 
   return (
-    <div className="bg-[#fdfbf7] min-h-screen font-body pt-24 pb-20">
+    <div className="bg-[#fdfbf7] min-h-screen font-body pt-20 md:pt-28 pb-28 md:pb-20">
       <div className="container-custom">
         <div className="text-center mb-16 max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700">
           <span className="text-xs font-bold text-rose-900 uppercase tracking-[0.2em] mb-3 block">Customer Support</span>
