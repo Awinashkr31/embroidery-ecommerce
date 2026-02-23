@@ -37,6 +37,9 @@ const Profile = () => {
         firstName: '', lastName: '', phone: '', zipCode: '', address: '', city: '', state: ''
     });
 
+    // State for cancel confirmation
+    const [cancelPendingOrder, setCancelPendingOrder] = useState(null);
+
     // State for Reviews
     const [reviewModal, setReviewModal] = useState({ isOpen: false, productId: null, productName: '', productImage: '' });
     const [newReview, setNewReview] = useState({ rating: 5, comment: '' });
@@ -46,14 +49,32 @@ const Profile = () => {
     useEffect(() => {
         const fetchOrders = async () => {
             try {
-                const { data, error } = await supabase
-                    .from('orders')
-                    .select('*')
-                    .eq('customer_email', currentUser.email)
-                    .order('created_at', { ascending: false });
-                
-                if (error) throw error;
-                setOrders(data || []);
+                // Primary: fetch by user_id (stable, survives email changes)
+                // Fallback: fetch by email (for orders placed before user_id was stored)
+                const [byId, byEmail] = await Promise.all([
+                    supabase
+                        .from('orders')
+                        .select('*')
+                        .eq('user_id', currentUser.id)
+                        .order('created_at', { ascending: false }),
+                    supabase
+                        .from('orders')
+                        .select('*')
+                        .eq('customer_email', currentUser.email)
+                        .order('created_at', { ascending: false }),
+                ]);
+
+                // Merge & deduplicate by order ID
+                const merged = [
+                    ...(byId.data || []),
+                    ...(byEmail.data || []),
+                ];
+                const seen = new Set();
+                const deduplicated = merged
+                    .filter(o => { if (seen.has(o.id)) return false; seen.add(o.id); return true; })
+                    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+
+                setOrders(deduplicated);
             } catch (error) {
                 console.error('Error fetching orders:', error);
             } finally {
@@ -66,7 +87,7 @@ const Profile = () => {
                 const { data, error } = await supabase
                     .from('reviews')
                     .select('product_id')
-                    .eq('user_id', currentUser.uid);
+                    .eq('user_id', currentUser.id);
                 
                 if (error) throw error;
                 const reviewedProductIds = new Set(data.map(r => r.product_id));
@@ -124,13 +145,18 @@ const Profile = () => {
     };
 
     const handleCancelOrder = async (order) => {
-        const isDirectCancel = ['pending', 'confirmed'].includes(order.status.toLowerCase());
-        const confirmMsg = isDirectCancel 
-            ? 'Are you sure you want to cancel this order?' 
-            : 'Do you want to request cancellation for this order? Admin approval required.';
-            
-        if (!window.confirm(confirmMsg)) return;
-
+        // First call: show a toast asking for confirmation
+        if (cancelPendingOrder?.id !== order.id) {
+            setCancelPendingOrder(order);
+            const isDirectCancel = ['pending', 'confirmed'].includes(order.status.toLowerCase());
+            const confirmMsg = isDirectCancel
+                ? 'Tap Cancel Order again to confirm cancellation.'
+                : 'Tap Cancel Order again to request cancellation (admin approval needed).';
+            addToast(confirmMsg, 'info');
+            return;
+        }
+        // Second call: proceed
+        setCancelPendingOrder(null);
         try {
             // Use RPC function to bypass RLS safely
             const { data, error } = await supabase.rpc('cancel_order', { 
@@ -172,7 +198,7 @@ const Profile = () => {
             const { error } = await supabase
                 .from('reviews')
                 .insert([{
-                    user_id: currentUser.uid,
+                    user_id: currentUser.id,
                     user_name: currentUser.displayName,
                     product_id: reviewModal.productId,
                     rating: newReview.rating,
@@ -219,10 +245,10 @@ const Profile = () => {
     }
 
     return (
-        <div className="min-h-screen bg-[#fdfbf7] pt-32 pb-24 lg:py-20 font-body">
+        <div className="min-h-screen bg-[#fdfbf7] pt-6 md:pt-16 pb-28 lg:pb-20 font-body">
             <div className="container-custom">
                 {/* Profile Header */}
-                <div className="bg-white rounded-2xl shadow-sm border border-stone-100 p-8 mb-8 flex flex-col md:flex-row items-center gap-8 relative overflow-hidden">
+                <div className="bg-white rounded-2xl shadow-sm border border-stone-100 p-5 md:p-8 mb-6 md:mb-8 flex flex-col md:flex-row items-center gap-4 md:gap-8 relative overflow-hidden">
                     <div className="absolute top-0 right-0 w-64 h-64 bg-rose-50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 opacity-50 pointer-events-none"></div>
                     
                     <div className="relative z-10 shrink-0">
@@ -266,9 +292,33 @@ const Profile = () => {
 
 
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
-                    {/* Sidebar Tabs */}
-                    <div className="lg:col-span-1 space-y-4">
-                        <div className="bg-white rounded-xl shadow-sm border border-stone-100 overflow-hidden sticky top-24">
+                    {/* Sidebar Tabs — horizontal pills on mobile, vertical list on desktop */}
+                    <div className="lg:col-span-1">
+                        {/* Mobile: horizontal pills */}
+                        <div className="flex gap-2 overflow-x-auto no-scrollbar pb-1 mb-4 lg:hidden">
+                            <button
+                                onClick={() => setActiveTab('orders')}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-all ${
+                                    activeTab === 'orders'
+                                    ? 'bg-rose-900 text-white shadow-md'
+                                    : 'bg-white border border-stone-200 text-stone-600'
+                                }`}
+                            >
+                                <Package className="w-4 h-4" /> My Orders
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('addresses')}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-all ${
+                                    activeTab === 'addresses'
+                                    ? 'bg-rose-900 text-white shadow-md'
+                                    : 'bg-white border border-stone-200 text-stone-600'
+                                }`}
+                            >
+                                <MapPin className="w-4 h-4" /> Addresses
+                            </button>
+                        </div>
+                        {/* Desktop: vertical card */}
+                        <div className="hidden lg:block bg-white rounded-xl shadow-sm border border-stone-100 overflow-hidden sticky top-24">
                             <div className="p-4 bg-stone-50 border-b border-stone-100">
                                 <span className="text-xs font-bold uppercase tracking-widest text-stone-500">Menu</span>
                             </div>

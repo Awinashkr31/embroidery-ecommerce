@@ -94,7 +94,7 @@ const Checkout = () => {
                 }));
             }
         }
-    }, [savedAddresses, currentUser]);
+    }, [savedAddresses, currentUser, selectedAddressId]);
 
 
     const handleZipChange = async (e) => {
@@ -220,7 +220,7 @@ const Checkout = () => {
         };
 
         if (currentUser && shouldSaveAddress && selectedAddressId === 'new') {
-            saveAddress(submissionData, currentUser.uid);
+            saveAddress(submissionData, currentUser.id);
         }
 
         try {
@@ -277,7 +277,7 @@ const Checkout = () => {
                             // 5. Place Order in Database
                             const orderResult = await placeOrder({
                                 ...submissionData,
-                                userId: currentUser?.uid,
+                                userId: currentUser?.id,
                                 email: currentUser?.email || formData.email
                             }, {
                                 status: 'paid',

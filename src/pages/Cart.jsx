@@ -66,10 +66,10 @@ const Cart = () => {
     }
 
     return (
-        <div className="bg-[#fdfbf7] min-h-screen font-body pt-4 md:pt-12 pb-24 lg:pb-24">
+        <div className="bg-[#fdfbf7] min-h-screen font-body pt-4 md:pt-12 pb-32 md:pb-24">
             <SEO title="Shopping Cart" description="Review your selected items and proceed to checkout." />
             <div className="container-custom">
-                <h1 className="text-3xl lg:text-4xl font-heading font-bold text-stone-900 mb-8">Shopping Cart</h1>
+                <h1 className="text-2xl md:text-3xl lg:text-4xl font-heading font-bold text-stone-900 mb-6 md:mb-8">Shopping Cart</h1>
 
                 {/* Minimum Order Warning */}
                 {!isOrderDeployable && (
@@ -88,18 +88,18 @@ const Cart = () => {
 
                 {/* Free Delivery Progress */}
                 {isOrderDeployable && subtotal < FREE_DELIVERY_THRESHOLD && (
-                    <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-6 flex items-center gap-4 animate-in fade-in slide-in-from-top-2">
-                        <div className="p-2 bg-blue-100 rounded-full text-blue-600 shrink-0">
+                    <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4 mb-6 flex items-center gap-4 animate-in fade-in slide-in-from-top-2">
+                        <div className="p-2 bg-emerald-100 rounded-full text-emerald-600 shrink-0">
                             <Tag className="w-4 h-4" />
                         </div>
                         <div className="flex-1">
-                            <div className="flex justify-between text-xs font-bold text-blue-900 mb-1.5">
+                            <div className="flex justify-between text-xs font-bold text-emerald-900 mb-1.5">
                                 <span>Add ₹{FREE_DELIVERY_THRESHOLD - subtotal} for Free Delivery</span>
                                 <span>{Math.round((subtotal / FREE_DELIVERY_THRESHOLD) * 100)}%</span>
                             </div>
-                            <div className="h-2 bg-blue-100 rounded-full overflow-hidden">
+                            <div className="h-2 bg-emerald-100 rounded-full overflow-hidden">
                                 <div 
-                                    className="h-full bg-blue-500 rounded-full transition-all duration-500"
+                                    className="h-full bg-emerald-500 rounded-full transition-all duration-500"
                                     style={{ width: `${(subtotal / FREE_DELIVERY_THRESHOLD) * 100}%` }}
                                 />
                             </div>
@@ -121,8 +121,8 @@ const Cart = () => {
                     {/* Cart Items */}
                     <div className="lg:w-2/3 space-y-6">
                         {cart.map((item, idx) => (
-                            <div key={`${item.id}-${item.selectedSize || 'nosize'}-${item.selectedColor || 'nocolor'}-${idx}`} className="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-stone-100 flex gap-4 md:gap-6 items-start md:items-center">
-                                <div className="w-24 h-24 rounded-xl overflow-hidden bg-stone-100 shrink-0">
+                            <div key={`${item.id}-${item.selectedSize || 'nosize'}-${item.selectedColor || 'nocolor'}-${idx}`} className="bg-white p-3 md:p-6 rounded-2xl shadow-sm border border-stone-100 flex gap-3 md:gap-6 items-start md:items-center">
+                                <div className="w-20 h-20 md:w-28 md:h-28 rounded-xl overflow-hidden bg-stone-100 shrink-0">
                                     <img
                                         src={item.image}
                                         alt={item.name}
@@ -136,7 +136,7 @@ const Cart = () => {
                                 </div>
                                 <div className="flex-1 min-w-0">
                                     <div className="flex justify-between items-start">
-                                        <h3 className="text-lg font-heading font-medium text-stone-900 mb-1 truncate pr-4">{item.name}</h3>
+                                        <h3 className="text-sm md:text-base font-heading font-medium text-stone-900 mb-1 leading-tight pr-4 line-clamp-2 md:truncate">{item.name}</h3>
                                         {/* Mobile Remove (Top Right) */}
                                         <button
                                             onClick={() => removeFromCart(item.id, item.selectedSize, item.selectedColor)}
@@ -378,10 +378,10 @@ const Cart = () => {
             </div>
 
             {/* Mobile Sticky Checkout Bar */}
-            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200 px-4 pt-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-[0_-4px_10px_rgba(0,0,0,0.1)] lg:hidden z-50">
+            <div className="fixed bottom-[56px] left-0 right-0 bg-white border-t border-stone-200 px-4 pt-3 pb-3 shadow-[0_-4px_10px_rgba(0,0,0,0.1)] lg:hidden z-40">
                  <div className="flex items-center justify-between gap-4">
                     <div>
-                        <p className="text-xs text-stone-500 font-medium">Total</p>
+                        <p className="text-[10px] text-stone-500 font-medium">{cart.length} item{cart.length !== 1 ? 's' : ''} · Total</p>
                         <p className="text-xl font-bold text-rose-900">₹{cartTotal.toLocaleString()}</p>
                     </div>
                     <button

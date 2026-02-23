@@ -127,7 +127,7 @@ const Home = () => {
 
       {/* ================= HERO SLIDER ================= */}
       <section 
-        className="relative w-full h-[50vh] md:h-[70vh] overflow-hidden bg-stone-900"
+        className="relative w-full h-[70vh] md:h-[85vh] overflow-hidden bg-stone-900"
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
@@ -146,16 +146,36 @@ const Home = () => {
                     fetchPriority={idx === 0 ? "high" : "low"}
                     decoding={idx === 0 ? "sync" : "async"}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-center justify-center">
-                       {idx === 0 && (
-                           <div className="text-center text-white animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300 px-4">
-                               <h1 className="text-5xl md:text-7xl font-heading mb-4 drop-shadow-md">{settings.home_hero_title}</h1>
-                               <p className="text-xl md:text-2xl font-light tracking-wide drop-shadow-sm">{settings.home_hero_subtitle}</p>
-                           </div>
-                       )}
-                  </div>
+                  {/* Overlay: gradient bottom + top-faded */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
               </div>
           ))}
+
+          {/* Hero Text — always visible, not slide-locked */}
+          <div className="absolute inset-0 flex items-end justify-center pb-16 md:pb-24 z-10 px-4">
+              <div className="text-center text-white animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
+                  <h1 className="text-4xl md:text-7xl font-heading mb-3 md:mb-4 drop-shadow-md leading-tight">
+                    {settings.home_hero_title}
+                  </h1>
+                  <p className="text-base md:text-2xl font-light tracking-wide drop-shadow-sm mb-6 md:mb-8 text-white/90">
+                    {settings.home_hero_subtitle}
+                  </p>
+                  <div className="flex items-center justify-center gap-3 flex-wrap">
+                      <Link 
+                          to="/shop"
+                          className="px-7 py-3 bg-white text-stone-900 rounded-full font-bold text-xs md:text-sm tracking-widest uppercase hover:bg-rose-50 transition-all shadow-lg hover:-translate-y-0.5"
+                      >
+                          Shop Now
+                      </Link>
+                      <Link 
+                          to="/custom-design"
+                          className="px-7 py-3 bg-transparent border-2 border-white/70 text-white rounded-full font-bold text-xs md:text-sm tracking-widest uppercase hover:bg-white/10 transition-all hover:-translate-y-0.5"
+                      >
+                          Custom Design
+                      </Link>
+                  </div>
+              </div>
+          </div>
 
           {/* Slider Controls */}
           <button 
@@ -179,7 +199,7 @@ const Home = () => {
                   <button 
                     key={idx}
                     onClick={() => setCurrentSlide(idx)}
-                    className={`w-2.5 h-2.5 rounded-full transition-all ${idx === currentSlide ? 'bg-white w-8' : 'bg-white/50'}`}
+                    className={`h-1.5 rounded-full transition-all duration-300 ${idx === currentSlide ? 'bg-white w-8' : 'bg-white/40 w-2.5'}`}
                   />
               ))}
           </div>
@@ -201,7 +221,7 @@ const Home = () => {
             </div>
 
             {/* Dynamic Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 md:gap-8">
+            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-8">
                 
                 {dynamicCategories.map((category) => (
                     <Link 
@@ -209,7 +229,7 @@ const Home = () => {
                         to={`/shop?category=${encodeURIComponent(category.label)}`}
                         className="group flex flex-col items-center gap-2 md:gap-4"
                     >
-                        <div className="relative w-28 h-28 md:w-32 md:h-32 lg:w-40 lg:h-40 rounded-full overflow-hidden border-2 border-transparent group-hover:border-rose-200 transition-all duration-300 shadow-sm group-hover:shadow-lg">
+                        <div className="relative w-24 h-24 md:w-32 md:h-32 lg:w-40 lg:h-40 rounded-full overflow-hidden border-2 border-transparent group-hover:border-rose-200 transition-all duration-300 shadow-sm group-hover:shadow-lg">
                             <img 
                                 src={getOptimizedImageUrl(category.image, { width: 300, quality: 80 })} 
                                 alt={category.label} 
@@ -217,10 +237,14 @@ const Home = () => {
                                 decoding="async"
                                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
                             />
+                            {/* Hover overlay with category name */}
+                            <div className="absolute inset-0 bg-rose-900/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                <span className="text-white text-[10px] md:text-xs font-bold uppercase tracking-wider text-center px-2">{category.label}</span>
+                            </div>
                         </div>
                         
                         <div className="flex items-center gap-1 md:gap-2 text-stone-800 group-hover:text-rose-900 transition-colors">
-                            <span className="font-heading font-medium text-sm md:text-lg text-center leading-tight">{category.label}</span>
+                            <span className="font-heading font-medium text-[11px] md:text-lg text-center leading-tight">{category.label}</span>
                             <ArrowRight className="w-3 h-3 md:w-4 md:h-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 hidden md:block" />
                         </div>
                     </Link>
@@ -377,7 +401,7 @@ const Home = () => {
       })}
 
       {/* ================= STORY SECTION ================= */}
-      <section className="py-16 md:py-24 bg-stone-900 text-white overflow-hidden relative">
+      <section className="py-10 md:py-24 bg-stone-900 text-white overflow-hidden relative">
           <div className="absolute top-0 right-0 w-[400px] h-[400px] md:w-[600px] md:h-[600px] bg-rose-900/20 rounded-full blur-[120px] translate-x-1/2 -translate-y-1/2" />
           
           <div className="container-custom grid lg:grid-cols-2 gap-10 md:gap-16 items-center relative z-10">
@@ -415,24 +439,37 @@ const Home = () => {
               </div>
 
               <div className="relative mt-8 lg:mt-0">
-                  <div className="aspect-square relative z-10">
-                     <img 
-                        src={getOptimizedImageUrl(storyImage1, { width: 600, quality: 80 })} 
-                        alt="Artisan working" 
-                        loading="lazy"
-                        decoding="async"
+                  {/* Stack images vertically on mobile, overlap on desktop */}
+                  <div className="flex gap-4 lg:hidden">
+                      <img
+                         src={getOptimizedImageUrl(storyImage1, { width: 400, quality: 80 })}
+                         alt="Artisan working"
+                         loading="lazy" decoding="async"
+                         className="w-1/2 rounded-2xl shadow-lg border-2 border-stone-800"
+                      />
+                      <img
+                         src={getOptimizedImageUrl(storyImage2, { width: 400, quality: 80 })}
+                         alt="Finished embroidery"
+                         loading="lazy" decoding="async"
+                         className="w-1/2 rounded-2xl shadow-lg border-2 border-stone-800 self-end"
+                      />
+                  </div>
+                  <div className="aspect-square relative z-10 hidden lg:block">
+                     <img
+                        src={getOptimizedImageUrl(storyImage1, { width: 600, quality: 80 })}
+                        alt="Artisan working"
+                        loading="lazy" decoding="async"
                         className="w-1/2 absolute top-0 left-0 rounded-2xl shadow-2xl border-4 border-stone-800 hover:scale-105 transition-transform duration-500 z-20"
                      />
-                     <img 
-                        src={getOptimizedImageUrl(storyImage2, { width: 600, quality: 80 })} 
-                        alt="Finished embroidery" 
-                        loading="lazy"
-                        decoding="async"
+                     <img
+                        src={getOptimizedImageUrl(storyImage2, { width: 600, quality: 80 })}
+                        alt="Finished embroidery"
+                        loading="lazy" decoding="async"
                         className="w-2/3 absolute bottom-0 right-0 rounded-2xl shadow-2xl border-4 border-stone-800 hover:scale-105 transition-transform duration-500 z-10"
                      />
                   </div>
                   {/* Decorative Circle text */}
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200px] h-[200px] md:w-[300px] md:h-[300px] border border-stone-700/50 rounded-full animate-spin-slow pointer-events-none" />
+                  <div className="hidden lg:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] border border-stone-700/50 rounded-full animate-spin-slow pointer-events-none" />
               </div>
           </div>
       </section>

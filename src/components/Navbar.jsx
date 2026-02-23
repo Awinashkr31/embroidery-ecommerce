@@ -154,7 +154,7 @@ const Navbar = () => {
     <nav
   className={`fixed top-0 w-full z-50 transition-all duration-500 ease-in-out
     ${isScrolled
-      ? 'bg-white/90 backdrop-blur-md border-b border-stone-100 shadow-sm py-2 px-2 md:px-12 lg:px-20'
+      ? 'bg-white/98 backdrop-blur-2xl border-b border-stone-100 shadow-lg shadow-black/5 py-2 px-2 md:px-12 lg:px-20'
       : 'bg-white/50 backdrop-blur-sm py-3 px-2 md:px-12 lg:px-20'
     }`}
     >
@@ -185,18 +185,22 @@ const Navbar = () => {
 
 
           {/* 3. Center: Desktop Navigation */}
-          <div className="hidden lg:flex items-center justify-center space-x-8 lg:w-2/4">
+          <div className="hidden lg:flex items-center justify-center space-x-2 lg:w-2/4">
              {navLinks.map((link) => (
                 <Link 
                   key={link.path}
                   to={link.path} 
-                  className={`relative text-xs font-bold tracking-widest uppercase transition-all duration-300 px-4 py-1.5 rounded-full whitespace-nowrap ${
+                  className={`relative text-xs font-bold tracking-widest uppercase transition-all duration-300 px-4 py-2 rounded-full whitespace-nowrap group ${
                     isActive(link.path) 
-                      ? 'bg-rose-900 text-white shadow-sm' 
-                      : 'text-stone-600 hover:text-rose-900 hover:bg-stone-50'
+                      ? 'text-rose-900' 
+                      : 'text-stone-600 hover:text-stone-900 hover:bg-stone-50'
                   }`}
                 >
                   {link.name}
+                  {/* Underline indicator for active link */}
+                  <span className={`absolute bottom-0.5 left-1/2 -translate-x-1/2 h-0.5 bg-rose-900 rounded-full transition-all duration-300 ${
+                    isActive(link.path) ? 'w-4' : 'w-0 group-hover:w-3 group-hover:bg-stone-400'
+                  }`} />
                 </Link>
               ))}
           </div>
@@ -291,7 +295,7 @@ const Navbar = () => {
                   </div>
                 </button>
               ) : (
-                <Link to="/login" className="ml-2 btn-primary !px-6 !py-2 !text-xs whitespace-nowrap">
+                <Link to="/login" className="ml-2 btn-primary !px-6 !py-2 !text-xs whitespace-nowrap border-2 border-rose-900 hover:border-rose-800">
                   Login / Sign Up
                 </Link>
               )}
@@ -373,7 +377,7 @@ const Navbar = () => {
                         <Link 
                             key={link.path}
                             to={link.path}
-                            className={`block text-base font-body font-medium transition-all py-3 px-4 ${
+                            className={`flex items-center gap-3 text-base font-body font-medium transition-all py-3 px-4 ${
                                 isActive(link.path) 
                                     ? 'text-rose-900 font-semibold bg-rose-50/50 rounded-r-full border-l-4 border-rose-900' 
                                     : 'text-stone-600 hover:text-stone-900 hover:bg-stone-50 rounded-r-full border-l-4 border-transparent'

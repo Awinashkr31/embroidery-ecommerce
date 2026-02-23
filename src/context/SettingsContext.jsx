@@ -91,10 +91,12 @@ export const SettingsProvider = ({ children }) => {
 
             const mergedSettings = { ...defaults, ...newSettings };
             
-            // Only update if changed to avoid renders
-            if (JSON.stringify(mergedSettings) !== cached) {
+            // Only update if changed to avoid unnecessary renders
+            const currentCached = localStorage.getItem('site_settings');
+            const mergedStr = JSON.stringify(mergedSettings);
+            if (mergedStr !== currentCached) {
                 setSettings(mergedSettings);
-                localStorage.setItem('site_settings', JSON.stringify(mergedSettings));
+                localStorage.setItem('site_settings', mergedStr);
             }
         } catch (err) {
             console.error('SettingsContext Error:', err);

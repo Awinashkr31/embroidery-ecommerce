@@ -115,9 +115,9 @@ const OrderSuccess = () => {
                                 Order Details
                             </h2>
                             <div className="space-y-3 text-sm">
-                                <div className="flex justify-between py-2 border-b border-stone-50">
-                                    <span className="text-stone-500">Order ID</span>
-                                    <span className="font-mono font-bold text-stone-900">{order.id}</span>
+                                <div className="flex justify-between py-2 border-b border-stone-50 gap-2">
+                                    <span className="text-stone-500 shrink-0">Order ID</span>
+                                    <span className="font-mono font-bold text-stone-900 text-xs md:text-sm truncate ml-2 text-right">{order.id}</span>
                                 </div>
                                 <div className="flex justify-between py-2 border-b border-stone-50">
                                     <span className="text-stone-500">Date</span>

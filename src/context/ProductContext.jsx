@@ -101,17 +101,17 @@ export const ProductProvider = ({ children }) => {
         try {
             // Prepare update object
             const updates = {};
-            if (updatedData.name) updates.name = updatedData.name;
-            if (updatedData.price) updates.price = parseFloat(updatedData.price);
+            if (updatedData.name !== undefined) updates.name = updatedData.name;
+            if (updatedData.price !== undefined) updates.price = parseFloat(updatedData.price);
             if (updatedData.originalPrice !== undefined) updates.original_price = updatedData.originalPrice ? parseFloat(updatedData.originalPrice) : null;
-            if (updatedData.category) updates.category = updatedData.category;
-            if (updatedData.description) updates.description = updatedData.description;
+            if (updatedData.category !== undefined) updates.category = updatedData.category;
+            if (updatedData.description !== undefined) updates.description = updatedData.description;
             if (updatedData.images) updates.images = updatedData.images;
             else if (updatedData.image) updates.images = [updatedData.image];
             
             if (updatedData.featured !== undefined) updates.featured = updatedData.featured;
             if (updatedData.stockQuantity !== undefined) updates.stock_quantity = parseInt(updatedData.stockQuantity);
-            if (updatedData.fabric) updates.fabric = updatedData.fabric;
+            if (updatedData.fabric !== undefined) updates.fabric = updatedData.fabric;
             if (updatedData.clothingInformation !== undefined) updates.clothing_information = updatedData.clothingInformation;
             if (updatedData.variants !== undefined) updates.variants = updatedData.variants;
 
@@ -161,7 +161,7 @@ export const ProductProvider = ({ children }) => {
             setProducts(prev => prev.filter(prod => prod.id !== id));
         } catch (error) {
             console.error('Error deleting product:', error);
-            alert('Failed to delete product');
+            throw error;
         }
     };
 

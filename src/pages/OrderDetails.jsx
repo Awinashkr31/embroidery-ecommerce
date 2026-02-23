@@ -16,6 +16,10 @@ const OrderDetails = () => {
     const [loading, setLoading] = useState(true);
     const [order, setOrder] = useState(null);
 
+    // Rate Purchase modal state
+    const [reviewModal, setReviewModal] = useState({ isOpen: false, item: null });
+    const [reviewState, setReviewState] = useState({ rating: 5, comment: '', submitting: false });
+
     useEffect(() => {
         if (!id) return;
 
@@ -26,7 +30,6 @@ const OrderDetails = () => {
                 'postgres_changes',
                 { event: 'UPDATE', schema: 'public', table: 'orders', filter: `id=eq.${id}` },
                 (payload) => {
-                    console.log('Order updated:', payload);
                     setOrder(prev => ({ ...prev, ...payload.new }));
                 }
             )
@@ -34,7 +37,6 @@ const OrderDetails = () => {
                 'postgres_changes',
                 { event: 'INSERT', schema: 'public', table: 'order_status_logs', filter: `order_id=eq.${id}` },
                 async () => {
-                    console.log('New tracking log received');
                     // Refresh logs
                     const { data: logs } = await supabase
                         .from('order_status_logs')
@@ -81,12 +83,22 @@ const OrderDetails = () => {
                     order_status_logs: logsData || []
                 };
 
+                // Ownership check — prevent cross-user order snooping
+                if (
+                    currentUser &&
+                    orderData.customer_email &&
+                    orderData.customer_email !== currentUser.email
+                ) {
+                    addToast('You do not have access to this order.', 'error');
+                    navigate('/profile');
+                    return;
+                }
+
                 setOrder(fullOrder);
             } catch (error) {
                 console.error('Error fetching order:', error);
-                console.error('Failed ID:', id);
                 addToast(`Error: ${error.message || 'Order not found'}`, 'error');
-                // navigate('/profile'); // Comment out navigate to parse error
+                navigate('/profile');
             } finally {
                 setLoading(false);
             }
@@ -96,6 +108,30 @@ const OrderDetails = () => {
             fetchOrderDetails();
         }
     }, [currentUser, id, addToast, navigate]);
+
+    // --- Rate Purchase Handler ---
+    const handleSubmitReview = async () => {
+        if (!reviewModal.item || reviewState.submitting) return;
+        setReviewState(s => ({ ...s, submitting: true }));
+        try {
+            const { error } = await supabase.from('reviews').insert([{
+                user_id: currentUser.id,
+                user_name: currentUser.displayName || currentUser.user_metadata?.full_name || currentUser.email?.split('@')[0],
+                product_id: reviewModal.item.id || reviewModal.item.product_id,
+                rating: reviewState.rating,
+                comment: reviewState.comment,
+                order_id: order.id,
+            }]);
+            if (error) throw error;
+            addToast('Review submitted! Thank you.', 'success');
+            setReviewModal({ isOpen: false, item: null });
+            setReviewState({ rating: 5, comment: '', submitting: false });
+        } catch (err) {
+            console.error('Review submit failed:', err);
+            addToast('Could not submit review. Please try again.', 'error');
+            setReviewState(s => ({ ...s, submitting: false }));
+        }
+    };
 
     // --- Return / Replace Logic ---
     const [isReturnModalOpen, setIsReturnModalOpen] = useState(false);
@@ -230,7 +266,10 @@ const OrderDetails = () => {
                                 <div className="flex gap-3 flex-wrap">
                                     {isDelivered && (
                                         <>
-                                            <button className="flex items-center gap-2 px-4 py-2.5 bg-white border border-stone-200 rounded-xl text-stone-700 font-bold text-sm hover:bg-stone-50 hover:border-stone-300 transition-all shadow-sm">
+                                            <button
+                                                onClick={() => setReviewModal({ isOpen: true, item: order.items[0] })}
+                                                className="flex items-center gap-2 px-4 py-2.5 bg-white border border-stone-200 rounded-xl text-stone-700 font-bold text-sm hover:bg-stone-50 hover:border-stone-300 transition-all shadow-sm"
+                                            >
                                                 <Star className="w-4 h-4 text-amber-400 fill-current" /> Rate Purchase
                                             </button>
                                             <button 
@@ -491,6 +530,83 @@ const OrderDetails = () => {
                                 className="px-6 py-2.5 bg-rose-900 text-white rounded-xl font-bold text-sm hover:bg-rose-800 transition-all shadow-lg shadow-rose-900/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                             >
                                 {isSubmittingReturn ? <Loader className="w-4 h-4 animate-spin" /> : 'Confirm Request'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* ── Rate Purchase Modal ── */}
+            {reviewModal.isOpen && reviewModal.item && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
+                    <div className="bg-white rounded-2xl w-full sm:max-w-md shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
+                        {/* Header */}
+                        <div className="p-6 border-b border-stone-100 flex items-center gap-4">
+                            <div className="w-14 h-14 rounded-xl bg-stone-100 overflow-hidden shrink-0">
+                                <img src={reviewModal.item.image} alt={reviewModal.item.name} className="w-full h-full object-cover" />
+                            </div>
+                            <div>
+                                <p className="text-xs text-stone-400 font-medium uppercase tracking-wider mb-1">Rate your purchase</p>
+                                <h3 className="font-bold text-stone-900 text-sm leading-tight">{reviewModal.item.name}</h3>
+                            </div>
+                        </div>
+
+                        {/* Body */}
+                        <div className="p-6 space-y-5">
+                            {/* Star selector */}
+                            <div>
+                                <label className="block text-sm font-bold text-stone-700 mb-3">Your Rating</label>
+                                <div className="flex gap-2">
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                        <button
+                                            key={star}
+                                            type="button"
+                                            onClick={() => setReviewState(s => ({ ...s, rating: star }))}
+                                            className="transition-transform hover:scale-110"
+                                        >
+                                            <Star
+                                                className={`w-8 h-8 ${
+                                                    star <= reviewState.rating
+                                                        ? 'text-amber-400 fill-amber-400'
+                                                        : 'text-stone-300 fill-stone-100'
+                                                }`}
+                                            />
+                                        </button>
+                                    ))}
+                                    <span className="ml-2 text-sm font-semibold text-stone-600 self-center">
+                                        {['', 'Poor', 'Fair', 'Good', 'Great', 'Excellent'][reviewState.rating]}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Comment */}
+                            <div>
+                                <label className="block text-sm font-bold text-stone-700 mb-2">Your Review <span className="text-stone-400 font-normal">(optional)</span></label>
+                                <textarea
+                                    value={reviewState.comment}
+                                    onChange={(e) => setReviewState(s => ({ ...s, comment: e.target.value }))}
+                                    placeholder="Share your experience with this product…"
+                                    rows={3}
+                                    className="w-full px-4 py-3 rounded-xl border border-stone-200 text-sm focus:ring-2 focus:ring-rose-900/10 focus:border-rose-900/30 outline-none resize-none transition-all"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Footer */}
+                        <div className="p-6 bg-stone-50 border-t border-stone-100 flex justify-end gap-3">
+                            <button
+                                onClick={() => { setReviewModal({ isOpen: false, item: null }); setReviewState({ rating: 5, comment: '', submitting: false }); }}
+                                className="px-5 py-2.5 rounded-xl font-bold text-stone-500 hover:bg-stone-100 transition-colors text-sm"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleSubmitReview}
+                                disabled={reviewState.submitting}
+                                className="px-6 py-2.5 bg-rose-900 text-white rounded-xl font-bold text-sm hover:bg-rose-800 transition-all shadow-lg shadow-rose-900/20 disabled:opacity-50 flex items-center gap-2"
+                            >
+                                {reviewState.submitting ? <Loader className="w-4 h-4 animate-spin" /> : null}
+                                Submit Review
                             </button>
                         </div>
                     </div>

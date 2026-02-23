@@ -1,4 +1,3 @@
-console.log('[DEBUG] 1. Firebase Config Executing');
 import { initializeApp } from "firebase/app";
 
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
@@ -15,7 +14,6 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-console.log('Firebase Config:', firebaseConfig);
 
 let app;
 let auth;
@@ -25,7 +23,6 @@ try {
   app = initializeApp(firebaseConfig);
   auth = getAuth(app);
   googleProvider = new GoogleAuthProvider();
-  console.log('Firebase Initialized Successfully');
 } catch (error) {
   console.error('Firebase Initialization Error:', error);
 }

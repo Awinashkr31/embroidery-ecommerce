@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Package, Clock, CheckCircle, XCircle, Search, Eye, Trash2, Filter, AlertTriangle, ArrowRight, Truck, Download, RefreshCw } from 'lucide-react';
 import { supabase } from '../../../config/supabase';
+import { useToast } from '../../context/ToastContext';
 import ShipmentCreator from '../../components/admin/ShipmentCreator';
 import { generateXpressbeesCSV } from '../../services/xpressbeesCSV';
 
@@ -12,6 +13,7 @@ const Orders = () => {
   const [activeTab, setActiveTab] = useState('All');
   const [loading, setLoading] = useState(true);
   const [selectedOrders, setSelectedOrders] = useState([]); // Array of selected order IDs
+  const { addToast } = useToast();
   
   const statusOptions = ['pending', 'processing', 'shipped', 'delivered', 'cancelled', 'cancellation_requested'];
 
@@ -107,7 +109,11 @@ const Orders = () => {
         const orderToUpdate = orders.find(o => o.id === orderId);
         let additionalUpdates = {};
         
-        if (dbStatus === 'delivered' && orderToUpdate?.paymentMethod === 'cod' && orderToUpdate?.paymentStatus !== 'paid') {
+
+        const isCOD = orderToUpdate?.paymentMethod?.toLowerCase() === 'cod';
+        const isNotPaid = orderToUpdate?.paymentStatus?.toLowerCase() !== 'paid';
+
+        if (dbStatus === 'delivered' && isCOD && isNotPaid) {
             additionalUpdates.payment_status = 'paid';
         }
 
@@ -173,7 +179,7 @@ const Orders = () => {
         }
     } catch (err) {
         console.error('Error updating status:', err);
-        alert('Failed to update status');
+        addToast('Failed to update order status', 'error');
     }
   };
 
@@ -242,11 +248,11 @@ const Orders = () => {
         });
         
         await Promise.all(updates);
-        alert("Export successful! Orders marked as Processing.");
+        addToast(`Export successful! ${ordersToExport.length} orders marked as Processing.`, 'success');
 
     } catch (error) {
         console.error("Export failed:", error);
-        alert("Failed to export CSV.");
+        addToast('Failed to export CSV. Please try again.', 'error');
     }
   };
 
@@ -353,7 +359,7 @@ const Orders = () => {
 
 
   const handleDeleteOrder = async (orderId) => {
-    if (window.confirm('Are you sure you want to delete this order? This action cannot be undone.')) {
+    if (window.confirm('Are you sure you want to delete this order? This cannot be undone.')) {
       try {
           const { error } = await supabase
             .from('orders')
@@ -367,7 +373,7 @@ const Orders = () => {
           setSelectedOrder(null);
       } catch (err) {
           console.error("Error deleting order:", err);
-          alert("Failed to delete order");
+          addToast('Failed to delete order', 'error');
       }
     }
   };
@@ -395,36 +401,54 @@ const Orders = () => {
 
   return (
     <div className="font-body space-y-6">
+      {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-           <h1 className="text-3xl font-heading font-bold text-stone-900">Orders</h1>
-           <p className="text-stone-500 mt-1">Track and manage customer orders</p>
+          <h1 className="text-2xl font-heading font-bold text-stone-900">Orders</h1>
+          <p className="text-stone-500 text-sm mt-0.5">{orders.length} total · {orders.filter(o => o.status === 'pending').length} pending action</p>
         </div>
         <div className="flex items-center gap-2">
             {selectedOrders.length > 0 && (
                 <>
                 <button 
                   onClick={downloadXpressbeesCSV}
-                  className="bg-rose-900 text-white px-4 py-2 rounded-lg text-sm font-bold tracking-wide hover:bg-rose-800 transition-colors shadow-sm flex items-center gap-2 animate-in fade-in zoom-in duration-200"
+                  className="bg-rose-900 text-white px-4 py-2 rounded-xl text-xs font-bold tracking-wide hover:bg-rose-800 transition-colors shadow-sm flex items-center gap-2"
                 >
-                  <Download className="w-4 h-4" />
+                  <Download className="w-3.5 h-3.5" />
                   XpressBees ({selectedOrders.length})
                 </button>
                 <button 
                   onClick={downloadCSV}
-                  className="bg-stone-900 text-white px-4 py-2 rounded-lg text-sm font-bold tracking-wide hover:bg-stone-800 transition-colors shadow-sm flex items-center gap-2 animate-in fade-in zoom-in duration-200"
+                  className="bg-stone-900 text-white px-4 py-2 rounded-xl text-xs font-bold tracking-wide hover:bg-stone-800 transition-colors shadow-sm flex items-center gap-2"
                 >
-                  <Download className="w-4 h-4" />
+                  <Download className="w-3.5 h-3.5" />
                   Delhivery ({selectedOrders.length})
                 </button>
                 </>
             )}
-            <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-stone-200 shadow-sm text-sm font-medium text-stone-600">
+            <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-stone-200 shadow-sm text-xs font-bold text-stone-600">
                  <span className={`w-2 h-2 rounded-full ${loading ? 'bg-amber-500' : 'bg-emerald-500'} animate-pulse`}></span>
-                 {loading ? 'Syncing...' : 'Live Updates'}
+                 {loading ? 'Syncing...' : 'Live'}
             </div>
         </div>
       </div>
+
+      {/* Quick stats */}
+      {!loading && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          {[
+            { label: 'Total', count: orders.length, color: 'bg-stone-100 text-stone-700' },
+            { label: 'Pending', count: orders.filter(o => o.status === 'pending').length, color: 'bg-amber-100 text-amber-700' },
+            { label: 'Shipped', count: orders.filter(o => o.status === 'shipped').length, color: 'bg-blue-100 text-blue-700' },
+            { label: 'Delivered', count: orders.filter(o => ['delivered','completed'].includes(o.status)).length, color: 'bg-emerald-100 text-emerald-700' },
+          ].map(({ label, count, color }) => (
+            <div key={label} className="bg-white rounded-xl border border-stone-100 px-4 py-3 flex items-center justify-between shadow-sm">
+              <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">{label}</span>
+              <span className={`text-sm font-bold px-2.5 py-0.5 rounded-full ${color}`}>{count}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Toolbar */}
       <div className="grid md:grid-cols-[2fr_3fr] gap-4">
@@ -458,8 +482,66 @@ const Orders = () => {
         </div>
       </div>
 
-      {/* Orders Table */}
-      <div className="bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden">
+      {/* ── Mobile: order cards ─────────────────────────────── */}
+      <div className="md:hidden space-y-3">
+        {filteredOrders.length === 0 ? (
+          <div className="bg-white rounded-2xl border border-stone-100 shadow-sm px-6 py-12 text-center">
+            <Package className="w-10 h-10 mx-auto mb-3 text-stone-200" />
+            <p className="font-medium text-stone-500">No orders found</p>
+            <p className="text-xs text-stone-400 mt-1">Try adjusting your filters</p>
+          </div>
+        ) : filteredOrders.map((order) => (
+          <button
+            key={order.id}
+            onClick={() => setSelectedOrder(order)}
+            className={`w-full text-left bg-white rounded-2xl border shadow-sm p-4 transition-all active:scale-[0.99] ${
+              selectedOrders.includes(order.id) ? 'border-rose-300 bg-rose-50/30' : 'border-stone-100'
+            }`}
+          >
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  checked={selectedOrders.includes(order.id)}
+                  onChange={(e) => { e.stopPropagation(); toggleSelectOrder(order.id); }}
+                  className="rounded border-stone-300 text-rose-900 focus:ring-rose-900 mt-0.5 shrink-0"
+                  onClick={e => e.stopPropagation()}
+                />
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono font-bold text-stone-900 text-sm">#{order.id.slice(0,8)}</span>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase border ${getStatusColor(order.status)}`}>
+                      {order.status}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-stone-400 mt-0.5">
+                    {new Date(order.date).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })} · {order.items.length} item{order.items.length !== 1 ? 's' : ''}
+                  </p>
+                </div>
+              </div>
+              <div className="text-right shrink-0">
+                <p className="font-bold text-stone-900">₹{order.total?.toLocaleString()}</p>
+                <p className={`text-[10px] font-bold uppercase ${order.paymentStatus === 'paid' ? 'text-emerald-600' : 'text-amber-600'}`}>
+                  {order.paymentStatus} · {order.paymentMethod}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 pt-3 border-t border-stone-50">
+              <div className="w-7 h-7 rounded-full bg-stone-100 flex items-center justify-center text-xs font-bold text-stone-500 shrink-0">
+                {order.customer?.firstName?.[0]}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold text-stone-700 truncate">{order.customer?.firstName} {order.customer?.lastName}</p>
+                <p className="text-[10px] text-stone-400 truncate">{order.customer?.email}</p>
+              </div>
+              <Eye className="w-4 h-4 text-rose-900 shrink-0" />
+            </div>
+          </button>
+        ))}
+      </div>
+
+      {/* ── Desktop: full table ──────────────────────────────── */}
+      <div className="hidden md:block bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead className="bg-stone-50 border-b border-stone-100">
@@ -467,7 +549,6 @@ const Orders = () => {
                 <th className="px-6 py-4 w-12">
                      <input 
                         type="checkbox"
-                        // Check if all displayed orders are selected
                         checked={filteredOrders.length > 0 && filteredOrders.every(o => selectedOrders.includes(o.id))}
                         onChange={toggleSelectAll}
                         className="rounded border-stone-300 text-rose-900 focus:ring-rose-900"
