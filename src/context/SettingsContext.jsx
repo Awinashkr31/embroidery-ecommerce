@@ -61,7 +61,10 @@ export const SettingsProvider = ({ children }) => {
             ],
             duration: "2-3 Hours"
           }
-        ])
+        ]),
+        shipping_min_order_value: 200,
+        shipping_free_delivery_threshold: 499,
+        shipping_delivery_charge: 50
     };
 
     const fetchSettings = async () => {

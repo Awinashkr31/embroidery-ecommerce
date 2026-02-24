@@ -1,20 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useSettings } from '../context/SettingsContext';
 import SEO from '../components/SEO';
 import { AlertTriangle, Sparkles, Shield, Truck, RefreshCw, ChevronLeft } from 'lucide-react';
-
-const PERKS = [
-  { icon: Sparkles, text: 'Exclusive member-only deals' },
-  { icon: Truck,    text: 'Free shipping on orders ₹999+' },
-  { icon: Shield,   text: 'Easy 7-day returns' },
-  { icon: RefreshCw,text: 'Real-time order tracking' },
-];
 
 const LoginSignup = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { signInWithGoogle, currentUser } = useAuth();
+  const { settings } = useSettings();
+
+  const PERKS = [
+    { icon: Sparkles, text: 'Exclusive member-only deals' },
+    { icon: Truck,    text: `Free shipping on orders ₹${settings?.shipping_free_delivery_threshold || 499}+` },
+    { icon: Shield,   text: 'Easy 7-day returns' },
+    { icon: RefreshCw,text: 'Real-time order tracking' },
+  ];
 
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState('');
@@ -124,12 +126,12 @@ const LoginSignup = () => {
 
           {/* Perks */}
           <div className="mt-8 p-4 bg-stone-50 rounded-2xl space-y-3">
-            {PERKS.map(({ icon: Icon, text }) => (
-              <div key={text} className="flex items-center gap-3">
+            {PERKS.map((perk) => (
+              <div key={perk.text} className="flex items-center gap-3">
                 <div className="w-7 h-7 rounded-lg bg-rose-100 flex items-center justify-center shrink-0">
-                  <Icon className="w-3.5 h-3.5 text-rose-900" />
+                  <perk.icon className="w-3.5 h-3.5 text-rose-900" />
                 </div>
-                <span className="text-sm text-stone-700 font-medium">{text}</span>
+                <span className="text-sm text-stone-700 font-medium">{perk.text}</span>
               </div>
             ))}
           </div>
@@ -171,12 +173,12 @@ const LoginSignup = () => {
             </div>
 
             <div className="space-y-3">
-              {PERKS.map(({ icon: Icon, text }) => (
-                <div key={text} className="flex items-center gap-3">
+              {PERKS.map((perk) => (
+                <div key={perk.text} className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
-                    <Icon className="w-4 h-4 text-rose-300" />
+                    <perk.icon className="w-4 h-4 text-rose-300" />
                   </div>
-                  <span className="text-sm font-medium text-stone-300">{text}</span>
+                  <span className="text-sm font-medium text-stone-300">{perk.text}</span>
                 </div>
               ))}
             </div>
