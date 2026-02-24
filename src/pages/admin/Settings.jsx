@@ -27,6 +27,11 @@ const Settings = () => {
         instagramUrl: '',
         twitterUrl: '',
 
+        // Store / Shipping Settings
+        shipping_min_order_value: 200,
+        shipping_free_delivery_threshold: 499,
+        shipping_delivery_charge: 50,
+
         // Home
         home_hero_title: 'Weaving Stories in Thread',
         home_hero_subtitle: 'Timeless hand embroidery blending tradition with modern aesthetics.',
@@ -437,6 +442,41 @@ const Settings = () => {
                                 />
                             </div>
                         </div>
+
+                         <div className="bg-white p-6 rounded-xl border border-stone-100 shadow-sm space-y-6">
+                            <h3 className="font-bold text-lg text-stone-900 flex items-center gap-2">
+                                <IndianRupee className="w-5 h-5 text-rose-900" /> Store & Shipping Settings
+                            </h3>
+                            <div className="grid md:grid-cols-3 gap-6">
+                                <EditableInput 
+                                    label="Minimum Order Value"
+                                    name="shipping_min_order_value"
+                                    value={settings.shipping_min_order_value}
+                                    onChange={handleChange}
+                                    isEditing={isEditing}
+                                    placeholder="200"
+                                    type="number"
+                                />
+                                <EditableInput 
+                                    label="Free Delivery Threshold"
+                                    name="shipping_free_delivery_threshold"
+                                    value={settings.shipping_free_delivery_threshold}
+                                    onChange={handleChange}
+                                    isEditing={isEditing}
+                                    placeholder="499"
+                                    type="number"
+                                />
+                                <EditableInput 
+                                    label="Delivery Charge"
+                                    name="shipping_delivery_charge"
+                                    value={settings.shipping_delivery_charge}
+                                    onChange={handleChange}
+                                    isEditing={isEditing}
+                                    placeholder="50"
+                                    type="number"
+                                />
+                            </div>
+                        </div>
                     </div>
                 )}
 
@@ -777,11 +817,12 @@ const Settings = () => {
     );
 };
 
-const EditableInput = ({ label, name, value, onChange, isEditing, placeholder }) => (
+const EditableInput = ({ label, name, value, onChange, isEditing, placeholder, type = "text" }) => (
     <div>
         <label className="block text-sm font-medium text-stone-700 mb-1">{label}</label>
         {isEditing ? (
             <input 
+                type={type}
                 name={name}
                 value={value}
                 onChange={onChange}

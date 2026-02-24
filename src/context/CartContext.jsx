@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../../config/supabase';
 import { useAuth } from './AuthContext';
 import { useToast } from './ToastContext';
+import { useSettings } from './SettingsContext';
 
 const CartContext = createContext();
 
@@ -10,6 +11,7 @@ export const useCart = () => useContext(CartContext);
 export const CartProvider = ({ children }) => {
   const { currentUser, loading } = useAuth();
   const { addToast } = useToast();
+  const { settings } = useSettings();
 
   // Loading state for cart
   const [isFetchingCart, setIsFetchingCart] = useState(true);
@@ -852,9 +854,9 @@ export const CartProvider = ({ children }) => {
       return Math.round(discount);
   })() : 0;
   // Shipping Rules
-  const MIN_ORDER_VALUE = 200;
-  const FREE_DELIVERY_THRESHOLD = 499;
-  const DELIVERY_CHARGE = 50;
+  const MIN_ORDER_VALUE = Number(settings?.shipping_min_order_value) || 200;
+  const FREE_DELIVERY_THRESHOLD = Number(settings?.shipping_free_delivery_threshold) || 499;
+  const DELIVERY_CHARGE = Number(settings?.shipping_delivery_charge) || 50;
 
   const shippingCharge = subtotal < FREE_DELIVERY_THRESHOLD ? DELIVERY_CHARGE : 0;
   const cartTotal = subtotal - discountAmount + shippingCharge;

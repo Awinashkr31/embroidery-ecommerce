@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { getOptimizedImageUrl } from '../utils/imageUtils';
 import { Package, Heart, Search, ChevronDown, Sparkles, ChevronLeft, ChevronRight, SlidersHorizontal } from 'lucide-react';
-// import { useCart } from '../context/CartContext';
 import { useProducts } from '../context/ProductContext';
 import { useCategories } from '../context/CategoryContext';
 import { useWishlist } from '../context/WishlistContext';
 import { Link, useSearchParams } from 'react-router-dom';
-// import { useToast } from '../context/ToastContext';
+
+// Utility helper function extracted outside component to avoid recreation
+const slugify = (str) => (str || '').toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
 const Shop = () => {
     const { products, loading: productsLoading } = useProducts();
@@ -19,7 +20,6 @@ const Shop = () => {
     // Filter States
     const [filter, setFilter] = useState('all');
     const [sortBy, setSortBy] = useState('featured');
-    const [searchQuery, setSearchQuery] = useState('');
     const [priceRange, setPriceRange] = useState('all');
     const [inStockOnly, setInStockOnly] = useState(false);
     const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
@@ -47,7 +47,7 @@ const Shop = () => {
 
     useEffect(() => {
         setCurrentPage(1);
-    }, [filter, sortBy, searchQuery, priceRange, inStockOnly]);
+    }, [filter, sortBy, priceRange, inStockOnly]);
 
     useEffect(() => {
         if (isMobileFiltersOpen) {
@@ -60,28 +60,17 @@ const Shop = () => {
         };
     }, [isMobileFiltersOpen]);
 
-    // Filter Logic
     const allFilteredProducts = products.filter(product => {
-        // Search Filter
-        if (searchQuery) {
-            const query = searchQuery.toLowerCase();
-            const matchesSearch = product.name.toLowerCase().includes(query) || 
-                                  product.description.toLowerCase().includes(query) ||
-                                  product.category.toLowerCase().includes(query);
-            if (!matchesSearch) return false;
-        }
-
         // Category Filter
         if (filter !== 'all') {
-            const slugify = (str) => (str || '').toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
             if (slugify(product.category) !== slugify(filter)) return false;
         }
 
         // Price Range Filter
         if (priceRange !== 'all') {
-            if (priceRange === 'under-1000' && product.price >= 1000) return false;
-            if (priceRange === '1000-5000' && (product.price < 1000 || product.price > 5000)) return false;
-            if (priceRange === 'above-5000' && product.price <= 5000) return false;
+            if (priceRange === 'under-99' && product.price >= 99) return false;
+            if (priceRange === '99-199' && (product.price < 99 || product.price > 199)) return false;
+            if (priceRange === 'above-199' && product.price <= 199) return false;
         }
 
         // Availability Filter
@@ -112,9 +101,9 @@ const Shop = () => {
 
     const priceRanges = [
         { id: 'all', label: 'All Prices' },
-        { id: 'under-1000', label: 'Under ₹1,000' },
-        { id: '1000-5000', label: '₹1,000 - ₹5,000' },
-        { id: 'above-5000', label: 'Above ₹5,000' },
+        { id: 'under-99', label: 'Under ₹99' },
+        { id: '99-199', label: '₹99 - ₹199' },
+        { id: 'above-199', label: 'Above ₹199' },
     ];
 
     return (
@@ -126,7 +115,6 @@ const Shop = () => {
                     <div className="flex gap-4">
                         {categories.map(cat => {
                             const isSelected = filter === cat.id;
-                            const slugify = (str) => (str || '').toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
                             const catImage = cat.id === 'all'
                                 ? '/logo.png'
                                 : products.find(p => slugify(p.category) === slugify(cat.id))?.image || '/logo.png';
@@ -375,17 +363,7 @@ const Shop = () => {
                                     )}
                                 </button>
 
-                                {/* Search */}
-                                <div className="relative flex-[2] md:w-64 group">
-                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 group-focus-within:text-rose-900 transition-colors" />
-                                    <input 
-                                        type="text"
-                                        placeholder="Search..."
-                                        value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
-                                        className="w-full pl-9 pr-4 py-2 bg-stone-100/50 border border-stone-200 rounded-lg md:rounded-full text-sm focus:border-rose-900 focus:bg-white focus:ring-1 focus:ring-rose-900 focus:outline-none transition-all placeholder:text-stone-400 font-medium hover:border-stone-300"
-                                    />
-                                </div>
+                                {/* Search Removed */}
                                 
                                 {/* Sort */}
                                 <div className="relative group flex-1 md:min-w-[160px]">
@@ -413,7 +391,7 @@ const Shop = () => {
                                 <Sparkles className="w-8 h-8 text-stone-300 mx-auto mb-4" />
                                 <h3 className="text-2xl font-heading text-stone-900 mb-2">No results found</h3>
                                 <button 
-                                    onClick={() => {setFilter('all'); setSearchQuery('');}}
+                                    onClick={() => {setFilter('all'); setPriceRange('all'); setInStockOnly(false);}}
                                     className="text-rose-900 underline underline-offset-4 hover:text-rose-700 text-sm font-medium"
                                 >
                                     Reset collection
