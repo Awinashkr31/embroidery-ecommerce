@@ -55,7 +55,7 @@ const Profile = () => {
                     supabase
                         .from('orders')
                         .select('*')
-                        .eq('user_id', currentUser.id)
+                        .eq('user_id', (currentUser.uid || currentUser.id))
                         .order('created_at', { ascending: false }),
                     supabase
                         .from('orders')
@@ -87,7 +87,7 @@ const Profile = () => {
                 const { data, error } = await supabase
                     .from('reviews')
                     .select('product_id')
-                    .eq('user_id', currentUser.id);
+                    .eq('user_id', (currentUser.uid || currentUser.id));
                 
                 if (error) throw error;
                 const reviewedProductIds = new Set(data.map(r => r.product_id));
@@ -198,7 +198,7 @@ const Profile = () => {
             const { error } = await supabase
                 .from('reviews')
                 .insert([{
-                    user_id: currentUser.id,
+                    user_id: (currentUser.uid || currentUser.id),
                     user_name: currentUser.displayName,
                     product_id: reviewModal.productId,
                     rating: newReview.rating,

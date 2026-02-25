@@ -20,7 +20,8 @@ const DEFAULT_CATEGORIES = [
     { id: 'bridal', label: 'Bridal' },
     { id: 'clothing', label: 'Clothing' },
     { id: 'mens-ethnic', label: 'Mens Ethnic' },
-    { id: 'womens-ethnic', label: 'Womens Ethnic' }
+    { id: 'womens-ethnic', label: 'Womens Ethnic' },
+    { id: 'combos', label: 'Combos' }
 ];
 
 export const CategoryProvider = ({ children }) => {

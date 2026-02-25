@@ -115,7 +115,7 @@ const OrderDetails = () => {
         setReviewState(s => ({ ...s, submitting: true }));
         try {
             const { error } = await supabase.from('reviews').insert([{
-                user_id: currentUser.id,
+                user_id: (currentUser.uid || currentUser.id),
                 user_name: currentUser.displayName || currentUser.user_metadata?.full_name || currentUser.email?.split('@')[0],
                 product_id: reviewModal.item.id || reviewModal.item.product_id,
                 rating: reviewState.rating,

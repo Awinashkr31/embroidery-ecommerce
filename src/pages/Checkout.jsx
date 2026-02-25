@@ -28,7 +28,7 @@ const Checkout = () => {
     const [selectedAddressId, setSelectedAddressId] = useState('new'); // 'new' or address ID
 
     // Filter addresses for current user
-    const userAddresses = savedAddresses.filter(addr => addr.userId === currentUser?.id);
+    const userAddresses = savedAddresses.filter(addr => addr.userId === (currentUser?.uid || currentUser?.id));
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isZipLoading, setIsZipLoading] = useState(false);
@@ -76,7 +76,7 @@ const Checkout = () => {
     // Set default address if available
     React.useEffect(() => {
         if (savedAddresses.length > 0 && selectedAddressId === 'new') {
-            const defaultAddr = savedAddresses.find(addr => addr.userId === currentUser?.id);
+            const defaultAddr = savedAddresses.find(addr => addr.userId === (currentUser?.uid || currentUser?.id));
             if (defaultAddr) {
                 // We can't call handleAddressSelect directly if it's not defined yet, 
                 // but here we are redefining it above.
@@ -220,7 +220,7 @@ const Checkout = () => {
         };
 
         if (currentUser && shouldSaveAddress && selectedAddressId === 'new') {
-            saveAddress(submissionData, currentUser.id);
+            saveAddress(submissionData, (currentUser.uid || currentUser.id));
         }
 
         try {
@@ -277,7 +277,7 @@ const Checkout = () => {
                             // 5. Place Order in Database
                             const orderResult = await placeOrder({
                                 ...submissionData,
-                                userId: currentUser?.id,
+                                userId: (currentUser?.uid || currentUser?.id),
                                 email: currentUser?.email || formData.email
                             }, {
                                 status: 'paid',
