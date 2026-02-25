@@ -33,7 +33,7 @@ export const CartProvider = ({ children }) => {
     let mounted = true;
 
     const fetchRemoteCart = async (isBackground = false) => {
-        if (!currentUser?.id) {
+        if (!(currentUser?.uid || currentUser?.id)) {
              if (!isBackground) setIsFetchingCart(false);
              return;
         }
@@ -60,7 +60,7 @@ export const CartProvider = ({ children }) => {
                              let query = supabase
                                 .from('cart_items')
                                 .select('quantity, id')
-                                .eq('user_id', currentUser.id)
+                                .eq('user_id', (currentUser.uid || currentUser.id))
                                 .eq('product_id', item.id);
                              
                              if (item.selectedSize) {
@@ -102,7 +102,7 @@ export const CartProvider = ({ children }) => {
                                  const { error: insertError } = await supabase
                                     .from('cart_items')
                                     .insert({ 
-                                        user_id: currentUser.id, 
+                                        user_id: (currentUser.uid || currentUser.id), 
                                         product_id: item.id, 
                                         quantity: item.quantity,
                                         selected_size: item.selectedSize || null,
@@ -128,7 +128,7 @@ export const CartProvider = ({ children }) => {
             const { data, error } = await supabase
                 .from('cart_items')
                 .select('*, products(*)')
-                .eq('user_id', currentUser.id);
+                .eq('user_id', (currentUser.uid || currentUser.id));
 
             if (error) throw error;
 
@@ -303,13 +303,13 @@ export const CartProvider = ({ children }) => {
     });
 
     // DB Sync
-    if (currentUser?.id) {
+    if ((currentUser?.uid || currentUser?.id)) {
         try {
             // Check if exists in DB to update or insert
             let query = supabase
                 .from('cart_items')
                 .select('*')
-                .eq('user_id', currentUser.id)
+                .eq('user_id', (currentUser.uid || currentUser.id))
                 .eq('product_id', product.id);
             
             if (normalizedSize) {
@@ -342,7 +342,7 @@ export const CartProvider = ({ children }) => {
                 await supabase
                     .from('cart_items')
                     .insert({ 
-                        user_id: currentUser.id, 
+                        user_id: (currentUser.uid || currentUser.id), 
                         product_id: product.id, 
                         quantity: 1,
                         selected_size: normalizedSize,
@@ -386,12 +386,12 @@ export const CartProvider = ({ children }) => {
         return updatedCart;
     });
     
-    if (currentUser?.id) {
+    if ((currentUser?.uid || currentUser?.id)) {
         try {
             let query = supabase
                 .from('cart_items')
                 .delete()
-                .eq('user_id', currentUser.id)
+                .eq('user_id', (currentUser.uid || currentUser.id))
                 .eq('product_id', productId);
             
             if (targetSize) {
@@ -453,12 +453,12 @@ export const CartProvider = ({ children }) => {
       return updatedCart;
     });
 
-    if (currentUser?.id) {
+    if ((currentUser?.uid || currentUser?.id)) {
         try {
             let query = supabase
                 .from('cart_items')
                 .update({ quantity: Number(quantity) })
-                .eq('user_id', currentUser.id)
+                .eq('user_id', (currentUser.uid || currentUser.id))
                 .eq('product_id', productId);
             
             if (selectedSize) {
@@ -497,8 +497,8 @@ export const CartProvider = ({ children }) => {
 
   const clearCart = async () => {
     setCart([]);
-    if (currentUser?.id) {
-        await supabase.from('cart_items').delete().eq('user_id', currentUser.id);
+    if ((currentUser?.uid || currentUser?.id)) {
+        await supabase.from('cart_items').delete().eq('user_id', (currentUser.uid || currentUser.id));
     }
   };
 
@@ -737,12 +737,12 @@ export const CartProvider = ({ children }) => {
   useEffect(() => {
     let mounted = true;
     const fetchAddresses = async () => {
-      if (currentUser?.id) {
+      if ((currentUser?.uid || currentUser?.id)) {
         try {
           const { data, error } = await supabase
             .from('addresses')
             .select('*')
-            .eq('user_id', currentUser.id)
+            .eq('user_id', (currentUser.uid || currentUser.id))
             .order('created_at', { ascending: false });
 
           if (error) {

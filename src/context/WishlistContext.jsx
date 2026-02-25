@@ -24,7 +24,7 @@ export const WishlistProvider = ({ children }) => {
   useEffect(() => {
     let mounted = true;
     const fetchRemoteWishlist = async () => {
-        if (!currentUser?.id) return;
+        if (!(currentUser?.uid || currentUser?.id)) return;
         
         try {
             // 1. Merge Local Items into DB (Sync on Login)
@@ -36,7 +36,7 @@ export const WishlistProvider = ({ children }) => {
                     const { data: existingDB } = await supabase
                         .from('wishlist_items')
                         .select('product_id')
-                        .eq('user_id', currentUser.id);
+                        .eq('user_id', (currentUser.uid || currentUser.id));
 
                     const existingIds = new Set((existingDB || []).map(i => i.product_id));
                     const itemsToSync = localWishlist.filter(item => !existingIds.has(item.id));
@@ -45,7 +45,7 @@ export const WishlistProvider = ({ children }) => {
                         const { error: syncError } = await supabase
                             .from('wishlist_items')
                             .insert(itemsToSync.map(item => ({
-                                user_id: currentUser.id,
+                                user_id: (currentUser.uid || currentUser.id),
                                 product_id: item.id
                             })));
                         
@@ -58,7 +58,7 @@ export const WishlistProvider = ({ children }) => {
             const { data, error } = await supabase
                 .from('wishlist_items')
                 .select('*, products(*)')
-                .eq('user_id', currentUser.id);
+                .eq('user_id', (currentUser.uid || currentUser.id));
 
             if (error) throw error;
             if (data && mounted) {
@@ -121,14 +121,14 @@ export const WishlistProvider = ({ children }) => {
       return [...prev, product];
     });
 
-    if (currentUser?.id) {
+    if ((currentUser?.uid || currentUser?.id)) {
         try {
             // Check if already exists to avoid duplicate error if state out of sync
-            const { data } = await supabase.from('wishlist_items').select('id').eq('user_id', currentUser.id).eq('product_id', product.id).single();
+            const { data } = await supabase.from('wishlist_items').select('id').eq('user_id', (currentUser.uid || currentUser.id)).eq('product_id', product.id).single();
             if (!data) {
                 await supabase
                     .from('wishlist_items')
-                    .insert({ user_id: currentUser.id, product_id: product.id });
+                    .insert({ user_id: (currentUser.uid || currentUser.id), product_id: product.id });
             }
         } catch (error) {
             console.error("Error adding to wishlist DB:", error);
@@ -140,12 +140,12 @@ export const WishlistProvider = ({ children }) => {
     addToast('Removed from wishlist', 'info');
     setWishlist(prev => prev.filter(item => item.id !== productId));
 
-    if (currentUser?.id) {
+    if ((currentUser?.uid || currentUser?.id)) {
         try {
             await supabase
                 .from('wishlist_items')
                 .delete()
-                .eq('user_id', currentUser.id)
+                .eq('user_id', (currentUser.uid || currentUser.id))
                 .eq('product_id', productId);
         } catch (error) {
             console.error("Error removing from wishlist DB:", error);
