@@ -2,7 +2,11 @@
 import { createClient } from '@supabase/supabase-js'
 
 // Supabase configuration - Replace with your actual values
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'YOUR_SUPABASE_URL'
+const isDev = import.meta.env.DEV;
+const supabaseUrl = isDev 
+  ? window.location.origin + '/supabase-api' 
+  : import.meta.env.VITE_SUPABASE_URL || 'YOUR_SUPABASE_URL';
+  
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'YOUR_SUPABASE_ANON_KEY'
 
 // Create Supabase client

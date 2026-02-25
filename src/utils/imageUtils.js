@@ -10,25 +10,14 @@
  * @param {number} options.quality - Image quality (0-100), default 80
  * @param {string} options.format - 'origin' | 'webp' | 'avif', default 'origin' (Supabase auto-detects usually)
  */
-export const getOptimizedImageUrl = (url, { width, height, quality = 80, format = 'webp' } = {}) => {
+export const getOptimizedImageUrl = (url) => {
     if (!url) return '';
-    if (!url.includes('supabase.co')) return url; // Only optimize Supabase URLs
-
-    try {
-        const urlObj = new URL(url);
-        
-        // Supabase Storage Transformation Query Params
-        if (width) urlObj.searchParams.set('width', width);
-        if (height) urlObj.searchParams.set('height', height);
-        urlObj.searchParams.set('quality', quality);
-        
-        // Only set format if specifically requested, otherwise allow auto values
-        if (format !== 'origin') {
-             urlObj.searchParams.set('format', format);
-        }
-
-        return urlObj.toString();
-    } catch {
-        return url;
+    
+    // EMERGENCY PROXY: Route through local Vite proxy to bypass Antivirus SSL block
+    if (url.includes('yqtrlqkmitgnaehbawdm.supabase.co')) {
+        url = url.replace('https://yqtrlqkmitgnaehbawdm.supabase.co', window.location.origin + '/supabase-api');
     }
+    
+    return url; // Temporarily disabled transformations to prevent Supabase 400 errors
 };
+
