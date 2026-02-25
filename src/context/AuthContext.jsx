@@ -1,15 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { auth, googleProvider } from '../config/firebase';
-import { 
-  onAuthStateChanged, 
-  signInWithPopup, 
-  signOut,
-  updateProfile,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  sendPasswordResetEmail,
-  confirmPasswordReset
-} from 'firebase/auth';
+import { supabase } from '../config/supabase';
 
 const AuthContext = createContext();
 
@@ -22,87 +12,96 @@ export const AuthProvider = ({ children }) => {
   // Unified Logout
   const logout = async () => {
     try {
-        await signOut(auth);
+        await supabase.auth.signOut();
+        setCurrentUser(null);
     } catch (error) {
         console.error("Logout Error:", error);
     }
   };
 
   const updateUser = async (displayName, photoURL) => {
-     if (!auth.currentUser) throw new Error("No user logged in");
      const updates = {};
-     if (displayName) updates.displayName = displayName;
-     if (photoURL) updates.photoURL = photoURL; 
+     if (displayName) updates.full_name = displayName;
+     if (photoURL) updates.avatar_url = photoURL; 
 
-     await updateProfile(auth.currentUser, updates);
+     const { data, error } = await supabase.auth.updateUser({
+         data: updates
+     });
+     
+     if (error) throw error;
      
      // Update local state immediately
      setCurrentUser(prev => ({
          ...prev,
-         ...updates
+         user_metadata: {
+             ...prev?.user_metadata,
+             ...updates
+         }
      }));
      
-     return auth.currentUser;
+     return data;
   };
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-        if (user) {
-            // Map the firebase user properties to what the app expects.
-            // Some parts of the app might expect user.id instead of user.uid
-            setCurrentUser({
-                ...user,
-                id: user.uid,
-                email: user.email,
-                displayName: user.displayName,
-                photoURL: user.photoURL,
-                user_metadata: {
-                    full_name: user.displayName,
-                    avatar_url: user.photoURL,
-                }
-            });
+    let supabaseSubscription;
+
+    const initAuth = async () => {
+        // Initial session check
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session?.user) {
+            setCurrentUser(session.user);
         } else {
             setCurrentUser(null);
         }
         setLoading(false);
-    });
 
-    return unsubscribe;
+        // Listen for Supabase Auth Changes
+        const { data } = supabase.auth.onAuthStateChange(async (_event, session) => {
+            if (session?.user) {
+                setCurrentUser(session.user);
+            } else {
+                setCurrentUser(null);
+            }
+        });
+        supabaseSubscription = data.subscription;
+    };
+
+    initAuth();
+
+    return () => {
+        if (supabaseSubscription) supabaseSubscription.unsubscribe();
+    };
   }, []);
 
   const signInWithGoogle = async () => {
       try {
-        const result = await signInWithPopup(auth, googleProvider);
-        return result;
+        const { data, error } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+               // Optional: redirect URL if needed, usually Supabase handles the default platform URL
+               // redirectTo: window.location.origin
+            }
+        });
+        if (error) throw error;
+        return data;
       } catch (error) {
-        console.error("Firebase Google Sign In Error:", error);
+        console.error("Supabase Google Sign In Error:", error);
         throw error;
       }
   };
     
-  const signup = async (email, password) => {
-      return createUserWithEmailAndPassword(auth, email, password);
+  // Supabase OTP Functions
+  const loginWithOtp = async (email) => {
+      return supabase.auth.signInWithOtp({ email });
   };
 
-  const login = async (email, password) => {
-      return signInWithEmailAndPassword(auth, email, password);
-  };
-
-  const resetPassword = async (email) => {
-      return sendPasswordResetEmail(auth, email);
-  };
-
-  const confirmReset = async (code, password) => {
-      return confirmPasswordReset(auth, code, password);
-  };
-
-  // Keep these as placeholders in case any component imports them to avoid crashing
-  const loginWithOtp = async () => {
-      throw new Error("OTP Login is not supported with Firebase Email/Password auth currently.");
-  };
-
-  const verifyOtp = async () => {
-      throw new Error("OTP Login is not supported with Firebase Email/Password auth currently.");
+  const verifyOtp = async (email, token) => {
+      return supabase.auth.verifyOtp({
+          email,
+          token,
+          type: 'email'
+      });
   };
 
   const value = {
@@ -110,10 +109,6 @@ export const AuthProvider = ({ children }) => {
     logout,
     updateUser,
     signInWithGoogle,
-    signup,
-    login,
-    resetPassword,
-    confirmReset,
     loginWithOtp,
     verifyOtp,
     loading
