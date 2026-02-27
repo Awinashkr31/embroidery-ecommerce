@@ -569,7 +569,7 @@ const ProductManager = () => {
                         </tbody>
                     </table>
                     </div>{/* end hidden md:block */}
-                </div>{/* end {/* Table */} */}
+                </div>{/* end Table */}
             </div>
 
             {/* ================= MODAL ================= */}

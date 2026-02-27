@@ -1,0 +1,158 @@
+﻿
+> enbroidery@0.0.0 build
+> vite build
+
+[36mvite v7.3.0 [32mbuilding client environment for production...[36m[39m
+transforming...
+node.exe : [33m[plugin 
+vite:esbuild] src/pages/admin
+/ProductManager.jsx: 
+[33mThe character "}" is 
+not valid inside a JSX 
+element[33m
+At C:\Program 
+Files\nodejs\npm.ps1:29 
+char:3
++   & $NODE_EXE $NPM_CLI_JS 
+$args
++   
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo           
+   : NotSpecified    : 
+([33m[plugin vi.    ..SX 
+element[33m:S    tring) [], 
+RemoteEx    ception
+    + FullyQualifiedErr    
+orId : NativeComman    dError
+ 
+570 |                      
+</table>
+571 |                      
+</div>{/* end hidden 
+md:block */}
+572 |                  
+</div>{/* end {/* Table */} 
+*/}
+    |                        
+                        ^
+573 |              </div>
+574 |  
+[39m
+[32mΓ£ô[39m 2463 modules transformed.
+rendering chunks...
+[33m[plugin vite:reporter] 
+(!) C:/Users/awina/Desktop/Em
+broidery/enbroidery/src/servi
+ces/xpressbees.js is 
+dynamically imported by C:/Us
+ers/awina/Desktop/Embroidery/
+enbroidery/src/pages/admin/Or
+ders.jsx but also statically 
+imported by C:/Users/awina/De
+sktop/Embroidery/enbroidery/s
+rc/components/admin/ShipmentC
+reator.jsx, dynamic import 
+will not move module into 
+another chunk.
+[39m
+computing gzip size...
+[2mdist/[22m[32mindex.html                                    [39m[1m[2m  1.55 kB[22m[1m[22m[2m Γöé gzip:   0.68 kB[22m
+[2mdist/[22m[35massets/index-DcDswEEZ.css                     [39m[1m[2m125.93 kB[22m[1m[22m[2m Γöé gzip:  19.06 kB[22m
+[2mdist/[22m[36massets/dateUtils-_Y4YAR7F.js                  [39m[1m[2m  0.30 kB[22m[1m[22m[2m Γöé gzip:   0.22 kB[22m[2m Γöé map:     1.25 kB[22m
+[2mdist/[22m[36massets/imageUtils-H1u7lVyt.js                 [39m[1m[2m  0.39 kB[22m[1m[22m[2m Γöé gzip:   0.27 kB[22m[2m Γöé map:     2.10 kB[22m
+[2mdist/[22m[36massets/settingsUtils-BJNEcLYr.js              [39m[1m[2m  0.42 kB[22m[1m[22m[2m Γöé gzip:   0.30 kB[22m[2m Γöé map:     1.29 kB[22m
+[2mdist/[22m[36massets/authErrors-CxPspC_3.js                 [39m[1m[2m  0.81 kB[22m[1m[22m[2m Γöé gzip:   0.44 kB[22m[2m Γöé map:     1.64 kB[22m
+[2mdist/[22m[36massets/SEO-CoJaoyfw.js                        [39m[1m[2m  0.86 kB[22m[1m[22m[2m Γöé gzip:   0.44 kB[22m[2m Γöé map:     2.01 kB[22m
+[2mdist/[22m[36massets/uploadUtils-Cm7PH_LF.js                [39m[1m[2m  1.22 kB[22m[1m[22m[2m Γöé gzip:   0.69 kB[22m[2m Γöé map:     6.23 kB[22m
+[2mdist/[22m[36massets/delhivery-tpoMYi-o.js                  [39m[1m[2m  2.81 kB[22m[1m[22m[2m Γöé gzip:   1.33 kB[22m[2m Γöé map:    12.33 kB[22m
+[2mdist/[22m[36massets/AdminUpdatePassword-DtLHQ_Ip.js        [39m[1m[2m  3.41 kB[22m[1m[22m[2m Γöé gzip:   1.32 kB[22m[2m Γöé map:     8.43 kB[22m
+[2mdist/[22m[36massets/ResetPassword-D_K2YRVz.js              [39m[1m[2m  3.47 kB[22m[1m[22m[2m Γöé gzip:   1.36 kB[22m[2m Γöé map:     8.44 kB[22m
+[2mdist/[22m[36massets/Wishlist-esOvfgKn.js                   [39m[1m[2m  3.49 kB[22m[1m[22m[2m Γöé gzip:   1.45 kB[22m[2m Γöé map:     9.06 kB[22m
+[2mdist/[22m[36massets/Messages-C4jV5oAa.js                   [39m[1m[2m  3.74 kB[22m[1m[22m[2m Γöé gzip:   1.42 kB[22m[2m Γöé map:     8.64 kB[22m
+[2mdist/[22m[36massets/AdminForgotPassword-CbLchwyu.js        [39m[1m[2m  4.02 kB[22m[1m[22m[2m Γöé gzip:   1.67 kB[22m[2m Γöé map:     8.19 kB[22m
+[2mdist/[22m[36massets/ForgotPassword-BIVhHqf8.js             [39m[1m[2m  4.05 kB[22m[1m[22m[2m Γöé gzip:   1.65 kB[22m[2m Γöé map:     8.13 kB[22m
+[2mdist/[22m[36massets/Reviews-BpfLY2Tb.js                    [39m[1m[2m  4.50 kB[22m[1m[22m[2m Γöé gzip:   1.58 kB[22m[2m Γöé map:    12.19 kB[22m
+[2mdist/[22m[36massets/AdminLayout-Bb7IBiUw.js                [39m[1m[2m  5.33 kB[22m[1m[22m[2m Γöé gzip:   1.90 kB[22m[2m Γöé map:    12.64 kB[22m
+[2mdist/[22m[36massets/Bookings-jufkZyFh.js                   [39m[1m[2m  5.99 kB[22m[1m[22m[2m Γöé gzip:   1.90 kB[22m[2m Γöé map:    14.34 kB[22m
+[2mdist/[22m[36massets/AdminLogin-DWUTpFqg.js                 [39m[1m[2m  6.18 kB[22m[1m[22m[2m Γöé gzip:   2.15 kB[22m[2m Γöé map:    13.44 kB[22m
+[2mdist/[22m[36massets/AdminRegister-Bivrrv8R.js              [39m[1m[2m  6.46 kB[22m[1m[22m[2m Γöé gzip:   2.05 kB[22m[2m Γöé map:    13.91 kB[22m
+[2mdist/[22m[36massets/AdminNotifications-Chf4SmlN.js         [39m[1m[2m  7.17 kB[22m[1m[22m[2m Γöé gzip:   2.57 kB[22m[2m Γöé map:    21.70 kB[22m
+[2mdist/[22m[36massets/Gallery-DAItbgDA.js                    [39m[1m[2m  7.46 kB[22m[1m[22m[2m Γöé gzip:   2.74 kB[22m[2m Γöé map:    23.48 kB[22m
+[2mdist/[22m[36massets/Contact-D1uzcZWd.js                    [39m[1m[2m  7.53 kB[22m[1m[22m[2m Γöé gzip:   2.08 kB[22m[2m Γöé map:    14.51 kB[22m
+[2mdist/[22m[36massets/OrderConfirmation-OQt4T4Ga.js          [39m[1m[2m  7.93 kB[22m[1m[22m[2m Γöé gzip:   2.50 kB[22m[2m Γöé map:    19.74 kB[22m
+[2mdist/[22m[36massets/About-cHQgWUue.js                      [39m[1m[2m  8.77 kB[22m[1m[22m[2m Γöé gzip:   3.06 kB[22m[2m Γöé map:    16.98 kB[22m
+[2mdist/[22m[36massets/LoginSignup-D-UYwToX.js                [39m[1m[2m  8.92 kB[22m[1m[22m[2m Γöé gzip:   2.55 kB[22m[2m Γöé map:    18.73 kB[22m
+[2mdist/[22m[36massets/AdminGallery-DGSRV5b-.js               [39m[1m[2m  9.06 kB[22m[1m[22m[2m Γöé gzip:   3.17 kB[22m[2m Γöé map:    28.56 kB[22m
+[2mdist/[22m[36massets/CustomDesign-CwfK-Yvi.js               [39m[1m[2m  9.33 kB[22m[1m[22m[2m Γöé gzip:   3.18 kB[22m[2m Γöé map:    19.74 kB[22m
+[2mdist/[22m[36massets/AdminCoupons-CVryuYpV.js               [39m[1m[2m  9.44 kB[22m[1m[22m[2m Γöé gzip:   2.28 kB[22m[2m Γöé map:    25.01 kB[22m
+[2mdist/[22m[36massets/OrderSuccess-8MCrUQLI.js               [39m[1m[2m  9.50 kB[22m[1m[22m[2m Γöé gzip:   2.74 kB[22m[2m Γöé map:    21.84 kB[22m
+[2mdist/[22m[36massets/AdminDesignRequests-CTs1CE_G.js        [39m[1m[2m 11.52 kB[22m[1m[22m[2m Γöé gzip:   3.44 kB[22m[2m Γöé map:    32.03 kB[22m
+[2mdist/[22m[36massets/Dashboard-xF09fo_n.js                  [39m[1m[2m 12.80 kB[22m[1m[22m[2m Γöé gzip:   3.78 kB[22m[2m Γöé map:    30.80 kB[22m
+[2mdist/[22m[36massets/Cart-D7TvPvgS.js                       [39m[1m[2m 14.68 kB[22m[1m[22m[2m Γöé gzip:   3.56 kB[22m[2m Γöé map:    38.12 kB[22m
+[2mdist/[22m[36massets/Home-BzWT4Qko.js                       [39m[1m[2m 16.10 kB[22m[1m[22m[2m Γöé gzip:   4.12 kB[22m[2m Γöé map:    38.00 kB[22m
+[2mdist/[22m[36massets/Shop-CbLIpIDY.js                       [39m[1m[2m 16.98 kB[22m[1m[22m[2m Γöé gzip:   4.62 kB[22m[2m Γöé map:    49.42 kB[22m
+[2mdist/[22m[36massets/MehndiBooking-OliQwhmq.js              [39m[1m[2m 17.15 kB[22m[1m[22m[2m Γöé gzip:   5.33 kB[22m[2m Γöé map:    36.87 kB[22m
+[2mdist/[22m[36massets/Checkout-C2hruKjS.js                   [39m[1m[2m 21.12 kB[22m[1m[22m[2m Γöé gzip:   5.60 kB[22m[2m Γöé map:    60.04 kB[22m
+[2mdist/[22m[36massets/ui-icons-B_aOXxIo.js                   [39m[1m[2m 21.32 kB[22m[1m[22m[2m Γöé gzip:   7.53 kB[22m[2m Γöé map:    89.68 kB[22m
+[2mdist/[22m[36massets/Settings-BTxZMnp1.js                   [39m[1m[2m 22.11 kB[22m[1m[22m[2m Γöé gzip:   5.73 kB[22m[2m Γöé map:    72.10 kB[22m
+[2mdist/[22m[36massets/Profile-zmA3KSas.js                    [39m[1m[2m 23.46 kB[22m[1m[22m[2m Γöé gzip:   5.83 kB[22m[2m Γöé map:    63.80 kB[22m
+[2mdist/[22m[36massets/ProductDetails-BSVos4dt.js             [39m[1m[2m 25.46 kB[22m[1m[22m[2m Γöé gzip:   6.57 kB[22m[2m Γöé map:    80.50 kB[22m
+[2mdist/[22m[36massets/OrderDetails-Cw5kQvm9.js               [39m[1m[2m 26.73 kB[22m[1m[22m[2m Γöé gzip:   6.86 kB[22m[2m Γöé map:    78.25 kB[22m
+[2mdist/[22m[36massets/ImageCropper-De_DVYQZ.js               [39m[1m[2m 27.83 kB[22m[1m[22m[2m Γöé gzip:   8.50 kB[22m[2m Γöé map:   101.94 kB[22m
+[2mdist/[22m[36massets/Orders-D0UK_qCn.js                     [39m[1m[2m 38.90 kB[22m[1m[22m[2m Γöé gzip:  10.03 kB[22m[2m Γöé map:   120.91 kB[22m
+[2mdist/[22m[36massets/ProductManager-DB6BGmnB.js             [39m[1m[2m 39.26 kB[22m[1m[22m[2m Γöé gzip:   9.06 kB[22m[2m Γöé map:   124.28 kB[22m
+[2mdist/[22m[36massets/vendor-react-BEJKXQb4.js               [39m[1m[2m 46.12 kB[22m[1m[22m[2m Γöé gzip:  16.62 kB[22m[2m Γöé map:   454.74 kB[22m
+[2mdist/[22m[36massets/browser-image-compression-DILJcqf6.js  [39m[1m[2m 53.22 kB[22m[1m[22m[2m Γöé gzip:  21.10 kB[22m[2m Γöé map:   156.35 kB[22m
+[2mdist/[22m[36massets/vendor-supabase-BjNTKomu.js            [39m[1m[2m169.44 kB[22m[1m[22m[2m Γöé gzip:  44.25 kB[22m[2m Γöé map:   766.45 kB[22m
+[2mdist/[22m[36massets/index-O3g_tNJ6.js                      [39m[1m[2m242.05 kB[22m[1m[22m[2m Γöé gzip:  76.49 kB[22m[2m Γöé map: 1,056.91 kB[22m
+[2mdist/[22m[36massets/Users-CEsnMAnL.js                      [39m[1m[2m374.09 kB[22m[1m[22m[2m Γöé gzip: 111.16 kB[22m[2m Γöé map: 1,861.84 kB[22m
+[32mΓ£ô built in 5.43s[39m
+
+Γ£¿ [vite-plugin-compression]:algorithm=gzip - compressed file successfully: 
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/About-cHQgWUue.js.gz                       8.57kb / gzip: 2.99kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/AdminNotifications-Chf4SmlN.js.gz          7.01kb / gzip: 2.51kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/AdminGallery-DGSRV5b-.js.gz                8.85kb / gzip: 3.09kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/AdminForgotPassword-CbLchwyu.js.gz         3.93kb / gzip: 1.63kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/AdminLogin-DWUTpFqg.js.gz                  6.04kb / gzip: 2.09kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/AdminUpdatePassword-DtLHQ_Ip.js.gz         3.33kb / gzip: 1.29kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/AdminLayout-Bb7IBiUw.js.gz                 5.21kb / gzip: 1.85kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/Bookings-jufkZyFh.js.gz                    5.85kb / gzip: 1.85kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/AdminDesignRequests-CTs1CE_G.js.gz         11.25kb / gzip: 3.35kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/AdminCoupons-CVryuYpV.js.gz                9.22kb / gzip: 2.22kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/AdminRegister-Bivrrv8R.js.gz               6.31kb / gzip: 2.00kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/Cart-D7TvPvgS.js.gz                        14.33kb / gzip: 3.46kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/CustomDesign-CwfK-Yvi.js.gz                9.11kb / gzip: 3.10kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/ForgotPassword-BIVhHqf8.js.gz              3.95kb / gzip: 1.61kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/Checkout-C2hruKjS.js.gz                    20.62kb / gzip: 5.45kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/delhivery-tpoMYi-o.js.gz                   2.75kb / gzip: 1.30kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/Dashboard-xF09fo_n.js.gz                   12.50kb / gzip: 3.68kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/Contact-D1uzcZWd.js.gz                     7.35kb / gzip: 2.03kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/Gallery-DAItbgDA.js.gz                     7.29kb / gzip: 2.68kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/Home-BzWT4Qko.js.gz                        15.72kb / gzip: 4.01kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/LoginSignup-D-UYwToX.js.gz                 8.71kb / gzip: 2.49kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/Messages-C4jV5oAa.js.gz                    3.65kb / gzip: 1.39kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/ImageCropper-De_DVYQZ.js.gz                27.18kb / gzip: 8.29kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/MehndiBooking-OliQwhmq.js.gz               16.75kb / gzip: 5.20kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/OrderConfirmation-OQt4T4Ga.js.gz           7.74kb / gzip: 2.43kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/ResetPassword-D_K2YRVz.js.gz               3.39kb / gzip: 1.32kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/OrderDetails-Cw5kQvm9.js.gz                26.10kb / gzip: 6.67kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/Reviews-BpfLY2Tb.js.gz                     4.39kb / gzip: 1.55kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/Profile-zmA3KSas.js.gz                     22.91kb / gzip: 5.66kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/OrderSuccess-8MCrUQLI.js.gz                9.27kb / gzip: 2.67kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/Shop-CbLIpIDY.js.gz                        16.58kb / gzip: 4.51kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/ProductDetails-BSVos4dt.js.gz              24.86kb / gzip: 6.38kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/Settings-BTxZMnp1.js.gz                    21.59kb / gzip: 5.59kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/uploadUtils-Cm7PH_LF.js.gz                 1.19kb / gzip: 0.67kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/index.html.gz                                     1.52kb / gzip: 0.66kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/ProductManager-DB6BGmnB.js.gz              38.34kb / gzip: 8.82kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/ui-icons-B_aOXxIo.js.gz                    20.82kb / gzip: 7.29kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/Orders-D0UK_qCn.js.gz                      37.99kb / gzip: 9.78kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/Wishlist-esOvfgKn.js.gz                    3.41kb / gzip: 1.42kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/browser-image-compression-DILJcqf6.js.gz   51.98kb / gzip: 20.60kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/vendor-react-BEJKXQb4.js.gz                45.04kb / gzip: 16.21kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/index-DcDswEEZ.css.gz                      122.98kb / gzip: 18.29kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/vendor-supabase-BjNTKomu.js.gz             165.46kb / gzip: 43.09kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/index-O3g_tNJ6.js.gz                       236.38kb / gzip: 74.55kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/Users-CEsnMAnL.js.gz                       365.32kb / gzip: 108.37kb
+
+

@@ -1,0 +1,7 @@
+﻿Testing products fetch...
+Products Error: {"message":"TypeError: fetch failed","details":"TypeError: fetch failed\n\nCaused by: Error: self-signed certificate (DEPTH_ZERO_SELF_SIGNED_CERT)\nError: self-signed certificate\n    at TLSSocket.onConnectSecure (node:_tls_wrap:1679:34)\n    at TLSSocket.emit (node:events:518:28)\n    at TLSSocket._finishInit (node:_tls_wrap:1078:8)\n    at ssl.onhandshakedone (node:_tls_wrap:864:12)","hint":"","code":""}
+Products Count: undefined
+
+Testing categories (website_settings) fetch...
+Settings Error: {"message":"TypeError: fetch failed","details":"TypeError: fetch failed\n\nCaused by: Error: self-signed certificate (DEPTH_ZERO_SELF_SIGNED_CERT)\nError: self-signed certificate\n    at TLSSocket.onConnectSecure (node:_tls_wrap:1679:34)\n    at TLSSocket.emit (node:events:518:28)\n    at TLSSocket._finishInit (node:_tls_wrap:1078:8)\n    at ssl.onhandshakedone (node:_tls_wrap:864:12)","hint":"","code":""}
+Settings Count: undefined

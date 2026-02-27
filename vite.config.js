@@ -1,6 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import viteCompression from 'vite-plugin-compression'
+import basicSsl from '@vitejs/plugin-basic-ssl'
 
 export default defineConfig({
   plugins: [
@@ -8,7 +9,8 @@ export default defineConfig({
     viteCompression({
       algorithm: 'gzip',
       ext: '.gz',
-    })
+    }),
+    basicSsl()
   ],
   server: {
     proxy: {
