@@ -43,7 +43,7 @@ Deno.serve(async (req) => {
         
         const { data: products, error: prodError } = await supabase
             .from('products')
-            .select('id, price')
+            .select('id, price, variants, "clothingInformation"')
             .in('id', productIds)
 
         if (prodError) throw prodError
@@ -51,7 +51,25 @@ Deno.serve(async (req) => {
         cartItems.forEach((item: any) => {
             const product = products?.find(p => p.id === item.id)
             if(product) {
-                subtotal += Number(product.price) * item.quantity
+                let itemPrice = Number(product.price);
+                
+                // Account for Color-based Variant Pricing
+                if (item.variantId && product.variants && Array.isArray(product.variants)) {
+                    const variant = product.variants.find((v: any) => v.id === item.variantId);
+                    if (variant && variant.price) {
+                        itemPrice = Number(variant.price);
+                    }
+                } 
+                // Fallback to older clothing selection matrix pricing
+                else if (product.clothingInformation?.variantStock && item.selectedSize && item.selectedColor) {
+                    const key = `${item.selectedColor}-${item.selectedSize}`;
+                    const variantData = product.clothingInformation.variantStock[key];
+                    if (variantData && variantData.price) {
+                        itemPrice = Number(variantData.price);
+                    }
+                }
+
+                subtotal += itemPrice * item.quantity
             }
         })
 
@@ -72,8 +90,31 @@ Deno.serve(async (req) => {
             // OR checks generic codes if known.
         }
         
-        // Replicating frontend shipping logic
-        const shipping = subtotal < 499 ? 50 : 0
+        // Fetch dynamic shipping settings
+        const { data: settingsData, error: settingsError } = await supabase
+            .from('website_settings')
+            .select('setting_key, setting_value')
+            .in('setting_key', ['shipping_free_delivery_threshold', 'shipping_delivery_charge'])
+
+        if (settingsError) throw settingsError
+
+        let freeDeliveryThreshold = 499
+        let deliveryCharge = 50
+
+        if (settingsData) {
+            const thresholdSetting = settingsData.find(s => s.setting_key === 'shipping_free_delivery_threshold')
+            const chargeSetting = settingsData.find(s => s.setting_key === 'shipping_delivery_charge')
+            
+            if (thresholdSetting && thresholdSetting.setting_value) {
+                freeDeliveryThreshold = Number(thresholdSetting.setting_value)
+            }
+            if (chargeSetting && chargeSetting.setting_value) {
+                deliveryCharge = Number(chargeSetting.setting_value)
+            }
+        }
+        
+        // Replicating frontend dynamic shipping logic
+        const shipping = subtotal < freeDeliveryThreshold ? deliveryCharge : 0
         
         const totalAmount = subtotal - discount + shipping
 

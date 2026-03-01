@@ -247,7 +247,14 @@ export const CartProvider = ({ children }) => {
     // Normalize properties to ensure consistency (Wishlist items might have undefined)
     const normalizedSize = product.selectedSize || null;
     const normalizedColor = product.selectedColor || null;
-    const normalizedImage = product.images && product.images.length > 0 ? product.images[0] : product.image;
+    let normalizedImage = product.images && product.images.length > 0 ? product.images[0] : product.image;
+
+    if (product.variantId && product.variants) {
+         const variant = product.variants.find(v => v.id === product.variantId);
+         if (variant && variant.images && variant.images.length > 0) {
+             normalizedImage = variant.images[0];
+         }
+    }
 
     // Check Stock
     // UNIQUE IDENTIFIER: Product ID + Variant ID + Selected Size + Selected Color
