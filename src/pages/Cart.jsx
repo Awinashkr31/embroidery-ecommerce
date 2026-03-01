@@ -124,7 +124,10 @@ const Cart = () => {
                             <div key={`${item.id}-${item.selectedSize || 'nosize'}-${item.selectedColor || 'nocolor'}-${idx}`} className="bg-white p-3 md:p-6 rounded-2xl shadow-sm border border-stone-100 flex gap-3 md:gap-6 items-start md:items-center">
                                 <div className="w-20 h-20 md:w-28 md:h-28 rounded-xl overflow-hidden bg-stone-100 shrink-0">
                                     <img
-                                        src={item.image}
+                                        src={
+                                            item.variants?.find(v => v.id === item.variantId)?.images?.[0] || 
+                                            item.image
+                                        }
                                         alt={item.name}
                                         className="w-full h-full object-cover"
                                         onError={(e) => {
@@ -138,12 +141,12 @@ const Cart = () => {
                                     <div className="flex justify-between items-start">
                                         <h3 className="text-sm md:text-base font-heading font-medium text-stone-900 mb-1 leading-tight pr-4 line-clamp-2 md:truncate">{item.name}</h3>
                                         {/* Mobile Remove (Top Right) */}
-                                        <button
-                                            onClick={() => removeFromCart(item.id, item.selectedSize, item.selectedColor)}
-                                            className="text-stone-400 hover:text-rose-900 transition-colors p-1 -mt-1 -mr-1 lg:hidden"
+                                        <button 
+                                            onClick={() => removeFromCart(item.id, item.selectedSize, item.selectedColor, item.variantId)}
+                                            className="text-stone-400 hover:text-rose-900 transition-colors bg-white/80 backdrop-blur rounded-full p-1.5 shadow-sm lg:hidden absolute top-2 right-2 z-10"
                                             title="Remove Item"
                                         >
-                                            <X className="w-5 h-5" />
+                                            <Trash2 className="w-4 h-4" />
                                         </button>
                                     </div>
 
@@ -186,14 +189,14 @@ const Cart = () => {
                                          {/* Quantity Selector - Pill Style */}
                                         <div className="flex items-center bg-white border border-stone-200 rounded-full h-8 shadow-sm">
                                             <button
-                                                onClick={() => updateQuantity(item.id, item.quantity - 1, item.selectedSize, item.selectedColor)}
+                                                onClick={() => updateQuantity(item.id, item.quantity - 1, item.selectedSize, item.selectedColor, item.variantId)}
                                                 className="w-8 h-full flex items-center justify-center hover:bg-stone-50 transition-colors text-stone-500 rounded-l-full"
                                             >
                                                 <span className="text-lg leading-none mb-0.5">-</span>
                                             </button>
                                             <span className="w-8 text-center text-stone-900 font-bold text-sm leading-none">{item.quantity}</span>
                                             <button
-                                                onClick={() => updateQuantity(item.id, item.quantity + 1, item.selectedSize, item.selectedColor)}
+                                                onClick={() => updateQuantity(item.id, item.quantity + 1, item.selectedSize, item.selectedColor, item.variantId)}
                                                 disabled={item.quantity >= (item.stock ?? item.stock_quantity ?? 100)}
                                                 className={`w-8 h-full flex items-center justify-center transition-colors rounded-r-full ${
                                                     item.quantity >= (item.stock ?? item.stock_quantity ?? 100)
@@ -215,7 +218,7 @@ const Cart = () => {
                                         ₹{(item.price * item.quantity).toLocaleString()}
                                     </div>
                                      <button
-                                        onClick={() => removeFromCart(item.id, item.selectedSize, item.selectedColor)}
+                                        onClick={() => removeFromCart(item.id, item.selectedSize, item.selectedColor, item.variantId)}
                                         className="p-2 text-stone-400 hover:text-rose-900 transition-colors rounded-lg hover:bg-rose-50"
                                         title="Remove Item"
                                     >

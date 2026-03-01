@@ -569,7 +569,7 @@ const ProductManager = () => {
                         </tbody>
                     </table>
                     </div>{/* end hidden md:block */}
-                </div>{/* end Table */}
+                </div>{/* end {/* Table */} */}
             </div>
 
             {/* ================= MODAL ================= */}
@@ -933,7 +933,7 @@ const ProductManager = () => {
                                                         {img ? (
                                                             <>
                                                                 <img src={img} alt="" className="w-full h-full object-cover" />
-                                                                <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
                                                                     <button 
                                                                         onClick={(e) => {
                                                                             e.stopPropagation();
@@ -1033,7 +1033,7 @@ const ProductManager = () => {
                                                                 {img ? (
                                                                     <>
                                                                         <img src={img} alt="" className="w-full h-full object-cover" />
-                                                                        <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                        <div className="absolute top-1 right-1 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
                                                                             <button 
                                                                                 onClick={(e) => {
                                                                                     e.stopPropagation();

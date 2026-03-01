@@ -1,4 +1,5 @@
-// fetch is built-in for Node 18+
+const fetch = require('node-fetch'); // Ensure you have node-fetch or use native fetch if Node 18+
+
 // Configuration
 const PROJECT_REF = "yqtrlqkmitgnaehbawdm";
 const FUNCTION_URL = `https://${PROJECT_REF}.supabase.co/functions/v1/delhivery-webhook`;

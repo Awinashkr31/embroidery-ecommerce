@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useProducts } from '../context/ProductContext';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
@@ -22,7 +22,9 @@ const ProductDetails = () => {
     // Clothing Support
     const [selectedSize, setSelectedSize] = useState(null);
     const [sizeError, setSizeError] = useState(false);
-    const [selectedColor, setSelectedColor] = useState(null);
+    const [searchParams] = useSearchParams();
+    const initialColor = searchParams.get('color');
+    const [selectedColor, setSelectedColor] = useState(initialColor || null);
     const [colorError, setColorError] = useState(false);
     
     // Image Gallery State
@@ -518,7 +520,7 @@ const ProductDetails = () => {
 
                                         if (!validateSelection()) return;
                                         
-                                        const success = await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice });
+                                        const success = await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice, variantId: selectedVariant?.id });
                                         if (success) addToast(`Added ${product.name} to bag`, 'success');
                                     }}
                                     disabled={!isStockAvailable}
@@ -538,7 +540,7 @@ const ProductDetails = () => {
                                     onClick={async () => {
                                             if(isStockAvailable) {
                                             if (!validateSelection()) return;
-                                            await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice });
+                                            await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice, variantId: selectedVariant?.id });
                                             navigate('/cart');
                                             }
                                     }}

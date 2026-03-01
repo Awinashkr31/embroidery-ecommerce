@@ -1,9 +1,6 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import viteCompression from 'vite-plugin-compression'
-import basicSsl from '@vitejs/plugin-basic-ssl'
-
-import legacy from '@vitejs/plugin-legacy'
 
 export default defineConfig({
   plugins: [
@@ -11,11 +8,6 @@ export default defineConfig({
     viteCompression({
       algorithm: 'gzip',
       ext: '.gz',
-    }),
-    basicSsl(),
-    legacy({
-      targets: ['defaults', 'not IE 11', 'ios >= 11', 'android >= 6'],
-      additionalLegacyPolyfills: ['regenerator-runtime/runtime']
     })
   ],
   server: {

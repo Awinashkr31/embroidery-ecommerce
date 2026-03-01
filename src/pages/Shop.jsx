@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { getOptimizedImageUrl } from '../utils/imageUtils';
 import { Package, Heart, Search, ChevronDown, Sparkles, ChevronLeft, ChevronRight, SlidersHorizontal } from 'lucide-react';
 import { useProducts } from '../context/ProductContext';
@@ -8,6 +8,138 @@ import { Link, useSearchParams } from 'react-router-dom';
 
 // Utility helper function extracted outside component to avoid recreation
 const slugify = (str) => (str || '').toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+
+const ProductCardWithVariants = ({ product, toggleWishlist, isInWishlist }) => {
+    const [selectedVariant, setSelectedVariant] = useState(product.preselectedVariant || null);
+    
+    useEffect(() => {
+        if (product.preselectedVariant) {
+            setSelectedVariant(product.preselectedVariant);
+        } else {
+            setSelectedVariant(null);
+        }
+    }, [product.preselectedVariant]);
+
+    const variants = product.variants || [];
+    
+    // Only consider variants that have at least one image and a color
+    const validVariants = variants.filter(v => v.color && v.images && v.images.length > 0);
+    const hasVariants = validVariants.length > 0;
+
+    // Determine current display image
+    const displayImage = selectedVariant && selectedVariant.images && selectedVariant.images.length > 0 
+        ? selectedVariant.images[0] 
+        : product.image;
+
+    // Determine current display price
+    let displayPrice = product.price;
+    if (selectedVariant && selectedVariant.price) {
+        displayPrice = parseInt(selectedVariant.price);
+    }
+
+    return (
+        <div className="h-full flex flex-col">
+            {/* Image Card */}
+            <div className="relative aspect-[3/4] overflow-hidden bg-stone-100 mb-3 md:mb-5 rounded-[20px] md:rounded-2xl shrink-0">
+                <img
+                    src={getOptimizedImageUrl(displayImage, { width: 600, quality: 80 })}
+                    alt={product.name}
+                    loading="lazy"
+                    decoding="async"
+                    className={`w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 ${!product.inStock ? 'grayscale opacity-80' : ''}`}
+                    onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = '/logo.png';
+                        e.target.parentElement.className += " bg-stone-50"; 
+                        e.target.className = `w-full h-full object-contain p-8 opacity-50 ${!product.inStock ? 'grayscale' : ''}`;
+                    }}
+                />
+                
+                {/* Sold Out Overlay */}
+                {!product.inStock && (
+                    <div className="absolute inset-0 bg-stone-900/50 rounded-t-xl flex items-center justify-center z-10 pointer-events-none">
+                        <span className="bg-white/90 text-stone-900 text-[10px] md:text-xs font-bold uppercase tracking-widest px-4 py-1.5 rounded-full shadow-md">
+                            Sold Out
+                        </span>
+                    </div>
+                )}
+
+                {/* Badges */}
+                <div className="absolute top-2 left-2 md:top-3 md:left-3 flex flex-col gap-1 z-20">
+                    {product.inStock && product.discountPercentage > 0 && (
+                        <span className="bg-rose-900 text-white text-[8px] md:text-[10px] font-bold uppercase tracking-widest px-1.5 py-0.5 md:px-2 md:py-1 rounded-sm shadow-sm">
+                            {product.discountPercentage}% OFF
+                        </span>
+                    )}
+                </div>
+
+                {/* Wishlist */}
+                <button 
+                    onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        toggleWishlist(product);
+                    }}
+                    className="absolute top-2 right-2 md:top-3 md:right-3 p-2 bg-white/90 rounded-full text-stone-500 hover:text-rose-600 transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100 translate-y-0 md:translate-y-2 md:group-hover:translate-y-0 duration-300 shadow-sm"
+                >
+                    <Heart className={`w-4 h-4 md:w-4 md:h-4 ${isInWishlist(product.id) ? 'fill-rose-600 text-rose-600' : ''}`} />
+                </button>
+            </div>
+
+            {/* Product Info */}
+            <div className="text-left flex-1 flex flex-col justify-between">
+                <div>
+                     <h3 className="font-heading text-sm md:text-lg text-stone-900 group-hover:text-rose-900 transition-colors duration-300 truncate mb-1">
+                        {product.name}
+                    </h3>
+
+                    {/* Variant Swatches */}
+                    {hasVariants && (
+                        <div className="flex flex-wrap gap-1.5 mb-3 mt-1.5" onClick={e => e.preventDefault()}>
+                            {validVariants.map((variant, idx) => {
+                                const isSelected = selectedVariant?.color === variant.color;
+                                return (
+                                    <button
+                                        key={idx}
+                                        onMouseEnter={() => setSelectedVariant(variant)}
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            setSelectedVariant(variant);
+                                        }}
+                                        className={`w-4 h-4 md:w-5 md:h-5 rounded-full border shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-all focus:outline-none ${
+                                            isSelected ? 'border-stone-900 ring-1 ring-stone-900 ring-offset-1 scale-110' : 'border-stone-300 hover:border-stone-400'
+                                        }`}
+                                        title={variant.color}
+                                        style={{ backgroundColor: variant.color.toLowerCase() }} // Crude color parsing. Could be improved if color is a hex.
+                                        aria-label={`Select ${variant.color} variant`}
+                                    >
+                                        <span className="sr-only">{variant.color}</span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+                
+                <div className="flex flex-wrap items-center gap-1.5 text-xs md:text-sm mt-auto">
+                    <span className="font-medium text-stone-900">₹{displayPrice.toLocaleString()}</span>
+                    {product.originalPrice && (
+                        <>
+                            <span className="text-stone-400 line-through text-[10px] md:text-xs">
+                                ₹{product.originalPrice.toLocaleString()}
+                            </span>
+                            {product.discountPercentage > 0 && (
+                                <span className="text-rose-900 text-[10px] md:text-xs font-bold">
+                                    ({product.discountPercentage}% OFF)
+                                </span>
+                            )}
+                        </>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
 
 const Shop = () => {
     const { products, loading: productsLoading } = useProducts();
@@ -60,31 +192,61 @@ const Shop = () => {
         };
     }, [isMobileFiltersOpen]);
 
-    const allFilteredProducts = products.filter(product => {
-        // Category Filter
-        if (filter !== 'all') {
-            if (slugify(product.category) !== slugify(filter)) return false;
-        }
+    const allFilteredProducts = useMemo(() => {
+        let flattened = [];
+        products.forEach(prod => {
+            const validVariants = prod.variants?.filter(v => v.color && v.images && v.images.length > 0) || [];
+            if (validVariants.length > 0) {
+                validVariants.forEach(v => {
+                    flattened.push({
+                        ...prod,
+                        uniqueId: `${prod.id}-${slugify(v.color)}`,
+                        preselectedVariant: v,
+                        price: v.price ? parseInt(v.price) : prod.price,
+                        randomOrder: Math.random(),
+                    });
+                });
+            } else {
+                flattened.push({
+                    ...prod,
+                    uniqueId: prod.id,
+                    preselectedVariant: null,
+                    randomOrder: Math.random(),
+                });
+            }
+        });
 
-        // Price Range Filter
-        if (priceRange !== 'all') {
-            if (priceRange === 'under-99' && product.price >= 99) return false;
-            if (priceRange === '99-199' && (product.price < 99 || product.price > 199)) return false;
-            if (priceRange === 'above-199' && product.price <= 199) return false;
-        }
+        return flattened.filter(product => {
+            // Category Filter
+            if (filter !== 'all') {
+                if (slugify(product.category) !== slugify(filter)) return false;
+            }
 
-        // Availability Filter
-        if (inStockOnly && !product.inStock) return false;
+            // Price Range Filter
+            if (priceRange !== 'all') {
+                if (priceRange === 'under-99' && product.price >= 99) return false;
+                if (priceRange === '99-199' && (product.price < 99 || product.price > 199)) return false;
+                if (priceRange === 'above-199' && product.price <= 199) return false;
+            }
 
-        return true;
-    }).sort((a, b) => {
-        switch (sortBy) {
-            case 'price-low': return a.price - b.price;
-            case 'price-high': return b.price - a.price;
-            case 'newest': return b.id - a.id;
-            default: return (a.featured === b.featured) ? 0 : a.featured ? -1 : 1;
-        }
-    });
+            // Availability Filter
+            if (inStockOnly && !product.inStock) return false;
+
+            return true;
+        }).sort((a, b) => {
+            switch (sortBy) {
+                case 'price-low': return a.price - b.price;
+                case 'price-high': return b.price - a.price;
+                case 'newest': return String(b.id).localeCompare(String(a.id));
+                default: 
+                    if (filter === 'all') {
+                        return a.randomOrder - b.randomOrder;
+                    }
+                    return (a.featured === b.featured) ? 0 : a.featured ? -1 : 1;
+            }
+        });
+    }, [products, filter, priceRange, inStockOnly, sortBy]);
+
 
     const totalPages = Math.ceil(allFilteredProducts.length / ITEMS_PER_PAGE);
     const paginatedProducts = isMobile 
@@ -402,78 +564,14 @@ const Shop = () => {
                                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8 md:gap-x-6 md:gap-y-10">
                                     {paginatedProducts.map((product) => (
                                         <Link 
-                                            key={product.id} 
-                                            to={`/product/${product.id}`}
+                                            key={product.uniqueId} 
+                                            to={`/product/${product.id}${product.preselectedVariant ? `?color=${encodeURIComponent(product.preselectedVariant.color)}` : ''}`}
                                             className="group block"
+                                            onMouseEnter={() => {
+                                                // Optional pre-fetch or highlight
+                                            }}
                                         >
-                                            {/* Image Card */}
-                                            <div className="relative aspect-[3/4] overflow-hidden bg-stone-100 mb-3 md:mb-5 rounded-[20px] md:rounded-2xl">
-                                                <img
-                                                    src={getOptimizedImageUrl(product.image, { width: 600, quality: 80 })}
-                                                    alt={product.name}
-                                                    loading="lazy"
-                                                    decoding="async"
-                                                    className={`w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 ${!product.inStock ? 'grayscale opacity-80' : ''}`}
-                                                    onError={(e) => {
-                                                        e.target.onerror = null;
-                                                        e.target.src = '/logo.png';
-                                                        e.target.parentElement.className += " bg-stone-50"; // Ensure background for transparent logo
-                                                        e.target.className = `w-full h-full object-contain p-8 opacity-50 ${!product.inStock ? 'grayscale' : ''}`;
-                                                    }}
-                                                />
-                                                
-                                                {/* Sold Out Overlay */}
-                                                {!product.inStock && (
-                                                    <div className="absolute inset-0 bg-stone-900/50 rounded-t-xl flex items-center justify-center z-10 pointer-events-none">
-                                                        <span className="bg-white/90 text-stone-900 text-[10px] md:text-xs font-bold uppercase tracking-widest px-4 py-1.5 rounded-full shadow-md">
-                                                            Sold Out
-                                                        </span>
-                                                    </div>
-                                                )}
-
-                                                {/* Badges (Discount only when in stock) */}
-                                                <div className="absolute top-2 left-2 md:top-3 md:left-3 flex flex-col gap-1 z-20">
-                                                    {product.inStock && product.discountPercentage > 0 && (
-                                                        <span className="bg-rose-900 text-white text-[8px] md:text-[10px] font-bold uppercase tracking-widest px-1.5 py-0.5 md:px-2 md:py-1 rounded-sm">
-                                                            {product.discountPercentage}% OFF
-                                                        </span>
-                                                    )}
-                                                </div>
-
-                                                {/* Wishlist */}
-                                                <button 
-                                                    onClick={(e) => {
-                                                        e.preventDefault();
-                                                        e.stopPropagation(); // Stop propagation just in case
-                                                        toggleWishlist(product);
-                                                    }}
-                                                    className="absolute top-2 right-2 md:top-3 md:right-3 p-2 bg-white/90 rounded-full text-stone-500 hover:text-rose-600 transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100 translate-y-0 md:translate-y-2 md:group-hover:translate-y-0 duration-300 shadow-sm"
-                                                >
-                                                    <Heart className={`w-4 h-4 md:w-4 md:h-4 ${isInWishlist(product.id) ? 'fill-rose-600 text-rose-600' : ''}`} />
-                                                </button>
-
-                                                {/* Add to Cart Overlay Removed */}
-                                            </div>
-
-                                            {/* Product Info */}
-                                            <div className="text-left space-y-0.5 md:space-y-1">
-                                                <h3 className="font-heading text-sm md:text-lg text-stone-900 group-hover:text-rose-900 transition-colors duration-300 truncate">
-                                                    {product.name}
-                                                </h3>
-                                                <div className="flex flex-wrap items-center gap-1.5 text-xs md:text-sm">
-                                                    <span className="font-medium text-stone-900">₹{product.price.toLocaleString()}</span>
-                                                    {product.originalPrice && (
-                                                        <>
-                                                            <span className="text-stone-400 line-through text-[10px] md:text-xs">₹{product.originalPrice.toLocaleString()}</span>
-                                                            {product.discountPercentage > 0 && (
-                                                                <span className="text-rose-900 text-[10px] md:text-xs font-bold">
-                                                                    ({product.discountPercentage}% OFF)
-                                                                </span>
-                                                            )}
-                                                        </>
-                                                    )}
-                                                </div>
-                                            </div>
+                                            <ProductCardWithVariants product={product} toggleWishlist={toggleWishlist} isInWishlist={isInWishlist} />
                                         </Link>
                                     ))}
                                 </div>
