@@ -31,7 +31,7 @@ export const AdminProvider = ({ children }) => {
             // 1. Fetch orders optimized
             const { data: ordersData, error: ordersError } = await supabase
                 .from('orders')
-                .select('id, customer_email, customer_name, customer_phone, total, total_amount, amount, created_at, status, shipping_address, items, payment_status, payment_method, payment_id, waybill_id, tracking_url, courier_name, expected_delivery_date, estimated_shipping_date')
+                .select('*')
                 .order('created_at', { ascending: false });
 
             if (ordersError) throw ordersError;

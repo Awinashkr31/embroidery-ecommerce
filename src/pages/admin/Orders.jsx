@@ -34,8 +34,8 @@ const Orders = () => {
         return {
             id: o.id,
             date: o.created_at,
-            status: o.status,
-            total: o.total,
+            status: o.status || 'pending',
+            total: o.total || o.total_amount || 0,
             items: o.items || [],
             customer: {
                 firstName,
@@ -87,7 +87,7 @@ const Orders = () => {
     const matchesSearch = order.id.toString().toLowerCase().includes(term) || customerName.includes(term);
     
     if (activeTab === 'All') return matchesSearch;
-    return matchesSearch && order.status.toLowerCase() === activeTab.toLowerCase();
+    return matchesSearch && (order.status || '').toLowerCase() === activeTab.toLowerCase();
   });
 
 

@@ -22,7 +22,7 @@ const statusConfig = {
   refunded:   { bg: 'bg-violet-100',  text: 'text-violet-700' },
 };
 
-const getStatusStyle = (status = '') => statusConfig[status.toLowerCase()] ?? { bg: 'bg-stone-100', text: 'text-stone-700' };
+const getStatusStyle = (status) => statusConfig[(status || '').toLowerCase()] ?? { bg: 'bg-stone-100', text: 'text-stone-700' };
 
 // ─── Skeleton card ──────────────────────────────────────────
 const SkeletonCard = () => (
