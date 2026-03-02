@@ -9,7 +9,7 @@ export const useAdmin = () => {
 };
 
 export const AdminProvider = ({ children }) => {
-    const { currentUser } = useAuth();
+    const { adminUser } = useAuth();
     const [orders, setOrders] = useState([]);
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -19,7 +19,7 @@ export const AdminProvider = ({ children }) => {
     // Currently relying on the route protection, but checking currentUser is a good fallback
     
     const fetchAdminData = useCallback(async (isRefresh = false) => {
-        if (!currentUser) return; // Prevent fetching if logged out
+        if (!adminUser) return; // Prevent fetching if logged out
         
         if (isRefresh) {
             setRefreshing(true);
@@ -54,13 +54,13 @@ export const AdminProvider = ({ children }) => {
             setLoading(false);
             setRefreshing(false);
         }
-    }, [currentUser]); // Depend on currentUser so identity changes re-fetch if needed
+    }, [adminUser]); // Depend on adminUser so identity changes re-fetch if needed
 
     useEffect(() => {
-        if (currentUser) {
+        if (adminUser) {
             fetchAdminData();
         }
-    }, [currentUser, fetchAdminData]);
+    }, [adminUser, fetchAdminData]);
 
     const value = {
         orders,
