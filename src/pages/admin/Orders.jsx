@@ -5,7 +5,7 @@ import { supabase } from '../../../config/supabase';
 import { useToast } from '../../context/ToastContext';
 import ShipmentCreator from '../../components/admin/ShipmentCreator';
 import { generateXpressbeesCSV } from '../../services/xpressbeesCSV';
-import { useAdmin } from '../../../context/AdminContext';
+import { useAdmin } from '../../context/AdminContext';
 
 const Orders = () => {
   const { orders: contextOrders, loading: contextLoading } = useAdmin();
