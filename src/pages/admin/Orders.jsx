@@ -5,8 +5,10 @@ import { supabase } from '../../../config/supabase';
 import { useToast } from '../../context/ToastContext';
 import ShipmentCreator from '../../components/admin/ShipmentCreator';
 import { generateXpressbeesCSV } from '../../services/xpressbeesCSV';
+import { useAdmin } from '../../../context/AdminContext';
 
 const Orders = () => {
+  const { orders: contextOrders, loading: contextLoading } = useAdmin();
   const [orders, setOrders] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -17,59 +19,47 @@ const Orders = () => {
   
   const statusOptions = ['pending', 'processing', 'shipped', 'delivered', 'cancelled', 'cancellation_requested'];
 
-  const fetchOrders = async () => {
-    try {
-        const { data, error } = await supabase
-            .from('orders')
-            .select('*')
-            .order('created_at', { ascending: false });
-        
-        if (error) throw error;
-
-        // Map DB structure to UI structure
-        const mappedOrders = data.map(o => {
-            const nameParts = (o.customer_name || 'Unknown User').split(' ');
-            const firstName = nameParts[0];
-            const lastName = nameParts.slice(1).join(' ');
-
-            return {
-                id: o.id,
-                date: o.created_at,
-                status: o.status,
-                total: o.total,
-                items: o.items || [],
-                customer: {
-                    firstName,
-                    lastName,
-                    email: o.customer_email,
-                    phone: o.customer_phone,
-                    address: o.shipping_address?.address,
-                    city: o.shipping_address?.city,
-                    state: o.shipping_address?.state,
-                    zipCode: o.shipping_address?.zipCode,
-                },
-                paymentStatus: o.payment_status || 'pending',
-                paymentMethod: o.payment_method || 'cod',
-                paymentId: o.payment_id,
-                waybillId: o.waybill_id, 
-                trackingUrl: o.tracking_url,
-                courierName: o.courier_name,
-                expectedDeliveryDate: o.expected_delivery_date,
-                estimatedShippingDate: o.estimated_shipping_date
-            };
-        });
-        setOrders(mappedOrders);
-    } catch (err) {
-        console.error('Error fetching orders:', err);
-    } finally {
-        setLoading(false);
-    }
-  };
-
-  // ... (existing useEffect and filteredOrders) ...
   useEffect(() => {
-    fetchOrders();
-  }, []);
+    if (contextLoading) {
+        setLoading(true);
+        return;
+    }
+    
+    // Map DB structure from Context to UI structure
+    const mappedOrders = contextOrders.map(o => {
+        const nameParts = (o.customer_name || 'Unknown User').split(' ');
+        const firstName = nameParts[0];
+        const lastName = nameParts.slice(1).join(' ');
+
+        return {
+            id: o.id,
+            date: o.created_at,
+            status: o.status,
+            total: o.total,
+            items: o.items || [],
+            customer: {
+                firstName,
+                lastName,
+                email: o.customer_email,
+                phone: o.customer_phone,
+                address: o.shipping_address?.address,
+                city: o.shipping_address?.city,
+                state: o.shipping_address?.state,
+                zipCode: o.shipping_address?.zipCode,
+            },
+            paymentStatus: o.payment_status || 'pending',
+            paymentMethod: o.payment_method || 'cod',
+            paymentId: o.payment_id,
+            waybillId: o.waybill_id, 
+            trackingUrl: o.tracking_url,
+            courierName: o.courier_name,
+            expectedDeliveryDate: o.expected_delivery_date,
+            estimatedShippingDate: o.estimated_shipping_date
+        };
+    });
+    setOrders(mappedOrders);
+    setLoading(false);
+  }, [contextOrders, contextLoading]);
 
   const location = useLocation();
 

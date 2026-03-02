@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../config/supabase';
 import { Bell, Send, Filter, Users, Search, CheckCircle, AlertCircle } from 'lucide-react';
-
+import { useAdmin } from '../../context/AdminContext';
 const AdminNotifications = () => {
+    const { orders: contextOrders, users: contextUsers, loading: contextLoading } = useAdmin();
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [sending, setSending] = useState(false);
@@ -18,61 +19,51 @@ const AdminNotifications = () => {
     const [feedback, setFeedback] = useState({ type: '', msg: '' });
 
     useEffect(() => {
-        const fetchUsers = async () => {
-            try {
-                // Fetch both orders (for logic) and users (for auth existence)
-                // Simplified: Fetch orders to calculate segments like before
-                const { data: ordersData } = await supabase.from('orders').select('*');
-                const { data: usersData } = await supabase.from('users').select('*');
+        const processUserSegments = (orders, authUsers) => {
+            const map = new Map();
+            
+            // 1. Auth Users
+            authUsers.forEach(u => {
+                if(!u.email) return;
+                map.set(u.email, { email: u.email, totalSpend: 0, lastOrder: null, status: 'Registered' });
+            });
+
+            // 2. Order Data integration
+            orders.forEach(o => {
+                if(!o.customer_email) return;
+                if(!map.has(o.customer_email)) {
+                    map.set(o.customer_email, { email: o.customer_email, totalSpend: 0, lastOrder: o.created_at, status: 'Active' });
+                }
+                const u = map.get(o.customer_email);
+                u.totalSpend += Number(o.total) || 0;
+                if(new Date(o.created_at) > new Date(u.lastOrder || 0)) u.lastOrder = o.created_at;
+            });
+
+            // 3. Define Segments
+            return Array.from(map.values()).map(u => {
+                let status = 'Active';
+                const daysSince = u.lastOrder ? (new Date() - new Date(u.lastOrder))/(1000*60*60*24) : 999;
                 
-                // Process logic (Reusing similar logic to Users.jsx for consistency)
-                const processed = processUserSegments(ordersData || [], usersData || []);
-                setUsers(processed);
-            } catch (error) {
-                console.error('Error fetching users for notifications:', error);
-            } finally {
-                setLoading(false);
-            }
+                if(!u.lastOrder) status = 'Registered';
+                else if(daysSince > 180) status = 'Churned';
+                else if(daysSince > 90) status = 'At Risk';
+                
+                // Whales: Spend > 10000 (arbitrary threshold for demo)
+                const isWhale = u.totalSpend > 10000;
+
+                return { ...u, status, isWhale };
+            });
         };
 
-        fetchUsers();
-    }, []);
+        if (contextLoading) {
+            setLoading(true);
+            return;
+        }
 
-    const processUserSegments = (orders, authUsers) => {
-        const map = new Map();
-        
-        // 1. Auth Users
-        authUsers.forEach(u => {
-            if(!u.email) return;
-            map.set(u.email, { email: u.email, totalSpend: 0, lastOrder: null, status: 'Registered' });
-        });
-
-        // 2. Order Data integration
-        orders.forEach(o => {
-            if(!o.customer_email) return;
-            if(!map.has(o.customer_email)) {
-                map.set(o.customer_email, { email: o.customer_email, totalSpend: 0, lastOrder: o.created_at, status: 'Active' });
-            }
-            const u = map.get(o.customer_email);
-            u.totalSpend += Number(o.total) || 0;
-            if(new Date(o.created_at) > new Date(u.lastOrder || 0)) u.lastOrder = o.created_at;
-        });
-
-        // 3. Define Segments
-        return Array.from(map.values()).map(u => {
-            let status = 'Active';
-            const daysSince = u.lastOrder ? (new Date() - new Date(u.lastOrder))/(1000*60*60*24) : 999;
-            
-            if(!u.lastOrder) status = 'Registered';
-            else if(daysSince > 180) status = 'Churned';
-            else if(daysSince > 90) status = 'At Risk';
-            
-            // Whales: Spend > 10000 (arbitrary threshold for demo)
-            const isWhale = u.totalSpend > 10000;
-
-            return { ...u, status, isWhale };
-        });
-    };
+        const processed = processUserSegments(contextOrders, contextUsers);
+        setUsers(processed);
+        setLoading(false);
+    }, [contextOrders, contextUsers, contextLoading]);
 
     const getTargetEmails = () => {
         switch(targetAudience) {

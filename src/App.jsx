@@ -13,6 +13,7 @@ import { ToastProvider } from './context/ToastContext'
 import { WishlistProvider } from './context/WishlistContext'
 import { SettingsProvider } from './context/SettingsContext'
 import { CategoryProvider } from './context/CategoryContext'
+import { AdminProvider } from './context/AdminContext'
 
 // Lazy Load Page Components for Performance
 const LoginSignup = lazy(() => import('./pages/LoginSignup'));
@@ -75,6 +76,7 @@ function App() {
       <CategoryProvider>
       <CartProvider>
       <ProductProvider>
+      <AdminProvider>
         <Router>
           <ScrollToTop />
           <Suspense fallback={<PageLoader />}>
@@ -140,6 +142,7 @@ function App() {
             </Routes>
           </Suspense>
         </Router>
+      </AdminProvider>
       </ProductProvider>
       </CartProvider>
       </CategoryProvider>
