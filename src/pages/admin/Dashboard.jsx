@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../../config/supabase';
-import { useAdmin } from '../../../context/AdminContext';
+import { useAdmin } from '../../context/AdminContext';
 
 // ─── Helpers ────────────────────────────────────────────────
 const fmt = (amount) =>
