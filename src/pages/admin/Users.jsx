@@ -4,12 +4,14 @@ import {
   Search, Filter, Download, User, TrendingUp, DollarSign, 
   Calendar, ShoppingBag, Star, Activity, X, MapPin, Bell, Send
 } from 'lucide-react';
+import { useAdmin } from '../../context/AdminContext';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   PieChart, Pie, Cell, BarChart, Bar 
 } from 'recharts';
 
 const Users = () => {
+    const { orders: contextOrders, users: contextUsers, loading: contextLoading } = useAdmin();
     const [orders, setOrders] = useState([]);
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -28,36 +30,6 @@ const Users = () => {
     // --- Data Fetching & Aggregation ---
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                // Fetch orders
-                const { data: ordersData, error: ordersError } = await supabase
-                    .from('orders')
-                    .select('*')
-                    .order('created_at', { ascending: false });
-                
-                if (ordersError) throw ordersError;
-
-                // Fetch synced users
-                const { data: usersData, error: usersError } = await supabase
-                    .from('users')
-                    .select('*');
-
-                if (usersError && usersError.code !== 'PGRST116') {
-                    console.error("Error fetching users:", usersError);
-                }
-
-                setOrders(ordersData);
-                processData(ordersData, usersData || []);
-            } catch (error) {
-                console.error('Error fetching data:', error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-
-
         const processData = (orderData, userData) => {
             const userMap = new Map();
 
@@ -170,9 +142,15 @@ const Users = () => {
             setUsers(processedUsers);
         };
 
-        fetchData();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+        if (contextLoading) {
+            setLoading(true);
+            return;
+        }
+
+        setOrders(contextOrders);
+        processData(contextOrders, contextUsers);
+        setLoading(false);
+    }, [contextOrders, contextUsers, contextLoading]);
 
     const handleSendNotification = async (e) => {
         e.preventDefault();

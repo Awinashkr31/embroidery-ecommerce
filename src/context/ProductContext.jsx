@@ -14,7 +14,7 @@ export const ProductProvider = ({ children }) => {
         try {
             const { data, error } = await supabase
                 .from('products')
-                .select('*')
+                .select('id, name, description, price, original_price, category, images, featured, stock_quantity, fabric, clothing_information, variants, created_at, active')
                 .eq('active', true) // Default strict, can be adjustable
                 .order('created_at', { ascending: false });
 

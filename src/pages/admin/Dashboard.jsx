@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../../config/supabase';
+import { useAdmin } from '../../../context/AdminContext';
 
 // ─── Helpers ────────────────────────────────────────────────
 const fmt = (amount) =>
@@ -95,30 +96,33 @@ const BarChart = ({ data, loading }) => {
 
 // ─── Main ───────────────────────────────────────────────────
 const Dashboard = () => {
+  const { orders, loading: adminLoading, refreshData: refreshAdminData } = useAdmin();
   const [products, setProducts] = useState([]);
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loadingProducts, setLoadingProducts] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchData = async (isRefresh = false) => {
-    if (isRefresh) setRefreshing(true);
-    else setLoading(true);
+    if (isRefresh) {
+      setRefreshing(true);
+      await refreshAdminData(); // Tell the provider to re-fetch global data
+    } else {
+      setLoadingProducts(true);
+    }
+    
     try {
-      const [{ data: productsData }, { data: ordersData }] = await Promise.all([
-        supabase.from('products').select('id, name, images, stock_quantity'),
-        supabase.from('orders').select('id, customer_name, customer_email, total, total_amount, amount, status, created_at').order('created_at', { ascending: false }),
-      ]);
+      const { data: productsData } = await supabase.from('products').select('id, name, images, stock_quantity');
       if (productsData) setProducts(productsData);
-      if (ordersData) setOrders(ordersData);
     } catch (error) {
-      console.error('Dashboard fetch error:', error);
+      console.error('Dashboard products fetch error:', error);
     } finally {
-      setLoading(false);
+      setLoadingProducts(false);
       setRefreshing(false);
     }
   };
 
   useEffect(() => { fetchData(); }, []);
+  
+  const loading = adminLoading || loadingProducts;
 
   const getAmount = (o) => Number(o.total) || Number(o.total_amount) || Number(o.amount) || 0;
 
