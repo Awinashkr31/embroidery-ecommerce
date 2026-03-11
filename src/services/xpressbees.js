@@ -138,7 +138,9 @@ export const XpressbeesService = {
                     if (errBody && errBody.error) {
                         throw new Error(errBody.error);
                     }
-                } catch (e) {}
+                } catch (e) {
+                    console.warn('Failed to parse error context as JSON:', e);
+                }
             }
             
             throw error;
