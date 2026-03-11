@@ -91,6 +91,75 @@ const Orders = () => {
   });
 
 
+  const bulkUpdateOrderStatus = async (orderIds, newStatus, extraData = {}) => {
+    try {
+        if (!orderIds || orderIds.length === 0) return;
+        const dbStatus = newStatus.toLowerCase();
+
+        // Perform bulk update on 'orders' table
+        const { error: updateError } = await supabase
+            .from('orders')
+            .update({ status: dbStatus, ...extraData })
+            .in('id', orderIds);
+
+        if (updateError) throw updateError;
+
+        let logMessage = 'Status updated by store admin';
+        if (dbStatus === 'shipped') logMessage = 'Order marked as Shipped';
+        else if (dbStatus === 'delivered') logMessage = 'Order marked as Delivered';
+        else if (dbStatus === 'processing') logMessage = 'Order is being processed';
+        else if (dbStatus === 'cancelled') logMessage = 'Order was cancelled';
+
+        // Prepare bulk insert for order_status_logs
+        const logsToInsert = orderIds.map(orderId => ({
+            order_id: orderId,
+            status: newStatus,
+            timestamp: new Date().toISOString(),
+            message: logMessage,
+            description: `Manual bulk update to ${newStatus}`
+        }));
+
+        await supabase.from('order_status_logs').insert(logsToInsert);
+
+        // Prepare bulk insert for notifications
+        const targetOrders = orders.filter(o => orderIds.includes(o.id));
+        const notificationsToInsert = targetOrders
+            .filter(o => o.customer?.email)
+            .map(o => ({
+                user_email: o.customer.email,
+                title: 'Order Status Updated',
+                message: `Your order #${o.id.slice(0,8)} is now ${newStatus}.`,
+                type: 'info',
+                is_read: false
+            }));
+
+        if (notificationsToInsert.length > 0) {
+            await supabase.from('notifications').insert(notificationsToInsert);
+        }
+
+        // Optimistic update
+        const stateUpdates = { ...extraData, status: dbStatus };
+        if (extraData.courier_name) stateUpdates.courierName = extraData.courier_name;
+        if (extraData.estimated_shipping_date) stateUpdates.estimatedShippingDate = extraData.estimated_shipping_date;
+        if (extraData.expected_delivery_date) stateUpdates.expectedDeliveryDate = extraData.expected_delivery_date;
+        if (extraData.waybill_id) stateUpdates.waybillId = extraData.waybill_id;
+        if (extraData.tracking_url) stateUpdates.trackingUrl = extraData.tracking_url;
+
+        setOrders(prevOrders =>
+            prevOrders.map(order =>
+                orderIds.includes(order.id) ? { ...order, ...stateUpdates } : order
+            )
+        );
+
+        if (selectedOrder && orderIds.includes(selectedOrder.id)) {
+            setSelectedOrder(prev => ({ ...prev, ...stateUpdates }));
+        }
+    } catch (err) {
+        console.error('Error bulk updating status:', err);
+        addToast('Failed to bulk update order status', 'error');
+    }
+  };
+
   const updateOrderStatus = async (orderId, newStatus, extraData = {}) => {
     try {
         const dbStatus = newStatus.toLowerCase();
@@ -229,15 +298,16 @@ const Orders = () => {
 
         // 9. POST EXPORT - Mark as Processing / Exported
         // Update status to 'processing' if pending
-        const updates = ordersToExport.map(async (order) => {
-            if (order.status === 'pending') {
-                await updateOrderStatus(order.id, 'processing', { 
-                    // extra metadata could go here
-                });
-            }
-        });
+        const pendingOrderIds = ordersToExport
+            .filter(order => order.status === 'pending')
+            .map(order => order.id);
+
+        if (pendingOrderIds.length > 0) {
+            await bulkUpdateOrderStatus(pendingOrderIds, 'processing', {
+                // extra metadata could go here
+            });
+        }
         
-        await Promise.all(updates);
         addToast(`Export successful! ${ordersToExport.length} orders marked as Processing.`, 'success');
 
     } catch (error) {
