@@ -71,8 +71,6 @@ const ProductManager = () => {
         
         // 7. Variants
         variants: [], // [{ id, color, price, stock, images: [] }]
-        colorsInput: '', // Deprecated but kept for legacy view support if needed
-        variantStock: {}, // Deprecated
         
         // 8. Inventory & Shipping
         stockQuantity: 10,
@@ -160,7 +158,6 @@ const ProductManager = () => {
                 
                 // Variants
                 variants: product.variants || [], // New strict variants
-                colorsInput: '', // Legacy support or just clearing it
                 
                 // Inventory
                 stockQuantity: product.stock,
@@ -218,7 +215,7 @@ const ProductManager = () => {
         }
 
         // Check if there is any actual clothing data to save
-        const colors = formData.colorsInput ? formData.colorsInput.split(',').map(c => c.trim()).filter(Boolean) : [];
+        const colors = formData.variants ? formData.variants.map(v => v.color).filter(Boolean) : [];
         
         const clothingInfo = {
             brand: formData.brand,
@@ -232,7 +229,6 @@ const ProductManager = () => {
             careInstructions: formData.careInstructions,
             countryOfOrigin: formData.countryOfOrigin,
             keyFeatures: formData.keyFeatures,
-            variantStock: formData.variantStock,
             colors: colors,
             sizes: formData.availableSizes.reduce((acc, size) => ({ ...acc, [size]: 10 }), {}), // Legacy simple map
             lowStockAlert: formData.lowStockAlert,
@@ -267,8 +263,8 @@ const ProductManager = () => {
 
         // Auto-calculate Global Stock if Variants exist
         let finalStock = formData.stockQuantity;
-        if (hasClothingData && formData.variantStock && Object.keys(formData.variantStock).length > 0) {
-             const vStockSum = Object.values(formData.variantStock).reduce((sum, v) => sum + (parseInt(v.stock) || 0), 0);
+        if (hasClothingData && formData.variants && formData.variants.length > 0) {
+             const vStockSum = formData.variants.reduce((sum, v) => sum + (parseInt(v.stock) || 0), 0);
              // Only override if the sum is meaningful (>0), otherwise trust manual input or 0
              if (vStockSum > 0) {
                  finalStock = vStockSum;
