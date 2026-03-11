@@ -54,9 +54,6 @@ export const generateXpressbeesCSV = (orders) => {
         return stringText;
     };
 
-    let processedCount = 0;
-    let errorCount = 0;
-
     orders.forEach(order => {
         // 5. DATA VALIDATION
         // Basic Checks
@@ -64,14 +61,12 @@ export const generateXpressbeesCSV = (orders) => {
             console.warn(`Skipping Order ${order.id}: Invalid Phone`);
             // We might want to include even invalid ones for review? 
             // The requirement says: "If failed: Skip order + log error"
-            errorCount++;
             return;
         }
 
         const items = order.items || [];
         if (items.length === 0) {
             console.warn(`Skipping Order ${order.id}: No items`);
-            errorCount++;
             return; 
         }
 
@@ -217,9 +212,7 @@ export const generateXpressbeesCSV = (orders) => {
 
             csvRows.push(row.join(','));
         }
-        processedCount++;
     });
 
-    console.log(`Xpressbees CSV: Processed ${processedCount} orders. Skipped ${errorCount} errors.`);
     return csvRows.join("\n");
 };
