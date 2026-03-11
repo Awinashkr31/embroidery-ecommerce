@@ -7,6 +7,8 @@ import { Star, ArrowRight, Flower, Heart, Scissors, PenTool, Sparkles, ChevronLe
 import SEO from '../components/SEO';
 import { useSettings } from '../context/SettingsContext';
 
+const normalize = (str) => (str || '').toLowerCase().trim();
+
 const ScrollRevealSection = ({ children, className }) => {
     const [isVisible, setIsVisible] = useState(false);
     const ref = useRef(null);
@@ -108,7 +110,6 @@ const Home = () => {
   // Dynamic Categories Logic
   const dynamicCategories = useMemo(() => {
     return categories.map(cat => {
-        const normalize = (str) => (str || '').toLowerCase().trim();
         const product = products.find(p => normalize(p.category) === normalize(cat.label) && (p.image || p.images?.length > 0));
         return {
             id: cat.id,
@@ -332,7 +333,6 @@ const Home = () => {
 
       {/* ================= CATEGORY SECTIONS ================= */}
       {categories.map((category) => {
-        const normalize = (str) => (str || '').toLowerCase().trim();
         const categoryProducts = products.filter(p => normalize(p.category) === normalize(category.label)).slice(0, 8);
         
         if (categoryProducts.length === 0) return null;
