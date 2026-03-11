@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "test": "node --import ./test-setup.js --experimental-loader ./test-loader.js --test \"src/**/*.test.js\"",
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
