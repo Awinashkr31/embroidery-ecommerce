@@ -41,7 +41,7 @@ export const uploadImage = async (file, bucketName = 'images', folder = '') => {
     
     // 2. Create unique file name to avoid collisions
     const fileExt = 'jpg'; // We convert to jpg in compression
-    const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+    const fileName = `${Date.now()}-${crypto.randomUUID()}.${fileExt}`;
     const filePath = folder ? `${folder}/${fileName}` : fileName;
 
     // 3. Upload
