@@ -1,15 +1,11 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase } from '../config/supabase';
 import { useToast } from './ToastContext';
+import { slugify } from '../utils/stringUtils';
 
 const CategoryContext = createContext();
 
 export const useCategories = () => useContext(CategoryContext);
-
-// Generates a stable slug-like ID from a label.
-// This ensures renaming a category only updates the label, not the ID.
-const slugify = (text) =>
-    text.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
 const DEFAULT_CATEGORIES = [
     { id: 'home-decor', label: 'Home Decor' },

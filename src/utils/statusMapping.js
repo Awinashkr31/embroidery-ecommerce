@@ -1,3 +1,5 @@
+import { normalize } from './stringUtils';
+
 /**
  * Maps Delhivery/Technical statuses to User-Friendly Timeline Events
  * Matches specific user requirements for "Flipkart-style" tracking.
@@ -9,7 +11,7 @@ export const getTrackingStatus = (status) => {
     if (!status) return { title: 'Unknown Status', message: '' };
     
     // Normalize: remove extra spaces, lowercase
-    const normalized = status.toString().toLowerCase().trim();
+    const normalized = normalize(status.toString());
 
     // Exact User Mapping Logic
     // Delhivery Status (Input)	Timeline Title	User Message
