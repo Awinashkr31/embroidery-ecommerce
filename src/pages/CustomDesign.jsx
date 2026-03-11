@@ -24,16 +24,16 @@ const CustomDesign = () => {
 
   useEffect(() => {
     const loadSettings = async () => {
-        const image = await fetchSetting('custom_design_banner_image');
+        const [image, bodyImg, title, subtitle] = await Promise.all([
+            fetchSetting('custom_design_banner_image'),
+            fetchSetting('custom_design_body_image'),
+            fetchSetting('custom_design_title'),
+            fetchSetting('custom_design_subtitle')
+        ]);
+
         if (image) setBannerImage(image);
-
-        const bodyImg = await fetchSetting('custom_design_body_image'); 
         if (bodyImg) setBodyImage(bodyImg);
-
-        const title = await fetchSetting('custom_design_title');
         if (title) setPageTitle(title);
-
-        const subtitle = await fetchSetting('custom_design_subtitle');
         if (subtitle) setPageSubtitle(subtitle);
     };
     loadSettings();

@@ -32,19 +32,20 @@ const Gallery = () => {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const banner = await fetchSetting('gallery_banner_image');
+                const [banner, title, subtitle, { data, error }] = await Promise.all([
+                    fetchSetting('gallery_banner_image'),
+                    fetchSetting('gallery_title'),
+                    fetchSetting('gallery_subtitle'),
+                    supabase
+                        .from('gallery')
+                        .select('*')
+                        .order('created_at', { ascending: false })
+                ]);
+
                 if (banner) setBannerImage(banner);
-
-                const title = await fetchSetting('gallery_title');
                 if (title) setPageTitle(title);
-
-                const subtitle = await fetchSetting('gallery_subtitle');
                 if (subtitle) setPageSubtitle(subtitle);
 
-                const { data, error } = await supabase
-                    .from('gallery')
-                    .select('*')
-                    .order('created_at', { ascending: false });
 
                 if (error) throw error;
                 // Normalize images: if 'images' array is empty, populate it with single 'image_url'

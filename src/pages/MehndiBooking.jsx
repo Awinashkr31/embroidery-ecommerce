@@ -65,17 +65,18 @@ const MehndiBooking = () => {
 
   useEffect(() => {
     const loadSettings = async () => {
-      const image = await fetchSetting('mehndi_feature_image');
+      const [image, title, subtitle, packagesJson] = await Promise.all([
+        fetchSetting('mehndi_feature_image'),
+        fetchSetting('mehndi_title'),
+        fetchSetting('mehndi_subtitle'),
+        fetchSetting('mehndi_packages')
+      ]);
+
       if (image) setFeatureImage(image);
-
-      const title = await fetchSetting('mehndi_title');
       if (title) setPageTitle(title);
-
-      const subtitle = await fetchSetting('mehndi_subtitle');
       if (subtitle) setPageSubtitle(subtitle);
 
-      const packagesJson = await fetchSetting('mehndi_packages');
-      console.log("Mehndi Packages Fetched:", packagesJson); // DEBUG LOG
+      // console.log("Mehndi Packages Fetched:", packagesJson); // DEBUG LOG
 
       if (packagesJson) {
         try {
