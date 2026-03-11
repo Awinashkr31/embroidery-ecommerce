@@ -12,8 +12,13 @@ if (!supabaseUrl || !supabaseKey) {
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-const ADMIN_EMAIL = 'awinashkr31@gmail.com';
-const TEMP_PASSWORD = 'TemporaryAdminPassword123!';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+const TEMP_PASSWORD = process.env.ADMIN_PASSWORD;
+
+if (!ADMIN_EMAIL || !TEMP_PASSWORD) {
+    console.error("Missing ADMIN_EMAIL or ADMIN_PASSWORD in environment");
+    process.exit(1);
+}
 
 async function setupAdmin() {
     console.log(`Checking status for ${ADMIN_EMAIL}...`);
@@ -43,7 +48,7 @@ async function setupAdmin() {
         } else {
             console.log("✅ Admin user created successfully!");
             console.log(`Email: ${ADMIN_EMAIL}`);
-            console.log(`Password: ${TEMP_PASSWORD}`);
+            console.log(`Password: [HIDDEN]`);
             console.log("⚠️  IMPORTANT: Please login and change this password immediately.");
             console.log("⚠️  NOTE: You may need to run 'confirm_email.sql' in Supabase SQL Editor if email confirmation is enabled.");
         }
