@@ -4,7 +4,7 @@
  * note: Requires VITE_DELHIVERY_TOKEN in .env file
  */
 
-import { supabase } from '../../config/supabase';
+import { supabase } from '../../config/supabase.js';
 
 const BASE_URL = '/delhivery-api';
 
