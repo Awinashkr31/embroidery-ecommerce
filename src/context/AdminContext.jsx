@@ -72,7 +72,7 @@ export const AdminProvider = ({ children }) => {
         // Helper methods for easy access across admin pages
         getRecentOrders: (limit = 10) => orders.slice(0, limit),
         getPendingOrdersCount: () => orders.filter(o => o.status === 'pending').length,
-        getTotalRevenue: () => orders.reduce((sum, o) => sum + (Number(o.total) || Number(o.total_amount) || Number(o.amount) || 0), 0)
+        getTotalRevenue: () => orders.reduce((sum, o) => sum + Number(o.total || o.total_amount || o.amount || 0), 0)
     };
 
     return (
