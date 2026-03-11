@@ -264,17 +264,18 @@ const Settings = () => {
         e.preventDefault();
         setSaving(true);
         try {
-            const updates = Object.entries(settings).map(([key, value]) => {
-                return supabase
-                    .from('website_settings')
-                    .upsert({ 
-                        setting_key: key, 
-                        setting_value: value,
-                        updated_at: new Date().toISOString()
-                    }, { onConflict: 'setting_key' });
-            });
+            const updates = Object.entries(settings).map(([key, value]) => ({
+                setting_key: key,
+                setting_value: value,
+                updated_at: new Date().toISOString()
+            }));
 
-            await Promise.all(updates);
+            const { error } = await supabase
+                .from('website_settings')
+                .upsert(updates, { onConflict: 'setting_key' });
+
+            if (error) throw error;
+
             addToast('All settings saved successfully', 'success');
             setIsEditing(false);
         } catch (error) {
