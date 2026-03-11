@@ -124,7 +124,7 @@ const Dashboard = () => {
   
   const loading = adminLoading || loadingProducts;
 
-  const getAmount = (o) => Number(o.total) || Number(o.total_amount) || Number(o.amount) || 0;
+  const getAmount = (o) => Number(o.total || o.total_amount || o.amount || 0);
 
   const stats = useMemo(() => {
     const totalRevenue = orders.reduce((s, o) => s + getAmount(o), 0);
