@@ -50,71 +50,66 @@ export const CartProvider = ({ children }) => {
                 const localCart = JSON.parse(localCartStr);
                 if (localCart.length > 0) {
                     
-                    // Merge logic: Add local items to Supabase
-                    for (const item of localCart) {
-                        // Skip items that are already synced (flag or existing DB ID)
-                        if (item.isSynced || item.cartItemId) continue;
+                    // Merge logic: Add local items to Supabase (Optimized bulk upsert)
+                    const unsyncedItems = localCart.filter(item => !item.isSynced && !item.cartItemId);
 
+                    if (unsyncedItems.length > 0) {
                         try {
-                             // Check if item already exists in DB to update quantity
-                             let query = supabase
+                            const userId = currentUser.uid || currentUser.id;
+
+                            // Fetch all existing cart items for this user once
+                            const { data: existingItems, error: fetchError } = await supabase
                                 .from('cart_items')
-                                .select('quantity, id')
-                                .eq('user_id', (currentUser.uid || currentUser.id))
-                                .eq('product_id', item.id);
-                             
-                             if (item.selectedSize) {
-                                 query = query.eq('selected_size', item.selectedSize);
-                             } else {
-                                 query = query.is('selected_size', null);
-                             }
-                             
-                             if (item.selectedColor) {
-                                 query = query.eq('selected_color', item.selectedColor);
-                             } else {
-                                 query = query.is('selected_color', null);
-                             }
+                                .select('id, product_id, selected_size, selected_color, variant_id, quantity')
+                                .eq('user_id', userId);
 
-                             if (item.variantId) {
-                                 query = query.eq('variant_id', item.variantId);
-                             } else {
-                                 query = query.is('variant_id', null);
-                             }
-                             
-                             const { data: existing, error: fetchError } = await query.maybeSingle();
-
-                             if (fetchError) {
-                                console.error("Error checking existing item:", fetchError);
+                            if (fetchError) {
+                                console.error("Error fetching existing items for merge:", fetchError);
                                 throw fetchError;
-                             }
+                            }
 
-                             if (existing) {
+                            const upserts = unsyncedItems.map(item => {
+                                // Match logic checking nulls correctly
+                                const match = (existingItems || []).find(ex =>
+                                    ex.product_id === item.id &&
+                                    ex.selected_size === (item.selectedSize || null) &&
+                                    ex.selected_color === (item.selectedColor || null) &&
+                                    ex.variant_id === (item.variantId || null)
+                                );
 
-                                 const { error: updateError } = await supabase
-                                    .from('cart_items')
-                                    .update({ quantity: existing.quantity + item.quantity })
-                                    .eq('id', existing.id);
-                                 
-                                 if (updateError) throw updateError;
-
-                             } else {
-                                console.log(`Inserting new item ${item.id}`);
-                                 const { error: insertError } = await supabase
-                                    .from('cart_items')
-                                    .insert({ 
-                                        user_id: (currentUser.uid || currentUser.id), 
-                                        product_id: item.id, 
+                                if (match) {
+                                    return {
+                                        id: match.id,
+                                        user_id: userId,
+                                        product_id: item.id,
+                                        quantity: match.quantity + item.quantity,
+                                        selected_size: item.selectedSize || null,
+                                        selected_color: item.selectedColor || null,
+                                        variant_id: item.variantId || null
+                                    };
+                                } else {
+                                    return {
+                                        user_id: userId,
+                                        product_id: item.id,
                                         quantity: item.quantity,
                                         selected_size: item.selectedSize || null,
                                         selected_color: item.selectedColor || null,
                                         variant_id: item.variantId || null
-                                    });
+                                    };
+                                }
+                            });
 
-                                 if (insertError) throw insertError;
-                             }
+                            if (upserts.length > 0) {
+                                const { error: upsertError } = await supabase
+                                    .from('cart_items')
+                                    .upsert(upserts);
+
+                                if (upsertError) throw upsertError;
+                            }
                         } catch (err) {
-                            console.error(`Failed to merge item ${item.id}`, err);
-                            failedItems.push(item);
+                            console.error("Failed to merge local cart items to DB", err);
+                            // If bulk fails, mark all attempted as failed to maintain old error handling behavior
+                            failedItems.push(...unsyncedItems);
                         }
                     }
                     
