@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { CheckCircle, Package, MapPin, ArrowRight, Loader, AlertTriangle } from 'lucide-react';
+import { CheckCircle, Package, MapPin, Loader, AlertTriangle } from 'lucide-react';
 import { supabase } from '../config/supabase';
 import { getEstimatedDeliveryDate } from '../utils/dateUtils';
 import SEO from '../components/SEO';
