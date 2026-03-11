@@ -5,7 +5,7 @@
  * note: Requires VITE_XPRESSBEES_TOKEN in .env file
  */
 
-import { supabase } from '../../config/supabase';
+import { supabase } from '../../config/supabase.js';
 
 const BASE_URL = 'https://ship.xpressbees.com/api'; // Standard Xpressbees API URL, confirm with user if different
 
