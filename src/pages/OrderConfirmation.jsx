@@ -15,11 +15,6 @@ const OrderConfirmation = () => {
     const { currentUser } = useAuth();
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Debugging Logs
-    // React.useEffect(() => {
-    //      console.log("OrderConfirmation Debug:", { state, cartLength: cart.length, cartLoading });
-    // }, [state, cart, cartLoading]);
-
     // Redirect to cart if no state (direct access) or empty cart
     React.useEffect(() => {
         if (!cartLoading && (!state || cart.length === 0)) {
