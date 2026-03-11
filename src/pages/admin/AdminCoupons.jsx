@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useCart } from '../../context/CartContext';
 import { useCategories } from '../../context/CategoryContext';
-import { Plus, Trash2, Tag, Calendar, AlertCircle } from 'lucide-react';
+import { Plus, Trash2, Tag } from 'lucide-react';
 
 const AdminCoupons = () => {
   const { coupons, addCoupon, deleteCoupon } = useCart();
