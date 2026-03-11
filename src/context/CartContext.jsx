@@ -98,7 +98,6 @@ export const CartProvider = ({ children }) => {
                                  if (updateError) throw updateError;
 
                              } else {
-                                console.log(`Inserting new item ${item.id}`);
                                  const { error: insertError } = await supabase
                                     .from('cart_items')
                                     .insert({ 
