@@ -75,7 +75,6 @@ const MehndiBooking = () => {
       if (subtitle) setPageSubtitle(subtitle);
 
       const packagesJson = await fetchSetting('mehndi_packages');
-      console.log("Mehndi Packages Fetched:", packagesJson); // DEBUG LOG
 
       if (packagesJson) {
         try {
@@ -88,7 +87,6 @@ const MehndiBooking = () => {
           }
 
           if (Array.isArray(parsed) && parsed.length > 0) {
-            console.log("Setting Packages:", parsed); // DEBUG LOG
             setPackages(parsed);
           }
         } catch (e) {
