@@ -1,5 +1,15 @@
 // Enhanced Cart Management System with Discount & Coupon Support
 
+function escapeHTML(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 class CartManager {
   constructor() {
     this.cart = this.loadCart();
@@ -202,32 +212,40 @@ class CartManager {
   }
 
   renderCartItem(item) {
+    const safeId = escapeHTML(item.id);
+    const safeName = escapeHTML(item.name);
+    const safeImage = escapeHTML(item.image);
+    const safeCategory = escapeHTML(item.category || 'Handmade');
+    const safePrice = escapeHTML(item.price);
+    const safeQuantity = escapeHTML(item.quantity);
+    const safeTotal = escapeHTML(item.price * item.quantity);
+
     return `
-      <div class="cart-item bg-white rounded-lg shadow-sm p-6 flex flex-col md:flex-row gap-4" data-item-id="${item.id}">
+      <div class="cart-item bg-white rounded-lg shadow-sm p-6 flex flex-col md:flex-row gap-4" data-item-id="${safeId}">
         <div class="md:w-32 md:h-32 w-full h-48 flex-shrink-0">
-          <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover rounded-lg">
+          <img src="${safeImage}" alt="${safeName}" class="w-full h-full object-cover rounded-lg">
         </div>
         
         <div class="flex-1 space-y-4">
           <div>
-            <h3 class="text-xl font-semibold text-gray-800">${item.name}</h3>
-            <p class="text-gray-600">${item.category || 'Handmade'}</p>
-            <p class="text-2xl font-bold text-deep-rose mt-2">₹${item.price}</p>
+            <h3 class="text-xl font-semibold text-gray-800">${safeName}</h3>
+            <p class="text-gray-600">${safeCategory}</p>
+            <p class="text-2xl font-bold text-deep-rose mt-2">₹${safePrice}</p>
           </div>
           
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
               <label class="text-sm font-medium text-gray-700">Quantity:</label>
               <div class="flex items-center border border-gray-300 rounded-lg">
-                <button class="quantity-btn px-3 py-1 hover:bg-gray-100 transition-colors" data-action="decrease" data-id="${item.id}">-</button>
-                <span class="px-4 py-1 border-l border-r border-gray-300 min-w-[3rem] text-center">${item.quantity}</span>
-                <button class="quantity-btn px-3 py-1 hover:bg-gray-100 transition-colors" data-action="increase" data-id="${item.id}">+</button>
+                <button class="quantity-btn px-3 py-1 hover:bg-gray-100 transition-colors" data-action="decrease" data-id="${safeId}">-</button>
+                <span class="px-4 py-1 border-l border-r border-gray-300 min-w-[3rem] text-center">${safeQuantity}</span>
+                <button class="quantity-btn px-3 py-1 hover:bg-gray-100 transition-colors" data-action="increase" data-id="${safeId}">+</button>
               </div>
             </div>
             
             <div class="flex items-center gap-4">
-              <span class="text-lg font-semibold">₹${item.price * item.quantity}</span>
-              <button class="remove-btn text-red-500 hover:text-red-700 p-2" data-id="${item.id}" title="Remove item">
+              <span class="text-lg font-semibold">₹${safeTotal}</span>
+              <button class="remove-btn text-red-500 hover:text-red-700 p-2" data-id="${safeId}" title="Remove item">
                 <i data-lucide="trash-2" class="w-5 h-5"></i>
               </button>
             </div>
@@ -243,6 +261,11 @@ class CartManager {
     const discount = this.calculateDiscount(subtotal);
     const total = subtotal + shipping - discount;
 
+    const safeAppliedCoupon = escapeHTML(this.appliedCoupon || '');
+    const safeCouponDescription = this.appliedCoupon && this.coupons[this.appliedCoupon]
+      ? escapeHTML(this.coupons[this.appliedCoupon].description)
+      : '';
+
     return `
       <div class="bg-white rounded-lg shadow-sm p-6">
         <h2 class="text-2xl font-bold text-gray-800 mb-6">Order Summary</h2>
@@ -252,14 +275,14 @@ class CartManager {
           <div class="flex gap-2 mb-2">
             <input type="text" id="coupon-input" placeholder="Enter coupon code" 
                    class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-rose-gold focus:border-transparent"
-                   value="${this.appliedCoupon || ''}">
+                   value="${safeAppliedCoupon}">
             <button id="apply-coupon-btn" 
                     class="px-4 py-2 bg-deep-rose text-white rounded-lg text-sm font-medium hover:bg-deep-rose/90 transition-colors">
               ${this.appliedCoupon ? 'Remove' : 'Apply'}
             </button>
           </div>
           <div id="coupon-message" class="text-sm"></div>
-          ${this.appliedCoupon ? `<div class="text-sm text-green-600 mt-1">✓ ${this.coupons[this.appliedCoupon].description}</div>` : ''}
+          ${this.appliedCoupon ? `<div class="text-sm text-green-600 mt-1">✓ ${safeCouponDescription}</div>` : ''}
         </div>
 
         <!-- Price Breakdown -->
