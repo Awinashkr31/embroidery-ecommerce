@@ -8,6 +8,13 @@ describe('getTrackingStatus', () => {
         expect(getTrackingStatus('')).toEqual({ title: 'Unknown Status', message: '' });
     });
 
+    it('handles non-string inputs safely', () => {
+        const expected = { title: '12345', message: 'Status update received' };
+        expect(getTrackingStatus(12345)).toEqual(expected);
+        expect(getTrackingStatus({ some: 'object' })).toEqual({ title: '[object Object]', message: 'Status update received' });
+        expect(getTrackingStatus(['manifested'])).toEqual({ title: 'Order Confirmed', message: 'Your order has been placed' });
+    });
+
     it('maps Order Confirmed status correctly', () => {
         const expected = { title: 'Order Confirmed', message: 'Your order has been placed' };
         expect(getTrackingStatus('manifested')).toEqual(expected);
@@ -50,6 +57,15 @@ describe('getTrackingStatus', () => {
         // Note: 'undelivered' should not map to 'Delivered'
     });
 
+    it('does not map undelivered to Delivered status', () => {
+        // "undelivered" should not match the Delivered rule
+        const deliveredExpected = { title: 'Delivered', message: 'Your item has been delivered' };
+        expect(getTrackingStatus('undelivered')).not.toEqual(deliveredExpected);
+
+        // "delivered" combined with "un" (e.g. un-delivered) shouldn't match either
+        expect(getTrackingStatus('un-delivered')).not.toEqual(deliveredExpected);
+    });
+
     it('maps Delivery Attempt Failed status correctly', () => {
         const expected = { title: 'Delivery Attempt Failed', message: 'Delivery attempt failed' };
         expect(getTrackingStatus('undelivered')).toEqual(expected);
@@ -75,6 +91,10 @@ describe('getTrackingStatus', () => {
         });
         expect(getTrackingStatus('unknown-event')).toEqual({
             title: 'Unknown-event',
+            message: 'Status update received'
+        });
+        expect(getTrackingStatus('A VERY LONG STATUS UPDATE')).toEqual({
+            title: 'A Very Long Status Update',
             message: 'Status update received'
         });
     });
