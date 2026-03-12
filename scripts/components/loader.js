@@ -62,15 +62,28 @@ class ComponentLoader {
         <div class="text-red-500 text-sm p-4 bg-red-50 border border-red-200 rounded-lg">
           <div class="flex items-center">
             <i data-lucide="alert-circle" class="w-4 h-4 mr-2"></i>
-            <span>Failed to load ${componentPath}</span>
+            <span class="error-message-text"></span>
           </div>
-          <button onclick="window.componentLoader.retryLoad('${selector}', '${componentPath}')" 
-                  class="mt-2 text-xs bg-red-100 hover:bg-red-200 px-2 py-1 rounded">
+          <button class="retry-load-btn mt-2 text-xs bg-red-100 hover:bg-red-200 px-2 py-1 rounded">
             Retry
           </button>
         </div>
       `;
       
+      const errorTextElement = element.querySelector('.error-message-text');
+      if (errorTextElement) {
+        errorTextElement.textContent = `Failed to load ${componentPath}`;
+      }
+
+      const retryBtn = element.querySelector('.retry-load-btn');
+      if (retryBtn) {
+        retryBtn.addEventListener('click', () => {
+          if (typeof window !== 'undefined' && window.componentLoader) {
+            window.componentLoader.retryLoad(selector, componentPath);
+          }
+        });
+      }
+
       // Initialize icons for error message
       if (typeof lucide !== 'undefined') lucide.createIcons();
       
