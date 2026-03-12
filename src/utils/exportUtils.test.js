@@ -125,4 +125,88 @@ describe('exportToCSV', () => {
          // Should execute without throwing errors
          exportToCSV(testData, 'test');
     });
+
+    it('should handle falsy values like zero, false, and empty strings correctly', () => {
+        const testData = [
+            { id: 1, active: false, count: 0, notes: '' },
+            { id: 2, active: true, count: 10, notes: 'text' }
+        ];
+
+        let blobContent = [];
+        let originalBlob = global.Blob;
+        let originalDocument = global.document;
+        let originalURL = global.URL;
+
+        try {
+            global.Blob = class {
+                constructor(content) {
+                    blobContent = content;
+                }
+            };
+
+            const mockLink = { setAttribute: mock.fn(), style: {}, click: mock.fn(), download: '' };
+            global.document = {
+                createElement: mock.fn(() => mockLink),
+                body: { appendChild: mock.fn(), removeChild: mock.fn() }
+            };
+            global.URL = { createObjectURL: mock.fn(() => 'blob:test-url') };
+
+            exportToCSV(testData, 'falsy_export');
+
+            const expectedCsv = [
+                'id,active,count,notes',
+                '"1","false","0",""',
+                '"2","true","10","text"'
+            ].join('\n');
+
+            assert.strictEqual(blobContent[0], expectedCsv);
+        } finally {
+            global.Blob = originalBlob;
+            global.document = originalDocument;
+            global.URL = originalURL;
+        }
+    });
+
+    it('should handle strings with commas, quotes, and newlines', () => {
+        const testData = [
+            { id: 1, text: 'Hello, World' },
+            { id: 2, text: 'She said "Hello"' },
+            { id: 3, text: 'Line 1\nLine 2' }
+        ];
+
+        let blobContent = [];
+        let originalBlob = global.Blob;
+        let originalDocument = global.document;
+        let originalURL = global.URL;
+
+        try {
+            global.Blob = class {
+                constructor(content) {
+                    blobContent = content;
+                }
+            };
+
+            const mockLink = { setAttribute: mock.fn(), style: {}, click: mock.fn(), download: '' };
+            global.document = {
+                createElement: mock.fn(() => mockLink),
+                body: { appendChild: mock.fn(), removeChild: mock.fn() }
+            };
+            global.URL = { createObjectURL: mock.fn(() => 'blob:test-url') };
+
+            exportToCSV(testData, 'special_chars_export');
+
+            const expectedCsv = [
+                'id,text',
+                '"1","Hello, World"',
+                '"2","She said ""Hello"""',
+                '"3","Line 1\nLine 2"'
+            ].join('\n');
+
+            assert.strictEqual(blobContent[0], expectedCsv);
+        } finally {
+            global.Blob = originalBlob;
+            global.document = originalDocument;
+            global.URL = originalURL;
+        }
+    });
 });
