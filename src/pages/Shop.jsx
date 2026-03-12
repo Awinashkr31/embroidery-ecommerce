@@ -201,7 +201,7 @@ const Shop = () => {
                         uniqueId: `${prod.id}-${slugify(v.color)}`,
                         preselectedVariant: v,
                         price: v.price ? parseInt(v.price) : prod.price,
-                        randomOrder: Math.random(),
+                        randomOrder: crypto.getRandomValues(new Uint32Array(1))[0] / (0xFFFFFFFF + 1),
                     });
                 });
             } else {
@@ -209,7 +209,7 @@ const Shop = () => {
                     ...prod,
                     uniqueId: prod.id,
                     preselectedVariant: null,
-                    randomOrder: Math.random(),
+                    randomOrder: crypto.getRandomValues(new Uint32Array(1))[0] / (0xFFFFFFFF + 1),
                 });
             }
         });
