@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-import { User, Package, MapPin, LogOut, Trash2, ChevronRight, Clock, CheckCircle, AlertTriangle, Loader, Star, X, Camera } from 'lucide-react';
+import { User, Package, MapPin, LogOut, Trash2, ChevronRight, CheckCircle, AlertTriangle, Loader, Star, X, Camera } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
 import { useToast } from '../context/ToastContext';

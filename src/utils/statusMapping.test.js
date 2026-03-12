@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getTrackingStatus } from './statusMapping';
+import { getTrackingStatus } from './statusMapping.js';
 
 describe('getTrackingStatus', () => {
     it('handles falsy or empty inputs', () => {
