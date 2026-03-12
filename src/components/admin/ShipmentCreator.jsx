@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Truck, ArrowRight, Package, Info } from 'lucide-react';
+import { Truck, ArrowRight, Package } from 'lucide-react';
 import { supabase } from '../../config/supabase';
 
 import { DelhiveryService } from '../../services/delhivery';
