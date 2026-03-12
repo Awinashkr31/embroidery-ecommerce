@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Package, Truck, CheckCircle, AlertTriangle, ChevronRight, Clock, Star, Trash2 } from 'lucide-react';
+import { Truck, CheckCircle, AlertTriangle, ChevronRight, Clock, Star, Trash2 } from 'lucide-react';
 
 const OrderCard = ({ order, onCancel, onReview, userReviews }) => {
     
