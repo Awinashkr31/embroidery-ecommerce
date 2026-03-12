@@ -6,6 +6,7 @@ import { getOptimizedImageUrl } from '../utils/imageUtils';
 import { Star, ArrowRight, Flower, Heart, Scissors, PenTool, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useSettings } from '../context/SettingsContext';
+import { normalize } from '../utils/stringUtils';
 
 const normalize = (str) => (str || '').toLowerCase().trim();
 

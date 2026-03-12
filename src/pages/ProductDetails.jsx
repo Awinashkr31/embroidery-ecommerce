@@ -6,6 +6,7 @@ import { useWishlist } from '../context/WishlistContext';
 import { useToast } from '../context/ToastContext';
 import { supabase } from '../../config/supabase';
 import { Heart, ShoppingBag, ArrowLeft, Truck, Shield, Star, Award, Search, Sparkles, Plus, Minus, ChevronDown, Share2, X } from 'lucide-react';
+import { normalize } from '../utils/stringUtils';
 
 const ProductDetails = () => {
     const { id } = useParams();
@@ -140,7 +141,6 @@ const ProductDetails = () => {
     }
 
     // Get products from same category first, then others to ensure variety
-    const normalize = (str) => (str || '').toLowerCase().trim();
     const sameCategoryProducts = products.filter(p => normalize(p.category) === normalize(product.category) && p.id !== product.id);
     const otherCategoryProducts = products.filter(p => normalize(p.category) !== normalize(product.category) && p.id !== product.id);
     

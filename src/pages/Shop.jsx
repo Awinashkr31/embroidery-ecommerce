@@ -5,9 +5,7 @@ import { useProducts } from '../context/ProductContext';
 import { useCategories } from '../context/CategoryContext';
 import { useWishlist } from '../context/WishlistContext';
 import { Link, useSearchParams } from 'react-router-dom';
-
-// Utility helper function extracted outside component to avoid recreation
-const slugify = (str) => (str || '').toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+import { slugify } from '../utils/stringUtils';
 
 const ProductCardWithVariants = ({ product, toggleWishlist, isInWishlist }) => {
     const [selectedVariant, setSelectedVariant] = useState(product.preselectedVariant || null);
