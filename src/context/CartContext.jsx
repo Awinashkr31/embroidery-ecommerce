@@ -48,73 +48,88 @@ export const CartProvider = ({ children }) => {
 
             if (localCartStr) {
                 const localCart = JSON.parse(localCartStr);
-                if (localCart.length > 0) {
-                    
-                    // Merge logic: Add local items to Supabase
-                    for (const item of localCart) {
-                        // Skip items that are already synced (flag or existing DB ID)
-                        if (item.isSynced || item.cartItemId) continue;
+                const unsyncedItems = localCart.filter(item => !item.isSynced && !item.cartItemId);
 
-                        try {
-                             // Check if item already exists in DB to update quantity
-                             let query = supabase
-                                .from('cart_items')
-                                .select('quantity, id')
-                                .eq('user_id', (currentUser.uid || currentUser.id))
-                                .eq('product_id', item.id);
-                             
-                             if (item.selectedSize) {
-                                 query = query.eq('selected_size', item.selectedSize);
-                             } else {
-                                 query = query.is('selected_size', null);
-                             }
-                             
-                             if (item.selectedColor) {
-                                 query = query.eq('selected_color', item.selectedColor);
-                             } else {
-                                 query = query.is('selected_color', null);
-                             }
+                if (unsyncedItems.length > 0) {
+                    try {
+                        const { data: existingCartItems, error: fetchError } = await supabase
+                            .from('cart_items')
+                            .select('id, product_id, selected_size, selected_color, variant_id, quantity')
+                            .eq('user_id', (currentUser.uid || currentUser.id));
 
-                             if (item.variantId) {
-                                 query = query.eq('variant_id', item.variantId);
-                             } else {
-                                 query = query.is('variant_id', null);
-                             }
-                             
-                             const { data: existing, error: fetchError } = await query.maybeSingle();
-
-                             if (fetchError) {
-                                console.error("Error checking existing item:", fetchError);
-                                throw fetchError;
-                             }
-
-                             if (existing) {
-
-                                 const { error: updateError } = await supabase
-                                    .from('cart_items')
-                                    .update({ quantity: existing.quantity + item.quantity })
-                                    .eq('id', existing.id);
-                                 
-                                 if (updateError) throw updateError;
-
-                             } else {
-                                 const { error: insertError } = await supabase
-                                    .from('cart_items')
-                                    .insert({ 
-                                        user_id: (currentUser.uid || currentUser.id), 
-                                        product_id: item.id, 
-                                        quantity: item.quantity,
-                                        selected_size: item.selectedSize || null,
-                                        selected_color: item.selectedColor || null,
-                                        variant_id: item.variantId || null
-                                    });
-
-                                 if (insertError) throw insertError;
-                             }
-                        } catch (err) {
-                            console.error(`Failed to merge item ${item.id}`, err);
-                            failedItems.push(item);
+                        if (fetchError) {
+                            throw fetchError;
                         }
+
+                        const itemsToInsert = [];
+                        const updatesToProcess = [];
+
+                        for (const item of unsyncedItems) {
+                            const existing = (existingCartItems || []).find(e =>
+                                e.product_id === item.id &&
+                                (e.selected_size || null) === (item.selectedSize || null) &&
+                                (e.selected_color || null) === (item.selectedColor || null) &&
+                                (e.variant_id || null) === (item.variantId || null)
+                            );
+
+                            if (existing) {
+                                updatesToProcess.push({ item, existing });
+                            } else {
+                                itemsToInsert.push({
+                                    user_id: (currentUser.uid || currentUser.id),
+                                    product_id: item.id,
+                                    quantity: item.quantity,
+                                    selected_size: item.selectedSize || null,
+                                    selected_color: item.selectedColor || null,
+                                    variant_id: item.variantId || null,
+                                    _item: item // attach local item reference for error handling
+                                });
+                            }
+                        }
+
+                        // Bulk Insert (with selective retry on partial failure)
+                        if (itemsToInsert.length > 0) {
+                            // First, try bulk insert. If it fails, fallback to individual inserts.
+                            const insertPayload = itemsToInsert.map(({ _item, ...rest }) => rest);
+                            const { error: insertError } = await supabase
+                                .from('cart_items')
+                                .insert(insertPayload);
+
+                            if (insertError) {
+                                console.error("Bulk insert failed, falling back to individual inserts", insertError);
+                                for (const { _item, ...payload } of itemsToInsert) {
+                                    try {
+                                        const { error: indvError } = await supabase
+                                            .from('cart_items')
+                                            .insert(payload);
+                                        if (indvError) throw indvError;
+                                    } catch (err) {
+                                        console.error(`Failed to insert item ${_item.id}`, err);
+                                        failedItems.push(_item);
+                                    }
+                                }
+                            }
+                        }
+
+                        // Concurrent Updates
+                        if (updatesToProcess.length > 0) {
+                            await Promise.all(updatesToProcess.map(async ({ item, existing }) => {
+                                try {
+                                    const { error: updateError } = await supabase
+                                        .from('cart_items')
+                                        .update({ quantity: existing.quantity + item.quantity })
+                                        .eq('id', existing.id);
+                                    if (updateError) throw updateError;
+                                } catch (err) {
+                                    console.error(`Failed to update item ${item.id}`, err);
+                                    // Make sure it goes into the failedItems array safely from concurrent execution
+                                    failedItems.push(item);
+                                }
+                            }));
+                        }
+                    } catch (err) {
+                        console.error("Failed to fetch existing cart items for merge", err);
+                        failedItems.push(...unsyncedItems);
                     }
                     
                     // Update local storage: connect only failed items
