@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Package, MapPin, CreditCard, Clock, Calendar, AlertTriangle, Printer, Download, Star, Loader, HelpCircle, RotateCcw, MessageSquare } from 'lucide-react';
+import { ChevronLeft, Package, MapPin, CreditCard, Calendar, AlertTriangle, Printer, Download, Star, Loader, HelpCircle, RotateCcw, MessageSquare } from 'lucide-react';
 import { supabase } from '../config/supabase';
 import OrderStatusStepper from '../components/orders/OrderStatusStepper';
 import { useAuth } from '../context/AuthContext';
