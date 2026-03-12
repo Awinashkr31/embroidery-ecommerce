@@ -5,7 +5,7 @@ import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useToast } from '../context/ToastContext';
 import { supabase } from '../../config/supabase';
-import { Heart, ShoppingBag, ArrowLeft, Truck, Shield, Star, Award, Search, Sparkles, Plus, Minus, Share2, X } from 'lucide-react';
+import { Heart, ShoppingBag, ArrowLeft, Truck, Shield, Star, Award, Search, Sparkles, Plus, Minus, ChevronDown, Share2, X } from 'lucide-react';
 import { normalize } from '../utils/stringUtils';
 
 const ProductDetails = () => {
