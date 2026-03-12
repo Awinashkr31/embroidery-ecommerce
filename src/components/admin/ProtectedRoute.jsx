@@ -13,8 +13,9 @@ const ProtectedRoute = () => {
       // 3. OR Check Dev Bypass (Dev Mode)
       
       const userEmail = session?.user?.email;
+      const adminEmail = import.meta.env.VITE_ADMIN_EMAIL || 'admin@example.com';
       
-      const isAdmin = (session && userEmail === 'awinashkr31@gmail.com');
+      const isAdmin = (session && userEmail === adminEmail);
 
       // STRICT CHECK: Session MUST exist and be the admin email.
       setAuthenticated(isAdmin);
@@ -23,7 +24,8 @@ const ProtectedRoute = () => {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
        const userEmail = session?.user?.email;
-       const isAdmin = (session && userEmail === 'awinashkr31@gmail.com');
+       const adminEmail = import.meta.env.VITE_ADMIN_EMAIL || 'admin@example.com';
+       const isAdmin = (session && userEmail === adminEmail);
        
        setAuthenticated(isAdmin);
     });

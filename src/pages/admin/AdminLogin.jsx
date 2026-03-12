@@ -35,7 +35,8 @@ const AdminLogin = () => {
       if (error) throw error;
 
       // SECURITY CHECK: Verify if the user is actually the admin
-      if (data.user?.email !== 'awinashkr31@gmail.com') {
+      const adminEmail = import.meta.env.VITE_ADMIN_EMAIL || 'admin@example.com';
+      if (data.user?.email !== adminEmail) {
           // Identify theft/Customer login attempt -> Kick them out
           await supabase.auth.signOut();
           throw new Error('Unauthorized Access: This area is for Administrators only.');

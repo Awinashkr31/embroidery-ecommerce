@@ -35,11 +35,12 @@ const AdminRegister = () => {
 
     try {
         // Enforce ONLY the specific admin email
-        if (formData.email !== 'awinashkr31@gmail.com') {
+        const adminEmail = import.meta.env.VITE_ADMIN_EMAIL || 'admin@example.com';
+        if (formData.email !== adminEmail) {
             throw new Error("This registration portal is restricted to authorized administrators only.");
         }
 
-        const { data, error } = await supabase.auth.signUp({
+        const { error } = await supabase.auth.signUp({
             email: formData.email,
             password: formData.password,
         });

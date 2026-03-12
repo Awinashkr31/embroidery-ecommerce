@@ -17,7 +17,8 @@ const AdminForgotPassword = () => {
 
       try {
           // SECURITY: Only allow the Master Admin email
-          if (email !== 'awinashkr31@gmail.com') {
+          const adminEmail = import.meta.env.VITE_ADMIN_EMAIL || 'admin@example.com';
+          if (email !== adminEmail) {
               throw new Error("Invalid admin email provided.");
           }
 
