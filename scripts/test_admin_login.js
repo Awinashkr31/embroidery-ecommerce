@@ -10,13 +10,18 @@ if (!supabaseUrl || !supabaseKey) {
     process.exit(1);
 }
 
+const email = process.env.TEST_ADMIN_EMAIL;
+const password = process.env.TEST_ADMIN_PASSWORD;
+
+if (!email || !password) {
+    console.error("Missing TEST_ADMIN_EMAIL or TEST_ADMIN_PASSWORD in .env");
+    process.exit(1);
+}
+
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-const email = 'awinashkr31@gmail.com';
-const password = 'Plmzaq@123'; // Password from user screenshot
-
 async function testLogin() {
-    console.log(`Testing login for ${email} with password: ${password}`);
+    console.log(`Testing login for ${email} with password: [REDACTED]`);
 
     const { data, error } = await supabase.auth.signInWithPassword({
         email,
