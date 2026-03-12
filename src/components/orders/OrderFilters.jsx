@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Filter, ArrowUpDown } from 'lucide-react';
+import { Search, ArrowUpDown } from 'lucide-react';
 
 const OrderFilters = ({ 
     activeStatus, 
