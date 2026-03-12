@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../../config/supabase';
-import { Save, Globe, Mail, Phone, MapPin, Facebook, Instagram, Twitter, Loader, Image as ImageIcon, Upload, FileText, LayoutTemplate, Type, Pencil, X, Plus, Trash2, IndianRupee, Clock } from 'lucide-react';
+import { Save, Globe, Phone, MapPin, Facebook, Instagram, Twitter, Loader, Image as ImageIcon, Upload, FileText, LayoutTemplate, Type, Pencil, X, Plus, Trash2, IndianRupee, Clock } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 import imageCompression from 'browser-image-compression';
 import ImageCropper from '../../components/ImageCropper';
