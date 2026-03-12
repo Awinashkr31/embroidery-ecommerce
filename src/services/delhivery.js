@@ -1,12 +1,10 @@
 /**
  * Delhivery API Service
  * 
- * note: Requires VITE_DELHIVERY_TOKEN in .env file
+ * note: Uses supabase edge function proxy to avoid exposing tokens in client.
  */
 
 import { supabase } from '../../config/supabase.js';
-
-const BASE_URL = '/delhivery-api';
 
 
 export const DelhiveryService = {
@@ -16,28 +14,21 @@ export const DelhiveryService = {
      * @returns {Promise<{serviceable: boolean, city: string, state: string, details: any}>}
      */
     checkServiceability: async (pincode) => {
-        const token = import.meta.env.VITE_DELHIVERY_TOKEN;
-        
-        if (!token) {
-            console.warn('Delhivery Token not found. Skipping strict serviceability check.');
-            // Fallback: Return true so we don't block users if config is missing
-            return { serviceable: true, city: '', state: '' };
-        }
-
         try {
-            const response = await fetch(`${BASE_URL}/c/api/pin-codes/json/?filter_codes=${pincode}`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Token ${token}`,
-                    'Content-Type': 'application/json'
-                }
+            const { data, error } = await supabase.functions.invoke('delhivery-proxy', {
+                body: { action: 'checkServiceability', payload: { pincode } }
             });
 
-            if (!response.ok) {
-                throw new Error('Delhivery API failed');
+            if (error) {
+                console.warn('Delhivery proxy error. Skipping strict serviceability check.', error);
+                return { serviceable: true, city: '', state: '' };
             }
 
-            const data = await response.json();
+            // Check if function returned an error in the body
+            if (data && data.error) {
+                 console.warn('Delhivery proxy returned error. Skipping strict serviceability check.', data.error);
+                 return { serviceable: true, city: '', state: '' };
+            }
             
             // Delhivery returns: { "delivery_codes": [ { "postal_code": { ... } } ] }
             // Check structure carefully based on standard API response
@@ -79,81 +70,29 @@ export const DelhiveryService = {
      * @returns {Promise<any>}
      */
     createOrder: async (orderDetails) => {
-        const token = import.meta.env.VITE_DELHIVERY_TOKEN;
-        if (!token) throw new Error("Delhivery Token missing");
-
-        // Format payload typically required by Delhivery
-        // This is a generic structure; fields might vary based on specific Delhivery account config
-        const payload = {
-            "format": "json",
-            "data": {
-                "shipments": [
-                    {
-                        "name": orderDetails.customerName,
-                        "add": orderDetails.address,
-                        "pin": orderDetails.pincode,
-                        "city": orderDetails.city,
-                        "state": orderDetails.state,
-                        "country": "India",
-                        "phone": orderDetails.phone,
-                        "order": orderDetails.orderId,
-                        "payment_mode": orderDetails.paymentMethod === 'cod' ? 'COD' : 'Prepaid',
-                        "mode": orderDetails.mode || 'S',
-                        "return_pin": "", // Configurable: Warehouse pincode
-                        "return_city": "",
-                        "return_phone": "",
-                        "return_add": "",
-                        "products_desc": "Embroidery Items",
-                        "hsn_code": "",
-                        "cod_amount": orderDetails.paymentMethod === 'cod' ? orderDetails.amount : 0,
-                        "order_date": new Date().toISOString(),
-                        "total_amount": orderDetails.amount,
-                        "seller_add": "", // Warehouse address
-                        "seller_name": "Enbroidery",
-                        "seller_inv": "", // Invoice number
-                        "quantity": orderDetails.items.reduce((acc, item) => acc + (item.quantity || 1), 0),
-                        "waybill": "", // Leave empty for auto-generation
-                        "shipment_width": "10", // Estimates
-                        "shipment_height": "10",
-                        "shipment_depth": "10",
-                        "shipment_weight": "500" // Grams
-                    }
-                ],
-            "pickup_location": {
-                    "name": import.meta.env.VITE_DELHIVERY_WAREHOUSE_NAME || "Warehouse_Name", // MUST MATCH configured warehouse name in Delhivery Panel
-                    "add": "Warehouse Address",
-                    "city": "Remote City",
-                    "pin_code": "110001",
-                    "country": "India",
-                    "phone": "9876543210"
-                }
-            }
-        };
-
         try {
-            // "Waybill/Order Creation" endpoint - typically cmu/create.json
-            // Delhivery requires format=json&data={JSON} as FORM DATA
-            const formData = new URLSearchParams();
-            formData.append('format', 'json');
-            formData.append('data', JSON.stringify(payload.data));
-
-            const response = await fetch(`${BASE_URL}/api/cmu/create.json`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Token ${token}`,
-                    // Content-Type is auto-set with URLSearchParams, but explicit is fine too
-                },
-                body: formData
+            const { data, error } = await supabase.functions.invoke('delhivery-proxy', {
+                body: { action: 'createOrder', payload: { orderDetails } }
             });
 
-            if (!response.ok) {
-                 const errText = await response.text();
-                 throw new Error(`Delhivery Order Creation Failed: ${errText}`);
+            if (error) throw error;
+
+            if (data && data.error) {
+                throw new Error(data.error);
             }
 
-            return await response.json();
+            return data;
         } catch (error) {
             console.error('Delhivery Create Order Error:', error);
+
+            if (error && error.context && typeof error.context.json === 'function') {
+                try {
+                    const errBody = await error.context.json();
+                    if (errBody && errBody.error) {
+                        throw new Error(errBody.error);
+                    }
+                } catch (e) {}
+            }
             throw error;
         }
     },
@@ -200,22 +139,29 @@ export const DelhiveryService = {
      * @param {string} waybill 
      */
     trackShipment: async (waybill) => {
-        const token = import.meta.env.VITE_DELHIVERY_TOKEN;
-        if (!token) throw new Error("Token missing");
-
         try {
-            const response = await fetch(`${BASE_URL}/api/v1/packages/json/?waybill=${waybill}&token=${token}`, {
-                method: 'GET'
+            const { data, error } = await supabase.functions.invoke('delhivery-proxy', {
+                body: { action: 'trackShipment', payload: { waybill } }
             });
 
-            if (!response.ok) throw new Error("Tracking API failed");
+            if (error) throw error;
             
-            const data = await response.json();
-            // Parse response to find status
-            // Response format: { Shipments: [ { Status: { Status: 'Delivered', ... }, Scans: [...] } ] }
+            if (data && data.error) {
+                throw new Error(data.error);
+            }
+
             return data;
         } catch (error) {
             console.error("Tracking Error:", error);
+
+            if (error && error.context && typeof error.context.json === 'function') {
+                try {
+                    const errBody = await error.context.json();
+                    if (errBody && errBody.error) {
+                        throw new Error(errBody.error);
+                    }
+                } catch (e) {}
+            }
             throw error;
         }
     }
