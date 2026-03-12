@@ -206,6 +206,7 @@ BEGIN
     payment_status,
     payment_id, -- Handle optional field
     coupon_code,
+    user_id,
     created_at
   ) VALUES (
     (order_data->>'customer_name')::VARCHAR,
@@ -222,6 +223,7 @@ BEGIN
     COALESCE((order_data->>'payment_status')::VARCHAR, 'pending'),
     (order_data->>'payment_id')::VARCHAR,
     (order_data->>'coupon_code')::VARCHAR,
+    (order_data->>'user_id')::UUID,
     NOW()
   )
   RETURNING id INTO new_order_id;

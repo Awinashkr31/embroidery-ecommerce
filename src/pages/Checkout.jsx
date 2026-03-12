@@ -91,7 +91,8 @@ const Checkout = () => {
                 address: '',
                 city: '',
                 state: '',
-                zipCode: ''
+                zipCode: '',
+                email: currentUser?.email || prev.email || ''
             }));
         }
     };
@@ -221,8 +222,8 @@ const Checkout = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!formData.address || !formData.phone || !formData.fullName) {
-            addToast('Please fill in all required fields.', 'error');
+        if (!formData.address || !formData.phone || !formData.fullName || !formData.email) {
+            addToast('Please fill in all required fields including email.', 'error');
             return;
         }
 
@@ -480,6 +481,19 @@ const Checkout = () => {
                                             onChange={handleChange}
                                             className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:border-rose-900 focus:ring-1 focus:ring-rose-900 bg-white outline-none transition-all font-medium text-stone-900 placeholder:text-stone-300"
                                             placeholder="John Doe"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Email Address</label>
+                                        <input
+                                            type="email"
+                                            name="email"
+                                            required
+                                            value={formData.email}
+                                            onChange={handleChange}
+                                            className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:border-rose-900 focus:ring-1 focus:ring-rose-900 bg-white outline-none transition-all font-medium text-stone-900 placeholder:text-stone-300"
+                                            placeholder="your@email.com"
                                         />
                                     </div>
 
