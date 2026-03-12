@@ -14,22 +14,20 @@ const About = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
     const loadSettings = async () => {
-        const image = await fetchSetting('about_story_image');
+        const [image, hTitle, hSubtitle, sTitle, sText, sSig] = await Promise.all([
+            fetchSetting('about_story_image'),
+            fetchSetting('about_hero_title'),
+            fetchSetting('about_hero_subtitle'),
+            fetchSetting('about_story_title'),
+            fetchSetting('about_story_text'),
+            fetchSetting('about_signature_image')
+        ]);
+
         if (image) setStoryImage(image);
-
-        const hTitle = await fetchSetting('about_hero_title');
         if (hTitle) setHeroTitle(hTitle);
-
-        const hSubtitle = await fetchSetting('about_hero_subtitle');
         if (hSubtitle) setHeroSubtitle(hSubtitle);
-
-        const sTitle = await fetchSetting('about_story_title');
         if (sTitle) setStoryTitle(sTitle);
-
-        const sText = await fetchSetting('about_story_text');
         if (sText) setStoryText(sText);
-
-        const sSig = await fetchSetting('about_signature_image');
         if (sSig) setSignatureImage(sSig);
     };
     loadSettings();
