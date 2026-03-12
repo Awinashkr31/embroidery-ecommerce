@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../../config/supabase';
-import { Star, Check, X, Search, Filter } from 'lucide-react';
+import { Star, Check, X, Filter } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 
 const Reviews = () => {
