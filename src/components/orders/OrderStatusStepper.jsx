@@ -1,5 +1,5 @@
 import React from 'react';
-import { Check, Truck, Package, ShoppingBag, Clock, MapPin } from 'lucide-react';
+import { Check, Truck, Package, ShoppingBag, MapPin } from 'lucide-react';
 import { getTrackingStatus } from '../../utils/statusMapping';
 
 const OrderStatusStepper = ({ currentStatus, logs = [], order }) => {
