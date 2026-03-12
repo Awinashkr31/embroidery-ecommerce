@@ -1,13 +1,9 @@
 
 /**
  * Xpressbees API Service
- * 
- * note: Requires VITE_XPRESSBEES_TOKEN in .env file
  */
 
 import { supabase } from '../../config/supabase';
-
-const BASE_URL = 'https://ship.xpressbees.com/api'; // Standard Xpressbees API URL, confirm with user if different
 
 export const XpressbeesService = {
     /**
@@ -16,30 +12,21 @@ export const XpressbeesService = {
      * @returns {Promise<{serviceable: boolean, city: string, state: string, details: any}>}
      */
     checkServiceability: async (pincode) => {
-        const token = import.meta.env.VITE_XPRESSBEES_TOKEN;
-        
-        if (!token) {
-            console.warn('Xpressbees Token not found. Skipping strict serviceability check.');
-            return { serviceable: true, city: '', state: '' };
-        }
-
         try {
-            // Adjust endpoint based on specific Xpressbees API documentation
-            const response = await fetch(`${BASE_URL}/courier/serviceability?pincode=${pincode}`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
+            const { data, error } = await supabase.functions.invoke('xpressbees-serviceability', {
+                body: { pincode }
             });
 
-            if (!response.ok) {
-                throw new Error('Xpressbees API failed');
+            if (error) throw error;
+
+            if (data && data.error) {
+                // If it's a dev environment and token is missing in edge function, we could potentially fallback.
+                // But edge function errors are usually strings or objects.
+                throw new Error(data.error);
             }
 
-            const data = await response.json();
              // Adjust response parsing based on actual API response
-            if (data.status && data.data) {
+            if (data && data.status && data.data) {
                  return {
                     serviceable: data.data.serviceable, 
                     city: data.data.city,
@@ -53,6 +40,25 @@ export const XpressbeesService = {
 
         } catch (error) {
             console.error('Xpressbees Serviceability Error:', error);
+
+            // Check for missing token error from edge function to provide dev fallback
+            let isMissingToken = false;
+            if (error && error.message && error.message.includes('Server configuration error')) {
+                 isMissingToken = true;
+            } else if (error && error.context && typeof error.context.json === 'function') {
+                try {
+                    const errBody = await error.context.json();
+                    if (errBody && errBody.error && errBody.error.includes('Server configuration error')) {
+                        isMissingToken = true;
+                    }
+                } catch (e) {}
+            }
+
+            if (isMissingToken) {
+                 console.warn('Xpressbees Token not found on server. Skipping strict serviceability check.');
+                 return { serviceable: true, city: '', state: '' };
+            }
+
             // Fallback
             return { serviceable: false, error: error.message }; 
         }
@@ -64,9 +70,6 @@ export const XpressbeesService = {
      * @returns {Promise<any>}
      */
     createOrder: async (orderDetails) => {
-        const token = import.meta.env.VITE_XPRESSBEES_TOKEN;
-        if (!token) throw new Error("Xpressbees Token missing");
-
         const payload = {
             "order_number": orderDetails.orderId,
             "payment_method": orderDetails.paymentMethod === 'cod' ? 'COD' : 'Prepaid',
@@ -91,23 +94,29 @@ export const XpressbeesService = {
         };
 
         try {
-            const response = await fetch(`${BASE_URL}/shipments`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload)
+            const { data, error } = await supabase.functions.invoke('xpressbees-create-order', {
+                body: payload
             });
 
-            if (!response.ok) {
-                 const errText = await response.text();
-                 throw new Error(`Xpressbees Order Creation Failed: ${errText}`);
+            if (error) throw error;
+
+            if (data && data.error) {
+                throw new Error(data.error);
             }
 
-            return await response.json();
+            return data;
         } catch (error) {
             console.error('Xpressbees Create Order Error:', error);
+
+            if (error && error.context && typeof error.context.json === 'function') {
+                try {
+                    const errBody = await error.context.json();
+                    if (errBody && errBody.error) {
+                        throw new Error(errBody.error);
+                    }
+                } catch (e) {}
+            }
+
             throw error;
         }
     },
@@ -152,23 +161,30 @@ export const XpressbeesService = {
      * @param {string} waybill 
      */
     trackShipment: async (waybill) => {
-        const token = import.meta.env.VITE_XPRESSBEES_TOKEN;
-        if (!token) throw new Error("Token missing");
-
         try {
-            const response = await fetch(`${BASE_URL}/shipments/track/${waybill}`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
+            const { data, error } = await supabase.functions.invoke('xpressbees-track-shipment', {
+                body: { waybill }
             });
 
-            if (!response.ok) throw new Error("Tracking API failed");
+            if (error) throw error;
 
-            const data = await response.json();
+            if (data && data.error) {
+                throw new Error(data.error);
+            }
+
             return data;
         } catch (error) {
             console.error("Tracking Error:", error);
+
+            if (error && error.context && typeof error.context.json === 'function') {
+                try {
+                    const errBody = await error.context.json();
+                    if (errBody && errBody.error) {
+                        throw new Error(errBody.error);
+                    }
+                } catch (e) {}
+            }
+
             throw error;
         }
     }
