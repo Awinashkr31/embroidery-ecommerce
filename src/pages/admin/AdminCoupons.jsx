@@ -190,6 +190,21 @@ const AdminCoupons = () => {
                     {/* Categories */}
                     <div>
                          <label className="block text-xs font-medium text-gray-700 mb-2">Applicable Categories (Empty = All)</label>
+                         <div className="flex justify-end mb-1">
+                             <button
+                                 type="button"
+                                 onClick={() => {
+                                     if (formData.includedCategories.length === categories.length) {
+                                         setFormData(prev => ({ ...prev, includedCategories: [] }));
+                                     } else {
+                                         setFormData(prev => ({ ...prev, includedCategories: categories.map(c => c.id) }));
+                                     }
+                                 }}
+                                 className="text-xs text-rose-900 font-bold hover:underline"
+                             >
+                                 {formData.includedCategories.length === categories.length ? 'Deselect All' : 'Select All'}
+                             </button>
+                         </div>
                          <div className="max-h-32 overflow-y-auto border border-gray-200 rounded-lg p-2 space-y-1">
                             {categories.map(cat => (
                                 <label key={cat.id} className="flex items-center text-sm gap-2 cursor-pointer hover:bg-gray-50 p-1 rounded">

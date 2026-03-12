@@ -2,12 +2,11 @@
 /**
  * Xpressbees API Service
  * 
- * note: Requires VITE_XPRESSBEES_TOKEN in .env file
+ * Securely uses Supabase Edge Functions to prevent exposing the API token.
+ * All calls are routed through the 'delhivery-api' Edge Function with provider: 'xpressbees'.
  */
 
-import { supabase } from '../../config/supabase';
-
-const BASE_URL = 'https://ship.xpressbees.com/api'; // Standard Xpressbees API URL, confirm with user if different
+import { supabase } from '../config/supabase';
 
 export const XpressbeesService = {
     /**
@@ -16,45 +15,64 @@ export const XpressbeesService = {
      * @returns {Promise<{serviceable: boolean, city: string, state: string, details: any}>}
      */
     checkServiceability: async (pincode) => {
-        const token = import.meta.env.VITE_XPRESSBEES_TOKEN;
-        
-        if (!token) {
-            console.warn('Xpressbees Token not found. Skipping strict serviceability check.');
-            return { serviceable: true, city: '', state: '' };
-        }
-
         try {
-            // Adjust endpoint based on specific Xpressbees API documentation
-            const response = await fetch(`${BASE_URL}/courier/serviceability?pincode=${pincode}`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                }
+            const { data, error } = await supabase.functions.invoke('delhivery-api', {
+                body: { action: 'xb-check-serviceability', payload: { pincode } }
             });
 
-            if (!response.ok) {
-                throw new Error('Xpressbees API failed');
+            if (error) {
+                console.error('Edge Function Error:', error);
+                return { serviceable: false, error: 'Network Error' };
             }
 
-            const data = await response.json();
-             // Adjust response parsing based on actual API response
-            if (data.status && data.data) {
-                 return {
-                    serviceable: data.data.serviceable, 
+            if (data?.error) {
+                console.warn('Xpressbees Logic Error:', data.error);
+                return { serviceable: false, error: data.error };
+            }
+
+            if (data?.status && data?.data) {
+                return {
+                    serviceable: data.data.serviceable,
                     city: data.data.city,
                     state: data.data.state,
                     codAvailable: data.data.cod === true,
                     details: data.data
-                 };
+                };
             }
 
             return { serviceable: false };
 
         } catch (error) {
             console.error('Xpressbees Serviceability Error:', error);
-            // Fallback
-            return { serviceable: false, error: error.message }; 
+            return { serviceable: false, error: error.message };
+        }
+    },
+
+    /**
+     * Calculate Shipping Rates
+     * @param {object} params - { weight, origin_pin, dest_pin, mode, payment_type, amount }
+     * @returns {Promise<any>}
+     */
+    calculateShipping: async (params) => {
+        try {
+            const { data, error } = await supabase.functions.invoke('delhivery-api', {
+                body: { action: 'xb-calculate-shipping', payload: { data: params } }
+            });
+
+            if (error) {
+                 console.error('Edge Function Error:', error);
+                 throw new Error('Network Error during rate calculation');
+            }
+
+            if (data?.error) {
+                console.warn('Xpressbees Rate Error:', data.error);
+                throw new Error(data.error);
+            }
+
+            return data?.data || data; // Return the rates object
+        } catch (error) {
+            console.error('Xpressbees Calculate Shipping Error:', error);
+            throw error;
         }
     },
 
@@ -64,9 +82,6 @@ export const XpressbeesService = {
      * @returns {Promise<any>}
      */
     createOrder: async (orderDetails) => {
-        const token = import.meta.env.VITE_XPRESSBEES_TOKEN;
-        if (!token) throw new Error("Xpressbees Token missing");
-
         const payload = {
             "order_number": orderDetails.orderId,
             "payment_method": orderDetails.paymentMethod === 'cod' ? 'COD' : 'Prepaid',
@@ -79,7 +94,7 @@ export const XpressbeesService = {
                 "phone": orderDetails.phone
             },
             "pickup": {
-                "warehouse_name": import.meta.env.VITE_XPRESSBEES_WAREHOUSE_NAME || "Main Warehouse"
+                "warehouse_name": "Main Warehouse"
             },
             "order_items": orderDetails.items.map(item => ({
                 "name": item.name,
@@ -91,56 +106,16 @@ export const XpressbeesService = {
         };
 
         try {
-            const response = await fetch(`${BASE_URL}/shipments`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload)
-            });
-
-            if (!response.ok) {
-                 const errText = await response.text();
-                 throw new Error(`Xpressbees Order Creation Failed: ${errText}`);
-            }
-
-            return await response.json();
-        } catch (error) {
-            console.error('Xpressbees Create Order Error:', error);
-            throw error;
-        }
-    },
-
-    /**
-     * Calculate Shipping Cost via Supabase Edge Function
-     * @param {object} params { weight, origin_pin, dest_pin, payment_type, amount }
-     */
-    calculateShipping: async (params) => {
-        try {
-            const { data, error } = await supabase.functions.invoke('xpressbees-rate-check', {
-                body: params
+            const { data, error } = await supabase.functions.invoke('delhivery-api', {
+                body: { action: 'xb-create-order', payload: { data: payload } }
             });
 
             if (error) throw error;
-            
-            if (data && data.error) {
-                throw new Error(data.error);
-            }
+            if (data?.error) throw new Error(data.error);
 
             return data;
         } catch (error) {
-            console.error('Shipping Calculation Error:', error);
-            
-            if (error && error.context && typeof error.context.json === 'function') {
-                try {
-                    const errBody = await error.context.json();
-                    if (errBody && errBody.error) {
-                        throw new Error(errBody.error);
-                    }
-                } catch (e) {}
-            }
-            
+            console.error('Xpressbees Create Order Error:', error);
             throw error;
         }
     },
@@ -150,23 +125,17 @@ export const XpressbeesService = {
      * @param {string} waybill 
      */
     trackShipment: async (waybill) => {
-        const token = import.meta.env.VITE_XPRESSBEES_TOKEN;
-        if (!token) throw new Error("Token missing");
-
         try {
-            const response = await fetch(`${BASE_URL}/shipments/track/${waybill}`, {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
+            const { data, error } = await supabase.functions.invoke('delhivery-api', {
+                body: { action: 'xb-track-shipment', payload: { waybill } }
             });
 
-            if (!response.ok) throw new Error("Tracking API failed");
+            if (error) throw error;
+            if (data?.error) throw new Error(data.error);
 
-            const data = await response.json();
             return data;
         } catch (error) {
-            console.error("Tracking Error:", error);
+            console.error("Xpressbees Tracking Error:", error);
             throw error;
         }
     }

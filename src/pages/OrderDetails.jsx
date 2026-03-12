@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Package, MapPin, CreditCard, Clock, Calendar, AlertTriangle, Printer, Download, Star, Loader, HelpCircle, RotateCcw, MessageSquare } from 'lucide-react';
+import { ChevronLeft, Package, MapPin, CreditCard, Clock, Calendar, AlertTriangle, Printer, Download, Star, Loader, HelpCircle, RotateCcw, MessageSquare, X } from 'lucide-react';
 import { supabase } from '../config/supabase';
 import OrderStatusStepper from '../components/orders/OrderStatusStepper';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { uploadImage } from '../utils/uploadUtils';
 
 
 const OrderDetails = () => {
@@ -19,6 +20,19 @@ const OrderDetails = () => {
     // Rate Purchase modal state
     const [reviewModal, setReviewModal] = useState({ isOpen: false, item: null });
     const [reviewState, setReviewState] = useState({ rating: 5, comment: '', submitting: false });
+    const [reviewImage, setReviewImage] = useState(null);
+    const [reviewImagePreview, setReviewImagePreview] = useState(null);
+    const reviewImageRef = useRef(null);
+
+    const handleReviewImageSelect = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setReviewImage(file);
+        const reader = new FileReader();
+        reader.onload = (ev) => setReviewImagePreview(ev.target.result);
+        reader.readAsDataURL(file);
+        if (reviewImageRef.current) reviewImageRef.current.value = '';
+    };
 
     useEffect(() => {
         if (!id) return;
@@ -40,7 +54,7 @@ const OrderDetails = () => {
                     // Refresh logs
                     const { data: logs } = await supabase
                         .from('order_status_logs')
-                        .select('*')
+                        .select('id, status, remarks, created_at')
                         .eq('order_id', id)
                         .order('timestamp', { ascending: false });
                     
@@ -62,7 +76,7 @@ const OrderDetails = () => {
                 // 1. Fetch Order Basic Details
                 const { data: orderData, error: orderError } = await supabase
                     .from('orders')
-                    .select('*, shipping_address, items')
+                    .select('id, created_at, status, total, subtotal, discount, shipping_cost, payment_method, payment_status, customer_email, shipping_address, items')
                     .eq('id', id)
                     .single();
 
@@ -71,7 +85,7 @@ const OrderDetails = () => {
                 // 2. Fetch Logs Separately (to avoid join issues)
                 const { data: logsData, error: logsError } = await supabase
                     .from('order_status_logs')
-                    .select('*')
+                    .select('id, status, remarks, created_at')
                     .eq('order_id', id)
                     .order('timestamp', { ascending: false });
 
@@ -114,6 +128,15 @@ const OrderDetails = () => {
         if (!reviewModal.item || reviewState.submitting) return;
         setReviewState(s => ({ ...s, submitting: true }));
         try {
+            let imageUrl = null;
+            if (reviewImage) {
+                try {
+                    imageUrl = await uploadImage(reviewImage, 'images', 'reviews');
+                } catch (uploadErr) {
+                    console.error('Review image upload failed:', uploadErr);
+                }
+            }
+
             const { error } = await supabase.from('reviews').insert([{
                 user_id: (currentUser.uid || currentUser.id),
                 user_name: currentUser.displayName || currentUser.user_metadata?.full_name || currentUser.email?.split('@')[0],
@@ -121,11 +144,14 @@ const OrderDetails = () => {
                 rating: reviewState.rating,
                 comment: reviewState.comment,
                 order_id: order.id,
+                image_url: imageUrl,
             }]);
             if (error) throw error;
             addToast('Review submitted! Thank you.', 'success');
             setReviewModal({ isOpen: false, item: null });
             setReviewState({ rating: 5, comment: '', submitting: false });
+            setReviewImage(null);
+            setReviewImagePreview(null);
         } catch (err) {
             console.error('Review submit failed:', err);
             addToast('Could not submit review. Please try again.', 'error');
@@ -229,7 +255,7 @@ const OrderDetails = () => {
                         <div className="bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden">
                             <div className="p-6 border-b border-stone-100 flex flex-wrap justify-between items-start gap-4">
                                 <div>
-                                    <h1 className="text-2xl font-heading font-bold text-stone-900 mb-1">Order #{order.id.slice(0, 8)}</h1>
+                                    <h1 className="text-2xl font-heading font-bold text-stone-900 mb-1">Order #{order.id.slice(0, 6).toUpperCase()}</h1>
                                     <p className="text-stone-500 text-sm">Placed on {new Date(order.created_at).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
                                     
                                     {/* Dynamic Status Text */}
@@ -327,6 +353,16 @@ const OrderDetails = () => {
                                                     </div>
                                                 )}
                                             </div>
+
+                                            {/* Per-item Rate Button for delivered orders */}
+                                            {isDelivered && (
+                                                <button
+                                                    onClick={() => setReviewModal({ isOpen: true, item })}
+                                                    className="inline-flex items-center gap-2 px-4 py-2 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 font-bold text-xs hover:bg-amber-100 hover:border-amber-300 transition-all"
+                                                >
+                                                    <Star className="w-3.5 h-3.5 text-amber-500 fill-current" /> Rate this product
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
                                 ))}
@@ -553,30 +589,54 @@ const OrderDetails = () => {
 
                         {/* Body */}
                         <div className="p-6 space-y-5">
-                            {/* Star selector */}
+                            {/* Emoji Rating Selector */}
                             <div>
-                                <label className="block text-sm font-bold text-stone-700 mb-3">Your Rating</label>
-                                <div className="flex gap-2">
-                                    {[1, 2, 3, 4, 5].map((star) => (
-                                        <button
-                                            key={star}
-                                            type="button"
-                                            onClick={() => setReviewState(s => ({ ...s, rating: star }))}
-                                            className="transition-transform hover:scale-110"
-                                        >
-                                            <Star
-                                                className={`w-8 h-8 ${
-                                                    star <= reviewState.rating
-                                                        ? 'text-amber-400 fill-amber-400'
-                                                        : 'text-stone-300 fill-stone-100'
-                                                }`}
-                                            />
-                                        </button>
-                                    ))}
-                                    <span className="ml-2 text-sm font-semibold text-stone-600 self-center">
-                                        {['', 'Poor', 'Fair', 'Good', 'Great', 'Excellent'][reviewState.rating]}
-                                    </span>
-                                </div>
+                                <label className="block text-sm font-bold text-stone-700 mb-3">How was it?</label>
+                                {(() => {
+                                    const ratingEmojis = [
+                                        null,
+                                        { emoji: '😢', label: 'Terrible', color: 'bg-red-100 border-red-300' },
+                                        { emoji: '😕', label: 'Poor',     color: 'bg-orange-100 border-orange-300' },
+                                        { emoji: '😐', label: 'Okay',     color: 'bg-yellow-100 border-yellow-300' },
+                                        { emoji: '😊', label: 'Great',    color: 'bg-lime-100 border-lime-300' },
+                                        { emoji: '🤩', label: 'Amazing!', color: 'bg-emerald-100 border-emerald-300' },
+                                    ];
+                                    const current = ratingEmojis[reviewState.rating];
+                                    return (
+                                        <div className="space-y-3">
+                                            <div className="flex gap-2 justify-center">
+                                                {[1, 2, 3, 4, 5].map((star) => {
+                                                    const isSelected = star === reviewState.rating;
+                                                    const isPast = star <= reviewState.rating;
+                                                    return (
+                                                        <button
+                                                            key={star}
+                                                            type="button"
+                                                            onClick={() => setReviewState(s => ({ ...s, rating: star }))}
+                                                            className={`relative flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition-all duration-200 ${
+                                                                isSelected
+                                                                    ? `${ratingEmojis[star].color} scale-110 shadow-md`
+                                                                    : isPast
+                                                                        ? 'border-stone-200 bg-stone-50'
+                                                                        : 'border-stone-100 bg-white hover:border-stone-200 hover:bg-stone-50'
+                                                            }`}
+                                                        >
+                                                            <span className={`text-2xl transition-all duration-200 ${isSelected ? 'scale-125' : 'grayscale opacity-50'}`}>
+                                                                {ratingEmojis[star].emoji}
+                                                            </span>
+                                                            <span className={`text-[9px] font-bold uppercase tracking-wider ${isSelected ? 'text-stone-700' : 'text-stone-400'}`}>
+                                                                {star}★
+                                                            </span>
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                            <p className="text-center text-sm font-bold text-stone-600">
+                                                <span className="text-lg mr-1">{current.emoji}</span> {current.label}
+                                            </p>
+                                        </div>
+                                    );
+                                })()}
                             </div>
 
                             {/* Comment */}
@@ -589,6 +649,32 @@ const OrderDetails = () => {
                                     rows={3}
                                     className="w-full px-4 py-3 rounded-xl border border-stone-200 text-sm focus:ring-2 focus:ring-rose-900/10 focus:border-rose-900/30 outline-none resize-none transition-all"
                                 />
+                            </div>
+
+                            {/* Photo Upload — Optional */}
+                            <div>
+                                <label className="block text-sm font-bold text-stone-700 mb-2">Add a photo <span className="text-stone-400 font-normal">(optional)</span></label>
+                                {reviewImagePreview ? (
+                                    <div className="relative w-24 h-24 rounded-xl overflow-hidden border border-stone-200 group">
+                                        <img src={reviewImagePreview} alt="Review" className="w-full h-full object-cover" />
+                                        <button
+                                            type="button"
+                                            onClick={() => { setReviewImage(null); setReviewImagePreview(null); }}
+                                            className="absolute top-1 right-1 w-5 h-5 bg-black/60 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                        >
+                                            <X className="w-3 h-3" />
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={() => reviewImageRef.current?.click()}
+                                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-dashed border-stone-200 text-stone-500 text-sm font-medium hover:border-rose-300 hover:text-rose-700 hover:bg-rose-50/50 transition-all"
+                                    >
+                                        📷 Upload photo
+                                    </button>
+                                )}
+                                <input ref={reviewImageRef} type="file" accept="image/*" onChange={handleReviewImageSelect} className="hidden" />
                             </div>
                         </div>
 

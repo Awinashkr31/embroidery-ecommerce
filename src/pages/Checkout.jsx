@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { ArrowLeft, CreditCard, Truck, MapPin, Plus, CheckCircle, Tag, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowLeft, CreditCard, Truck, MapPin, Plus, CheckCircle, Tag, AlertTriangle, ChevronDown, ChevronUp, X } from 'lucide-react';
 import { useToast } from '../context/ToastContext';
 import { supabase } from '../config/supabase';
 import { DelhiveryService } from '../services/delhivery';
@@ -19,7 +19,7 @@ const loadRazorpay = () => {
 };
 
 const Checkout = () => {
-    const { cart, cartLoading, cartTotal, subtotal, shippingCharge, discountAmount, appliedCoupon, placeOrder, savedAddresses, saveAddress } = useCart();
+    const { cart, cartLoading, cartTotal, subtotal, shippingCharge, discountAmount, appliedCoupon, applyCoupon, removeCoupon, placeOrder, savedAddresses, saveAddress } = useCart();
     const { currentUser, loading: authLoading } = useAuth();
     const { addToast } = useToast();
     const navigate = useNavigate();
@@ -33,6 +33,29 @@ const Checkout = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isZipLoading, setIsZipLoading] = useState(false);
     const [isSummaryOpen, setIsSummaryOpen] = useState(false);
+    const zipTimeoutRef = React.useRef(null);
+    const [couponCode, setCouponCode] = useState('');
+    const [couponError, setCouponError] = useState('');
+    const [couponLoading, setCouponLoading] = useState(false);
+
+    const handleApplyCoupon = () => {
+        if (!couponCode.trim()) return;
+        setCouponError('');
+        setCouponLoading(true);
+        try {
+            applyCoupon(couponCode);
+            setCouponCode('');
+        } catch (err) {
+            setCouponError(err.message || 'Invalid coupon code');
+        } finally {
+            setCouponLoading(false);
+        }
+    };
+
+    const handleRemoveCoupon = () => {
+        removeCoupon();
+        setCouponError('');
+    };
 
     const [formData, setFormData] = useState({
         fullName: '',
@@ -97,55 +120,52 @@ const Checkout = () => {
     }, [savedAddresses, currentUser, selectedAddressId]);
 
 
-    const handleZipChange = async (e) => {
+    const handleZipChange = (e) => {
         const zip = e.target.value.replace(/\D/g, '').slice(0, 6); // Allow only numbers, max 6 digits
-        setFormData({ ...formData, zipCode: zip });
+        // Use functional state update to prevent stale state issues
+        setFormData(prev => ({ ...prev, zipCode: zip }));
 
         if (zip.length === 6) {
-            setIsZipLoading(true);
-            try {
-                // 1. Check Delhivery Serviceability (Priority)
-                // We do this concurrently or first. Let's do it.
-                // Note: If no token is set, this returns { serviceable: true } to avoid blocking.
-                const sydneyCheck = await DelhiveryService.checkServiceability(zip);
+            if (zipTimeoutRef.current) clearTimeout(zipTimeoutRef.current);
+            zipTimeoutRef.current = setTimeout(async () => {
+                setIsZipLoading(true);
+                try {
+                    // 1. Check Delhivery Serviceability (Priority)
+                    const sydneyCheck = await DelhiveryService.checkServiceability(zip);
 
-                if (sydneyCheck.serviceable === false) {
-                    addToast('We do not deliver to this Pincode.', 'error');
-                    setFormData(prev => ({ ...prev, city: '', state: '' })); // Clear invalid
-                    setIsZipLoading(false);
-                    return;
-                }
-
-                // 2. Fetch City/State Details (using postalpincode.in as it's reliable for names)
-                // We could use data from Delhivery if available, but let's stick to existing for names to be safe
-                const response = await fetch(`https://api.postalpincode.in/pincode/${zip}`);
-                const data = await response.json();
-
-                if (data && data[0] && data[0].Status === 'Success') {
-                    const { District, State } = data[0].PostOffice[0];
-                    setFormData(prev => ({
-                        ...prev,
-                        zipCode: zip,
-                        city: District,
-                        state: State
-                    }));
-                    
-                    if (sydneyCheck.codAvailable === false && formData.paymentMethod === 'cod') {
-                         addToast('COD is not available for this location. Please choose Online Payment.', 'info');
-                         // Optionally switch payment method or just warn
-                         setFormData(prev => ({ ...prev, paymentMethod: 'online' }));
+                    if (sydneyCheck.serviceable === false) {
+                        addToast('We do not deliver to this Pincode.', 'error');
+                        setFormData(prev => ({ ...prev, city: '', state: '' })); // Clear invalid
+                        return;
                     }
 
-                } else {
-                    addToast('Invalid Pincode', 'error');
+                    // 2. Fetch City/State Details
+                    const response = await fetch(`https://api.postalpincode.in/pincode/${zip}`);
+                    const data = await response.json();
+
+                    if (data && data[0] && data[0].Status === 'Success') {
+                        const { District, State } = data[0].PostOffice[0];
+                        setFormData(prev => {
+                            const updated = {
+                                ...prev,
+                                city: District,
+                                state: State
+                            };
+                            if (sydneyCheck.codAvailable === false && prev.paymentMethod === 'cod') {
+                                addToast('COD is not available for this location. Please choose Online Payment.', 'info');
+                                updated.paymentMethod = 'online';
+                            }
+                            return updated;
+                        });
+                    } else {
+                        addToast('Invalid Pincode', 'error');
+                    }
+                } catch (error) {
+                    console.error("Error fetching pincode details:", error);
+                } finally {
+                    setIsZipLoading(false);
                 }
-            } catch (error) {
-                console.error("Error fetching pincode details:", error);
-                // Fallback: If Delhivery fails but we have no token, specific logic is inside service
-                // If standard fetch fails, just warn
-            } finally {
-                setIsZipLoading(false);
-            }
+            }, 600); // 600ms debounce
         }
     };
 
@@ -232,10 +252,16 @@ const Checkout = () => {
                 }
 
                 // 2. Create Order via Supabase Edge Function (Secure)
-                const { data: orderData, error: orderError } = await supabase.functions.invoke('razorpay-payment', {
+                const { data: orderData, error: orderError } = await supabase.functions.invoke('process-checkout', {
                     body: { 
                         action: 'create-order',
-                        cartItems: cart.map(item => ({ id: item.id, quantity: item.quantity })),
+                        cartItems: cart.map(item => ({ 
+                            id: item.id, 
+                            quantity: item.quantity,
+                            variantId: item.variantId,
+                            selectedSize: item.selectedSize,
+                            selectedColor: item.selectedColor
+                        })),
                         couponCode: appliedCoupon?.code
                     }
                 });
@@ -261,7 +287,7 @@ const Checkout = () => {
                     handler: async function (response) {
                         try {
                             // 4. Verify Payment Signature
-                            const { data: verifyData, error: verifyError } = await supabase.functions.invoke('razorpay-payment', {
+                            const { data: verifyData, error: verifyError } = await supabase.functions.invoke('process-checkout', {
                                 body: { 
                                     action: 'verify-signature',
                                     paymentId: response.razorpay_payment_id,
@@ -598,6 +624,60 @@ const Checkout = () => {
                                 </div>
                             </div>
 
+                            {/* Coupon Code Section */}
+                            <div className="pt-6 mt-6 border-t border-stone-100">
+                                <h3 className="text-lg md:text-xl font-heading font-bold text-stone-900 mb-4 flex items-center gap-3">
+                                    <div className="bg-emerald-50 p-2 rounded-lg">
+                                        <Tag className="text-emerald-700 w-5 h-5" />
+                                    </div>
+                                    Have a Coupon?
+                                </h3>
+                                {appliedCoupon ? (
+                                    <div className="flex items-center justify-between p-4 bg-emerald-50 border-2 border-emerald-200 rounded-xl">
+                                        <div className="flex items-center gap-3">
+                                            <Tag className="w-5 h-5 text-emerald-700" />
+                                            <div>
+                                                <p className="font-bold text-emerald-800 text-sm">{appliedCoupon.code}</p>
+                                                <p className="text-xs text-emerald-600">Saving ₹{discountAmount.toLocaleString()}</p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={handleRemoveCoupon}
+                                            className="p-2 text-stone-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                                        >
+                                            <X className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <div className="flex gap-2">
+                                            <input
+                                                type="text"
+                                                placeholder="Enter coupon code"
+                                                value={couponCode}
+                                                onChange={(e) => { setCouponCode(e.target.value.toUpperCase()); setCouponError(''); }}
+                                                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleApplyCoupon(); } }}
+                                                className="flex-1 px-4 py-3 border-2 border-stone-200 rounded-xl text-sm font-bold uppercase tracking-wider focus:border-rose-900 focus:ring-0 outline-none bg-stone-50 focus:bg-white transition-all placeholder:text-stone-400 placeholder:font-normal placeholder:normal-case placeholder:tracking-normal"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={handleApplyCoupon}
+                                                disabled={couponLoading || !couponCode.trim()}
+                                                className="px-6 py-3 bg-rose-900 text-white rounded-xl font-bold text-sm hover:bg-rose-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                                            >
+                                                {couponLoading ? '...' : 'Apply'}
+                                            </button>
+                                        </div>
+                                        {couponError && (
+                                            <p className="text-red-500 text-xs font-medium mt-2 flex items-center gap-1">
+                                                <AlertTriangle className="w-3 h-3" /> {couponError}
+                                            </p>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+
                             {/* Unboxing Video Warning - Mobile Friendly */}
                             <div className="mt-6 bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-3 text-amber-800 text-sm">
                                  <AlertTriangle className="w-5 h-5 shrink-0" />
@@ -657,6 +737,46 @@ const Checkout = () => {
                                 ))}
                             </div>
                             
+                            {/* Desktop Coupon Input */}
+                            <div className="border-t border-stone-100 pt-4 mb-4">
+                                {appliedCoupon ? (
+                                    <div className="flex items-center justify-between p-3 bg-emerald-50 border border-emerald-200 rounded-xl">
+                                        <div className="flex items-center gap-2">
+                                            <Tag className="w-4 h-4 text-emerald-700" />
+                                            <span className="font-bold text-emerald-800 text-sm">{appliedCoupon.code}</span>
+                                            <span className="text-xs text-emerald-600">(-₹{discountAmount.toLocaleString()})</span>
+                                        </div>
+                                        <button type="button" onClick={handleRemoveCoupon} className="p-1 text-stone-400 hover:text-red-500 rounded transition-colors">
+                                            <X className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            placeholder="Coupon code"
+                                            value={couponCode}
+                                            onChange={(e) => { setCouponCode(e.target.value.toUpperCase()); setCouponError(''); }}
+                                            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleApplyCoupon(); } }}
+                                            className="flex-1 px-3 py-2 border border-stone-200 rounded-lg text-sm font-bold uppercase tracking-wider focus:border-rose-900 outline-none bg-white transition-all placeholder:text-stone-400 placeholder:font-normal placeholder:normal-case placeholder:tracking-normal"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={handleApplyCoupon}
+                                            disabled={couponLoading || !couponCode.trim()}
+                                            className="px-4 py-2 bg-rose-900 text-white rounded-lg font-bold text-sm hover:bg-rose-800 transition-colors disabled:opacity-50"
+                                        >
+                                            Apply
+                                        </button>
+                                    </div>
+                                )}
+                                {couponError && (
+                                    <p className="text-red-500 text-xs font-medium mt-1.5 flex items-center gap-1">
+                                        <AlertTriangle className="w-3 h-3" /> {couponError}
+                                    </p>
+                                )}
+                            </div>
+
                             <div className="space-y-3 pt-6 border-t border-stone-100 bg-stone-50 -mx-8 -mb-8 p-8 rounded-b-2xl">
                                 <div className="flex justify-between text-stone-600 text-sm">
                                     <span>Subtotal</span>
@@ -664,7 +784,7 @@ const Checkout = () => {
                                 </div>
                                 {appliedCoupon && (
                                     <div className="flex justify-between text-emerald-600 text-sm">
-                                        <span className="flex items-center font-bold"><Tag className="w-3 h-3 mr-1"/> Discount</span>
+                                        <span className="flex items-center font-bold"><Tag className="w-3 h-3 mr-1"/> Discount ({appliedCoupon.code})</span>
                                         <span className="font-bold">-₹{discountAmount.toLocaleString()}</span>
                                     </div>
                                 )}

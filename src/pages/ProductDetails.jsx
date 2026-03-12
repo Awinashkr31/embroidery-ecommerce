@@ -111,7 +111,7 @@ const ProductDetails = () => {
         try {
             const { data } = await supabase
                 .from('reviews')
-                .select('*')
+                .select('id, user_name, rating, comment, image_url, created_at')
                 .eq('product_id', productId)
                 .eq('status', 'approved')
                 .order('created_at', { ascending: false });
@@ -165,16 +165,16 @@ const ProductDetails = () => {
 
      let currentPrice = product.price;
      if (matrixData && matrixData.price) {
-         currentPrice = parseInt(matrixData.price);
+         currentPrice = Number(matrixData.price);
      } else if (selectedVariant && selectedVariant.price) {
-         currentPrice = parseInt(selectedVariant.price);
+         currentPrice = Number(selectedVariant.price);
      }
 
      // Stock Logic
      let currentStock = product.stock;
      
      if (hasSizes && matrixData && matrixData.stock !== undefined) {
-          currentStock = parseInt(matrixData.stock);
+          currentStock = Number(matrixData.stock);
      } else if (hasSizes && (!matrixData || matrixData.stock === undefined)) {
          if (selectedSize && sizes && sizes[selectedSize] !== undefined) {
              currentStock = sizes[selectedSize];
@@ -182,7 +182,7 @@ const ProductDetails = () => {
              currentStock = 0; 
          }
      } else if (!hasSizes && selectedVariant && selectedVariant.stock !== undefined) {
-         currentStock = parseInt(selectedVariant.stock);
+         currentStock = Number(selectedVariant.stock);
      } else if (!hasSizes && !selectedVariant) {
          currentStock = product.stock;
      }
@@ -239,7 +239,7 @@ const ProductDetails = () => {
                                         <button 
                                             key={idx}
                                             onClick={() => setSelectedImage(img)}
-                                            className={`aspect-[3/4] rounded-xl overflow-hidden border-2 transition-all duration-300 ${
+                                            className={`aspect-[2/3] rounded-xl overflow-hidden border-2 transition-all duration-300 ${
                                                 (selectedImage || displayImages[0]) === img 
                                                 ? 'border-rose-900 shadow-md ring-2 ring-rose-100' 
                                                 : 'border-transparent opacity-60 hover:opacity-100 hover:border-stone-300'
@@ -253,7 +253,7 @@ const ProductDetails = () => {
                         )}
 
                         {/* Main Image Area */}
-                        <div className="flex-1 rounded-lg overflow-hidden relative shadow-sm group bg-stone-100 aspect-[4/5]">
+                        <div className="flex-1 rounded-lg overflow-hidden relative shadow-sm group bg-stone-100 aspect-[2/3]">
                             <div className="hidden lg:block w-full h-full"> 
                                 <img 
                                     src={selectedImage || displayImages[0] || product.image || 'https://via.placeholder.com/500'} 
@@ -440,7 +440,7 @@ const ProductDetails = () => {
                                                      if (selectedColor) {
                                                          const vKey = `${selectedColor}-${size}`;
                                                          if (info.variantStock[vKey] && info.variantStock[vKey].stock !== undefined) {
-                                                             isAvailable = parseInt(info.variantStock[vKey].stock) > 0;
+                                                             isAvailable = Number(info.variantStock[vKey].stock) > 0;
                                                          }
                                                      }
                                                      // If no color selected yet, keep available unless logic dictates otherwise
@@ -746,6 +746,11 @@ const ProductDetails = () => {
                                                 </div>
                                             </div>
                                             <p className="text-stone-600 leading-relaxed text-sm">“{review.comment}”</p>
+                                            {review.image_url && (
+                                                <a href={review.image_url} target="_blank" rel="noopener noreferrer" className="mt-3 block w-20 h-20 rounded-lg overflow-hidden border border-stone-200 hover:border-rose-300 transition-colors">
+                                                    <img src={review.image_url} alt="Review photo" className="w-full h-full object-cover" />
+                                                </a>
+                                            )}
                                         </div>
                                     ))}
                                 </div>
@@ -767,7 +772,7 @@ const ProductDetails = () => {
                                 const discount = p.originalPrice ? Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100) : 0;
                                 return (
                                     <div key={p.id} className="group relative">
-                                        <div className="aspect-[4/5] overflow-hidden bg-stone-100 rounded-2xl mb-3 relative">
+                                        <div className="aspect-[2/3] overflow-hidden bg-stone-100 rounded-2xl mb-3 relative">
                                             <Link to={`/product/${p.id}`}>
                                                 <img 
                                                     src={p.image} 

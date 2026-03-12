@@ -16,7 +16,7 @@ const Messages = () => {
     try {
       const { data, error } = await supabase
         .from('messages')
-        .select('*')
+        .select('id, name, email, subject, message, status, created_at')
         .order('created_at', { ascending: false });
 
       if (error) throw error;

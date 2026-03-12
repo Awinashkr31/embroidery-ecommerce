@@ -31,7 +31,7 @@ const OrderCard = ({ order, onCancel, onReview, userReviews }) => {
             <div className="p-5 bg-stone-50/50 border-b border-stone-100 flex flex-wrap justify-between items-center gap-4">
                 <div className="space-y-1">
                     <p className="text-xs font-bold uppercase tracking-wider text-stone-500">Order ID</p>
-                    <p className="font-mono font-bold text-stone-900">#{order.id.slice(0, 8)}</p>
+                    <p className="font-mono font-bold text-stone-900">#{order.id.slice(0, 6).toUpperCase()}</p>
                 </div>
                 <div className="space-y-1">
                     <p className="text-xs font-bold uppercase tracking-wider text-stone-500">Date</p>
@@ -51,8 +51,8 @@ const OrderCard = ({ order, onCancel, onReview, userReviews }) => {
 
             <div className="p-5">
                 <div className="flex flex-col gap-4">
-                    {/* Preview of first 2 items */}
-                    {order.items?.slice(0, 2).map((item, idx) => (
+                    {/* All items */}
+                    {order.items?.map((item, idx) => (
                         <div key={idx} className="flex items-center gap-4">
                             <div className="w-16 h-16 rounded-lg bg-stone-100 overflow-hidden border border-stone-200 shrink-0">
                                 <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
@@ -68,9 +68,9 @@ const OrderCard = ({ order, onCancel, onReview, userReviews }) => {
                                     )}
                                 </div>
                             </div>
-                            {/* Individual Item Action (Review) */}
+                            {/* Review Action */}
                              {order.status !== 'cancelled' && onReview && (
-                                <div className="text-right">
+                                <div className="text-right shrink-0">
                                      {userReviews?.has(item.id) ? (
                                         <span className="inline-flex items-center text-[10px] font-bold text-green-600 bg-green-50 px-2 py-1 rounded-full border border-green-100">
                                             <CheckCircle className="w-3 h-3 mr-1" /> Reviewed
@@ -80,17 +80,13 @@ const OrderCard = ({ order, onCancel, onReview, userReviews }) => {
                                             onClick={() => onReview(item)}
                                             className="inline-flex items-center text-[10px] font-bold text-rose-900 hover:text-white border border-rose-200 hover:bg-rose-900 px-2 py-1 rounded-full transition-colors"
                                         >
-                                            <Star className="w-3 h-3 mr-1" /> Review
+                                            <Star className="w-3 h-3 mr-1" /> Rate
                                         </button>
                                     )}
                                 </div>
                             )}
                         </div>
                     ))}
-                    
-                    {order.items?.length > 2 && (
-                        <p className="text-xs text-stone-500 italic pl-1">+ {order.items.length - 2} more items</p>
-                    )}
                 </div>
 
                 <div className="mt-6 pt-4 border-t border-stone-100 flex flex-wrap items-center justify-between gap-3">

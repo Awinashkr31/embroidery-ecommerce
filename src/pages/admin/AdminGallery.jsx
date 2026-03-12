@@ -3,6 +3,7 @@ import { supabase } from '../../../config/supabase';
 import { useToast } from '../../context/ToastContext';
 import { Plus, Trash2, Search, Image as ImageIcon, Loader, X, Upload, FileImage, Layers } from 'lucide-react';
 import imageCompression from 'browser-image-compression';
+import { deleteImage } from '../../utils/uploadUtils';
 
 const AdminGallery = () => {
     const { addToast } = useToast();
@@ -12,6 +13,7 @@ const AdminGallery = () => {
     const [modalMode, setModalMode] = useState(null); // 'embroidery' or 'mehndi'
     const [uploading, setUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState('');
+    const [deletePendingId, setDeletePendingId] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     
     // Form State
@@ -29,7 +31,7 @@ const AdminGallery = () => {
         try {
             const { data, error } = await supabase
                 .from('gallery')
-                .select('*')
+                .select('id, title, description, image_url, images, category, created_at')
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
@@ -138,7 +140,10 @@ const AdminGallery = () => {
 
                 const { error: uploadError } = await supabase.storage
                     .from('images')
-                    .upload(filePath, compressedFile);
+                    .upload(filePath, compressedFile, {
+                        cacheControl: '3600',
+                        contentType: 'image/webp'
+                    });
 
                 if (uploadError) throw uploadError;
 
@@ -178,22 +183,40 @@ const AdminGallery = () => {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (!window.confirm('Are you sure you want to delete this item?')) return;
+    const handleDelete = async (item) => {
+        if (deletePendingId !== item.id) {
+            setDeletePendingId(item.id);
+            addToast('Tap delete again to remove this item and its images.', 'error');
+            return;
+        }
+        setDeletePendingId(null);
 
         try {
+            // 1. Delete actual files from storage
+            const filesToDelete = [];
+            if (item.image_url) filesToDelete.push(item.image_url);
+            if (item.images && Array.isArray(item.images)) {
+                item.images.forEach(img => {
+                    if (img !== item.image_url) filesToDelete.push(img);
+                });
+            }
+
+            // Execute storage deletions in parallel
+            await Promise.all(filesToDelete.map(url => deleteImage(url)));
+
+            // 2. Delete database record
             const { error } = await supabase
                 .from('gallery')
                 .delete()
-                .eq('id', id);
+                .eq('id', item.id);
 
             if (error) throw error;
 
-            setImages(prev => prev.filter(img => img.id !== id));
-            addToast('Image deleted successfully', 'success');
+            setImages(prev => prev.filter(img => img.id !== item.id));
+            addToast('Image and storage files deleted successfully', 'success');
         } catch (error) {
             console.error('Error deleting image:', error);
-            addToast('Failed to delete image', 'error');
+            addToast('Failed to delete image fully', 'error');
         }
     };
 
@@ -260,7 +283,7 @@ const AdminGallery = () => {
                                 />
                                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                     <button
-                                        onClick={() => handleDelete(item.id, item.image_url)}
+                                        onClick={() => handleDelete(item)}
                                         className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
                                         title="Delete"
                                     >

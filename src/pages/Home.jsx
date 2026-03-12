@@ -274,7 +274,7 @@ const Home = () => {
             <div className="flex overflow-x-auto pb-6 -mx-4 px-4 scrollbar-hide snap-x snap-mandatory gap-4">
                 {featuredProducts.map((product, idx) => (
                     <Link key={product.id} to={`/product/${product.id}`} className="group min-w-[150px] w-[45vw] sm:w-[280px] flex-shrink-0 snap-center">
-                        <div className="relative aspect-[3/4] bg-white rounded-2xl overflow-hidden mb-4 shadow-sm">
+                        <div className="relative aspect-[2/3] bg-white rounded-2xl overflow-hidden mb-4 shadow-sm">
                             <img 
                                 src={getOptimizedImageUrl(product.image, { width: 400, quality: 80 })} 
                                 alt={product.name} 
@@ -348,7 +348,7 @@ const Home = () => {
                 <div className="flex overflow-x-auto pb-6 -mx-4 px-4 scrollbar-hide snap-x snap-mandatory gap-4">
                     {categoryProducts.map((product) => (
                         <Link key={product.id} to={`/product/${product.id}`} className="group min-w-[150px] w-[45vw] sm:w-[280px] flex-shrink-0 snap-center">
-                            <div className="relative aspect-[3/4] bg-white rounded-2xl overflow-hidden mb-4 shadow-sm border border-stone-100">
+                            <div className="relative aspect-[2/3] bg-white rounded-2xl overflow-hidden mb-4 shadow-sm border border-stone-100">
                                 <img 
                                     src={getOptimizedImageUrl(product.image, { width: 400, quality: 80 })} 
                                     alt={product.name} 

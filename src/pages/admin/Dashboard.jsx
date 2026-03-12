@@ -1,11 +1,11 @@
-import React, { useMemo, useEffect, useState } from 'react';
+import React, { useMemo, useEffect, useState, useCallback } from 'react';
 import {
   Package, ShoppingCart, DollarSign, Calendar, TrendingUp,
   AlertTriangle, ArrowUpRight, Clock, RefreshCw, TrendingDown,
   Users, IndianRupee, CheckCircle2, Loader2
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { supabase } from '../../../config/supabase';
+import { supabase } from '../../config/supabase';
 import { useAdmin } from '../../context/AdminContext';
 
 // ─── Helpers ────────────────────────────────────────────────
@@ -34,8 +34,9 @@ const SkeletonCard = () => (
 );
 
 // ─── Stat card ──────────────────────────────────────────────
-const StatCard = ({ title, value, icon: Icon, iconBg, delta, deltaLabel }) => {
+const StatCard = ({ title, value, icon, iconBg, delta, deltaLabel }) => {
   const positive = delta >= 0;
+  const IconComponent = icon;
   return (
     <div className="bg-white p-6 rounded-2xl border border-stone-100 shadow-sm hover:shadow-md transition-all duration-300 group relative overflow-hidden">
       {/* Subtle corner accent */}
@@ -43,7 +44,7 @@ const StatCard = ({ title, value, icon: Icon, iconBg, delta, deltaLabel }) => {
       
       <div className="flex justify-between items-start mb-5 relative">
         <div className={`p-3 rounded-xl ${iconBg} group-hover:scale-110 transition-transform duration-300`}>
-          <Icon className="w-5 h-5" />
+          {IconComponent && <IconComponent className="w-5 h-5" />}
         </div>
         {delta !== undefined && (
           <span className={`flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full ${positive ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-600'}`}>
@@ -101,7 +102,7 @@ const Dashboard = () => {
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  const fetchData = async (isRefresh = false) => {
+  const fetchData = useCallback(async (isRefresh = false) => {
     if (isRefresh) {
       setRefreshing(true);
       await refreshAdminData(); // Tell the provider to re-fetch global data
@@ -118,9 +119,9 @@ const Dashboard = () => {
       setLoadingProducts(false);
       setRefreshing(false);
     }
-  };
+  }, [refreshAdminData]);
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { fetchData(); }, [fetchData]);
   
   const loading = adminLoading || loadingProducts;
 
@@ -133,6 +134,10 @@ const Dashboard = () => {
     const deliveredOrders = orders.filter(o => ['delivered', 'completed'].includes(o.status?.toLowerCase())).length;
     const lowStock = products.filter(p => (p.stock_quantity ?? 0) < 5);
     const avgOrder = totalOrders > 0 ? totalRevenue / totalOrders : 0;
+    
+    // Instead of hardcoded deltas, we either calculate real ones or omit them completely to prevent data hallucination.
+    // For now, we omit the delta prop so it falls back to neutral or doesn't show fake growth.
+    
     return { totalRevenue, totalOrders, pendingOrders, deliveredOrders, avgOrder, lowStock, recentOrders: orders.slice(0, 8) };
   }, [orders, products]);
 
@@ -178,8 +183,8 @@ const Dashboard = () => {
           [...Array(4)].map((_, i) => <SkeletonCard key={i} />)
         ) : (
           <>
-            <StatCard title="Total Revenue"   value={fmt(stats.totalRevenue)}   icon={IndianRupee}   iconBg="bg-emerald-100 text-emerald-700" delta={12}  />
-            <StatCard title="Total Orders"    value={stats.totalOrders}         icon={ShoppingCart}  iconBg="bg-blue-100 text-blue-700"       delta={5}   />
+            <StatCard title="Total Revenue"   value={fmt(stats.totalRevenue)}   icon={IndianRupee}   iconBg="bg-emerald-100 text-emerald-700"  />
+            <StatCard title="Total Orders"    value={stats.totalOrders}         icon={ShoppingCart}  iconBg="bg-blue-100 text-blue-700"        />
             <StatCard title="Delivered"       value={stats.deliveredOrders}     icon={CheckCircle2}  iconBg="bg-violet-100 text-violet-700"  />
             <StatCard title="Avg. Order"      value={fmt(stats.avgOrder)}       icon={TrendingUp}    iconBg="bg-rose-100 text-rose-700"      deltaLabel={stats.pendingOrders + ' pending'} delta={0} />
           </>
@@ -328,7 +333,7 @@ const Dashboard = () => {
                     const { bg, text } = getStatusStyle(order.status);
                     return (
                       <tr key={order.id} className="hover:bg-stone-50/60 transition-colors group">
-                        <td className="px-6 py-3.5 font-mono text-[11px] text-stone-400">{order.id.slice(0, 8)}…</td>
+                        <td className="px-6 py-3.5 font-mono text-[11px] text-stone-400">{order.id.slice(0, 6).toUpperCase()}…</td>
                         <td className="px-6 py-3.5 text-sm font-medium text-stone-700">
                           {order.customer_name || order.customer_email?.split('@')[0] || '—'}
                         </td>

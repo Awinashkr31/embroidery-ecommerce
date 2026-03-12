@@ -1,13 +1,12 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-// CORS headers for all responses
+// Restrict CORS to production domains in a real app
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-application-name',
 }
 
-// Convert ArrayBuffer to Hex String
 function buf2hex(buffer: ArrayBuffer) {
   return Array.from(new Uint8Array(buffer))
     .map(x => ('00' + x.toString(16)).slice(-2))
@@ -15,14 +14,11 @@ function buf2hex(buffer: ArrayBuffer) {
 }
 
 serve(async (req: Request) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
 
   try {
-    // Create a Supabase client with the Auth context of the user that called the function.
-    // We use the service role key to bypass RLS for fetching products secure price
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -31,24 +27,19 @@ serve(async (req: Request) => {
     const requestData: any = await req.json()
     const { action } = requestData
 
-    // Initialize Razorpay keys
     const key_id = Deno.env.get('RAZORPAY_KEY_ID')
     const key_secret = Deno.env.get('RAZORPAY_KEY_SECRET')
 
-    if (!key_id || !key_secret) {
-        throw new Error('Razorpay keys are missing in Edge Function secrets.')
-    }
-
-    if (action === 'create-order') {
-        const { cartItems, couponCode } = requestData
-
-        // 1. Calculate Subtotal Securely
+    // ============================================================================
+    // Helper: Securely Calculate Total Amount
+    // ============================================================================
+    const calculateSecureTotals = async (cartItems: any[], couponCode: string | null) => {
         let subtotal = 0 
         const productIds = cartItems.map((i: any) => i.id)
         
         const { data: products, error: prodError } = await supabase
             .from('products')
-            .select('id, price, variants, "clothingInformation"')
+            .select('id, price, variants, clothing_information')
             .in('id', productIds)
 
         if (prodError) throw prodError
@@ -57,34 +48,32 @@ serve(async (req: Request) => {
             const product = products?.find((p: any) => p.id === item.id)
             if(product) {
                 let itemPrice = Number(product.price);
-                
-                // Account for Color-based Variant Pricing
                 if (item.variantId && product.variants && Array.isArray(product.variants)) {
                     const variant = product.variants.find((v: any) => v.id === item.variantId);
                     if (variant && variant.price) {
                         itemPrice = Number(variant.price);
                     }
                 } 
-                // Fallback to older clothing selection matrix pricing
-                else if (product.clothingInformation?.variantStock && item.selectedSize && item.selectedColor) {
+                else if (product.clothing_information?.variantStock && item.selectedSize && item.selectedColor) {
                     const key = `${item.selectedColor}-${item.selectedSize}`;
-                    const variantData = product.clothingInformation.variantStock[key];
+                    const variantData = product.clothing_information.variantStock[key];
                     if (variantData && variantData.price) {
                         itemPrice = Number(variantData.price);
                     }
                 }
-
                 subtotal += itemPrice * item.quantity
             }
         })
 
-        // 2. Apply Coupon
+        // NOTE: If you add a "coupons" table, query it here to calculate discount securely.
         let discount = 0
         if (couponCode) {
-            // Placeholder: Backend verification of coupons can be implemented here.
+            // For now, discounts aren't fully integrated backend-side, but this sets up the scaffolding.
+            // Example:
+            // const { data: coupon } = await supabase.from('coupons').select('discount_percentage').eq('code', couponCode).single()
+            // if (coupon) discount = Math.floor(subtotal * (coupon.discount_percentage / 100))
         }
         
-        // Fetch dynamic shipping settings
         const { data: settingsData, error: settingsError } = await supabase
             .from('website_settings')
             .select('setting_key, setting_value')
@@ -97,24 +86,49 @@ serve(async (req: Request) => {
 
         if (settingsData) {
             const thresholdSetting = settingsData.find((s: any) => s.setting_key === 'shipping_free_delivery_threshold')
+            if (thresholdSetting?.setting_value) freeDeliveryThreshold = Number(thresholdSetting.setting_value)
+
             const chargeSetting = settingsData.find((s: any) => s.setting_key === 'shipping_delivery_charge')
-            
-            if (thresholdSetting && thresholdSetting.setting_value) {
-                freeDeliveryThreshold = Number(thresholdSetting.setting_value)
-            }
-            if (chargeSetting && chargeSetting.setting_value) {
-                deliveryCharge = Number(chargeSetting.setting_value)
-            }
+            if (chargeSetting?.setting_value) deliveryCharge = Number(chargeSetting.setting_value)
         }
         
-        // Replicating frontend dynamic shipping logic
         const shipping = subtotal < freeDeliveryThreshold ? deliveryCharge : 0
-        
         const totalAmount = subtotal - discount + shipping
 
-        // 3. Create Razorpay Order
+        return { subtotal, discount, shipping, totalAmount }
+    }
+
+    // ============================================================================
+    // Action: Validate COD Checkout
+    // ============================================================================
+    if (action === 'validate-cod') {
+        const { cartItems, couponCode, clientTotal } = requestData
+
+        const totals = await calculateSecureTotals(cartItems, couponCode)
+
+        // Prevent client-side manipulation. If they send ₹0, and we calculated ₹500, we reject.
+        // We allow a small tolerance for floating point rounding diffs if any.
+        if (Math.abs(totals.totalAmount - (clientTotal || 0)) > 5) {
+             throw new Error(`Total mismatch. Client sent ${clientTotal}, but Server calculated ${totals.totalAmount}.`)
+        }
+
+        return new Response(JSON.stringify({ status: 'valid', totals }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200,
+        })
+    }
+
+    // ============================================================================
+    // Action: Create Razorpay Order
+    // ============================================================================
+    if (action === 'create-order') {
+        if (!key_id || !key_secret) throw new Error('Razorpay keys missing.')
+
+        const { cartItems, couponCode } = requestData
+        const totals = await calculateSecureTotals(cartItems, couponCode)
+
         const options = {
-            amount: Math.round(totalAmount * 100), // convert to paise
+            amount: Math.round(totals.totalAmount * 100), // convert to paise
             currency: "INR",
             receipt: "receipt_" + Date.now(),
         }
@@ -131,7 +145,6 @@ serve(async (req: Request) => {
 
         if (!orderRes.ok) {
             const errorText = await orderRes.text();
-            console.error('Razorpay Order Creation Error:', errorText);
             throw new Error(`Razorpay API Error: ${orderRes.statusText}`);
         }
 
@@ -143,7 +156,11 @@ serve(async (req: Request) => {
         })
     }
 
+    // ============================================================================
+    // Action: Verify Razorpay Signature
+    // ============================================================================
     if (action === 'verify-signature') {
+        if (!key_secret) throw new Error('Razorpay keys missing.')
         const { paymentId, orderId, signature } = requestData
         
         const encoder = new TextEncoder();

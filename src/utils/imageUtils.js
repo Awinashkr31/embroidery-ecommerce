@@ -10,17 +10,12 @@
  * @param {number} options.quality - Image quality (0-100), default 80
  * @param {string} options.format - 'origin' | 'webp' | 'avif', default 'origin' (Supabase auto-detects usually)
  */
-export const getOptimizedImageUrl = (url, { width, height, quality = 80, format = 'webp' } = {}) => {
+export const getOptimizedImageUrl = (url, { format = 'origin' } = {}) => {
     if (!url) return '';
     if (!url.includes('supabase.co')) return url; // Only optimize Supabase URLs
 
     try {
         const urlObj = new URL(url);
-        
-        // Supabase Storage Transformation Query Params
-        if (width) urlObj.searchParams.set('width', width);
-        if (height) urlObj.searchParams.set('height', height);
-        urlObj.searchParams.set('quality', quality);
         
         // Only set format if specifically requested, otherwise allow auto values
         if (format !== 'origin') {

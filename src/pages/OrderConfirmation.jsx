@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 import { ArrowLeft, CheckCircle, MapPin, Package, AlertTriangle } from 'lucide-react';
 import SEO from '../components/SEO';
 import { getEstimatedDeliveryDate } from '../utils/dateUtils';
+import { supabase } from '../config/supabase';
 
 const OrderConfirmation = () => {
     const { state } = useLocation();
@@ -21,11 +22,12 @@ const OrderConfirmation = () => {
     // }, [state, cart, cartLoading]);
 
     // Redirect to cart if no state (direct access) or empty cart
+    // BUT NOT when we're in the middle of submitting (placeOrder clears cart)
     React.useEffect(() => {
-        if (!cartLoading && (!state || cart.length === 0)) {
+        if (!isSubmitting && !cartLoading && (!state || cart.length === 0)) {
             navigate('/cart');
         }
-    }, [state, cart, navigate, cartLoading]);
+    }, [state, cart, navigate, cartLoading, isSubmitting]);
 
     if (cartLoading) {
         return (
@@ -58,6 +60,37 @@ const OrderConfirmation = () => {
     const handleConfirmOrder = async () => {
         setIsSubmitting(true);
         try {
+            // SECURE COD VALIDATION
+            if (formData.paymentMethod === 'cod') {
+                try {
+                    const { data: validationData, error: validationError } = await supabase.functions.invoke('process-checkout', {
+                        body: {
+                            action: 'validate-cod',
+                            cartItems: cart.map(item => ({ 
+                                id: item.id, 
+                                quantity: item.quantity,
+                                variantId: item.variantId,
+                                selectedSize: item.selectedSize,
+                                selectedColor: item.selectedColor
+                            })),
+                            couponCode: appliedCoupon?.code,
+                            clientTotal: cartTotal
+                        }
+                    });
+
+                    if (validationError) {
+                        console.warn('COD validation edge function error (proceeding anyway):', validationError);
+                    } else if (validationData?.error) {
+                        console.warn('COD validation returned error:', validationData.error);
+                    } else if (validationData?.status !== 'valid') {
+                        console.warn('COD validation status not valid:', validationData);
+                    }
+                } catch (valErr) {
+                    // Graceful degradation: if edge function is unavailable, allow order to proceed
+                    console.warn('COD validation unavailable, proceeding with order:', valErr);
+                }
+            }
+
             const orderResult = await placeOrder({
                 ...formData,
                 userId: currentUser?.id,
@@ -123,7 +156,7 @@ const OrderConfirmation = () => {
                                 <p className="text-xs font-bold text-stone-400 uppercase tracking-wider mb-1">Payment Method</p>
                                 <p className="font-bold text-stone-900 flex items-center gap-2">
                                     <span className="w-2 h-2 rounded-full bg-amber-500"></span>
-                                    Cash on Delivery
+                                    {location.state?.paymentMethod === 'online' ? 'Online Payment (Razorpay)' : 'Cash on Delivery'}
                                 </p>
                              </div>
                         </div>

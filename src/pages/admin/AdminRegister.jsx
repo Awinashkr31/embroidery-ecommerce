@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
 import { Lock, User, Eye, EyeOff, Loader2, AlertCircle, ArrowRight, ShieldCheck, Mail } from 'lucide-react';
+import { useToast } from '../../context/ToastContext';
 
 const AdminRegister = () => {
   const navigate = useNavigate();
+  const { addToast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -39,7 +41,7 @@ const AdminRegister = () => {
             throw new Error("This registration portal is restricted to authorized administrators only.");
         }
 
-        const { data, error } = await supabase.auth.signUp({
+        const { error } = await supabase.auth.signUp({
             email: formData.email,
             password: formData.password,
         });
@@ -48,7 +50,7 @@ const AdminRegister = () => {
 
         // If successful, guide them to the next step
         navigate('/sadmin/login');
-        alert("Account created! Now run the 'confirm_email.sql' script in Supabase to activate it.");
+        addToast("Account created! Now run the 'confirm_email.sql' script in Supabase to activate it.", "success");
 
     } catch (err) {
       setError(err.message || 'Failed to register');

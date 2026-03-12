@@ -57,7 +57,7 @@ export const WishlistProvider = ({ children }) => {
             // 2. Fetch Final Merged List
             const { data, error } = await supabase
                 .from('wishlist_items')
-                .select('*, products(*)')
+                .select('*, products(id, name, price, original_price, images, stock_quantity)')
                 .eq('user_id', (currentUser.uid || currentUser.id));
 
             if (error) throw error;

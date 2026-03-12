@@ -5,6 +5,7 @@ import {
   Calendar, ShoppingBag, Star, Activity, X, MapPin, Bell, Send
 } from 'lucide-react';
 import { useAdmin } from '../../context/AdminContext';
+import { useToast } from '../../context/ToastContext';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   PieChart, Pie, Cell, BarChart, Bar 
@@ -12,6 +13,7 @@ import {
 
 const Users = () => {
     const { orders: contextOrders, users: contextUsers, loading: contextLoading } = useAdmin();
+    const { addToast } = useToast();
     const [orders, setOrders] = useState([]);
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -168,14 +170,14 @@ const Users = () => {
 
             if (error) throw error;
             
-            alert('Notification Sent!');
+            addToast('Notification Sent successfully!', 'success');
             setShowNotifModal(false);
             setNotifMessage('');
             setNotifTitle('');
             setNotifTarget(null);
         } catch (err) {
             console.error('Error sending notification:', err);
-            alert('Failed to send');
+            addToast('Failed to send notification: ' + err.message, 'error');
         } finally {
             setSendingNotif(false);
         }

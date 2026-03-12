@@ -8,9 +8,11 @@ import {
 } from 'lucide-react';
 import { uploadImage } from '../../utils/uploadUtils';
 import ImageCropper from '../../components/ImageCropper';
+import { useToast } from '../../context/ToastContext';
 
 const ProductManager = () => {
     const { products, addProduct, updateProduct, deleteProduct, toggleStock } = useProducts();
+    const { addToast } = useToast();
     const { categories: categoryObjects, addCategory, deleteCategory, moveCategory } = useCategories();
     
     // UI State
@@ -268,7 +270,7 @@ const ProductManager = () => {
         // Auto-calculate Global Stock if Variants exist
         let finalStock = formData.stockQuantity;
         if (hasClothingData && formData.variantStock && Object.keys(formData.variantStock).length > 0) {
-             const vStockSum = Object.values(formData.variantStock).reduce((sum, v) => sum + (parseInt(v.stock) || 0), 0);
+             const vStockSum = Object.values(formData.variantStock).reduce((sum, v) => sum + (Number(v.stock) || 0), 0);
              // Only override if the sum is meaningful (>0), otherwise trust manual input or 0
              if (vStockSum > 0) {
                  finalStock = vStockSum;
@@ -329,7 +331,14 @@ const ProductManager = () => {
 
         setCropModalOpen(false);
         try {
-            const file = new File([croppedBlob], `upload-${Date.now()}.jpg`, { type: 'image/jpeg' });
+            let finalBlob = croppedBlob;
+
+            // For product images (not size charts), pad to 2:3 with white background
+            if (cropTarget.field !== 'sizeChart') {
+                finalBlob = await padImageTo2x3(croppedBlob);
+            }
+
+            const file = new File([finalBlob], `upload-${Date.now()}.webp`, { type: 'image/webp' });
             // Use 'images' bucket, but in 'products' folder for organization
             const url = await uploadImage(file, 'images', 'products');
             
@@ -351,6 +360,56 @@ const ProductManager = () => {
 
             setCropImageSrc(null);
         }
+    };
+
+    // Utility: Pad any image to 2:3 ratio with white background
+    const padImageTo2x3 = (blob) => {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.onload = () => {
+                const TARGET_RATIO = 2 / 3;
+                const imgRatio = img.width / img.height;
+                
+                let canvasW, canvasH;
+                
+                if (Math.abs(imgRatio - TARGET_RATIO) < 0.01) {
+                    // Already 2:3, no padding needed
+                    resolve(blob);
+                    URL.revokeObjectURL(img.src);
+                    return;
+                }
+
+                if (imgRatio > TARGET_RATIO) {
+                    // Image is wider than 2:3 — match width, pad height
+                    canvasW = img.width;
+                    canvasH = Math.round(img.width / TARGET_RATIO);
+                } else {
+                    // Image is taller than 2:3 — match height, pad width
+                    canvasH = img.height;
+                    canvasW = Math.round(img.height * TARGET_RATIO);
+                }
+
+                const canvas = document.createElement('canvas');
+                canvas.width = canvasW;
+                canvas.height = canvasH;
+                const ctx = canvas.getContext('2d');
+
+                // Fill with white background
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(0, 0, canvasW, canvasH);
+
+                // Center the image on the canvas
+                const offsetX = Math.round((canvasW - img.width) / 2);
+                const offsetY = Math.round((canvasH - img.height) / 2);
+                ctx.drawImage(img, offsetX, offsetY);
+
+                canvas.toBlob((paddedBlob) => {
+                    URL.revokeObjectURL(img.src);
+                    resolve(paddedBlob);
+                }, 'image/webp', 0.9);
+            };
+            img.src = URL.createObjectURL(blob);
+        });
     };
 
     const handleDownloadImage = async (url, filename) => {
@@ -929,7 +988,7 @@ const ProductManager = () => {
                                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                             {formData.images.map((img, idx) => (
                                                 <div key={idx} className="space-y-2">
-                                                    <div className="aspect-[3/4] bg-stone-100 rounded-xl border-2 border-dashed border-stone-200 flex items-center justify-center relative group overflow-hidden">
+                                                    <div className="aspect-[2/3] bg-stone-100 rounded-xl border-2 border-dashed border-stone-200 flex items-center justify-center relative group overflow-hidden">
                                                         {img ? (
                                                             <>
                                                                 <img src={img} alt="" className="w-full h-full object-cover" />
@@ -1029,7 +1088,7 @@ const ProductManager = () => {
                                                     <label className="label mb-2 block">Variant Images</label>
                                                     <div className="grid grid-cols-4 gap-2">
                                                         {tempVariant.images.map((img, idx) => (
-                                                            <div key={idx} className="aspect-[3/4] bg-stone-50 rounded-lg border border-dashed border-stone-200 flex items-center justify-center relative group overflow-hidden">
+                                                            <div key={idx} className="aspect-[2/3] bg-stone-50 rounded-lg border border-dashed border-stone-200 flex items-center justify-center relative group overflow-hidden">
                                                                 {img ? (
                                                                     <>
                                                                         <img src={img} alt="" className="w-full h-full object-cover" />
@@ -1072,7 +1131,10 @@ const ProductManager = () => {
                                                 <button 
                                                     type="button"
                                                     onClick={() => {
-                                                        if (!tempVariant.color) return alert("Color name is required");
+                                                        if (!tempVariant.color) {
+                                                            addToast("Color name is required", "error");
+                                                            return;
+                                                        }
                                                         
                                                         // Generate ID if new
                                                         const variantToSave = {
@@ -1266,7 +1328,7 @@ const ProductManager = () => {
             {cropModalOpen && (
                 <ImageCropper 
                     imageSrc={cropImageSrc}
-                    aspect={cropTarget.field === 'sizeChart' ? NaN : 3/4} // Free aspect for size chart
+                    aspect={cropTarget.field === 'sizeChart' ? NaN : 2/3} // 2:3 portrait for product images, Free for size chart
                     onCancel={() => { setCropModalOpen(false); setCropImageSrc(null); }}
                     onCropComplete={handleCropComplete}
                 />

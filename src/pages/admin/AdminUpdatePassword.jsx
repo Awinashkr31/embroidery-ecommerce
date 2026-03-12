@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../config/supabase';
 import { useNavigate } from 'react-router-dom';
 import { Lock, ArrowRight, Eye, EyeOff, CheckCircle, AlertCircle } from 'lucide-react';
+import { useToast } from '../../context/ToastContext';
 
 const AdminUpdatePassword = () => {
   const navigate = useNavigate();
+  const { addToast } = useToast();
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -42,7 +44,7 @@ const AdminUpdatePassword = () => {
 
         if (error) throw error;
 
-        alert("Password updated successfully! Redirecting to login...");
+        addToast("Password updated successfully! Redirecting to login...", "success");
         await supabase.auth.signOut(); // Force re-login with new password
         navigate('/sadmin/login');
 

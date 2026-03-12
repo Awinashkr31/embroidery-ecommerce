@@ -56,6 +56,7 @@ const AdminDesignRequests = lazy(() => import('./pages/admin/AdminDesignRequests
 const AdminBookings = lazy(() => import('./pages/admin/Bookings'));
 const Settings = lazy(() => import('./pages/admin/Settings'));
 const AdminGallery = lazy(() => import('./pages/admin/AdminGallery'));
+const NotFound = lazy(() => import('./pages/NotFound'));
 
 import ProtectedRoute from './components/admin/ProtectedRoute'
 import ConditionalLayout from './components/ConditionalLayout'
@@ -76,33 +77,34 @@ function App() {
       <CategoryProvider>
       <CartProvider>
       <ProductProvider>
-      <AdminProvider>
         <Router>
           <ScrollToTop />
           <Suspense fallback={<PageLoader />}>
             <Routes>
-              {/* Admin Routes */}
-              <Route path="/sadmin/login" element={<AdminLogin />} />
-              <Route path="/sadmin/register" element={<AdminRegister />} />
-              <Route path="/sadmin/forgot-password" element={<AdminForgotPassword />} />
-              <Route path="/sadmin/update-password" element={<AdminUpdatePassword />} />
-              
-              {/* Protected Admin Routes */}
-              <Route element={<ProtectedRoute />}>
-                <Route path="/sadmin" element={<AdminLayout />}>
-                  <Route index element={<Navigate to="/sadmin/dashboard" replace />} />
-                  <Route path="dashboard" element={<Dashboard />} />
-                  <Route path="products" element={<ProductManager />} />
-                  <Route path="orders" element={<AdminOrders />} />
-                  <Route path="reviews" element={<Reviews />} />
-                  <Route path="users" element={<AdminUsers />} />
-                  <Route path="design-requests" element={<AdminDesignRequests />} />
-                  <Route path="notifications" element={<AdminNotifications />} />
-                  <Route path="messages" element={<AdminMessages />} />
-                  <Route path="bookings" element={<AdminBookings />} />
-                  <Route path="coupons" element={<AdminCoupons />} />
-                  <Route path="gallery" element={<AdminGallery />} />
-                  <Route path="settings" element={<Settings />} />
+              {/* Admin Routes — wrapped in AdminProvider */}
+              <Route element={<AdminProvider><Outlet /></AdminProvider>}>
+                <Route path="/sadmin/login" element={<AdminLogin />} />
+                <Route path="/sadmin/register" element={<AdminRegister />} />
+                <Route path="/sadmin/forgot-password" element={<AdminForgotPassword />} />
+                <Route path="/sadmin/update-password" element={<AdminUpdatePassword />} />
+                
+                {/* Protected Admin Routes */}
+                <Route element={<ProtectedRoute />}>
+                  <Route path="/sadmin" element={<AdminLayout />}>
+                    <Route index element={<Navigate to="/sadmin/dashboard" replace />} />
+                    <Route path="dashboard" element={<Dashboard />} />
+                    <Route path="products" element={<ProductManager />} />
+                    <Route path="orders" element={<AdminOrders />} />
+                    <Route path="reviews" element={<Reviews />} />
+                    <Route path="users" element={<AdminUsers />} />
+                    <Route path="design-requests" element={<AdminDesignRequests />} />
+                    <Route path="notifications" element={<AdminNotifications />} />
+                    <Route path="messages" element={<AdminMessages />} />
+                    <Route path="bookings" element={<AdminBookings />} />
+                    <Route path="coupons" element={<AdminCoupons />} />
+                    <Route path="gallery" element={<AdminGallery />} />
+                    <Route path="settings" element={<Settings />} />
+                  </Route>
                 </Route>
               </Route>
 
@@ -138,11 +140,11 @@ function App() {
                 <Route path="/order-success" element={<OrderSuccess />} />
                 <Route path="/order-confirmation" element={<OrderConfirmation />} />
                 <Route path="/order/:id" element={<OrderDetails />} />
+                <Route path="*" element={<NotFound />} />
               </Route>
             </Routes>
           </Suspense>
         </Router>
-      </AdminProvider>
       </ProductProvider>
       </CartProvider>
       </CategoryProvider>

@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import BookingForm from '../components/BookingForm';
 import { fetchSetting } from '../utils/settingsUtils';
 import { supabase } from '../config/supabase';
+import { useToast } from '../context/ToastContext';
 
 // Initial fallback packages
 const DEFAULT_PACKAGES = [
@@ -54,6 +55,7 @@ const PREDEFINED_MEHNDI_TYPES = [
 ];
 
 const MehndiBooking = () => {
+  const { addToast } = useToast();
   const [packages, setPackages] = useState(DEFAULT_PACKAGES);
   const [selectedPackage, setSelectedPackage] = useState(DEFAULT_PACKAGES[1]);
   const [showBookingForm, setShowBookingForm] = useState(false);
@@ -75,7 +77,6 @@ const MehndiBooking = () => {
       if (subtitle) setPageSubtitle(subtitle);
 
       const packagesJson = await fetchSetting('mehndi_packages');
-      console.log("Mehndi Packages Fetched:", packagesJson); // DEBUG LOG
 
       if (packagesJson) {
         try {
@@ -88,7 +89,6 @@ const MehndiBooking = () => {
           }
 
           if (Array.isArray(parsed) && parsed.length > 0) {
-            console.log("Setting Packages:", parsed); // DEBUG LOG
             setPackages(parsed);
           }
         } catch (e) {
@@ -136,14 +136,14 @@ const MehndiBooking = () => {
 
   const handleBookNow = () => {
     if (!selectedPackage) {
-      alert("Please select a package first.");
+      addToast('Please select a package first.', 'error');
       return;
     }
     setShowBookingForm(true);
   };
 
   const handleBookingSuccess = () => {
-    alert("Booking submitted successfully! We will contact you shortly to confirm.");
+    addToast('Booking submitted successfully! We will contact you shortly to confirm.', 'success');
     setSelectedPackage(null);
   };
 
@@ -244,7 +244,7 @@ const MehndiBooking = () => {
                     {galleryImages.map((img, idx) => (
                         <div 
                             key={idx} 
-                            className="aspect-[3/4] rounded-2xl overflow-hidden bg-white shadow-md hover:shadow-xl transition-all group relative cursor-zoom-in"
+                            className="aspect-[2/3] rounded-2xl overflow-hidden bg-white shadow-md hover:shadow-xl transition-all group relative cursor-zoom-in"
                             onClick={() => setSelectedImage(img)}
                         >
                             <img 

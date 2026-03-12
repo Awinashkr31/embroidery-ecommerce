@@ -50,7 +50,7 @@ const Wishlist = () => {
                         return (
                             <div key={product.id || product.wishlistItemId} className="group relative flex flex-col">
                                 {/* Image */}
-                                <div className="relative aspect-[3/4] rounded-2xl overflow-hidden bg-stone-100 mb-3">
+                                <div className="relative aspect-[2/3] rounded-2xl overflow-hidden bg-stone-100 mb-3">
                                     <Link to={`/product/${product.id}`}>
                                         <img
                                             src={displayImage}

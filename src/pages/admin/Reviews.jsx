@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../../../config/supabase';
+import { supabase } from '../../config/supabase';
 import { Star, Check, X, Search, Filter } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 
@@ -127,6 +127,11 @@ const Reviews = () => {
                                 <p className="text-stone-600 text-sm leading-relaxed">
                                     {review.comment}
                                 </p>
+                                {review.image_url && (
+                                    <a href={review.image_url} target="_blank" rel="noopener noreferrer" className="mt-2 inline-block w-16 h-16 rounded-lg overflow-hidden border border-stone-200 hover:border-rose-300 transition-colors">
+                                        <img src={review.image_url} alt="Review photo" className="w-full h-full object-cover" />
+                                    </a>
+                                )}
                             </div>
 
                             {/* Actions */}

@@ -1,0 +1,66 @@
+
+> enbroidery@0.0.0 build
+> vite build
+
+[36mvite v7.3.0 [32mbuilding client environment for production...[36m[39m
+transforming...
+[32m✓[39m 1081 modules transformed.
+
+✨ [vite-plugin-compression]:algorithm=gzip - compressed file successfully: 
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/AdminForgotPassword-CsGsohb9.js.gz         3.91kb / gzip: 1.61kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/About-DDth25O8.js.gz                       8.56kb / gzip: 2.97kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/AdminLayout-D-54Ntje.js.gz                 5.19kb / gzip: 1.82kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/AdminCoupons-BI_h-Sc2.js.gz                9.21kb / gzip: 2.20kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/AdminGallery-XyfRgXuN.js.gz                8.84kb / gzip: 3.07kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/AdminRegister-BKTCLrpq.js.gz               6.29kb / gzip: 1.98kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/AdminUpdatePassword-B8ISvBfq.js.gz         3.31kb / gzip: 1.26kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/AdminDesignRequests-DQSEkhpf.js.gz         11.23kb / gzip: 3.32kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/Bookings-BhsUQALz.js.gz                    5.84kb / gzip: 1.83kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/AdminLogin-DkJui7lR.js.gz                  6.03kb / gzip: 2.07kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/Contact-C6KWZ45c.js.gz                     7.35kb / gzip: 2.00kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/CustomDesign-D9ltY22m.js.gz                9.10kb / gzip: 3.07kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/Checkout-oHwv7e6K.js.gz                    20.73kb / gzip: 5.48kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/Gallery-CtYubAvO.js.gz                     7.28kb / gzip: 2.66kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/Cart-DdHnJjdS.js.gz                        14.50kb / gzip: 3.50kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/ForgotPassword-z9K5GYru.js.gz              3.94kb / gzip: 1.58kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/delhivery-UpIFKRSP.js.gz                   1.92kb / gzip: 0.87kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/AdminNotifications-Dbjh0B1-.js.gz          6.87kb / gzip: 2.46kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/Dashboard-o-GDUfye.js.gz                   12.37kb / gzip: 3.63kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/Home-DZYWI8Vr.js.gz                        15.71kb / gzip: 3.99kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/NotFound-DDb6mB8a.js.gz                    1.57kb / gzip: 0.69kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/Messages-CHLiktE2.js.gz                    3.64kb / gzip: 1.37kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/LoginSignup-emvCL18E.js.gz                 8.77kb / gzip: 2.51kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/OrderConfirmation-C2jzxndm.js.gz           8.21kb / gzip: 2.61kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/OrderSuccess-Bd23REWA.js.gz                9.26kb / gzip: 2.65kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/ImageCropper-L4zUWe27.js.gz                27.13kb / gzip: 8.26kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/ProductDetails-BHh0oZqa.js.gz              24.91kb / gzip: 6.40kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/OrderDetails-BbCZyP_v.js.gz                26.10kb / gzip: 6.65kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/Reviews-Dv770lxA.js.gz                     4.38kb / gzip: 1.52kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/Orders-CNF6SCXB.js.gz                      38.80kb / gzip: 9.95kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/ProductManager-Bh0pbgMO.js.gz              38.33kb / gzip: 8.79kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/MehndiBooking-Bo3i-gKg.js.gz               16.70kb / gzip: 5.17kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/Profile-GcQaDvjl.js.gz                     22.93kb / gzip: 5.64kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/ResetPassword-gXr6Yqi9.js.gz               3.38kb / gzip: 1.30kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/uploadUtils-DJtKcZLI.js.gz                 1.15kb / gzip: 0.64kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/Shop-XpWCFZyC.js.gz                        18.28kb / gzip: 5.08kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/Settings-Dwhr46On.js.gz                    22.45kb / gzip: 5.70kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/ui-icons-CqbP9vsa.js.gz                    20.78kb / gzip: 7.25kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/index.html.gz                                     1.60kb / gzip: 0.67kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/Wishlist-CnCIyz03.js.gz                    3.41kb / gzip: 1.40kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/browser-image-compression-DILJcqf6.js.gz   51.92kb / gzip: 20.57kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/index-DfQfTIGC.css.gz                      123.61kb / gzip: 18.40kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/vendor-react-BEJKXQb4.js.gz                44.99kb / gzip: 16.17kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/vendor-firebase-BrvQ0dqT.js.gz             105.82kb / gzip: 32.03kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/vendor-supabase-BjNTKomu.js.gz             165.41kb / gzip: 43.05kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/index-CovDRpTI.js.gz                       240.60kb / gzip: 76.03kb
+dist/C:/Users/awina/Desktop/Embroidery/enbroidery/assets/Users-CdJsY8_X.js.gz                       365.10kb / gzip: 108.28kb
+
+
+[31m✗[39m Build failed in 4.14s
+[31merror during build:
+[31mCould not resolve "../../../utils/uploadUtils" from "src/pages/admin/AdminGallery.jsx"[31m
+file: [36mC:/Users/awina/Desktop/Embroidery/enbroidery/src/pages/admin/AdminGallery.jsx[31m
+    at getRollupError (file:///C:/Users/awina/Desktop/Embroidery/enbroidery/node_modules/rollup/dist/es/shared/parseAst.js:401:41)
+    at error (file:///C:/Users/awina/Desktop/Embroidery/enbroidery/node_modules/rollup/dist/es/shared/parseAst.js:397:42)
+    at ModuleLoader.handleInvalidResolvedId (file:///C:/Users/awina/Desktop/Embroidery/enbroidery/node_modules/rollup/dist/es/shared/node-entry.js:21490:24)
+    at file:///C:/Users/awina/Desktop/Embroidery/enbroidery/node_modules/rollup/dist/es/shared/node-entry.js:21450:26[39m

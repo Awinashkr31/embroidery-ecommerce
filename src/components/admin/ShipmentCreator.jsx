@@ -4,10 +4,12 @@ import { supabase } from '../../config/supabase';
 
 import { DelhiveryService } from '../../services/delhivery';
 import { XpressbeesService } from '../../services/xpressbees';
+import { useToast } from '../../context/ToastContext';
 
 const ShipmentCreator = ({ selectedOrder, onShipmentCreated }) => {
     const [activeTab, setActiveTab] = useState('integrated');
     const [integratedProvider, setIntegratedProvider] = useState('Delhivery'); // 'Delhivery' or 'Xpressbees'
+    const { addToast } = useToast();
     
     // --- Delhivery State ---
     const [shippingRates, setShippingRates] = useState(null);
@@ -32,7 +34,7 @@ const ShipmentCreator = ({ selectedOrder, onShipmentCreated }) => {
         if (selectedOrder) {
             setPaymentMode(selectedOrder.paymentMethod === 'cod' ? 'cod' : 'prepaid');
         }
-    }, [selectedOrder.id]);
+    }, [selectedOrder, selectedOrder?.id]);
 
 
 
@@ -43,9 +45,10 @@ const ShipmentCreator = ({ selectedOrder, onShipmentCreated }) => {
 
         try {
             const weight = 500; // Default 500g
+            const originPincode = import.meta.env.VITE_ORIGIN_PINCODE || "110001";
             const params = {
                 weight: weight,
-                origin_pin: "110001", 
+                origin_pin: originPincode, 
                 dest_pin: selectedOrder.customer.zipCode,
                 mode: "S",
                 payment_type: paymentMode,
@@ -62,7 +65,7 @@ const ShipmentCreator = ({ selectedOrder, onShipmentCreated }) => {
             setShippingRates({ ...rates, weight_used: weight });
         } catch (err) {
             console.error("Rate Check Error:", err);
-            alert(`Failed to check rates: ${err.message}`);
+            addToast(`Failed to check rates: ${err.message}`, "error");
         } finally {
             setCheckingRates(false);
         }
@@ -151,11 +154,11 @@ const ShipmentCreator = ({ selectedOrder, onShipmentCreated }) => {
             }]);
 
             onShipmentCreated(updates);
-            alert(`Shipment Created Successfully! Waybill: ${waybill}`);
+            addToast(`Shipment Created Successfully! Waybill: ${waybill}`, "success");
 
         } catch (err) {
             console.error("Generate Waybill Error:", err);
-            alert(`Failed to generate Waybill: ${err.message}`);
+            addToast(`Failed to generate Waybill: ${err.message}`, "error");
         } finally {
             setGeneratingLabel(false);
         }
@@ -164,7 +167,7 @@ const ShipmentCreator = ({ selectedOrder, onShipmentCreated }) => {
     // --- Manual Logic ---
     const handleManualShipment = async () => {
         if (!manualAWB) {
-            alert("Please enter a Tracking Number / AWB");
+            addToast("Please enter a Tracking Number / AWB", "error");
             return;
         }
 
@@ -208,11 +211,11 @@ const ShipmentCreator = ({ selectedOrder, onShipmentCreated }) => {
             }
 
             onShipmentCreated(updates);
-            alert("Order marked as Shipped!");
+            addToast("Order marked as Shipped!", "success");
 
         } catch (err) {
             console.error("Manual Update Error:", err);
-            alert(`Failed to update order: ${err.message}`);
+            addToast(`Failed to update order: ${err.message}`, "error");
         } finally {
             setManualLoading(false);
         }

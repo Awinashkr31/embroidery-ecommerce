@@ -1,33 +1,40 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '../../config/supabase';
+import { deleteImage } from '../utils/uploadUtils';
 
 const ProductContext = createContext();
+
+const CACHE_DURATION_MS = 5 * 60 * 1000; // 5 minutes
 
 export const useProducts = () => useContext(ProductContext);
 
 export const ProductProvider = ({ children }) => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const lastFetchTime = useRef(0);
 
-    // Fetch Products
-    const fetchProducts = async () => {
+    // Fetch Products (with cache check)
+    const fetchProducts = useCallback(async (force = false) => {
+        // Skip if we fetched recently and already have data
+        const now = Date.now();
+        if (!force && products.length > 0 && (now - lastFetchTime.current) < CACHE_DURATION_MS) {
+            return;
+        }
+
         try {
             const { data, error } = await supabase
                 .from('products')
                 .select('id, name, description, price, original_price, category, images, featured, stock_quantity, fabric, clothing_information, variants, created_at, active')
-                .eq('active', true) // Default strict, can be adjustable
+                .eq('active', true)
                 .order('created_at', { ascending: false });
 
             if (error) throw error;
 
-            // Map DB structure to App structure if needed
-            // App uses: image (string), inStock (boolean)
-            // DB uses: images (array), stock_quantity (int)
             const mappedProducts = data.map(p => ({
                 ...p,
                 image: p.images?.[0] || 'https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=500',
                 inStock: (p.stock_quantity || 0) > 0,
-                stock: p.stock_quantity, // Keep raw value too
+                stock: p.stock_quantity,
                 clothingInformation: p.clothing_information,
                 originalPrice: p.original_price,
                 discountPercentage: (p.original_price && p.original_price > p.price)
@@ -37,16 +44,17 @@ export const ProductProvider = ({ children }) => {
             }));
 
             setProducts(mappedProducts);
+            lastFetchTime.current = now;
         } catch (error) {
             console.error('Error fetching products:', error);
         } finally {
             setLoading(false);
         }
-    };
+    }, [products.length]); // Intentionally not including 'products' itself, only length if needed to avoid infinite loops, but realistically it's safe if structured well
 
     useEffect(() => {
         fetchProducts();
-    }, []);
+    }, [fetchProducts]);
 
     const addProduct = async (product) => {
         try {
@@ -59,7 +67,7 @@ export const ProductProvider = ({ children }) => {
                 category: product.category,
                 images: Array.isArray(product.images) ? product.images : [product.image], // Handle multiple images
                 featured: product.featured,
-                stock_quantity: parseInt(product.stockQuantity) || 10, // Use input or default
+                stock_quantity: Number(product.stockQuantity) || 10, // Use input or default
                 fabric: product.fabric, // Legacy field support (optional)
                 clothing_information: product.clothingInformation || null, // New JSONB field
                 variants: product.variants || [], // New Variants JSONB field
@@ -110,7 +118,7 @@ export const ProductProvider = ({ children }) => {
             else if (updatedData.image) updates.images = [updatedData.image];
             
             if (updatedData.featured !== undefined) updates.featured = updatedData.featured;
-            if (updatedData.stockQuantity !== undefined) updates.stock_quantity = parseInt(updatedData.stockQuantity);
+            if (updatedData.stockQuantity !== undefined) updates.stock_quantity = Number(updatedData.stockQuantity);
             if (updatedData.fabric !== undefined) updates.fabric = updatedData.fabric;
             if (updatedData.clothingInformation !== undefined) updates.clothing_information = updatedData.clothingInformation;
             if (updatedData.variants !== undefined) updates.variants = updatedData.variants;
@@ -148,9 +156,35 @@ export const ProductProvider = ({ children }) => {
             throw error;
         }
     };
-
     const deleteProduct = async (id) => {
         try {
+            // 1. Get image list for cleanup
+            const product = products.find(p => p.id === id);
+            const imagesToDelete = [];
+            
+            if (product) {
+                if (product.image) imagesToDelete.push(product.image);
+                if (product.images && Array.isArray(product.images)) {
+                    product.images.forEach(img => {
+                        if (img !== product.image) imagesToDelete.push(img);
+                    });
+                }
+                // Cleanup variant images too
+                if (product.variants && Array.isArray(product.variants)) {
+                    product.variants.forEach(v => {
+                        if (v.images && Array.isArray(v.images)) {
+                            v.images.forEach(img => imagesToDelete.push(img));
+                        }
+                    });
+                }
+            }
+
+            // Execute storage cleanups in parallel
+            if (imagesToDelete.length > 0) {
+                await Promise.all(imagesToDelete.map(url => deleteImage(url)));
+            }
+
+            // 2. Delete from DB
             const { error } = await supabase
                 .from('products')
                 .delete()
@@ -196,7 +230,7 @@ export const ProductProvider = ({ children }) => {
     };
 
     return (
-        <ProductContext.Provider value={{ products, loading, addProduct, updateProduct, deleteProduct, toggleStock }}>
+        <ProductContext.Provider value={{ products, loading, addProduct, updateProduct, deleteProduct, toggleStock, fetchProducts }}>
             {children}
         </ProductContext.Provider>
     );

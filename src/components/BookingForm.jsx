@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { supabase } from '../config/supabase';
 import { Calendar, Clock, User, Mail, Phone, MessageSquare, X, Loader } from 'lucide-react';
+import { useToast } from '../context/ToastContext';
 
 const BookingForm = ({ selectedPackage, onClose, onSuccess }) => {
+  const { addToast } = useToast();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     customer_name: '',
@@ -51,7 +53,7 @@ const BookingForm = ({ selectedPackage, onClose, onSuccess }) => {
       
     } catch (error) {
       console.error('Error creating booking:', error);
-      alert('Failed to book appointment. Please try again.');
+      addToast('Failed to book appointment. Please try again.', 'error');
     } finally {
       setLoading(false);
     }

@@ -10,15 +10,6 @@ export default defineConfig({
       ext: '.gz',
     })
   ],
-  server: {
-    proxy: {
-      '/delhivery-api': {
-        target: 'https://track.delhivery.com', // Default to Prod for now as user has Prod token
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/delhivery-api/, '')
-      }
-    }
-  },
   build: {
     rollupOptions: {
       output: {
@@ -30,6 +21,6 @@ export default defineConfig({
         }
       }
     },
-    sourcemap: true
+    sourcemap: false
   }
 })

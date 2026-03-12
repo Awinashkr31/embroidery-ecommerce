@@ -1,32 +1,35 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../config/supabase';
 import { Calendar, Clock, User, Phone, Mail, FileText, CheckCircle, XCircle, Loader, Filter } from 'lucide-react';
+import { useToast } from '../../context/ToastContext';
 
 const AdminBookings = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all');
+  const { addToast } = useToast();
 
-  useEffect(() => {
-    fetchBookings();
-  }, []);
-
-  const fetchBookings = async () => {
+  const fetchBookings = React.useCallback(async () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
         .from('mehndi_bookings')
-        .select('*')
+        .select('id, name, email, phone, service_type, date, time, duration, location, guest_count, special_requests, status, total_cost, admin_notes, created_at')
         .order('created_at', { ascending: false });
 
       if (error) throw error;
       setBookings(data || []);
     } catch (error) {
       console.error('Error fetching bookings:', error);
+      addToast('Error fetching bookings', 'error');
     } finally {
       setLoading(false);
     }
-  };
+  }, [addToast]);
+
+  useEffect(() => {
+    fetchBookings();
+  }, [fetchBookings]);
 
   const updateStatus = async (id, newStatus) => {
     try {
@@ -39,13 +42,15 @@ const AdminBookings = () => {
       
       // Update local state
       setBookings(bookings.map(b => b.id === id ? { ...b, status: newStatus } : b));
+      addToast(`Booking status updated to ${newStatus}`, 'success');
     } catch (error) {
       console.error('Error updating status:', error);
-      alert('Failed to update status');
+      addToast('Failed to update status: ' + error.message, 'error');
     }
   };
 
   const filteredBookings = filter === 'all' 
+
     ? bookings 
     : bookings.filter(b => b.status === filter);
 

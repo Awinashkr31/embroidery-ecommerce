@@ -34,13 +34,13 @@ const ProductCardWithVariants = ({ product, toggleWishlist, isInWishlist }) => {
     // Determine current display price
     let displayPrice = product.price;
     if (selectedVariant && selectedVariant.price) {
-        displayPrice = parseInt(selectedVariant.price);
+        displayPrice = Number(selectedVariant.price);
     }
 
     return (
         <div className="h-full flex flex-col">
             {/* Image Card */}
-            <div className="relative aspect-[3/4] overflow-hidden bg-stone-100 mb-3 md:mb-5 rounded-[20px] md:rounded-2xl shrink-0">
+            <div className="relative aspect-[2/3] overflow-hidden bg-stone-100 mb-3 md:mb-5 rounded-[20px] md:rounded-2xl shrink-0">
                 <img
                     src={getOptimizedImageUrl(displayImage, { width: 600, quality: 80 })}
                     alt={product.name}
@@ -202,7 +202,7 @@ const Shop = () => {
                         ...prod,
                         uniqueId: `${prod.id}-${slugify(v.color)}`,
                         preselectedVariant: v,
-                        price: v.price ? parseInt(v.price) : prod.price,
+                        price: v.price ? Number(v.price) : prod.price,
                         randomOrder: Math.random(),
                     });
                 });

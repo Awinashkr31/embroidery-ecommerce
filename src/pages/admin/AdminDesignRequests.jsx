@@ -10,6 +10,7 @@ const AdminDesignRequests = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState('all');
     const [selectedRequest, setSelectedRequest] = useState(null); // For modal/details
+    const [deletePendingId, setDeletePendingId] = useState(null);
     const { addToast } = useToast();
 
     useEffect(() => {
@@ -18,7 +19,7 @@ const AdminDesignRequests = () => {
                 setLoading(true);
                 let query = supabase
                     .from('custom_requests')
-                    .select('*')
+                    .select('id, name, email, phone, occasion, budget, timeline, color_preferences, style_preferences, description, reference_images, status, admin_notes, created_at')
                     .order('created_at', { ascending: false });
 
                 const { data, error } = await query;
@@ -59,7 +60,12 @@ const AdminDesignRequests = () => {
     };
 
     const deleteRequest = async (id) => {
-        if (!window.confirm("Are you sure you want to delete this request?")) return;
+        if (deletePendingId !== id) {
+            setDeletePendingId(id);
+            addToast('Tap delete again to remove this request.', 'error');
+            return;
+        }
+        setDeletePendingId(null);
         try {
             const { error } = await supabase
                 .from('custom_requests')
@@ -253,7 +259,7 @@ const AdminDesignRequests = () => {
                          <div className="flex justify-between items-start mb-6">
                             <div>
                                 <h2 className="text-2xl font-bold text-stone-800">Request Details</h2>
-                                <p className="text-stone-500 mt-1">ID: #{selectedRequest.id.slice(0,8)}</p>
+                                <p className="text-stone-500 mt-1">ID: #{selectedRequest.id.slice(0,6).toUpperCase()}</p>
                             </div>
                             <button onClick={() => setSelectedRequest(null)} className="p-2 hover:bg-stone-100 rounded-full">
                                 <X className="w-6 h-6" />

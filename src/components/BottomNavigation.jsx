@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, ShoppingBag, Heart, User, LayoutGrid } from 'lucide-react';
+import { Home, ShoppingBag, Scissors, User, LayoutGrid } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 
 const BottomNavigation = () => {
@@ -20,7 +20,7 @@ const BottomNavigation = () => {
     { to: '/',         label: 'Home',  Icon: Home,        end: true },
     { to: '/shop',     label: 'Shop',  Icon: LayoutGrid,  end: false },
     { to: '/cart',     label: 'Bag',   Icon: ShoppingBag, end: false, badge: cartItemCount },
-    { to: '/wishlist', label: 'Saved', Icon: Heart,       end: false },
+    { to: '/custom-design', label: 'Custom', Icon: Scissors, end: false },
     { to: '/profile',  label: 'Me',    Icon: User,        end: false },
   ];
 

@@ -3,7 +3,7 @@ import Cropper from 'react-easy-crop';
 import getCroppedImg from '../utils/cropImage';
 import { X, Check, ZoomIn, RotateCw } from 'lucide-react';
 
-const ImageCropper = ({ imageSrc, aspect: initialAspect = 1, onCancel, onCropComplete }) => {
+const ImageCropper = ({ imageSrc, aspect: initialAspect = 2/3, onCancel, onCropComplete }) => {
     // Determine initial aspect selection. If passed aspect is 1, 4/3 etc match it.
     // If we want "Free" as an option, we need to handle aspect prop being undefined or similar in Cropper.
     // However, react-easy-crop needs a number. We can use aspect={undefined} or aspect={null} maybe?

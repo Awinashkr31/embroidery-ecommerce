@@ -15,6 +15,7 @@ const Orders = () => {
   const [activeTab, setActiveTab] = useState('All');
   const [loading, setLoading] = useState(true);
   const [selectedOrders, setSelectedOrders] = useState([]); // Array of selected order IDs
+  const [deletePendingId, setDeletePendingId] = useState(null);
   const { addToast } = useToast();
   
   const statusOptions = ['pending', 'processing', 'shipped', 'delivered', 'cancelled', 'cancellation_requested'];
@@ -211,7 +212,7 @@ const Orders = () => {
     try {
         const csvContent = generateXpressbeesCSV(ordersToExport);
         if (!csvContent) {
-            alert("No valid orders to export.");
+            addToast("No valid orders to export.", "error");
             return;
         }
 
@@ -275,7 +276,7 @@ const Orders = () => {
           const escape = (text) => `"${(text || '').toString().replace(/"/g, '""')}"`;
 
           // Defaults
-          const warehouseName = import.meta.env.VITE_DELHIVERY_WAREHOUSE_NAME || "Main Warehouse";
+          const warehouseName = "Main Warehouse";
           const paymentMode = order.paymentMethod === 'cod' ? "COD" : "Pre-paid";
           const transportMode = "Surface"; // Default
           
@@ -349,22 +350,26 @@ const Orders = () => {
 
 
   const handleDeleteOrder = async (orderId) => {
-    if (window.confirm('Are you sure you want to delete this order? This cannot be undone.')) {
-      try {
-          const { error } = await supabase
-            .from('orders')
-            .delete()
-            .eq('id', orderId);
-          
-          if (error) throw error;
+    if (deletePendingId !== orderId) {
+        setDeletePendingId(orderId);
+        addToast('Tap Delete again to confirm removal. This cannot be undone.', 'error');
+        return;
+    }
+    setDeletePendingId(null);
+    try {
+        const { error } = await supabase
+          .from('orders')
+          .delete()
+          .eq('id', orderId);
+        
+        if (error) throw error;
 
-          const updatedOrders = orders.filter(order => order.id !== orderId);
-          setOrders(updatedOrders);
-          setSelectedOrder(null);
-      } catch (err) {
-          console.error("Error deleting order:", err);
-          addToast('Failed to delete order', 'error');
-      }
+        const updatedOrders = orders.filter(order => order.id !== orderId);
+        setOrders(updatedOrders);
+        setSelectedOrder(null);
+    } catch (err) {
+        console.error("Error deleting order:", err);
+        addToast('Failed to delete order', 'error');
     }
   };
 
@@ -612,7 +617,7 @@ const Orders = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="7" className="px-6 py-12 text-center text-stone-500">
+                  <td colSpan="8" className="px-6 py-12 text-center text-stone-500">
                     <div className="flex flex-col items-center justify-center">
                         <Package className="w-12 h-12 mb-3 text-stone-200" />
                         <p className="text-lg font-medium">No orders found</p>
@@ -709,45 +714,41 @@ const Orders = () => {
                                     
                                     if (courier === 'Delhivery') {
                                         data = await DelhiveryService.trackShipment(selectedOrder.waybillId);
-                                        // Process Delhivery Data
-                                        // data.Shipments[0].Status.Status -> 'Delivered', 'In Transit'
                                         if (data?.Shipments?.[0]?.Status?.Status) {
                                             const newStatus = data.Shipments[0].Status.Status;
-                                            // Map to our status
                                             let mapped = 'shipped';
                                             if (newStatus === 'Delivered') mapped = 'delivered';
                                             else if (newStatus === 'Manifested') mapped = 'processing';
                                             
                                             if (mapped !== selectedOrder.status) {
                                                 await updateOrderStatus(selectedOrder.id, mapped);
-                                                alert(`Status updated to: ${newStatus}`);
+                                                addToast(`Status updated to: ${newStatus}`, 'success');
                                             } else {
-                                                alert(`Status is already up to date: ${newStatus}`);
+                                                addToast(`Status is already up to date: ${newStatus}`, 'info');
                                             }
                                         } else {
-                                            alert('No tracking info found or invalid response.');
+                                            addToast('No tracking info found or invalid response.', 'warning');
                                         }
                                     } else if (courier === 'Xpressbees') {
                                         data = await XpressbeesService.trackShipment(selectedOrder.waybillId);
-                                        // Process XB Data (Check Actual Response Structure)
-                                        const status = data?.data?.status || data?.status; // Example
-                                            if (status) {
+                                        const status = data?.data?.status || data?.status;
+                                        if (status) {
                                             let mapped = 'shipped';
                                             if (status.toLowerCase().includes('delivered')) mapped = 'delivered';
                                             
                                             if (mapped !== selectedOrder.status) {
                                                 await updateOrderStatus(selectedOrder.id, mapped);
-                                                alert(`Status updated to: ${status}`);
+                                                addToast(`Status updated to: ${status}`, 'success');
                                             } else {
-                                                alert(`Status is already up to date: ${status}`);
+                                                addToast(`Status is already up to date: ${status}`, 'info');
                                             }
                                         } else {
-                                             alert('No tracking info found or invalid response.');
+                                            addToast('No tracking info found or invalid response.', 'warning');
                                         }
                                     }
                                 } catch (err) {
                                     console.error(err);
-                                    alert('Failed to sync: ' + err.message);
+                                    addToast('Failed to sync: ' + err.message, 'error');
                                 }
                             }}
                             className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1"

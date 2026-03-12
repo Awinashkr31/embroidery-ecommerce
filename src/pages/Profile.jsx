@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-import { User, Package, MapPin, LogOut, Trash2, ChevronRight, Clock, CheckCircle, AlertTriangle, Loader, Star, X, Camera } from 'lucide-react';
+import { User, Package, MapPin, LogOut, Trash2, ChevronRight, Clock, CheckCircle, AlertTriangle, Loader, Star, X, Camera, Scissors, ImageIcon } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
 import { useToast } from '../context/ToastContext';
@@ -27,6 +27,8 @@ const Profile = () => {
     // ... existing state ...
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [designRequests, setDesignRequests] = useState([]);
+    const [loadingDesigns, setLoadingDesigns] = useState(false);
     const [uploadingImage, setUploadingImage] = useState(false);
 
 
@@ -45,36 +47,33 @@ const Profile = () => {
     const [newReview, setNewReview] = useState({ rating: 5, comment: '' });
     const [submittingReview, setSubmittingReview] = useState(false);
     const [userReviews, setUserReviews] = useState(new Set());
+    const [reviewImage, setReviewImage] = useState(null);
+    const [reviewImagePreview, setReviewImagePreview] = useState(null);
+    const reviewImageRef = useRef(null);
+
+    const handleReviewImageSelect = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setReviewImage(file);
+        const reader = new FileReader();
+        reader.onload = (ev) => setReviewImagePreview(ev.target.result);
+        reader.readAsDataURL(file);
+        if (reviewImageRef.current) reviewImageRef.current.value = '';
+    };
 
     useEffect(() => {
         const fetchOrders = async () => {
             try {
-                // Primary: fetch by user_id (stable, survives email changes)
-                // Fallback: fetch by email (for orders placed before user_id was stored)
-                const [byId, byEmail] = await Promise.all([
-                    supabase
-                        .from('orders')
-                        .select('*')
-                        .eq('user_id', (currentUser.uid || currentUser.id))
-                        .order('created_at', { ascending: false }),
-                    supabase
-                        .from('orders')
-                        .select('*')
-                        .eq('customer_email', currentUser.email)
-                        .order('created_at', { ascending: false }),
-                ]);
+                // Single query fetching by user_id OR email
+                const { data, error } = await supabase
+                    .from('orders')
+                    .select('id, created_at, status, total, items, payment_method')
+                    .or(`user_id.eq.${currentUser.uid || currentUser.id},customer_email.eq.${currentUser.email}`)
+                    .order('created_at', { ascending: false });
 
-                // Merge & deduplicate by order ID
-                const merged = [
-                    ...(byId.data || []),
-                    ...(byEmail.data || []),
-                ];
-                const seen = new Set();
-                const deduplicated = merged
-                    .filter(o => { if (seen.has(o.id)) return false; seen.add(o.id); return true; })
-                    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-
-                setOrders(deduplicated);
+                if (error) throw error;
+                
+                setOrders(data || []);
             } catch (error) {
                 console.error('Error fetching orders:', error);
             } finally {
@@ -97,8 +96,27 @@ const Profile = () => {
             }
         };
 
+        const fetchDesignRequests = async () => {
+            if (!currentUser?.email) return;
+            setLoadingDesigns(true);
+            try {
+                const { data, error } = await supabase
+                    .from('custom_requests')
+                    .select('id, name, phone, description, reference_images, status, created_at')
+                    .eq('email', currentUser.email)
+                    .order('created_at', { ascending: false });
+                if (error) throw error;
+                setDesignRequests(data || []);
+            } catch (err) {
+                console.error('Error fetching design requests:', err);
+            } finally {
+                setLoadingDesigns(false);
+            }
+        };
+
         if (currentUser) {
             fetchOrders();
+            fetchDesignRequests();
             fetchUserReviews();
         } else {
             setLoading(false);
@@ -195,6 +213,15 @@ const Profile = () => {
         e.preventDefault();
         setSubmittingReview(true);
         try {
+            let imageUrl = null;
+            if (reviewImage) {
+                try {
+                    imageUrl = await uploadImage(reviewImage, 'images', 'reviews');
+                } catch (uploadErr) {
+                    console.error('Review image upload failed:', uploadErr);
+                }
+            }
+
             const { error } = await supabase
                 .from('reviews')
                 .insert([{
@@ -203,6 +230,7 @@ const Profile = () => {
                     product_id: reviewModal.productId,
                     rating: newReview.rating,
                     comment: newReview.comment,
+                    image_url: imageUrl,
                     created_at: new Date().toISOString()
                 }]);
 
@@ -210,6 +238,8 @@ const Profile = () => {
 
             addToast('Review submitted successfully!', 'success');
             setUserReviews(prev => new Set([...prev, reviewModal.productId]));
+            setReviewImage(null);
+            setReviewImagePreview(null);
             closeReviewModal();
         } catch (error) {
             console.error(error);
@@ -316,6 +346,16 @@ const Profile = () => {
                             >
                                 <MapPin className="w-4 h-4" /> Addresses
                             </button>
+                            <button
+                                onClick={() => setActiveTab('designs')}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-bold whitespace-nowrap transition-all ${
+                                    activeTab === 'designs'
+                                    ? 'bg-rose-900 text-white shadow-md'
+                                    : 'bg-white border border-stone-200 text-stone-600'
+                                }`}
+                            >
+                                <Scissors className="w-4 h-4" /> Design Requests
+                            </button>
                         </div>
                         {/* Desktop: vertical card */}
                         <div className="hidden lg:block bg-white rounded-xl shadow-sm border border-stone-100 overflow-hidden sticky top-24">
@@ -342,12 +382,22 @@ const Profile = () => {
                                 </div>
                                 {activeTab === 'addresses' && <ChevronRight className="w-4 h-4 text-rose-900" />}
                             </button>
+                            <button
+                                onClick={() => setActiveTab('designs')}
+                                className={`w-full flex items-center justify-between px-6 py-4 transition-all border-l-4 ${activeTab === 'designs' ? 'bg-rose-50/50 text-rose-900 font-bold border-rose-900' : 'text-stone-600 hover:bg-stone-50 border-transparent'}`}
+                            >
+                                <div className="flex items-center">
+                                    <Scissors className={`w-5 h-5 mr-3 ${activeTab === 'designs' ? 'text-rose-900' : 'text-stone-400'}`} />
+                                    Design Requests
+                                </div>
+                                {activeTab === 'designs' && <ChevronRight className="w-4 h-4 text-rose-900" />}
+                            </button>
                         </div>
                     </div>
 
                     {/* Content Area */}
                     <div className="lg:col-span-3">
-                        {activeTab === 'orders' ? (
+                        {activeTab === 'orders' && (
                             <div className="space-y-6">
                                 <div className="flex items-center justify-between mb-2">
                                     <h2 className="text-2xl font-heading font-bold text-stone-900">Order History</h2>
@@ -373,7 +423,9 @@ const Profile = () => {
                                     userReviews={userReviews}
                                 />
                             </div>
-                        ) : (
+                        )}
+
+                        {activeTab === 'addresses' && (
                             <div className="space-y-6">
                                 <div className="flex items-center justify-between mb-2">
                                     <h2 className="text-2xl font-heading font-bold text-stone-900">Address Book</h2>
@@ -472,6 +524,82 @@ const Profile = () => {
                                 )}
                             </div>
                         )}
+
+                        {activeTab === 'designs' && (
+                            <div className="space-y-6">
+                                <div className="flex items-center justify-between mb-2">
+                                    <h2 className="text-2xl font-heading font-bold text-stone-900">Design Requests</h2>
+                                    <Link to="/custom-design" className="text-xs font-bold text-rose-900 hover:underline uppercase tracking-wider">
+                                        + New Request
+                                    </Link>
+                                </div>
+
+                                {loadingDesigns ? (
+                                    <div className="bg-white p-12 rounded-2xl shadow-sm border border-stone-100 text-center">
+                                        <Loader className="w-8 h-8 text-rose-900 animate-spin mx-auto" />
+                                    </div>
+                                ) : designRequests.length === 0 ? (
+                                    <div className="bg-white p-12 rounded-2xl shadow-sm border border-stone-100 text-center">
+                                        <div className="w-20 h-20 bg-stone-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                                            <Scissors className="w-10 h-10 text-stone-300" />
+                                        </div>
+                                        <h3 className="text-lg font-heading font-bold text-stone-900 mb-2">No design requests yet</h3>
+                                        <p className="text-stone-500 max-w-sm mx-auto mb-6">Submit a custom design request and track its progress here.</p>
+                                        <Link to="/custom-design" className="inline-flex items-center gap-2 px-6 py-2.5 bg-rose-900 text-white rounded-xl font-bold text-sm hover:bg-rose-800 transition-colors">
+                                            <Scissors className="w-4 h-4" /> Request a Design
+                                        </Link>
+                                    </div>
+                                ) : (
+                                    <div className="space-y-4">
+                                        {designRequests.map(req => {
+                                            const statusConfig = {
+                                                new: { label: 'Submitted', color: 'bg-blue-100 text-blue-700', icon: Clock },
+                                                in_progress: { label: 'In Progress', color: 'bg-amber-100 text-amber-700', icon: Loader },
+                                                completed: { label: 'Completed', color: 'bg-emerald-100 text-emerald-700', icon: CheckCircle },
+                                                cancelled: { label: 'Cancelled', color: 'bg-red-100 text-red-700', icon: X },
+                                            };
+                                            const status = statusConfig[req.status] || statusConfig.new;
+                                            const StatusIcon = status.icon;
+
+                                            return (
+                                                <div key={req.id} className="bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden hover:shadow-md transition-all">
+                                                    <div className="p-5 sm:p-6">
+                                                        <div className="flex items-start justify-between gap-4 mb-3">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center shrink-0">
+                                                                    <Scissors className="w-5 h-5 text-rose-900" />
+                                                                </div>
+                                                                <div>
+                                                                    <p className="text-xs text-stone-400 font-medium">#{req.id.slice(0, 6).toUpperCase()}</p>
+                                                                    <p className="text-xs text-stone-500">{new Date(req.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}</p>
+                                                                </div>
+                                                            </div>
+                                                            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${status.color}`}>
+                                                                <StatusIcon className="w-3 h-3" />
+                                                                {status.label}
+                                                            </span>
+                                                        </div>
+
+                                                        <p className="text-sm text-stone-700 leading-relaxed mb-3 line-clamp-3">{req.description}</p>
+
+                                                        {/* Reference images */}
+                                                        {req.reference_images && req.reference_images.length > 0 && (
+                                                            <div className="flex gap-2 mt-3">
+                                                                {req.reference_images.map((img, i) => (
+                                                                    <a key={i} href={img} target="_blank" rel="noopener noreferrer" className="w-14 h-14 rounded-lg overflow-hidden border border-stone-200 hover:border-rose-300 transition-colors shrink-0">
+                                                                        <img src={img} alt={`Ref ${i + 1}`} className="w-full h-full object-cover" />
+                                                                    </a>
+                                                                ))}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
                     </div>
                 </div>
@@ -500,21 +628,52 @@ const Profile = () => {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-bold text-stone-700 mb-2">Rating</label>
-                                <div className="flex gap-2">
-                                    {[1, 2, 3, 4, 5].map((star) => (
-                                        <button
-                                            key={star}
-                                            type="button"
-                                            onClick={() => setNewReview({ ...newReview, rating: star })}
-                                            className="focus:outline-none transition-transform hover:scale-110"
-                                        >
-                                            <Star 
-                                                className={`w-8 h-8 ${star <= newReview.rating ? 'fill-yellow-400 text-yellow-400' : 'text-stone-300'}`} 
-                                            />
-                                        </button>
-                                    ))}
-                                </div>
+                                <label className="block text-sm font-bold text-stone-700 mb-3">How was it?</label>
+                                {(() => {
+                                    const ratingEmojis = [
+                                        null,
+                                        { emoji: '😢', label: 'Terrible', color: 'bg-red-100 border-red-300' },
+                                        { emoji: '😕', label: 'Poor',     color: 'bg-orange-100 border-orange-300' },
+                                        { emoji: '😐', label: 'Okay',     color: 'bg-yellow-100 border-yellow-300' },
+                                        { emoji: '😊', label: 'Great',    color: 'bg-lime-100 border-lime-300' },
+                                        { emoji: '🤩', label: 'Amazing!', color: 'bg-emerald-100 border-emerald-300' },
+                                    ];
+                                    const current = ratingEmojis[newReview.rating];
+                                    return (
+                                        <div className="space-y-3">
+                                            <div className="flex gap-2 justify-center">
+                                                {[1, 2, 3, 4, 5].map((star) => {
+                                                    const isSelected = star === newReview.rating;
+                                                    const isPast = star <= newReview.rating;
+                                                    return (
+                                                        <button
+                                                            key={star}
+                                                            type="button"
+                                                            onClick={() => setNewReview({ ...newReview, rating: star })}
+                                                            className={`relative flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition-all duration-200 ${
+                                                                isSelected
+                                                                    ? `${ratingEmojis[star].color} scale-110 shadow-md`
+                                                                    : isPast
+                                                                        ? 'border-stone-200 bg-stone-50'
+                                                                        : 'border-stone-100 bg-white hover:border-stone-200 hover:bg-stone-50'
+                                                            }`}
+                                                        >
+                                                            <span className={`text-2xl transition-all duration-200 ${isSelected ? 'scale-125' : 'grayscale opacity-50'}`}>
+                                                                {ratingEmojis[star].emoji}
+                                                            </span>
+                                                            <span className={`text-[9px] font-bold uppercase tracking-wider ${isSelected ? 'text-stone-700' : 'text-stone-400'}`}>
+                                                                {star}★
+                                                            </span>
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                            <p className="text-center text-sm font-bold text-stone-600">
+                                                <span className="text-lg mr-1">{current.emoji}</span> {current.label}
+                                            </p>
+                                        </div>
+                                    );
+                                })()}
                             </div>
 
                             <div>
@@ -527,6 +686,32 @@ const Profile = () => {
                                     className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:ring-2 focus:ring-rose-900/20 outline-none resize-none"
                                     required
                                 ></textarea>
+                            </div>
+
+                            {/* Photo Upload — Optional */}
+                            <div>
+                                <label className="block text-sm font-bold text-stone-700 mb-2">Add a photo <span className="text-stone-400 font-normal">(optional)</span></label>
+                                {reviewImagePreview ? (
+                                    <div className="relative w-24 h-24 rounded-xl overflow-hidden border border-stone-200 group">
+                                        <img src={reviewImagePreview} alt="Review" className="w-full h-full object-cover" />
+                                        <button
+                                            type="button"
+                                            onClick={() => { setReviewImage(null); setReviewImagePreview(null); }}
+                                            className="absolute top-1 right-1 w-5 h-5 bg-black/60 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                        >
+                                            <X className="w-3 h-3" />
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={() => reviewImageRef.current?.click()}
+                                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl border-2 border-dashed border-stone-200 text-stone-500 text-sm font-medium hover:border-rose-300 hover:text-rose-700 hover:bg-rose-50/50 transition-all"
+                                    >
+                                        📷 Upload photo
+                                    </button>
+                                )}
+                                <input ref={reviewImageRef} type="file" accept="image/*" onChange={handleReviewImageSelect} className="hidden" />
                             </div>
 
                             <div className="flex justify-end gap-3 pt-2">

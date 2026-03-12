@@ -8,19 +8,22 @@ import imageCompression from 'browser-image-compression';
  */
 export const compressImage = async (file, maxWidth = 1920) => {
   try {
+    // Basic validation: max 5MB input
+    if (file.size > 5 * 1024 * 1024) {
+      console.warn("File is very large (>5MB), compression might take time.");
+    }
+
     const options = {
       maxSizeMB: 0.2,          // 200KB max size
       maxWidthOrHeight: maxWidth,
       useWebWorker: true,
-      fileType: 'image/jpeg'
+      fileType: 'image/webp'   // Standardized on webp
     };
     
-    // browser-image-compression helps match the 0.2MB limit iteratively
     const compressedFile = await imageCompression(file, options);
     return compressedFile;
   } catch (error) {
     console.error("Compression failed:", error);
-    // Fallback: return original if compression fails
     return file;
   }
 };
@@ -40,7 +43,7 @@ export const uploadImage = async (file, bucketName = 'images', folder = '') => {
     const compressedFile = await compressImage(file);
     
     // 2. Create unique file name to avoid collisions
-    const fileExt = 'jpg'; // We convert to jpg in compression
+    const fileExt = 'webp'; 
     const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
     const filePath = folder ? `${folder}/${fileName}` : fileName;
 

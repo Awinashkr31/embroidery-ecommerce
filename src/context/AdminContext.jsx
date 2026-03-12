@@ -14,6 +14,7 @@ export const AdminProvider = ({ children }) => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+    const [totalRevenue, setTotalRevenue] = useState(0);
     
     // We only want to fetch this data if the user is an admin
     // Currently relying on the route protection, but checking currentUser is a good fallback
@@ -28,10 +29,10 @@ export const AdminProvider = ({ children }) => {
         }
 
         try {
-            // 1. Fetch orders optimized
+            // 1. Fetch orders optimized (avoiding heavy SELECT * where possible, though we need most fields for Orders page)
             const { data: ordersData, error: ordersError } = await supabase
                 .from('orders')
-                .select('*')
+                .select('id, created_at, status, payment_status, payment_method, total, customer_name, customer_email, customer_phone, shipping_address, items, waybill_id, courier_name, tracking_url, expected_delivery_date, final_shipping_cost')
                 .order('created_at', { ascending: false });
 
             if (ordersError) throw ordersError;
@@ -43,6 +44,14 @@ export const AdminProvider = ({ children }) => {
 
             if (usersError && usersError.code !== 'PGRST116') {
                  console.error("AdminContext: Error fetching users", usersError);
+            }
+
+            // 3. Fetch secure revenue from RPC
+            const { data: revenueData, error: revenueError } = await supabase.rpc('get_total_revenue');
+            if (revenueError) {
+                 console.error("AdminContext: Error fetching revenue", revenueError);
+            } else {
+                 setTotalRevenue(Number(revenueData) || 0);
             }
 
             setOrders(ordersData || []);
@@ -72,7 +81,7 @@ export const AdminProvider = ({ children }) => {
         // Helper methods for easy access across admin pages
         getRecentOrders: (limit = 10) => orders.slice(0, limit),
         getPendingOrdersCount: () => orders.filter(o => o.status === 'pending').length,
-        getTotalRevenue: () => orders.reduce((sum, o) => sum + (Number(o.total) || Number(o.total_amount) || Number(o.amount) || 0), 0)
+        getTotalRevenue: () => totalRevenue
     };
 
     return (

@@ -4,6 +4,7 @@ import { Save, Globe, Mail, Phone, MapPin, Facebook, Instagram, Twitter, Loader,
 import { useToast } from '../../context/ToastContext';
 import imageCompression from 'browser-image-compression';
 import ImageCropper from '../../components/ImageCropper';
+import { deleteImage } from '../../utils/uploadUtils';
 
 const Settings = () => {
     const { addToast } = useToast();
@@ -12,6 +13,7 @@ const Settings = () => {
     const [uploading, setUploading] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [activeTab, setActiveTab] = useState('general');
+    const [deleteImagePendingKey, setDeleteImagePendingKey] = useState(null);
 
     // Cropping State
     const [cropModalOpen, setCropModalOpen] = useState(false);
@@ -112,7 +114,7 @@ const Settings = () => {
         try {
             const { data, error } = await supabase
                 .from('website_settings')
-                .select('*');
+                .select('setting_key, setting_value');
 
             if (error) throw error;
 
@@ -146,23 +148,7 @@ const Settings = () => {
         setSettings(prev => ({ ...prev, [name]: value }));
     };
 
-    const deleteImageFromStorage = async (imageUrl) => {
-        if (!imageUrl) return;
-        try {
-           const urlObj = new URL(imageUrl);
-           const pathParts = urlObj.pathname.split('/public/');
-           if (pathParts.length > 1) {
-               const fullPath = pathParts[1];
-               const storagePath = fullPath.replace(/^images\//, '');
-               const { error } = await supabase.storage
-                    .from('images')
-                    .remove([storagePath]);
-               if (error) console.error("Error deleting old file:", error);
-           }
-        } catch (err) {
-            console.error("Error parsing URL for cleanup:", err);
-        }
-    };
+
 
 
 
@@ -200,29 +186,29 @@ const Settings = () => {
                 maxSizeMB: 0.2, // < 200KB
                 maxWidthOrHeight: 1920,
                 useWebWorker: true,
-                fileType: 'image/jpeg'
+                fileType: 'image/webp'
             };
             
             let uploadFile = file;
             try {
                 uploadFile = await imageCompression(file, options);
-                console.log(`Compressed: ${(uploadFile.size / 1024 / 1024).toFixed(2)} MB`);
             } catch (cErr) {
                 console.warn("Compression failed, using original:", cErr);
             }
 
             const key = cropKey;
             const oldUrl = settings[key];
-            if (oldUrl) await deleteImageFromStorage(oldUrl);
+            if (oldUrl) await deleteImage(oldUrl);
 
-            const fileExt = 'jpg';
+            const fileExt = 'webp';
             const fileName = `${key}_${Date.now()}.${fileExt}`;
             const filePath = `site-assets/${fileName}`;
 
             const { error: uploadError } = await supabase.storage
                 .from('images')
                 .upload(filePath, uploadFile, {
-                    contentType: 'image/jpeg'
+                    contentType: 'image/webp',
+                    cacheControl: '3600'
                 });
 
             if (uploadError) throw uploadError;
@@ -245,11 +231,16 @@ const Settings = () => {
     };
 
     const handleImageDelete = async (key) => {
-        if (!window.confirm('Remove this image?')) return;
+        if (deleteImagePendingKey !== key) {
+            setDeleteImagePendingKey(key);
+            addToast('Tap remove again to confirm deletion.', 'error');
+            return;
+        }
+        setDeleteImagePendingKey(null);
         try {
             setUploading(true);
             const oldUrl = settings[key];
-            if (oldUrl) await deleteImageFromStorage(oldUrl);
+            if (oldUrl) await deleteImage(oldUrl);
             setSettings(prev => ({ ...prev, [key]: '' }));
             addToast('Image removed. Click Save to persist.', 'info');
         } catch (error) {
@@ -910,6 +901,8 @@ export default Settings;
 const PackageEditor = ({ packagesJSON, onChange, isEditing }) => {
     const [localPackages, setLocalPackages] = useState([]);
     const isInternalChange = React.useRef(false);
+    const [deletePackagePendingId, setDeletePackagePendingId] = useState(null);
+    const { addToast } = useToast();
 
     useEffect(() => {
         try {
@@ -963,7 +956,12 @@ const PackageEditor = ({ packagesJSON, onChange, isEditing }) => {
     };
 
     const deletePackage = (id) => {
-        if (!window.confirm("Delete this package?")) return;
+        if (deletePackagePendingId !== id) {
+            setDeletePackagePendingId(id);
+            addToast('Tap delete again to remove package.', 'error');
+            return;
+        }
+        setDeletePackagePendingId(null);
         isInternalChange.current = true;
         const updated = localPackages.filter(p => p.id !== id);
         setLocalPackages(updated);
@@ -1024,7 +1022,7 @@ const PackageEditor = ({ packagesJSON, onChange, isEditing }) => {
                                                 const val = e.target.value;
                                                 // Allow numeric input but keep as string/number in local state to allow deleting to empty
                                                 if (val === '' || /^\d+$/.test(val)) {
-                                                    updatePackage(pkg.id, 'price', val === '' ? 0 : parseInt(val));
+                                                    updatePackage(pkg.id, 'price', val === '' ? 0 : Number(val));
                                                 }
                                             }}
                                             className="w-full px-3 py-2 rounded-lg border border-stone-300 text-sm"
