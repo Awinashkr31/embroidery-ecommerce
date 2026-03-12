@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../../config/supabase';
-import { Calendar, Clock, User, Phone, Mail, FileText, CheckCircle, XCircle, Loader, Filter } from 'lucide-react';
+import { Calendar, Clock, Phone, Mail, FileText, CheckCircle, XCircle, Loader, Filter } from 'lucide-react';
 
 const AdminBookings = () => {
   const [bookings, setBookings] = useState([]);
