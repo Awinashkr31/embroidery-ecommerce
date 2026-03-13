@@ -1,0 +1,2 @@
+# Ignore backend scripts from frontend linting
+/scripts/

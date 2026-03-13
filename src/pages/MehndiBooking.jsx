@@ -128,7 +128,7 @@ const MehndiBooking = () => {
             setSelectedPackage(currentInNewList);
         }
     }
-  }, [packages]);
+  }, [packages, selectedPackage]);
 
   const handlePackageSelect = (pkg) => {
     setSelectedPackage(pkg);

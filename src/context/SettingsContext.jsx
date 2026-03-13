@@ -44,7 +44,6 @@ const DEFAULT_SETTINGS = {
         cod: true,
         online: true
     },
-    mehndi_packages: [],
     razorpay_key_id: "",
     razorpay_key_secret: "",
     admin_approval_required: false,
