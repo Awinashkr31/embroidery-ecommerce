@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { XCircle, ArrowLeft, RefreshCCW, HelpCircle } from 'lucide-react';
+import { XCircle, ArrowLeft, RefreshCcw, HelpCircle } from 'lucide-react';
 
 const OrderFailed = () => {
     const location = useLocation();
@@ -42,7 +42,7 @@ const OrderFailed = () => {
                         to="/checkout" 
                         className="flex items-center justify-center w-full bg-gradient-to-r from-red-600 to-rose-900 text-white py-4 rounded-xl font-bold uppercase tracking-widest transition-all shadow-lg hover:shadow-red-900/30 group transform hover:-translate-y-0.5 hover:from-red-500 hover:to-rose-800"
                     >
-                        <RefreshCCW className="w-4 h-4 mr-2 group-hover:rotate-180 transition-transform duration-500" />
+                        <RefreshCcw className="w-4 h-4 mr-2 group-hover:rotate-180 transition-transform duration-500" />
                         Try Again
                     </Link>
                     
