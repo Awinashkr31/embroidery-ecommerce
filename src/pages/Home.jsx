@@ -2,9 +2,11 @@ import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useProducts } from '../context/ProductContext';
 import { useCategories } from '../context/CategoryContext';
+import { useCart } from '../context/CartContext';
 import { getOptimizedImageUrl } from '../utils/imageUtils';
-import { Star, ArrowRight, Flower, Heart, Scissors, PenTool, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Star, ArrowRight, Flower, Heart, Scissors, PenTool, Sparkles, ChevronLeft, ChevronRight, Truck, Shield, Award, ShoppingBag, MessageSquare } from 'lucide-react';
 import SEO from '../components/SEO';
+import AutoSlideImage from '../components/AutoSlideImage';
 import { useSettings } from '../context/SettingsContext';
 
 const ScrollRevealSection = ({ children, className }) => {
@@ -47,6 +49,7 @@ const ScrollRevealSection = ({ children, className }) => {
 const Home = () => {
   const { products } = useProducts();
   const { categories } = useCategories();
+  const { FREE_DELIVERY_THRESHOLD } = useCart();
   const { settings } = useSettings();
 
   const sliderImages = [
@@ -141,7 +144,7 @@ const Home = () => {
                   <img 
                     src={getOptimizedImageUrl(img, { width: 1200, quality: 80 })} 
                     alt={`Slide ${idx + 1}`} 
-                    className="w-full h-full object-cover opacity-80"
+                    className="w-full h-full object-cover opacity-40"
                     loading={idx === 0 ? "eager" : "lazy"}
                     fetchPriority={idx === 0 ? "high" : "low"}
                     decoding={idx === 0 ? "sync" : "async"}
@@ -202,6 +205,50 @@ const Home = () => {
                     className={`h-1.5 rounded-full transition-all duration-300 ${idx === currentSlide ? 'bg-white w-8' : 'bg-white/40 w-2.5'}`}
                   />
               ))}
+          </div>
+      </section>
+
+      {/* ================= TRUST BADGES ================= */}
+      <section className="bg-stone-50 border-b border-stone-100 overflow-hidden">
+          {/* Desktop: original centered grid */}
+          <div className="hidden md:block container-custom py-6">
+              <div className="grid grid-cols-3 gap-6 text-center divide-x divide-stone-200">
+                  <div className="flex flex-col items-center gap-2">
+                      <Truck className="w-6 h-6 text-rose-900" />
+                      <h4 className="font-bold text-stone-900 text-sm">Free Shipping</h4>
+                      <p className="text-xs text-stone-500">On all orders above ₹{FREE_DELIVERY_THRESHOLD}</p>
+                  </div>
+                  <div className="flex flex-col items-center gap-2">
+                      <Shield className="w-6 h-6 text-rose-900" />
+                      <h4 className="font-bold text-stone-900 text-sm">Secure Checkout</h4>
+                      <p className="text-xs text-stone-500">100% encrypted payment</p>
+                  </div>
+                  <div className="flex flex-col items-center gap-2">
+                      <Award className="w-6 h-6 text-rose-900" />
+                      <h4 className="font-bold text-stone-900 text-sm">Premium Quality</h4>
+                      <p className="text-xs text-stone-500">Handcrafted with perfection</p>
+                  </div>
+              </div>
+          </div>
+          {/* Mobile: compact 3-col grid */}
+          <div className="md:hidden py-4 px-4">
+              <div className="grid grid-cols-3 gap-2">
+                  <div className="flex flex-col items-center gap-1.5 py-2.5 px-1 bg-white rounded-xl border border-stone-100 shadow-sm">
+                      <Truck className="w-5 h-5 text-rose-900" />
+                      <span className="text-[10px] font-bold text-stone-800 text-center leading-tight">Free Delivery</span>
+                      <span className="text-[8px] text-stone-400">₹{FREE_DELIVERY_THRESHOLD}+</span>
+                  </div>
+                  <div className="flex flex-col items-center gap-1.5 py-2.5 px-1 bg-white rounded-xl border border-stone-100 shadow-sm">
+                      <Shield className="w-5 h-5 text-rose-900" />
+                      <span className="text-[10px] font-bold text-stone-800 text-center leading-tight">Secure Pay</span>
+                      <span className="text-[8px] text-stone-400">Encrypted</span>
+                  </div>
+                  <div className="flex flex-col items-center gap-1.5 py-2.5 px-1 bg-white rounded-xl border border-stone-100 shadow-sm">
+                      <Award className="w-5 h-5 text-rose-900" />
+                      <span className="text-[10px] font-bold text-stone-800 text-center leading-tight">Premium</span>
+                      <span className="text-[8px] text-stone-400">Handcrafted</span>
+                  </div>
+              </div>
           </div>
       </section>
 
@@ -271,35 +318,14 @@ const Home = () => {
                 <h2 className="text-3xl md:text-5xl font-heading text-stone-900 leading-tight">New Arrivals</h2>
             </div>
 
-            <div className="flex overflow-x-auto pb-6 -mx-4 px-4 scrollbar-hide snap-x snap-mandatory gap-4">
-                {featuredProducts.map((product, idx) => (
-                    <Link key={product.id} to={`/product/${product.id}`} className="group min-w-[150px] w-[45vw] sm:w-[280px] flex-shrink-0 snap-center">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
+                {featuredProducts.map((product) => (
+                    <Link key={product.id} to={`/product/${product.id}`} className="group relative">
                         <div className="relative aspect-[2/3] bg-white rounded-2xl overflow-hidden mb-4 shadow-sm">
-                            <img 
-                                src={getOptimizedImageUrl(product.image, { width: 400, quality: 80 })} 
-                                alt={product.name} 
-                                loading="lazy"
-                                decoding="async"
-                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                            <AutoSlideImage 
+                                product={product}
+                                className="absolute inset-0 w-full h-full"
                             />
-                            {/* Actions Overlay */}
-                            <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 translate-x-2 group-hover:translate-x-0">
-                                <button className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg text-stone-900 hover:text-rose-600 transition-colors" aria-label="Add to Wishlist">
-                                    <Heart className="w-5 h-5" />
-                                </button>
-                            </div>
-                            
-                            {/* Badges */}
-                            {idx < 2 && (
-                                <div className="absolute top-4 left-4 bg-rose-500 text-white text-[10px] uppercase font-bold px-3 py-1 rounded-full shadow-lg shadow-rose-500/20">
-                                    New
-                                </div>
-                            )}
-                            {product.discountPercentage > 0 && (
-                                <div className="absolute bottom-4 left-4 bg-stone-900 text-white text-[10px] uppercase font-bold px-3 py-1 rounded-full">
-                                    {product.discountPercentage}% OFF
-                                </div>
-                            )}
                         </div>
 
                         <div>
@@ -345,29 +371,14 @@ const Home = () => {
                     <h2 className="text-3xl md:text-5xl font-heading text-stone-900 leading-tight">{category.label}</h2>
                 </div>
 
-                <div className="flex overflow-x-auto pb-6 -mx-4 px-4 scrollbar-hide snap-x snap-mandatory gap-4">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
                     {categoryProducts.map((product) => (
-                        <Link key={product.id} to={`/product/${product.id}`} className="group min-w-[150px] w-[45vw] sm:w-[280px] flex-shrink-0 snap-center">
+                        <Link key={product.id} to={`/product/${product.id}`} className="group relative">
                             <div className="relative aspect-[2/3] bg-white rounded-2xl overflow-hidden mb-4 shadow-sm border border-stone-100">
-                                <img 
-                                    src={getOptimizedImageUrl(product.image, { width: 400, quality: 80 })} 
-                                    alt={product.name} 
-                                    loading="lazy"
-                                    decoding="async"
-                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                <AutoSlideImage 
+                                    product={product}
+                                    className="absolute inset-0 w-full h-full"
                                 />
-                                {/* Actions Overlay */}
-                                <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 translate-x-2 group-hover:translate-x-0">
-                                    <button className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-lg text-stone-900 hover:text-rose-600 transition-colors">
-                                        <Heart className="w-5 h-5" />
-                                    </button>
-                                </div>
-                                
-                                {product.discountPercentage > 0 && (
-                                    <div className="absolute bottom-4 left-4 bg-stone-900 text-white text-[10px] uppercase font-bold px-3 py-1 rounded-full">
-                                        {product.discountPercentage}% OFF
-                                    </div>
-                                )}
                             </div>
 
                             <div>
@@ -471,6 +482,31 @@ const Home = () => {
                   {/* Decorative Circle text */}
                   <div className="hidden lg:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] border border-stone-700/50 rounded-full animate-spin-slow pointer-events-none" />
               </div>
+          </div>
+      </section>
+      
+      {/* ================= TESTIMONIALS ================= */}
+      <section className="py-16 md:py-24 bg-stone-50 border-t border-stone-100">
+          <div className="container-custom">
+               <div className="text-center max-w-2xl mx-auto mb-12 flex flex-col items-center">
+                    <MessageSquare className="w-8 h-8 text-rose-300 mb-4" />
+                    <h2 className="text-3xl md:text-5xl font-heading text-stone-900 leading-tight">Happy Customers</h2>
+               </div>
+               <div className="grid md:grid-cols-3 gap-8">
+                   {[
+                       {name: "Priya S.", text: "The embroidery detail on my hoop was absolutely phenomenal. I could see the love and care put into every stitch. Highly recommend Sana's work!"},
+                       {name: "Anjali K.", text: "Ordered a custom tailored suit with floral embroidery. It fits perfectly and the design is just so unique. Worth every penny."},
+                       {name: "Roshni M.", text: "Fast shipping, brilliant secure packaging, and the quality of the tote bag exceeded my expectations. Will definitely order again."}
+                   ].map((review, i) => (
+                       <div key={i} className="bg-white p-8 rounded-2xl shadow-sm border border-stone-100 relative group transition-transform hover:-translate-y-1">
+                           <div className="flex text-amber-400 mb-4">
+                               {[...Array(5)].map((_, j) => <Star key={j} className="w-4 h-4 fill-current" />)}
+                           </div>
+                           <p className="text-stone-600 text-sm md:text-base italic mb-6 leading-relaxed">"{review.text}"</p>
+                           <p className="font-bold text-stone-900 font-heading">{review.name}</p>
+                       </div>
+                   ))}
+               </div>
           </div>
       </section>
 

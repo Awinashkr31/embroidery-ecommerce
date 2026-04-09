@@ -5,12 +5,12 @@ import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useToast } from '../context/ToastContext';
 import { supabase } from '../../config/supabase';
-import { Heart, ShoppingBag, ArrowLeft, Truck, Shield, Star, Award, Search, Sparkles, Plus, Minus, ChevronDown, Share2, X } from 'lucide-react';
+import { Heart, ShoppingBag, ArrowLeft, Truck, Shield, Star, Award, Search, Sparkles, Plus, Minus, ChevronDown, Share2, X, Loader } from 'lucide-react';
 
 const ProductDetails = () => {
     const { id } = useParams();
     const { products } = useProducts();
-    const { addToCart, cart } = useCart();
+    const { addToCart, cart, FREE_DELIVERY_THRESHOLD } = useCart();
     const { toggleWishlist, isInWishlist } = useWishlist();
     const { addToast } = useToast();
     const navigate = useNavigate();
@@ -33,6 +33,59 @@ const ProductDetails = () => {
 
     // Accordion State
     const [openSection, setOpenSection] = useState('description');
+
+    // ML Recommendation State
+    const [recommendedIds, setRecommendedIds] = useState([]);
+    
+    // Review Modal State
+    const [reviewModalOpen, setReviewModalOpen] = useState(false);
+    const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '', name: '' });
+    const [submittingReview, setSubmittingReview] = useState(false);
+
+    const handleSubmitReview = async (e) => {
+        e.preventDefault();
+        if (!reviewForm.comment.trim() || !reviewForm.name.trim()) return;
+        setSubmittingReview(true);
+        try {
+            const { error } = await supabase.from('reviews').insert([{
+                product_id: product.id,
+                rating: reviewForm.rating,
+                comment: reviewForm.comment,
+                user_name: reviewForm.name.trim(),
+                status: 'pending'
+            }]);
+            if (error) throw error;
+            addToast("Review submitted and awaiting approval!", "success");
+            setReviewModalOpen(false);
+            setReviewForm({ rating: 5, comment: '', name: '' });
+            fetchReviews(product.id);
+        } catch (error) {
+            console.error("Error submitting review:", error);
+            addToast("Failed to submit review", "error");
+        } finally {
+            setSubmittingReview(false);
+        }
+    };
+    
+    useEffect(() => {
+        if (!product) return;
+        setRecommendedIds([]);
+        // Fetch ML recommendations
+        const apiUrl = import.meta.env.VITE_ML_API_URL || 'http://localhost:8000';
+        fetch(`${apiUrl}/api/recommendations/${product.id}`)
+            .then(res => {
+                if(!res.ok) throw new Error("API not found");
+                return res.json();
+            })
+            .then(data => {
+                if(data.recommendations) {
+                    setRecommendedIds(data.recommendations);
+                }
+            })
+            .catch(() => {
+                console.log("ML Recommendations offline, falling back to basic recommendations");
+            });
+    }, [product]);
 
     const toggleSection = (section) => {
         setOpenSection(openSection === section ? null : section);
@@ -139,13 +192,21 @@ const ProductDetails = () => {
         );
     }
 
-    // Get products from same category first, then others to ensure variety
+    
+
+    // Basic Backup Recommendations
     const normalize = (str) => (str || '').toLowerCase().trim();
     const sameCategoryProducts = products.filter(p => normalize(p.category) === normalize(product.category) && p.id !== product.id);
     const otherCategoryProducts = products.filter(p => normalize(p.category) !== normalize(product.category) && p.id !== product.id);
-    
-    // Combine: prioritized same category, then fill with others. Limit to 20 total.
-    const relatedProducts = [...sameCategoryProducts, ...otherCategoryProducts].slice(0, 20);
+    const basicRelatedProducts = [...sameCategoryProducts, ...otherCategoryProducts];
+
+    // Final Derived Recommendations
+    let relatedProducts = [];
+    if(recommendedIds.length > 0) {
+        relatedProducts = recommendedIds.map(recId => products.find(p => p.id === recId)).filter(Boolean);
+    } else {
+        relatedProducts = basicRelatedProducts.slice(0, 4);
+    }
 
     const averageRating = reviews.length > 0 
         ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1) 
@@ -228,12 +289,12 @@ const ProductDetails = () => {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-[48%_52%] gap-8 lg:gap-16 xl:gap-20 mb-16 lg:mb-32">
-                    {/* ... Image Section ... */}
-                    <div className="relative h-fit lg:sticky lg:top-28 space-y-4 lg:space-y-0 lg:flex lg:gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 mb-16 lg:mb-28">
+                    {/* Image Section */}
+                    <div className="relative h-fit lg:sticky lg:top-28 space-y-4 lg:space-y-0 lg:flex lg:gap-4">
                         {/* Desktop Thumbnails (Left Side) */}
                         {displayImages && displayImages.length > 1 && (
-                            <div className="hidden lg:flex flex-col gap-3 w-20 flex-shrink-0 max-h-[70vh] overflow-y-auto no-scrollbar py-1">
+                            <div className="hidden lg:flex flex-col gap-2.5 w-[72px] flex-shrink-0 max-h-[75vh] overflow-y-auto no-scrollbar py-1">
                                 {displayImages.map((img, idx) => (
                                     img && (
                                         <button 
@@ -253,7 +314,7 @@ const ProductDetails = () => {
                         )}
 
                         {/* Main Image Area */}
-                        <div className="flex-1 rounded-lg overflow-hidden relative shadow-sm group bg-stone-100 aspect-[2/3]">
+                        <div className="flex-1 rounded-2xl overflow-hidden relative shadow-sm group bg-stone-50 aspect-[2/3]">
                             <div className="hidden lg:block w-full h-full"> 
                                 <img 
                                     src={selectedImage || displayImages[0] || product.image || 'https://via.placeholder.com/500'} 
@@ -303,7 +364,7 @@ const ProductDetails = () => {
                     </div>
 
                     {/* Details Section - Clean Typography */}
-                    <div className="lg:pt-4 pl-0 lg:pl-8"> 
+                    <div className="lg:pt-4 min-w-0"> 
                         <div className="mb-6 space-y-3">
                              <div className="flex items-center justify-between">
                                 <span className="inline-flex items-center text-xs font-bold tracking-[0.18em] uppercase text-rose-900 bg-rose-50 border border-rose-100 px-3 py-1.5 rounded-full">
@@ -371,7 +432,7 @@ const ProductDetails = () => {
                                     </>
                                 )}
                             </div>
-                            <p className="text-stone-400 text-xs">Inclusive of all taxes · Free delivery above ₹999</p>
+                            <p className="text-stone-400 text-xs">Inclusive of all taxes · Free delivery above ₹{FREE_DELIVERY_THRESHOLD}</p>
                         </div>
                    
                         
@@ -496,7 +557,7 @@ const ProductDetails = () => {
                         <div className="hidden lg:grid grid-cols-3 gap-3 mb-6 p-4 bg-stone-50 rounded-2xl border border-stone-100">
                             <div className="flex items-center gap-2">
                                 <Truck className="w-4 h-4 text-rose-900 shrink-0" />
-                                <span className="text-[11px] font-semibold text-stone-600">Free shipping ₹999+</span>
+                                <span className="text-[11px] font-semibold text-stone-600">Free shipping ₹{FREE_DELIVERY_THRESHOLD}+</span>
                             </div>
                             <div className="flex items-center gap-2">
                                 <Shield className="w-4 h-4 text-rose-900 shrink-0" />
@@ -520,8 +581,7 @@ const ProductDetails = () => {
 
                                         if (!validateSelection()) return;
                                         
-                                        const success = await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice, variantId: selectedVariant?.id });
-                                        if (success) addToast(`Added ${product.name} to bag`, 'success');
+                                        await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice, variantId: selectedVariant?.id });
                                     }}
                                     disabled={!isStockAvailable}
                                     className={`flex-1 py-4 px-8 rounded-2xl font-bold uppercase tracking-widest text-sm transition-all duration-200 flex items-center justify-center gap-3 ${
@@ -697,57 +757,95 @@ const ProductDetails = () => {
                         </div>
 
                         {/* Reviews */}
-                        <div id="reviews" className="border-t border-stone-100 pt-8 lg:pt-12 mt-8 lg:mt-12 mb-12 lg:mb-32">
-                            <div className="flex items-end justify-between mb-8">
-                                <div>
-                                    <h3 className="font-heading text-2xl font-semibold text-stone-900">Customer Reviews</h3>
-                                    <p className="text-stone-500 text-sm mt-1">{reviews.length} verified purchase{reviews.length !== 1 ? 's' : ''}</p>
-                                </div>
-                                <div className="text-right hidden sm:block">
-                                    <div className="text-4xl font-heading font-bold text-stone-900 leading-none">{averageRating}</div>
-                                    <div className="flex justify-end text-amber-400 mt-1">
-                                        {[...Array(5)].map((_, i) => (
-                                            <Star key={i} className={`w-3.5 h-3.5 ${i < Math.round(averageRating) ? 'fill-current' : 'text-stone-200'}`} />
-                                        ))}
+                        <div id="reviews" className="border-t border-stone-100 pt-8 lg:pt-12 mt-8 lg:mt-12 mb-12 lg:mb-24">
+                            {/* Reviews Header */}
+                            <div className="flex flex-col gap-6 mb-8">
+                                <div className="flex items-start justify-between gap-4">
+                                    <div>
+                                        <h3 className="font-heading text-2xl font-semibold text-stone-900">Customer Reviews</h3>
+                                        <p className="text-stone-500 text-sm mt-1">{reviews.length} verified purchase{reviews.length !== 1 ? 's' : ''}</p>
                                     </div>
-                                    <p className="text-xs text-stone-400 mt-1">out of 5</p>
+                                    <button 
+                                        onClick={() => setReviewModalOpen(true)}
+                                        className="px-5 py-2.5 bg-stone-900 text-white text-sm font-medium rounded-xl hover:bg-stone-800 transition-colors whitespace-nowrap flex-shrink-0"
+                                    >
+                                        Write a Review
+                                    </button>
                                 </div>
+                                
+                                {/* Rating Summary Bar */}
+                                {reviews.length > 0 && (
+                                    <div className="flex items-center gap-5 p-4 bg-stone-50 rounded-2xl border border-stone-100">
+                                        <div className="text-center">
+                                            <div className="text-3xl font-heading font-bold text-stone-900 leading-none">{averageRating}</div>
+                                            <div className="flex text-amber-400 mt-1.5 justify-center">
+                                                {[...Array(5)].map((_, i) => (
+                                                    <Star key={`head-star-${i}`} className={`w-3.5 h-3.5 ${i < Math.round(averageRating) ? 'fill-current' : 'text-stone-200'}`} />
+                                                ))}
+                                            </div>
+                                            <p className="text-[10px] text-stone-400 mt-1 font-medium">out of 5</p>
+                                        </div>
+                                        <div className="w-px h-12 bg-stone-200"></div>
+                                        <div className="flex-1 space-y-1.5">
+                                            {[5, 4, 3, 2, 1].map(star => {
+                                                const count = reviews.filter(r => r.rating === star).length;
+                                                const pct = reviews.length > 0 ? (count / reviews.length) * 100 : 0;
+                                                return (
+                                                    <div key={star} className="flex items-center gap-2">
+                                                        <span className="text-xs text-stone-500 w-4 text-right font-medium">{star}</span>
+                                                        <Star className="w-3 h-3 fill-amber-400 text-amber-400 flex-shrink-0" />
+                                                        <div className="flex-1 h-1.5 bg-stone-200 rounded-full overflow-hidden">
+                                                            <div className="h-full bg-amber-400 rounded-full transition-all duration-500" style={{ width: `${pct}%` }}></div>
+                                                        </div>
+                                                        <span className="text-[10px] text-stone-400 w-5 font-medium">{count}</span>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                             
                             {reviews.length === 0 ? (
-                                <div className="text-center py-12 bg-stone-50 rounded-2xl border border-dashed border-stone-200">
-                                    <Star className="w-8 h-8 text-stone-200 mx-auto mb-3" />
-                                    <p className="text-stone-500 font-medium">No reviews yet</p>
-                                    <p className="text-stone-400 text-sm mt-1">Be the first to share your thoughts.</p>
+                                <div className="text-center py-14 bg-stone-50 rounded-2xl border border-dashed border-stone-200">
+                                    <Star className="w-10 h-10 text-stone-200 mx-auto mb-3" />
+                                    <p className="text-stone-600 font-semibold text-lg">No reviews yet</p>
+                                    <p className="text-stone-400 text-sm mt-1 mb-5">Be the first to share your thoughts.</p>
+                                    <button 
+                                        onClick={() => setReviewModalOpen(true)}
+                                        className="px-6 py-2.5 bg-stone-900 text-white text-sm font-medium rounded-xl hover:bg-stone-800 transition-colors mx-auto"
+                                    >
+                                        Write a Review
+                                    </button>
                                 </div>
                             ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div className="space-y-4">
                                     {reviews.map(review => (
-                                        <div key={review.id} className="bg-white p-6 rounded-2xl border border-stone-100 shadow-sm hover:shadow-md transition-all duration-200">
-                                            <div className="flex items-start justify-between mb-4">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-9 h-9 rounded-full bg-rose-100 flex items-center justify-center shrink-0">
-                                                        <span className="text-rose-900 font-bold text-sm">
+                                        <div key={review.id} className="bg-white p-5 rounded-2xl border border-stone-100 shadow-sm hover:shadow-md transition-all duration-200">
+                                            <div className="flex items-start justify-between mb-3">
+                                                <div className="flex items-center gap-3 min-w-0">
+                                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-rose-100 to-rose-50 flex items-center justify-center shrink-0 ring-2 ring-rose-50">
+                                                        <span className="text-rose-800 font-bold text-sm">
                                                             {review.user_name?.charAt(0).toUpperCase() || '?'}
                                                         </span>
                                                     </div>
-                                                    <div>
-                                                        <div className="flex items-center gap-2">
-                                                            <h4 className="font-bold text-stone-900 text-sm">{review.user_name}</h4>
-                                                            <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-full">Verified</span>
+                                                    <div className="min-w-0">
+                                                        <div className="flex items-center gap-2 flex-wrap">
+                                                            <h4 className="font-bold text-stone-900 text-sm truncate">{review.user_name}</h4>
+                                                            <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-full flex-shrink-0">Verified</span>
                                                         </div>
                                                         <span className="text-xs text-stone-400">{new Date(review.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                                                     </div>
                                                 </div>
-                                                <div className="flex text-amber-400">
+                                                <div className="flex text-amber-400 flex-shrink-0 ml-3">
                                                     {[...Array(5)].map((_, i) => (
                                                         <Star key={i} className={`w-3.5 h-3.5 ${i < review.rating ? 'fill-current' : 'text-stone-200'}`} />
                                                     ))}
                                                 </div>
                                             </div>
-                                            <p className="text-stone-600 leading-relaxed text-sm">“{review.comment}”</p>
+                                            <p className="text-stone-600 leading-relaxed text-sm pl-[52px]">{review.comment}</p>
                                             {review.image_url && (
-                                                <a href={review.image_url} target="_blank" rel="noopener noreferrer" className="mt-3 block w-20 h-20 rounded-lg overflow-hidden border border-stone-200 hover:border-rose-300 transition-colors">
+                                                <a href={review.image_url} target="_blank" rel="noopener noreferrer" className="mt-3 ml-[52px] inline-block w-20 h-20 rounded-lg overflow-hidden border border-stone-200 hover:border-rose-300 transition-colors">
                                                     <img src={review.image_url} alt="Review photo" className="w-full h-full object-cover" />
                                                 </a>
                                             )}
@@ -761,18 +859,18 @@ const ProductDetails = () => {
 
                 {/* Related Products Section */}
                 {relatedProducts.length > 0 && (
-                    <div className="border-t border-stone-100 pt-12 lg:pt-20 pb-24">
-                        <div className="flex items-center gap-4 mb-10 lg:mb-14">
-                            <div className="flex-1 h-px bg-stone-100" />
-                            <h2 className="text-2xl lg:text-3xl font-heading font-semibold text-stone-900 text-center whitespace-nowrap">You May Also Love</h2>
-                            <div className="flex-1 h-px bg-stone-100" />
+                    <div className="border-t border-stone-100 pt-12 lg:pt-16 pb-24">
+                        <div className="flex items-center gap-4 mb-8 lg:mb-12">
+                            <div className="flex-1 h-px bg-stone-200" />
+                            <h2 className="text-xl lg:text-2xl font-heading font-semibold text-stone-900 text-center whitespace-nowrap">You May Also Love</h2>
+                            <div className="flex-1 h-px bg-stone-200" />
                         </div>
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8 lg:gap-8">
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6">
                             {relatedProducts.map(p => {
                                 const discount = p.originalPrice ? Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100) : 0;
                                 return (
                                     <div key={p.id} className="group relative">
-                                        <div className="aspect-[2/3] overflow-hidden bg-stone-100 rounded-2xl mb-3 relative">
+                                        <div className="aspect-[2/3] overflow-hidden bg-stone-50 rounded-2xl mb-3 relative">
                                             <Link to={`/product/${p.id}`}>
                                                 <img 
                                                     src={p.image} 
@@ -785,7 +883,7 @@ const ProductDetails = () => {
                                             
                                             {/* Discount Badge */}
                                             {discount > 0 && (
-                                                <div className="absolute top-3 left-3 bg-rose-900 text-white text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wide">
+                                                <div className="absolute top-3 left-3 bg-rose-900 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg uppercase tracking-wide shadow-sm">
                                                     {discount}% OFF
                                                 </div>
                                             )}
@@ -796,17 +894,17 @@ const ProductDetails = () => {
                                                     e.preventDefault();
                                                     toggleWishlist(p);
                                                 }}
-                                                className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center bg-white rounded-full shadow-sm hover:scale-110 active:scale-95 transition-all"
+                                                className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center bg-white/90 backdrop-blur-sm rounded-full shadow-sm hover:scale-110 active:scale-95 transition-all"
                                             >
                                                 <Heart className={`w-4 h-4 ${isInWishlist(p.id) ? 'fill-rose-600 text-rose-600' : 'text-stone-400'}`} />
                                             </button>
                                         </div>
 
-                                        <Link to={`/product/${p.id}`} className="block space-y-1">
-                                            <h3 className="font-heading font-bold text-sm lg:text-base text-stone-900 truncate pr-2 group-hover:text-rose-900 transition-colors">
+                                        <Link to={`/product/${p.id}`} className="block space-y-1 px-1">
+                                            <h3 className="font-heading font-bold text-sm text-stone-900 truncate group-hover:text-rose-900 transition-colors">
                                                 {p.name}
                                             </h3>
-                                            <div className="flex items-center flex-wrap gap-2 text-sm">
+                                            <div className="flex items-center flex-wrap gap-1.5 text-sm">
                                                 <span className="font-bold text-stone-900">₹{p.price.toLocaleString()}</span>
                                                 {p.originalPrice && (
                                                     <>
@@ -837,6 +935,68 @@ const ProductDetails = () => {
                     </div>
                 </div>
             )}
+
+            {/* Write a Review Modal */}
+            {reviewModalOpen && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => !submittingReview && setReviewModalOpen(false)} />
+                    <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-in zoom-in-95 p-6 space-y-6">
+                        <div className="flex justify-between items-center">
+                            <h3 className="font-heading font-bold text-xl text-stone-900">Write a Review</h3>
+                            <button onClick={() => !submittingReview && setReviewModalOpen(false)} className="p-2 -mr-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-900">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <form onSubmit={handleSubmitReview} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-bold text-stone-700 mb-1">Your Rating</label>
+                                <div className="flex gap-2">
+                                    {[1, 2, 3, 4, 5].map((star) => (
+                                        <button
+                                            key={star}
+                                            type="button"
+                                            onClick={() => setReviewForm(s => ({ ...s, rating: star }))}
+                                            className="focus:outline-none transition-transform hover:scale-110 active:scale-95"
+                                        >
+                                            <Star className={`w-8 h-8 ${star <= reviewForm.rating ? 'fill-amber-400 text-amber-400' : 'text-stone-300'}`} />
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-bold text-stone-700 mb-1">Your Name</label>
+                                <input 
+                                    type="text"
+                                    required
+                                    className="w-full px-4 py-3 rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-rose-900/20 focus:border-rose-900 bg-stone-50 focus:bg-white transition-colors"
+                                    placeholder="Enter your name"
+                                    value={reviewForm.name}
+                                    onChange={(e) => setReviewForm(s => ({ ...s, name: e.target.value }))}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-bold text-stone-700 mb-1">Your Review</label>
+                                <textarea 
+                                    required
+                                    rows="4"
+                                    className="w-full px-4 py-3 rounded-lg border border-stone-200 focus:outline-none focus:ring-2 focus:ring-rose-900/20 focus:border-rose-900 bg-stone-50 focus:bg-white transition-colors resize-none"
+                                    placeholder="Share your experience with this product..."
+                                    value={reviewForm.comment}
+                                    onChange={(e) => setReviewForm(s => ({ ...s, comment: e.target.value }))}
+                                />
+                            </div>
+                            <button
+                                type="submit"
+                                disabled={submittingReview || !reviewForm.name.trim() || !reviewForm.comment.trim()}
+                                className="w-full py-3 bg-rose-900 text-white rounded-lg font-medium hover:bg-rose-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            >
+                                {submittingReview ? <Loader className="w-5 h-5 animate-spin" /> : 'Submit Review'}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
+
             {/* Mobile Sticky Action Bar */}
             <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200 p-4 shadow-[0_-4px_10px_rgba(0,0,0,0.1)] lg:hidden z-50 flex gap-3 px-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
                 <button
@@ -848,8 +1008,7 @@ const ProductDetails = () => {
 
                         if (!validateSelection()) return;
                         
-                        const success = await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice });
-                        if (success) addToast(`Added ${product.name} to bag`, 'success');
+                        await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice });
                     }}
                     disabled={!isStockAvailable}
                     className={`flex-1 py-3 rounded-xl font-bold uppercase tracking-widest text-xs transition-all flex items-center justify-center gap-2 ${

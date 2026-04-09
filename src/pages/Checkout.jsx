@@ -321,12 +321,20 @@ const Checkout = () => {
                     modal: {
                         ondismiss: function() {
                             setIsSubmitting(false);
-                            addToast('Payment cancelled', 'info');
+                            addToast('Payment popup closed. You can retry when ready.', 'info');
                         }
                     }
                 };
 
                 const paymentObject = new window.Razorpay(options);
+                
+                // Intercept Explicit Failures
+                paymentObject.on('payment.failed', function (response) {
+                    setIsSubmitting(false);
+                    const errorMsg = response.error?.description || response.error?.reason || 'Payment was declined by your bank.';
+                    navigate('/order-failed', { state: { error: errorMsg } });
+                });
+
                 paymentObject.open();
 
             } else {
@@ -422,7 +430,7 @@ const Checkout = () => {
                     </div>
 
                     {/* Checkout Form */}
-                    <div className="bg-white p-5 md:p-10 rounded-2xl shadow-sm border border-stone-100 order-2 md:order-1">
+                    <div className="card-premium p-5 md:p-10 order-2 md:order-1">
                         <h2 className="text-lg md:text-2xl font-heading font-bold text-stone-900 mb-6 flex items-center gap-3">
                             <div className="bg-rose-50 p-2 rounded-lg">
                                 <Truck className="text-rose-900 w-5 h-5 md:w-6 md:h-6" />
@@ -479,7 +487,7 @@ const Checkout = () => {
                                             required
                                             value={formData.fullName}
                                             onChange={handleChange}
-                                            className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:border-rose-900 focus:ring-1 focus:ring-rose-900 bg-white outline-none transition-all font-medium text-stone-900 placeholder:text-stone-300"
+                                            className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:border-rose-900 focus:ring-4 focus:ring-rose-900/10 bg-white/50 focus:bg-white outline-none transition-all font-medium text-stone-900 placeholder:text-stone-300 shadow-sm"
                                             placeholder="John Doe"
                                         />
                                     </div>
@@ -492,7 +500,7 @@ const Checkout = () => {
                                             required
                                             value={formData.email}
                                             onChange={handleChange}
-                                            className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:border-rose-900 focus:ring-1 focus:ring-rose-900 bg-white outline-none transition-all font-medium text-stone-900 placeholder:text-stone-300"
+                                            className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:border-rose-900 focus:ring-4 focus:ring-rose-900/10 bg-white/50 focus:bg-white outline-none transition-all font-medium text-stone-900 placeholder:text-stone-300 shadow-sm"
                                             placeholder="your@email.com"
                                         />
                                     </div>
@@ -505,7 +513,7 @@ const Checkout = () => {
                                             required
                                             value={formData.phone}
                                             onChange={handleChange}
-                                            className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:border-rose-900 focus:ring-1 focus:ring-rose-900 bg-white outline-none transition-all font-medium text-stone-900 placeholder:text-stone-300"
+                                            className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:border-rose-900 focus:ring-4 focus:ring-rose-900/10 bg-white/50 focus:bg-white outline-none transition-all font-medium text-stone-900 placeholder:text-stone-300 shadow-sm"
                                             placeholder="10-digit mobile number"
                                         />
                                     </div>
@@ -518,7 +526,7 @@ const Checkout = () => {
                                             rows="3"
                                             value={formData.address}
                                             onChange={handleChange}
-                                            className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:border-rose-900 focus:ring-1 focus:ring-rose-900 bg-white outline-none transition-all font-medium text-stone-900 resize-none placeholder:text-stone-300"
+                                            className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:border-rose-900 focus:ring-4 focus:ring-rose-900/10 bg-white/50 focus:bg-white outline-none transition-all font-medium text-stone-900 resize-none placeholder:text-stone-300 shadow-sm"
                                             placeholder="House No, Building, Street Area"
                                         ></textarea>
                                     </div>
@@ -536,7 +544,7 @@ const Checkout = () => {
                                                     inputMode="numeric"
                                                     value={formData.zipCode}
                                                     onChange={handleZipChange}
-                                                    className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:border-rose-900 focus:ring-1 focus:ring-rose-900 bg-white outline-none transition-all font-medium text-stone-900 tracking-wide"
+                                                    className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:border-rose-900 focus:ring-4 focus:ring-rose-900/10 bg-white/50 focus:bg-white outline-none transition-all font-medium text-stone-900 tracking-wide shadow-sm"
                                                     placeholder="000000"
                                                 />
                                                 {isZipLoading && (
@@ -597,7 +605,11 @@ const Checkout = () => {
                                     Payment Method
                                 </h3>
                                 <div className="space-y-4">
-                                    <label className="flex items-center p-4 md:p-5 border-2 border-rose-900 bg-rose-50/30 rounded-xl cursor-pointer transition-all relative overflow-hidden group">
+                                    <label className={`flex items-center p-4 md:p-5 border-2 rounded-xl cursor-pointer transition-all duration-300 relative overflow-hidden group ${
+                                        formData.paymentMethod === 'cod' 
+                                        ? 'border-rose-900 bg-rose-50/50 ring-4 ring-rose-900/10 shadow-md transform scale-[1.01]' 
+                                        : 'border-stone-100 hover:border-rose-200 hover:bg-stone-50'
+                                    }`}>
                                         <div className="absolute inset-0 bg-white/50 group-hover:bg-transparent transition-colors"></div>
                                         <input
                                             type="radio"
@@ -613,10 +625,10 @@ const Checkout = () => {
                                         </div>
                                         <CheckCircle className="ml-auto w-5 h-5 text-rose-900 relative z-10" />
                                     </label>
-                                    <label className={`flex items-center p-4 md:p-5 border-2 rounded-xl cursor-pointer transition-all relative overflow-hidden group ${
+                                    <label className={`flex items-center p-4 md:p-5 border-2 rounded-xl cursor-pointer transition-all duration-300 relative overflow-hidden group ${
                                         formData.paymentMethod === 'online' 
-                                        ? 'border-emerald-600 bg-emerald-50/30' 
-                                        : 'border-stone-100 hover:border-emerald-200'
+                                        ? 'border-emerald-600 bg-emerald-50/50 ring-4 ring-emerald-600/10 shadow-md transform scale-[1.01]' 
+                                        : 'border-stone-100 hover:border-emerald-200 hover:bg-stone-50'
                                     }`}>
                                         <div className={`absolute inset-0 transition-colors ${formData.paymentMethod === 'online' ? '' : 'bg-white/50 group-hover:bg-transparent'}`}></div>
                                         <input
@@ -692,16 +704,6 @@ const Checkout = () => {
                                 )}
                             </div>
 
-                            {/* Unboxing Video Warning - Mobile Friendly */}
-                            <div className="mt-6 bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-3 text-amber-800 text-sm">
-                                 <AlertTriangle className="w-5 h-5 shrink-0" />
-                                 <div className="text-xs md:text-sm">
-                                     <p className="font-bold">Unboxing Video Required</p>
-                                     <p className="mt-1 leading-relaxed opacity-90">
-                                         Mandatory for returns/replacements. Record while opening package.
-                                     </p>
-                                 </div>
-                            </div>
 
                             {/* Desktop Submit Button (Hidden on Mobile) */}
                             <button
@@ -716,7 +718,7 @@ const Checkout = () => {
 
                     {/* Order Summary - Desktop Sider */}
                     <div className="hidden md:block lg:w-auto order-1 md:order-2">
-                        <div className="bg-white p-8 rounded-2xl shadow-lg border border-stone-100 sticky top-28">
+                        <div className="glass-panel rounded-2xl p-8 sticky top-28 border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
                             <h2 className="text-xl font-heading font-bold text-stone-900 mb-6 border-b border-stone-100 pb-4">Order Summary</h2>
                             <div className="space-y-4 mb-6 max-h-[calc(100vh-400px)] overflow-y-auto custom-scrollbar pr-2">
                                 {cart.map((item, idx) => (

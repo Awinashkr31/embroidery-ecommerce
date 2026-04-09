@@ -4,7 +4,7 @@ import { useCategories } from '../../context/CategoryContext';
 import { 
     Plus, Edit2, Trash2, X, Image as ImageIcon, Search, Filter, 
     Upload, Shirt, Save, ChevronRight, Package, Tag, 
-    Layers, Truck, Globe, Calculator, AlertCircle, ArrowUp, ArrowDown, Download
+    Layers, Truck, Globe, Calculator, AlertCircle, ArrowUp, ArrowDown, Download, Sparkles, Loader
 } from 'lucide-react';
 import { uploadImage } from '../../utils/uploadUtils';
 import ImageCropper from '../../components/ImageCropper';
@@ -100,6 +100,51 @@ const ProductManager = () => {
     const [formData, setFormData] = useState(initialFormState);
     const [tempFeature, setTempFeature] = useState('');
     const [newCategory, setNewCategory] = useState('');
+    const [isAutoFilling, setIsAutoFilling] = useState(false);
+
+    // AI Auto Fill Handler
+    const handleAutoFill = async () => {
+        if (!formData.name.trim()) {
+            setFormError('Please enter a Product Name before using Auto Fill.');
+            return;
+        }
+        if (!formData.category) {
+            setFormError('Please select a Category before using Auto Fill.');
+            return;
+        }
+        setIsAutoFilling(true);
+        setFormError('');
+        try {
+            const apiUrl = import.meta.env.VITE_ML_API_URL || 'http://localhost:8000';
+            const res = await fetch(`${apiUrl}/api/autofill-product`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: formData.name, category: formData.category }),
+            });
+            if (!res.ok) {
+                const err = await res.json();
+                throw new Error(err.detail || 'Auto Fill failed');
+            }
+            const data = await res.json();
+            setFormData(prev => ({
+                ...prev,
+                shortDescription: data.shortDescription || prev.shortDescription,
+                detailedDescription: data.detailedDescription || prev.detailedDescription,
+                keyFeatures: data.keyFeatures || prev.keyFeatures,
+                metaTitle: data.metaTitle || prev.metaTitle,
+                metaDescription: data.metaDescription || prev.metaDescription,
+                keywords: data.keywords || prev.keywords,
+                careInstructions: data.careInstructions || prev.careInstructions,
+                returnPeriod: data.returnPeriod || prev.returnPeriod,
+            }));
+            addToast('AI Auto Fill complete! Review and adjust the generated content.', 'success');
+        } catch (err) {
+            console.error('Auto Fill error:', err);
+            setFormError(`Auto Fill failed: ${err.message}`);
+        } finally {
+            setIsAutoFilling(false);
+        }
+    };
     
     // Variant Management State
     const [editingVariantIndex, setEditingVariantIndex] = useState(-1); // -1 = New, 0+ = Edit
@@ -649,6 +694,19 @@ const ProductManager = () => {
                                 )}
                             </div>
                             <div className="flex items-center gap-2">
+                                <button
+                                    type="button"
+                                    onClick={handleAutoFill}
+                                    disabled={isAutoFilling}
+                                    className="px-4 py-2 bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-sm font-bold rounded-xl hover:from-violet-500 hover:to-indigo-500 transition-all flex items-center gap-2 shadow-md shadow-violet-600/20 disabled:opacity-60 disabled:cursor-wait"
+                                >
+                                    {isAutoFilling ? (
+                                        <Loader className="w-4 h-4 animate-spin" />
+                                    ) : (
+                                        <Sparkles className="w-4 h-4" />
+                                    )}
+                                    {isAutoFilling ? 'Generating...' : 'AI Auto Fill'}
+                                </button>
                                 <button
                                     type="button"
                                     onClick={handleSubmit}

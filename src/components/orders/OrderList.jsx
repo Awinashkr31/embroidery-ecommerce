@@ -28,17 +28,17 @@ const OrderList = ({ orders, loading, onCancelOrder, onReviewOrder, userReviews 
         switch (status?.toLowerCase()) {
             case 'delivered':
             case 'completed':
-                return { label: 'Delivered', color: 'text-emerald-600', icon: '✅' };
+                return { label: 'Delivered', color: 'text-emerald-700 bg-emerald-50 border border-emerald-100', icon: '✅' };
             case 'shipped':
-                return { label: 'Shipped', color: 'text-purple-600', icon: '🚚' };
+                return { label: 'Shipped', color: 'text-purple-700 bg-purple-50 border border-purple-100', icon: '🚚' };
             case 'processing':
-                return { label: 'Processing', color: 'text-blue-600', icon: '⏳' };
+                return { label: 'Processing', color: 'text-blue-700 bg-blue-50 border border-blue-100', icon: '⏳' };
             case 'cancelled':
-                return { label: 'Cancelled', color: 'text-red-500', icon: '❌' };
+                return { label: 'Cancelled', color: 'text-red-700 bg-red-50 border border-red-100', icon: '❌' };
             case 'cancellation_requested':
-                return { label: 'Cancel Requested', color: 'text-amber-600', icon: '⚠️' };
+                return { label: 'Cancel Requested', color: 'text-amber-700 bg-amber-50 border border-amber-100', icon: '⚠️' };
             default:
-                return { label: 'Confirmed', color: 'text-emerald-600', icon: '✅' };
+                return { label: 'Confirmed', color: 'text-emerald-700 bg-emerald-50 border border-emerald-100', icon: '✅' };
         }
     };
 
@@ -64,7 +64,7 @@ const OrderList = ({ orders, loading, onCancelOrder, onReviewOrder, userReviews 
     }
 
     return (
-        <div className="bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden divide-y divide-stone-100">
+        <div className="glass-panel rounded-2xl overflow-hidden divide-y divide-stone-100">
             {flatItems.map((item, idx) => {
                 const status = getStatusInfo(item.orderStatus);
                 const isDelivered = ['delivered', 'completed'].includes(item.orderStatus?.toLowerCase());
@@ -77,7 +77,7 @@ const OrderList = ({ orders, loading, onCancelOrder, onReviewOrder, userReviews 
                     <Link 
                         key={`${item.orderId}-${idx}`} 
                         to={`/order/${item.orderId}`}
-                        className="flex items-center gap-4 p-4 hover:bg-stone-50/50 transition-colors group"
+                        className="flex items-center gap-4 p-4 hover:bg-white/80 transition-all duration-300 group relative"
                     >
                         {/* Product Image */}
                         <div className="w-16 h-16 sm:w-[72px] sm:h-[72px] rounded-xl bg-stone-100 overflow-hidden border border-stone-200 shrink-0">
@@ -86,9 +86,12 @@ const OrderList = ({ orders, loading, onCancelOrder, onReviewOrder, userReviews 
 
                         {/* Info */}
                         <div className="flex-1 min-w-0">
-                            <p className={`text-xs font-bold ${status.color} mb-0.5`}>
-                                {status.icon} {status.label} on {deliveryDate}
-                            </p>
+                            <div className="flex items-center gap-2 mb-1.5">
+                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${status.color} flex items-center gap-1 shadow-sm`}>
+                                    {status.icon} {status.label}
+                                </span>
+                                <span className="text-[10px] text-stone-400 font-medium tracking-wide">{deliveryDate}</span>
+                            </div>
                             <h4 className="text-sm font-medium text-stone-900 truncate pr-2">
                                 {item.name}
                             </h4>
@@ -122,6 +125,22 @@ const OrderList = ({ orders, loading, onCancelOrder, onReviewOrder, userReviews 
                                             Write a Review
                                         </button>
                                     )}
+                                </div>
+                            )}
+
+                            {/* Direct Action Buttons for Pending/Processing */}
+                            {(['pending', 'confirmed', 'processing'].includes(item.orderStatus?.toLowerCase())) && (
+                                <div className="mt-2 flex items-center gap-3">
+                                    <button
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            onCancelOrder?.({ id: item.orderId, status: item.orderStatus });
+                                        }}
+                                        className="text-[11px] font-bold text-red-600 hover:text-red-800 hover:underline px-2 py-1 rounded border border-red-500/30 bg-red-50/50 transition-colors"
+                                    >
+                                        {['pending', 'confirmed'].includes(item.orderStatus?.toLowerCase()) ? 'Cancel Order' : 'Cancel Request'}
+                                    </button>
                                 </div>
                             )}
 

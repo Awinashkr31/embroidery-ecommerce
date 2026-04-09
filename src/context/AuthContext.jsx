@@ -21,9 +21,24 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     // 1. Firebase Auth Listener (For regular users)
-    const unsubscribeFirebase = onAuthStateChanged(auth, (user) => {
+    const unsubscribeFirebase = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
       setLoading(false);
+      
+      if (user) {
+        try {
+          await supabase.from('users').upsert({
+            firebase_uid: user.uid,
+            email: user.email,
+            display_name: user.displayName || '',
+            photo_url: user.photoURL || '',
+            provider: user.providerData?.[0]?.providerId || 'email',
+            last_login: new Date().toISOString()
+          }, { onConflict: 'firebase_uid' }).select();
+        } catch (e) {
+          console.error("Failed to sync user to Supabase:", e);
+        }
+      }
     });
 
     // 2. Supabase Auth Listener (For Admin users)

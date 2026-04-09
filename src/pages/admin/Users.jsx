@@ -8,7 +8,8 @@ import { useAdmin } from '../../context/AdminContext';
 import { useToast } from '../../context/ToastContext';
 import { 
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
-  PieChart, Pie, Cell, BarChart, Bar 
+  PieChart, Pie, Cell, BarChart, Bar, AreaChart, Area,
+  RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Legend
 } from 'recharts';
 
 const Users = () => {
@@ -102,7 +103,11 @@ const Users = () => {
                 const avgOrderValue = orderCount ? user.totalSpend / orderCount : 0;
                 
                 // Days since last activity
-                const daysSinceLast = Math.floor((new Date() - new Date(user.lastOrderDate)) / (1000 * 60 * 60 * 24));
+                let daysSinceLast = 0;
+                if (user.lastOrderDate) {
+                    daysSinceLast = Math.floor((new Date() - new Date(user.lastOrderDate)) / (1000 * 60 * 60 * 24));
+                }
+                if (isNaN(daysSinceLast) || daysSinceLast < 0) daysSinceLast = 0;
                 
                 // Calculate User Status logic override
                 if (orderCount > 0) {
@@ -125,7 +130,7 @@ const Users = () => {
 
                 return {
                     ...user,
-                    id: btoa(user.email), 
+                    id: user.email, 
                     orderCount,
                     avgOrderValue,
                     daysSinceLast,
@@ -189,27 +194,120 @@ const Users = () => {
         const totalRevenue = users.reduce((sum, u) => sum + u.totalSpend, 0);
         const avgLTV = users.length ? totalRevenue / users.length : 0;
         
-        // Revenue Trend
-        const monthlyRevenue = {};
+        // 1. Revenue & Order Volume & AOV by Month
+        const monthlyData = {};
         orders.forEach(o => {
-            const month = new Date(o.created_at).toLocaleString('default', { month: 'short' });
-            monthlyRevenue[month] = (monthlyRevenue[month] || 0) + o.total;
+            const date = new Date(o.created_at);
+            const month = date.toLocaleString('default', { month: 'short', year: '2-digit' });
+            if (!monthlyData[month]) monthlyData[month] = { name: month, revenue: 0, orders: 0, aov: 0 };
+            monthlyData[month].revenue += o.total;
+            monthlyData[month].orders += 1;
         });
-        const revenueChartData = Object.entries(monthlyRevenue).map(([name, value]) => ({ name, value }));
+        Object.values(monthlyData).forEach(m => {
+            m.aov = m.orders ? Math.round(m.revenue / m.orders) : 0;
+        });
+        const monthlyChartData = Object.values(monthlyData);
 
-        // Category Distribution
+        // 2. Category Distribution (Pie)
         const categoryStats = {};
         users.forEach(u => {
            categoryStats[u.favCategory] = (categoryStats[u.favCategory] || 0) + 1;
         });
         const categoryChartData = Object.entries(categoryStats).map(([name, value]) => ({ name, value }));
 
+        // 3. User Health/Status (Donut)
+        const statusStats = {};
+        users.forEach(u => {
+           statusStats[u.status] = (statusStats[u.status] || 0) + 1;
+        });
+        const statusChartData = Object.entries(statusStats).map(([name, value]) => ({ name, value }));
+
+        // 4 & 5. Top Customer Locations
+        const locationStats = {};
+        users.forEach(u => {
+            const loc = u.primaryLocation || 'Unknown';
+            if (!locationStats[loc]) locationStats[loc] = { name: loc, users: 0, revenue: 0 };
+            locationStats[loc].users += 1;
+            locationStats[loc].revenue += u.totalSpend;
+        });
+        const locationChartData = Object.values(locationStats).sort((a,b) => b.revenue - a.revenue).slice(0, 7);
+
+        // 6. Order Value Distribution (Bar)
+        const orderValueStats = { '0-500': 0, '501-1000': 0, '1001-2000': 0, '2000+': 0 };
+        orders.forEach(o => {
+            const val = o.total;
+            if (val <= 500) orderValueStats['0-500']++;
+            else if (val <= 1000) orderValueStats['501-1000']++;
+            else if (val <= 2000) orderValueStats['1001-2000']++;
+            else orderValueStats['2000+']++;
+        });
+        const orderValueChartData = Object.entries(orderValueStats).map(([name, value]) => ({ name, value }));
+
+        // 7. Customer Acquisition over Time
+        const acquisitionData = {};
+        users.forEach(u => {
+            const date = new Date(u.firstOrderDate);
+            const month = date.toLocaleString('default', { month: 'short', year: '2-digit' });
+            if (!acquisitionData[month]) acquisitionData[month] = { name: month, newUsers: 0 };
+            acquisitionData[month].newUsers += 1;
+        });
+        const acquisitionChartData = Object.values(acquisitionData).sort((a,b) => a.name.localeCompare(b.name));
+
+        // 8. Engagement Score Distribution
+        const scoreStats = { '0-20': 0, '21-40': 0, '41-60': 0, '61-80': 0, '81-100': 0 };
+        users.forEach(u => {
+            const score = u.engagementScore;
+            if (score <= 20) scoreStats['0-20']++;
+            else if (score <= 40) scoreStats['21-40']++;
+            else if (score <= 60) scoreStats['41-60']++;
+            else if (score <= 80) scoreStats['61-80']++;
+            else scoreStats['81-100']++;
+        });
+        const scoreChartData = Object.entries(scoreStats).map(([name, value]) => ({ name, value }));
+
+        // 9. Order Status Breakdown
+        const orderStatusStats = {};
+        orders.forEach(o => {
+            const status = o.status || 'Unknown';
+            orderStatusStats[status] = (orderStatusStats[status] || 0) + 1;
+        });
+        const orderStatusChartData = Object.entries(orderStatusStats).map(([name, value]) => ({ name, value }));
+
+        // 10. Purchase Frequency
+        const freqStats = { '1 Order': 0, '2 Orders': 0, '3-5 Orders': 0, '6+ Orders': 0 };
+        users.forEach(u => {
+            const count = u.orderCount;
+            if (count === 1) freqStats['1 Order']++;
+            else if (count === 2) freqStats['2 Orders']++;
+            else if (count >= 3 && count <= 5) freqStats['3-5 Orders']++;
+            else if (count >= 6) freqStats['6+ Orders']++;
+        });
+        const freqChartData = Object.entries(freqStats).map(([name, value]) => ({ name, value }));
+
+        // 11. Sales by Day of Week
+        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const dayStats = { 'Sun': 0, 'Mon': 0, 'Tue': 0, 'Wed': 0, 'Thu': 0, 'Fri': 0, 'Sat': 0 };
+        orders.forEach(o => {
+            if (!o.created_at) return;
+            const day = days[new Date(o.created_at).getDay()];
+            if (day) dayStats[day] += o.total;
+        });
+        const dayChartData = Object.entries(dayStats).map(([day, revenue]) => ({ day, revenue, fullMark: Math.max(...Object.values(dayStats), 1) * 1.2 }));
+
         return {
             totalRevenue,
             totalUsers: users.length,
             avgLTV,
-            revenueChartData,
-            categoryChartData
+            monthlyChartData,
+            categoryChartData,
+            statusChartData,
+            locationChartData,
+            orderValueChartData,
+            acquisitionChartData,
+            scoreChartData,
+            orderStatusChartData,
+            freqChartData,
+            dayChartData
         };
     }, [users, orders]);
 
@@ -300,7 +398,7 @@ const Users = () => {
             </div>
 
             {/* KPI Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
                     <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-600">
                         <DollarSign className="w-6 h-6" />
@@ -319,50 +417,115 @@ const Users = () => {
                         <p className="text-2xl font-bold text-gray-800">₹{Math.round(analytics.avgLTV).toLocaleString()}</p>
                     </div>
                 </div>
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
-                    <div className="w-12 h-12 bg-rose-100 rounded-xl flex items-center justify-center text-rose-600">
-                        <Activity className="w-6 h-6" />
-                    </div>
-                    <div>
-                        <p className="text-gray-500 text-xs font-bold uppercase tracking-wider">Engagement Rate</p>
-                        <p className="text-2xl font-bold text-gray-800">
-                            {Math.round((users.filter(u => u.status === 'Active').length / (users.length||1)) * 100)}%
-                        </p>
-                    </div>
-                </div>
             </div>
 
-            {/* Charts Section */}
-            <div className="grid lg:grid-cols-2 gap-6">
-                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                    <h3 className="font-bold text-gray-800 mb-6 flex items-center gap-2">
-                        <TrendingUp className="w-5 h-5 text-rose-900" /> Revenue Trend
+            {/* Charts Section - Tableau Style Dashboard */}
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                 {/* 1. Revenue Trend (Area) */}
+                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 col-span-1 xl:col-span-2">
+                    <h3 className="font-bold text-gray-800 mb-6 flex items-center gap-2 text-sm">
+                        <TrendingUp className="w-4 h-4 text-rose-900" /> Revenue Trend Over Time
                     </h3>
                     <div className="h-64">
                         <ResponsiveContainer width="100%" height="100%">
-                            <LineChart data={analytics.revenueChartData}>
+                            <AreaChart data={analytics.monthlyChartData}>
+                                <defs>
+                                    <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="#be123c" stopOpacity={0.3}/>
+                                    <stop offset="95%" stopColor="#be123c" stopOpacity={0}/>
+                                    </linearGradient>
+                                </defs>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
                                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} />
-                                <YAxis axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} />
-                                <Tooltip contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}} />
-                                <Line type="monotone" dataKey="value" stroke="#be123c" strokeWidth={3} dot={{fill: '#be123c', strokeWidth: 2}} activeDot={{r: 6}} />
-                            </LineChart>
+                                <YAxis axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} tickFormatter={(value) => `₹${value/1000}k`} />
+                                <Tooltip formatter={(value) => `₹${value.toLocaleString()}`} contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}} />
+                                <Area type="monotone" dataKey="revenue" stroke="#be123c" strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" />
+                            </AreaChart>
                         </ResponsiveContainer>
                     </div>
                  </div>
 
+                 {/* 2. User Status Breakdown (Donut) */}
                  <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                    <h3 className="font-bold text-gray-800 mb-6 flex items-center gap-2">
-                        <ShoppingBag className="w-5 h-5 text-rose-900" /> User Preferences
+                    <h3 className="font-bold text-gray-800 mb-6 flex items-center gap-2 text-sm">
+                        <Activity className="w-4 h-4 text-rose-900" /> User Health Breakdown
                     </h3>
-                    <div className="h-64 flex items-center justify-center">
+                    <div className="h-48 flex items-center justify-center">
+                        <ResponsiveContainer width="100%" height="100%">
+                             <PieChart>
+                                <Pie
+                                    data={analytics.statusChartData}
+                                    innerRadius={50}
+                                    outerRadius={70}
+                                    paddingAngle={5}
+                                    dataKey="value"
+                                >
+                                    {analytics.statusChartData.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={['#10b981', '#3b82f6', '#f59e0b', '#ef4444'][index % 4]} />
+                                    ))}
+                                </Pie>
+                                <Tooltip />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </div>
+                    <div className="flex justify-center flex-wrap gap-2 mt-4 text-xs font-medium text-gray-500">
+                        {analytics.statusChartData.map((entry, index) => (
+                            <div key={entry.name} className="flex items-center gap-1">
+                                <span className="w-2 h-2 rounded-full" style={{backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'][index % 4]}}></span>
+                                {entry.name}: {entry.value}
+                            </div>
+                        ))}
+                    </div>
+                 </div>
+
+                 {/* 3. Order Volume by Month (Bar) */}
+                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <h3 className="font-bold text-gray-800 mb-6 flex items-center gap-2 text-sm">
+                        <ShoppingBag className="w-4 h-4 text-rose-900" /> Order Volume
+                    </h3>
+                    <div className="h-64">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={analytics.monthlyChartData}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} />
+                                <YAxis axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} />
+                                <Tooltip contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}} />
+                                <Bar dataKey="orders" fill="#f43f5e" radius={[4, 4, 0, 0]} />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                 </div>
+
+                 {/* 4. Top Locations by Revenue (Horizontal Bar) */}
+                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 col-span-1 xl:col-span-2">
+                    <h3 className="font-bold text-gray-800 mb-6 flex items-center gap-2 text-sm">
+                        <MapPin className="w-4 h-4 text-rose-900" /> Revenue by Location
+                    </h3>
+                    <div className="h-64">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={analytics.locationChartData} layout="vertical" margin={{ left: 20 }}>
+                                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f0f0f0" />
+                                <XAxis type="number" axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} tickFormatter={(value) => `₹${value/1000}k`} />
+                                <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{fill: '#4b5563', fontSize: 12}} />
+                                <Tooltip formatter={(value) => `₹${value.toLocaleString()}`} contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}} />
+                                <Bar dataKey="revenue" fill="#881337" radius={[0, 4, 4, 0]} barSize={20} />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                 </div>
+
+                 {/* 5. User Preferences/Categories (Pie) */}
+                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <h3 className="font-bold text-gray-800 mb-6 flex items-center gap-2 text-sm">
+                        <Star className="w-4 h-4 text-rose-900" /> Category Preferences
+                    </h3>
+                    <div className="h-48 flex items-center justify-center">
                         <ResponsiveContainer width="100%" height="100%">
                              <PieChart>
                                 <Pie
                                     data={analytics.categoryChartData}
-                                    innerRadius={60}
-                                    outerRadius={80}
-                                    paddingAngle={5}
+                                    innerRadius={0}
+                                    outerRadius={70}
                                     dataKey="value"
                                 >
                                     {analytics.categoryChartData.map((entry, index) => (
@@ -373,7 +536,7 @@ const Users = () => {
                             </PieChart>
                         </ResponsiveContainer>
                     </div>
-                    <div className="flex justify-center flex-wrap gap-4 text-xs font-medium text-gray-500">
+                    <div className="flex justify-center flex-wrap gap-2 mt-4 text-xs font-medium text-gray-500">
                         {analytics.categoryChartData.map((entry, index) => (
                             <div key={entry.name} className="flex items-center gap-1">
                                 <span className="w-2 h-2 rounded-full" style={{backgroundColor: COLORS[index % COLORS.length]}}></span>
@@ -382,6 +545,130 @@ const Users = () => {
                         ))}
                     </div>
                  </div>
+
+                 {/* 6. Order Value Distribution (Bar) */}
+                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <h3 className="font-bold text-gray-800 mb-6 flex items-center gap-2 text-sm">
+                        <DollarSign className="w-4 h-4 text-rose-900" /> Ticket Size Distribution
+                    </h3>
+                    <div className="h-64">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={analytics.orderValueChartData}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} />
+                                <YAxis axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} />
+                                <Tooltip contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}} />
+                                <Bar dataKey="value" fill="#fb7185" radius={[4, 4, 0, 0]} />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                 </div>
+
+
+                 {/* 8. Purchase Frequency (Bar) */}
+                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <h3 className="font-bold text-gray-800 mb-6 flex items-center gap-2 text-sm">
+                        <ShoppingBag className="w-4 h-4 text-rose-900" /> Purchase Frequency
+                    </h3>
+                    <div className="h-64">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={analytics.freqChartData} layout="vertical" margin={{ left: 10 }}>
+                                <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f0f0f0" />
+                                <XAxis type="number" axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} />
+                                <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{fill: '#4b5563', fontSize: 12}} />
+                                <Tooltip contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}} />
+                                <Bar dataKey="value" fill="#be123c" radius={[0, 4, 4, 0]} />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                 </div>
+
+                 {/* 9. Sales by Day of Week (Radar) */}
+                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <h3 className="font-bold text-gray-800 mb-6 flex items-center gap-2 text-sm">
+                        <Calendar className="w-4 h-4 text-rose-900" /> Sales by Day
+                    </h3>
+                    <div className="h-64">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <RadarChart cx="50%" cy="50%" outerRadius="80%" data={analytics.dayChartData}>
+                                <PolarGrid stroke="#f0f0f0" />
+                                <PolarAngleAxis dataKey="day" tick={{fill: '#4b5563', fontSize: 12}} />
+                                <PolarRadiusAxis angle={30} domain={[0, 'auto']} tick={false} axisLine={false} />
+                                <Radar name="Revenue" dataKey="revenue" stroke="#be123c" fill="#be123c" fillOpacity={0.5} />
+                                <Tooltip formatter={(value) => `₹${value.toLocaleString()}`} />
+                            </RadarChart>
+                        </ResponsiveContainer>
+                    </div>
+                 </div>
+
+                 {/* 10. Order Status Distribution (Pie) */}
+                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <h3 className="font-bold text-gray-800 mb-6 flex items-center gap-2 text-sm">
+                        <TrendingUp className="w-4 h-4 text-rose-900" /> Order Statuses
+                    </h3>
+                    <div className="h-64 flex items-center justify-center">
+                        <ResponsiveContainer width="100%" height="100%">
+                             <PieChart>
+                                <Pie
+                                    data={analytics.orderStatusChartData}
+                                    innerRadius={50}
+                                    outerRadius={80}
+                                    paddingAngle={2}
+                                    dataKey="value"
+                                >
+                                    {analytics.orderStatusChartData.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={['#eab308', '#22c55e', '#ef4444', '#8b5cf6'][index % 4]} />
+                                    ))}
+                                </Pie>
+                                <Tooltip />
+                                <Legend />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </div>
+                 </div>
+                 
+                 {/* 11. Customer Acquisition (Area) */}
+                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 col-span-1 xl:col-span-2">
+                    <h3 className="font-bold text-gray-800 mb-6 flex items-center gap-2 text-sm">
+                        <User className="w-4 h-4 text-rose-900" /> Customer Acquisition
+                    </h3>
+                    <div className="h-64">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <AreaChart data={analytics.acquisitionChartData}>
+                                <defs>
+                                    <linearGradient id="colorAcq" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
+                                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
+                                    </linearGradient>
+                                </defs>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} />
+                                <YAxis axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} />
+                                <Tooltip contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}} />
+                                <Area type="monotone" dataKey="newUsers" name="New Customers" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorAcq)" />
+                            </AreaChart>
+                        </ResponsiveContainer>
+                    </div>
+                 </div>
+
+                 {/* 12. Average Order Value by Month (Bar) */}
+                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                    <h3 className="font-bold text-gray-800 mb-6 flex items-center gap-2 text-sm">
+                        <DollarSign className="w-4 h-4 text-rose-900" /> AOV Trend
+                    </h3>
+                    <div className="h-64">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={analytics.monthlyChartData}>
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} />
+                                <YAxis axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 12}} tickFormatter={(value) => `₹${value}`} />
+                                <Tooltip formatter={(value) => `₹${value.toLocaleString()}`} contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}} />
+                                <Bar dataKey="aov" name="Avg Order Value" fill="#0284c7" radius={[4, 4, 0, 0]} />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                 </div>
+
             </div>
 
             {/* Users Table */}
@@ -399,7 +686,7 @@ const Users = () => {
                         />
                     </div>
                     <div className="flex items-center gap-2 overflow-x-auto">
-                        {['all', 'active', 'new', 'churned', 'whales'].map(status => (
+                        {['all', 'active', 'registered', 'new', 'churned', 'whales'].map(status => (
                             <button
                                 key={status}
                                 onClick={() => setFilterStatus(status)}
@@ -422,7 +709,6 @@ const Users = () => {
                                 <th onClick={() => handleSort('name')} className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-rose-900">User Profile</th>
                                 <th onClick={() => handleSort('totalSpend')} className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-rose-900">Lifetime Spend</th>
                                 <th onClick={() => handleSort('orderCount')} className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-rose-900">Orders</th>
-                                <th onClick={() => handleSort('engagementScore')} className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider cursor-pointer hover:text-rose-900">Score</th>
                                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
                                 <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider text-right">Action</th>
                             </tr>
@@ -451,17 +737,6 @@ const Users = () => {
                                     </td>
                                     <td className="px-6 py-4 text-sm text-gray-600">
                                         {user.orderCount} <span className="text-xs text-gray-400 ">orders</span>
-                                    </td>
-                                    <td className="px-6 py-4">
-                                        <div className="flex items-center gap-2">
-                                            <div className="flex-1 w-16 h-2 bg-gray-100 rounded-full overflow-hidden">
-                                                <div 
-                                                  className="h-full bg-emerald-500 rounded-full" 
-                                                  style={{width: `${user.engagementScore}%`}}
-                                                ></div>
-                                            </div>
-                                            <span className="text-xs font-medium text-gray-600">{user.engagementScore}</span>
-                                        </div>
                                     </td>
                                     <td className="px-6 py-4">
                                         <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wide border ${
@@ -493,7 +768,7 @@ const Users = () => {
                             ))}
                              {sortedUsers.length === 0 && (
                                 <tr>
-                                    <td colSpan="6" className="px-6 py-12 text-center text-gray-500">
+                                    <td colSpan="5" className="px-6 py-12 text-center text-gray-500">
                                         No users found matching your filters.
                                     </td>
                                 </tr>
@@ -525,7 +800,7 @@ const Users = () => {
                                     <p className="text-rose-100 flex items-center gap-2 text-sm opacity-90"><MapPin className="w-3 h-3" /> {selectedUser.primaryLocation}</p>
                                 </div>
                             </div>
-                            <div className="grid grid-cols-3 gap-4 mt-8">
+                            <div className="grid grid-cols-2 gap-4 mt-8">
                                 <div className="bg-white/10 p-3 rounded-lg text-center">
                                     <p className="text-xs font-bold uppercase tracking-wider opacity-70">Spend</p>
                                      <p className="text-xl font-bold">₹{selectedUser.totalSpend.toLocaleString()}</p>
@@ -533,10 +808,6 @@ const Users = () => {
                                 <div className="bg-white/10 p-3 rounded-lg text-center">
                                     <p className="text-xs font-bold uppercase tracking-wider opacity-70">Orders</p>
                                      <p className="text-xl font-bold">{selectedUser.orderCount}</p>
-                                </div>
-                                <div className="bg-white/10 p-3 rounded-lg text-center">
-                                    <p className="text-xs font-bold uppercase tracking-wider opacity-70">Score</p>
-                                     <p className="text-xl font-bold">{selectedUser.engagementScore}</p>
                                 </div>
                             </div>
                         </div>

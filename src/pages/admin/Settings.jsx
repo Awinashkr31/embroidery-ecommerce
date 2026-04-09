@@ -22,6 +22,11 @@ const Settings = () => {
 
     const [settings, setSettings] = useState({
         // General
+        announcement_bar: JSON.stringify([
+          "Get 10% off your first order with code SANA10.",
+          "Free shipping on orders over ₹499.",
+          "New festive collection just dropped!"
+        ]),
         contactEmail: '',
         contactPhone: '',
         address: '',
@@ -367,6 +372,46 @@ const Settings = () => {
                 {/* GENERAL TAB */}
                 {activeTab === 'general' && (
                     <div className="space-y-6 animate-in fade-in duration-500">
+                        <div className="bg-white p-6 rounded-xl border border-stone-100 shadow-sm space-y-6">
+                            <h3 className="font-bold text-lg text-stone-900 flex items-center gap-2">
+                                <Globe className="w-5 h-5 text-rose-900" /> Announcement Bar
+                            </h3>
+                            <div>
+                                <label className="block text-sm font-medium text-stone-700 mb-2">Announcements (One per line)</label>
+                                {isEditing ? (
+                                    <textarea
+                                        value={(() => {
+                                            try { return JSON.parse(settings.announcement_bar || '[]').join('\n'); } 
+                                            catch { return ''; }
+                                        })()}
+                                        onChange={(e) => {
+                                            const lines = e.target.value.split('\n');
+                                            handleChange({ target: { name: 'announcement_bar', value: JSON.stringify(lines) } });
+                                        }}
+                                        className="w-full px-4 py-2 rounded-lg border border-stone-200 focus:ring-2 focus:ring-rose-900/20 focus:border-rose-900"
+                                        rows={4}
+                                        placeholder="Enter announcements here, one per line..."
+                                    />
+                                ) : (
+                                    <div className="bg-stone-50 p-4 rounded-lg space-y-2">
+                                        {(() => {
+                                            try {
+                                                const items = JSON.parse(settings.announcement_bar || '[]');
+                                                if (items.length === 0) return <p className="text-stone-500 italic text-sm">No announcements configured.</p>;
+                                                return items.map((item, idx) => (
+                                                    <div key={idx} className="flex gap-2 items-start text-sm text-stone-700 font-medium">
+                                                        <span className="text-rose-900 mt-0.5">•</span> {item}
+                                                    </div>
+                                                ));
+                                            } catch {
+                                                return <p className="text-stone-500 text-sm">Error loading announcements.</p>;
+                                            }
+                                        })()}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
                         <div className="bg-white p-6 rounded-xl border border-stone-100 shadow-sm space-y-6">
                             <h3 className="font-bold text-lg text-stone-900 flex items-center gap-2">
                                 <Globe className="w-5 h-5 text-rose-900" /> Contact Information

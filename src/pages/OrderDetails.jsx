@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ChevronLeft, Package, MapPin, CreditCard, Clock, Calendar, AlertTriangle, Printer, Download, Star, Loader, HelpCircle, RotateCcw, MessageSquare, X } from 'lucide-react';
+import { ChevronLeft, Package, MapPin, CreditCard, Clock, Calendar, AlertTriangle, Printer, Download, Star, Loader, HelpCircle, RotateCcw, MessageSquare, X, Ban } from 'lucide-react';
 import { supabase } from '../config/supabase';
 import OrderStatusStepper from '../components/orders/OrderStatusStepper';
 import { useAuth } from '../context/AuthContext';
@@ -16,6 +16,8 @@ const OrderDetails = () => {
     
     const [loading, setLoading] = useState(true);
     const [order, setOrder] = useState(null);
+    const [isCancelling, setIsCancelling] = useState(false);
+    const [cancelPromptState, setCancelPromptState] = useState(false);
 
     // Rate Purchase modal state
     const [reviewModal, setReviewModal] = useState({ isOpen: false, item: null });
@@ -159,6 +161,42 @@ const OrderDetails = () => {
         }
     };
 
+    // --- Cancel Logic ---
+    const handleCancelOrder = async () => {
+        if (!cancelPromptState) {
+            setCancelPromptState(true);
+            const isDirectCancel = ['pending', 'confirmed'].includes(order.status.toLowerCase());
+            const confirmMsg = isDirectCancel
+                ? 'Tap Cancel Order again to confirm cancellation.'
+                : 'Tap Cancel Order again to request cancellation (admin approval needed).';
+            addToast(confirmMsg, 'info');
+            return;
+        }
+
+        setCancelPromptState(false);
+        setIsCancelling(true);
+        try {
+            // Use RPC function safely
+            const { data, error } = await supabase.rpc('cancel_order', { 
+                p_order_id: order.id, 
+                p_email: currentUser.email 
+            });
+
+            if (error) throw error;
+            if (!data.success) throw new Error(data.message);
+            
+            // Optimistic update local state
+            const newStatus = data.new_status;
+            setOrder(prev => ({ ...prev, status: newStatus }));
+            addToast(data.message, 'success');
+        } catch (error) {
+            console.error('Cancellation error:', error);
+            addToast(error.message || 'Failed to cancel order', 'error');
+        } finally {
+            setIsCancelling(false);
+        }
+    };
+
     // --- Return / Replace Logic ---
     const [isReturnModalOpen, setIsReturnModalOpen] = useState(false);
     const [returnType, setReturnType] = useState('replace'); // 'replace' | 'return'
@@ -200,8 +238,7 @@ const OrderDetails = () => {
                     order_id: order.id,
                     status: status,
                     timestamp: new Date().toISOString(),
-                    location: 'Customer Portal',
-                    description: `User requested ${returnType}. Reason: ${returnReason}. Video Confirmed: Yes.`
+                    remarks: `Customer Portal: User requested ${returnType}. Reason: ${returnReason}. Video Confirmed: Yes.`
                 }]);
 
             if (logError) console.warn('Log insert failed', logError); // Non-blocking
@@ -238,6 +275,7 @@ const OrderDetails = () => {
     if (!order) return null;
 
     const isDelivered = order.status?.toLowerCase() === 'delivered' || order.status?.toLowerCase() === 'completed';
+    const isCancellable = ['pending', 'confirmed', 'processing'].includes(order.status?.toLowerCase());
 
     return (
         <div className="min-h-screen bg-[#fdfbf7] pt-20 md:pt-28 pb-12 font-body">
@@ -252,7 +290,7 @@ const OrderDetails = () => {
                     <div className="flex-1 space-y-6">
                         
                         {/* Header Card */}
-                        <div className="bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden">
+                        <div className="card-premium overflow-hidden">
                             <div className="p-6 border-b border-stone-100 flex flex-wrap justify-between items-start gap-4">
                                 <div>
                                     <h1 className="text-2xl font-heading font-bold text-stone-900 mb-1">Order #{order.id.slice(0, 6).toUpperCase()}</h1>
@@ -306,6 +344,26 @@ const OrderDetails = () => {
                                             </button>
                                         </>
                                     )}
+                                    {isCancellable && (
+                                        <button 
+                                            onClick={handleCancelOrder}
+                                            disabled={isCancelling}
+                                            className={`flex items-center gap-2 px-4 py-2.5 bg-white border rounded-xl font-bold text-sm transition-all shadow-sm ${
+                                                cancelPromptState 
+                                                ? 'border-red-500 bg-red-50 text-red-700 hover:bg-red-100' 
+                                                : 'border-stone-200 text-red-600 hover:border-red-200 hover:bg-red-50/50'
+                                            }`}
+                                        >
+                                            {isCancelling ? (
+                                                <Loader className="w-4 h-4 animate-spin text-red-600" />
+                                            ) : (
+                                                <Ban className="w-4 h-4" />
+                                            )}
+                                            {cancelPromptState ? 'Confirm' : (
+                                                 ['pending', 'confirmed'].includes(order.status?.toLowerCase()) ? 'Cancel Order' : 'Cancel Request'
+                                            )}
+                                        </button>
+                                    )}
                                 </div>
                                 
                                 <button className="flex items-center gap-2 px-4 py-2.5 text-rose-900 font-bold text-sm hover:bg-rose-50 rounded-xl transition-colors">
@@ -315,7 +373,7 @@ const OrderDetails = () => {
                         </div>
 
                         {/* Items List */}
-                        <div className="bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden">
+                        <div className="card-premium overflow-hidden">
                             <div className="p-4 bg-stone-50 border-b border-stone-100">
                                 <h3 className="font-bold text-stone-800 flex items-center gap-2">
                                     <Package className="w-5 h-5 text-stone-400" />
@@ -464,8 +522,8 @@ const OrderDetails = () => {
 
             {/* Return / Replace Modal */}
             {isReturnModalOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-md">
+                    <div className="glass-panel bg-white/95 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-in fade-in zoom-in-95 duration-300 border border-white/60">
                         <div className="p-6 border-b border-stone-100 flex justify-between items-center">
                             <h2 className="text-lg font-bold text-stone-900">Return or Replace Item</h2>
                             <button 
@@ -481,8 +539,10 @@ const OrderDetails = () => {
                         <div className="p-6 space-y-6">
                             
                             {/* 1. Unboxing Video Warning - IMPORTANT */}
-                            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-3">
-                                <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                            <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-4 flex gap-3 shadow-sm shadow-amber-100/50">
+                                <div className="w-10 h-10 bg-amber-100 rounded-full flex items-center justify-center shrink-0">
+                                    <AlertTriangle className="w-5 h-5 text-amber-600" />
+                                </div>
                                 <div>
                                     <h4 className="font-bold text-amber-800 text-sm">Unboxing Video Required</h4>
                                     <p className="text-xs text-amber-700 mt-1 leading-relaxed">
@@ -498,7 +558,7 @@ const OrderDetails = () => {
                                     <button 
                                         type="button"
                                         onClick={() => setReturnType('replace')}
-                                        className={`px-4 py-3 rounded-xl border text-sm font-bold transition-all ${returnType === 'replace' ? 'bg-rose-50 border-rose-500 text-rose-700' : 'bg-white border-stone-200 text-stone-600 hover:border-stone-300'}`}
+                                        className={`px-4 py-3 rounded-xl border-2 text-sm font-bold transition-all duration-300 ${returnType === 'replace' ? 'bg-rose-50 border-rose-500 text-rose-700 ring-4 ring-rose-500/10 shadow-sm' : 'bg-white border-stone-100 text-stone-600 hover:border-stone-300 hover:bg-stone-50'}`}
                                     >
                                         <div className="flex items-center justify-center gap-2">
                                             <RotateCcw className="w-4 h-4" /> Replace Item
@@ -507,7 +567,7 @@ const OrderDetails = () => {
                                     <button 
                                         type="button"
                                         onClick={() => setReturnType('return')}
-                                        className={`px-4 py-3 rounded-xl border text-sm font-bold transition-all ${returnType === 'return' ? 'bg-rose-50 border-rose-500 text-rose-700' : 'bg-white border-stone-200 text-stone-600 hover:border-stone-300'}`}
+                                        className={`px-4 py-3 rounded-xl border-2 text-sm font-bold transition-all duration-300 ${returnType === 'return' ? 'bg-rose-50 border-rose-500 text-rose-700 ring-4 ring-rose-500/10 shadow-sm' : 'bg-white border-stone-100 text-stone-600 hover:border-stone-300 hover:bg-stone-50'}`}
                                     >
                                         <div className="flex items-center justify-center gap-2">
                                             <RotateCcw className="w-4 h-4" /> Return for Refund
@@ -523,7 +583,7 @@ const OrderDetails = () => {
                                     value={returnReason}
                                     onChange={(e) => setReturnReason(e.target.value)}
                                     placeholder="Please describe the issue..."
-                                    className="w-full px-4 py-3 rounded-xl border border-stone-200 text-sm focus:ring-2 focus:ring-rose-900/10 min-h-[100px]"
+                                    className="w-full px-4 py-3 rounded-xl border border-stone-200 text-sm focus:ring-4 focus:ring-rose-900/10 focus:border-rose-900 outline-none min-h-[100px] bg-white/50 focus:bg-white transition-all shadow-sm"
                                 />
                             </div>
 
@@ -574,8 +634,8 @@ const OrderDetails = () => {
 
             {/* ── Rate Purchase Modal ── */}
             {reviewModal.isOpen && reviewModal.item && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
-                    <div className="bg-white rounded-2xl w-full sm:max-w-md shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300">
+                <div className="fixed inset-0 bg-black/40 backdrop-blur-md z-50 flex items-end sm:items-center justify-center p-4">
+                    <div className="glass-panel bg-white/95 rounded-2xl w-full sm:max-w-md shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-300 border border-white/60">
                         {/* Header */}
                         <div className="p-6 border-b border-stone-100 flex items-center gap-4">
                             <div className="w-14 h-14 rounded-xl bg-stone-100 overflow-hidden shrink-0">

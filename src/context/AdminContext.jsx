@@ -46,6 +46,40 @@ export const AdminProvider = ({ children }) => {
                  console.error("AdminContext: Error fetching users", usersError);
             }
 
+            let allUsers = [...(usersData || [])];
+
+            try {
+                // Fetch potential users from other interactions (bookings, requests, messages)
+                const [mehndiData, customData, msgData] = await Promise.all([
+                    supabase.from('mehndi_bookings').select('email, name, created_at').then(res => res.data || []),
+                    supabase.from('custom_requests').select('email, name, created_at').then(res => res.data || []),
+                    supabase.from('messages').select('email, name, created_at').then(res => res.data || [])
+                ]);
+
+                const emailSet = new Set(allUsers.map(u => u.email?.toLowerCase().trim()));
+
+                const processExtraUser = (u) => {
+                    if (!u.email) return;
+                    const email = u.email.toLowerCase().trim();
+                    if (!emailSet.has(email)) {
+                        emailSet.add(email);
+                        allUsers.push({
+                            email: email,
+                            display_name: u.name || 'Guest User',
+                            photo_url: null,
+                            created_at: u.created_at,
+                            last_login: u.created_at
+                        });
+                    }
+                };
+
+                mehndiData.forEach(processExtraUser);
+                customData.forEach(processExtraUser);
+                msgData.forEach(processExtraUser);
+            } catch (err) {
+                console.error("Error fetching extra users", err);
+            }
+
             // 3. Fetch secure revenue from RPC
             const { data: revenueData, error: revenueError } = await supabase.rpc('get_total_revenue');
             if (revenueError) {
@@ -55,7 +89,7 @@ export const AdminProvider = ({ children }) => {
             }
 
             setOrders(ordersData || []);
-            setUsers(usersData || []);
+            setUsers(allUsers || []);
             
         } catch (error) {
             console.error('Error fetching admin data:', error);

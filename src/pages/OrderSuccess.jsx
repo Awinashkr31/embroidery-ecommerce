@@ -96,11 +96,36 @@ const OrderSuccess = () => {
             <div className="container-custom max-w-4xl">
                 {/* Success Header */}
                 <div className="text-center mb-12">
-                    <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 animate-in zoom-in-50 duration-500">
-                        <CheckCircle className="w-10 h-10 text-green-600" />
+                    {/* Animated Checkmark with Confetti */}
+                    <div className="relative w-24 h-24 mx-auto mb-6">
+                        {/* Confetti Particles */}
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <div className="confetti-particle confetti-1"></div>
+                            <div className="confetti-particle confetti-2"></div>
+                            <div className="confetti-particle confetti-3"></div>
+                            <div className="confetti-particle confetti-4"></div>
+                            <div className="confetti-particle confetti-5"></div>
+                            <div className="confetti-particle confetti-6"></div>
+                        </div>
+                        {/* Growing Circle */}
+                        <div className="w-24 h-24 bg-emerald-100 rounded-full flex items-center justify-center animate-circle-grow shadow-lg shadow-emerald-200/50">
+                            {/* Animated SVG Checkmark */}
+                            <svg className="w-12 h-12" viewBox="0 0 24 24" fill="none">
+                                <path 
+                                    d="M5 13l4 4L19 7" 
+                                    stroke="#059669" 
+                                    strokeWidth="3" 
+                                    strokeLinecap="round" 
+                                    strokeLinejoin="round" 
+                                    className="animate-draw-check"
+                                />
+                            </svg>
+                        </div>
+                        {/* Glow ring */}
+                        <div className="absolute inset-0 rounded-full bg-emerald-400/20 animate-ping"></div>
                     </div>
-                    <h1 className="text-3xl md:text-4xl font-heading font-bold text-stone-900 mb-4">Order Placed Successfully!</h1>
-                    <p className="text-stone-600 max-w-lg mx-auto text-lg">
+                    <h1 className="text-3xl md:text-4xl font-heading font-bold text-stone-900 mb-4 animate-scale-in">Order Placed Successfully!</h1>
+                    <p className="text-stone-600 max-w-lg mx-auto text-lg animate-stagger-fade" style={{ animationDelay: '0.3s' }}>
                         Thank you for your purchase. We've received your order and will begin processing it right away.
                     </p>
                 </div>
@@ -109,7 +134,7 @@ const OrderSuccess = () => {
                     {/* Left Column: Order Details */}
                     <div className="space-y-6">
                         {/* Order Info Card */}
-                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-stone-100">
+                        <div className="card-premium p-6 animate-stagger-fade" style={{ animationDelay: '0.2s' }}>
                             <h2 className="text-lg font-heading font-bold text-stone-900 mb-4 flex items-center gap-2">
                                 <Package className="w-5 h-5 text-rose-900" />
                                 Order Details
@@ -136,22 +161,9 @@ const OrderSuccess = () => {
                             </div>
                         </div>
 
-                        {/* Shipping Address Card */}
-                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-stone-100">
-                             <h2 className="text-lg font-heading font-bold text-stone-900 mb-4 flex items-center gap-2">
-                                <MapPin className="w-5 h-5 text-rose-900" />
-                                Delivery Address
-                            </h2>
-                            <div className="text-stone-600 text-sm leading-relaxed">
-                                <p className="font-bold text-stone-900 mb-1">{order.customer_name}</p>
-                                <p>{order.shipping_address?.address}</p>
-                                <p>{order.shipping_address?.city}, {order.shipping_address?.state} {order.shipping_address?.zipCode}</p>
-                                <p className="mt-2 text-stone-500">{order.customer_phone}</p>
-                            </div>
-                        </div>
 
                         {/* Unboxing Video Reminder */}
-                        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 flex gap-4">
+                        <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-6 flex gap-4 animate-stagger-fade shadow-sm shadow-amber-100/30" style={{ animationDelay: '0.5s' }}>
                             <AlertTriangle className="w-6 h-6 text-amber-600 shrink-0" />
                             <div>
                                 <h3 className="font-bold text-amber-900 text-sm mb-1">Important: Unboxing Video Required</h3>
@@ -162,74 +174,13 @@ const OrderSuccess = () => {
                         </div>
                     </div>
 
-                    {/* Right Column: Items Summary */}
-                     <div className="bg-white p-6 rounded-2xl shadow-sm border border-stone-100">
-                        <h2 className="text-lg font-heading font-bold text-stone-900 mb-6">Items Ordered</h2>
-                        
-                        <div className="space-y-4 mb-6 max-h-80 overflow-y-auto custom-scrollbar pr-2">
-                            {Array.isArray(order.items) && order.items.length > 0 ? (
-                                order.items.map((item, idx) => (
-                                    <div key={idx} className="flex gap-4 py-2 border-b border-stone-50 last:border-0">
-                                        <div className="w-16 h-16 rounded-lg bg-stone-100 overflow-hidden shrink-0">
-                                            {item.image ? (
-                                                <img src={item.image} alt={item.name || 'Product'} className="w-full h-full object-cover" />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center bg-stone-200">
-                                                    <Package className="w-6 h-6 text-stone-400" />
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <h4 className="font-bold text-stone-800 text-sm truncate">{item.name || 'Unknown Item'}</h4>
-                                            <div className="text-xs text-stone-500 mt-1">
-                                                {item.selectedSize && <span className="mr-2">Size: {item.selectedSize}</span>}
-                                                <span>Qty: {item.quantity || 1}</span>
-                                            </div>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className="font-bold text-stone-900 text-sm">₹{((item.price || 0) * (item.quantity || 1)).toLocaleString()}</p>
-                                        </div>
-                                    </div>
-                                ))
-                            ) : (
-                                <p className="text-sm text-stone-500 italic">No items details available.</p>
-                            )}
-                        </div>
-
-                        <div className="space-y-2 pt-4 border-t border-stone-100">
-                            <div className="flex justify-between text-stone-600 text-sm">
-                                <span>Subtotal</span>
-                                <span>₹{order.subtotal?.toLocaleString()}</span>
-                            </div>
-                             <div className="flex justify-between text-stone-600 text-sm">
-                                <span>Shipping</span>
-                                <span className={order.shipping_cost === 0 ? "text-emerald-700 font-bold" : ""}>
-                                    {order.shipping_cost === 0 ? 'Free' : `₹${order.shipping_cost}`}
-                                </span>
-                            </div>
-                            {order.discount > 0 && (
-                                <div className="flex justify-between text-emerald-600 text-sm font-bold">
-                                    <span>Discount</span>
-                                    <span>-₹{order.discount.toLocaleString()}</span>
-                                </div>
-                            )}
-                            <div className="flex justify-between text-lg font-heading font-bold text-stone-900 pt-3 border-t border-stone-100 mt-2">
-                                <div className="flex flex-col">
-                                    <span>Total</span>
-                                    <span className="text-[10px] text-stone-400 font-normal mt-0.5">(Incl. of all taxes)</span>
-                                </div>
-                                <span className="text-rose-900">₹{order.total?.toLocaleString()}</span>
-                            </div>
-                        </div>
-                        
-                        <div className="mt-8 space-y-3">
-                             <Link to="/profile" className="block w-full bg-stone-900 text-white py-3 rounded-xl hover:bg-stone-800 transition font-bold text-center uppercase tracking-wide text-sm">
-                                View Order Details
-                            </Link>
-                            <Link to="/shop" className="block w-full bg-white border border-stone-200 text-stone-700 py-3 rounded-xl hover:bg-stone-50 transition font-bold text-center uppercase tracking-wide text-sm">
-                                Continue Shopping
-                            </Link>
-                        </div>
+                    <div className="flex flex-col sm:flex-row gap-3 mt-8 max-w-lg mx-auto w-full animate-stagger-fade" style={{ animationDelay: '0.6s' }}>
+                         <Link to="/profile" className="flex-1 bg-stone-900 text-white py-3.5 rounded-xl hover:bg-stone-800 transition font-bold text-center uppercase tracking-wide text-sm shadow-lg">
+                            View Order Details
+                        </Link>
+                        <Link to="/shop" className="flex-1 bg-white border border-stone-200 text-stone-700 py-3.5 rounded-xl hover:bg-stone-50 transition font-bold text-center uppercase tracking-wide text-sm">
+                            Continue Shopping
+                        </Link>
                     </div>
                 </div>
             </div>

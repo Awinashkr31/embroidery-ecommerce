@@ -9,6 +9,11 @@ export const useSettings = () => useContext(SettingsContext);
 
 // Default structure matching exactly your JSON
 const DEFAULT_SETTINGS = {
+    announcement_bar: [
+      "Get 10% off your first order with code SANA10.",
+      "Free shipping on orders over ₹499.",
+      "New festive collection just dropped!"
+    ],
     hero: {
         title: "Elevate Your Style",
         subtitle: "Discover our latest collection of premium clothing",
@@ -135,7 +140,7 @@ export const SettingsProvider = ({ children }) => {
 
             const newSettings = data.reduce((acc, curr) => {
                 // Attempt to parse JSON strings for specific keys if they are objects/arrays
-                if (['mehndi_packages', 'hero', 'social_links', 'about', 'categories', 'policies', 'payment_methods'].includes(curr.setting_key)) {
+                if (['announcement_bar', 'mehndi_packages', 'hero', 'social_links', 'about', 'categories', 'policies', 'payment_methods'].includes(curr.setting_key)) {
                     try {
                         acc[curr.setting_key] = JSON.parse(curr.setting_value);
                     } catch {

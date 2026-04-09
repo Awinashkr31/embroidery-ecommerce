@@ -37,6 +37,7 @@ const Gallery = lazy(() => import('./pages/Gallery'));
 const Contact = lazy(() => import('./pages/Contact'));
 const Cart = lazy(() => import('./pages/Cart'));
 const Checkout = lazy(() => import('./pages/Checkout'));
+const OrderFailed = lazy(() => import('./pages/OrderFailed'));
 
 // Admin Components
 const AdminLogin = lazy(() => import('./pages/admin/AdminLogin'));
@@ -60,6 +61,7 @@ const NotFound = lazy(() => import('./pages/NotFound'));
 
 import ProtectedRoute from './components/admin/ProtectedRoute'
 import ConditionalLayout from './components/ConditionalLayout'
+import ChatWidget from './components/ChatWidget'
 
 // Loading Component
 const PageLoader = () => (
@@ -113,7 +115,8 @@ function App() {
                 <div className="flex flex-col min-h-screen pb-16 md:pb-0">
                   <ConditionalLayout>
                     <Navbar />
-                    <main className="flex-grow pt-20">
+                    <ChatWidget />
+                    <main className="flex-grow">
                       <Suspense fallback={<PageLoader />}>
                         <Outlet />
                       </Suspense>
@@ -138,6 +141,7 @@ function App() {
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/wishlist" element={<Wishlist />} />
                 <Route path="/order-success" element={<OrderSuccess />} />
+                <Route path="/order-failed" element={<OrderFailed />} />
                 <Route path="/order-confirmation" element={<OrderConfirmation />} />
                 <Route path="/order/:id" element={<OrderDetails />} />
                 <Route path="*" element={<NotFound />} />

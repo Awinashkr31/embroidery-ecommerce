@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import AnnouncementBar from './AnnouncementBar';
 import { 
   ShoppingCart, 
   Menu, 
@@ -10,7 +11,7 @@ import {
   ShoppingBag,
   Bell,
   Trash2,
-  Search,
+
   ChevronDown,
   Package,
   MapPin
@@ -24,6 +25,7 @@ const Navbar = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+
   
   // Notification State
   const [notifications, setNotifications] = useState([]);
@@ -145,6 +147,8 @@ const Navbar = () => {
     }
   };
 
+
+
   const navLinks = [
     { name: 'Home', path: '/' },
     { name: 'Shop', path: '/shop' },
@@ -159,13 +163,14 @@ const Navbar = () => {
 
   return (
     <>
-    <nav
-  className={`fixed top-0 w-full z-50 transition-all duration-500 ease-in-out
-    ${isScrolled
-      ? 'bg-white/98 backdrop-blur-2xl border-b border-stone-100 shadow-lg shadow-black/5 py-2 px-2 md:px-12 lg:px-20'
-      : 'bg-white/50 backdrop-blur-sm py-3 px-2 md:px-12 lg:px-20'
-    }`}
-    >
+    <header className="sticky top-0 w-full z-50 flex flex-col transition-all duration-500 ease-in-out">
+      <nav
+        className={`w-full relative z-20 transition-all duration-500 ease-in-out
+          ${isScrolled
+            ? 'bg-white/98 backdrop-blur-2xl border-b border-stone-100 shadow-lg shadow-black/5 py-2 px-2 md:px-12 lg:px-20'
+            : 'bg-white/50 backdrop-blur-sm py-3 px-2 md:px-12 lg:px-20'
+          }`}
+      >
       <div className="container-custom">
         <div className="flex items-center justify-between">
 
@@ -217,69 +222,75 @@ const Navbar = () => {
           <div className="flex items-center justify-end space-x-2 lg:space-x-4 lg:w-1/4">
 
 
-             
              {/* Wishlist */}
             <Link to="/wishlist" className="p-2 text-stone-600 hover:text-rose-900 transition-colors rounded-full hover:bg-stone-100" aria-label="Wishlist">
                <Heart className="w-5 h-5" />
             </Link>
             
              {/* Notifications */}
-             {currentUser && (
-                <div className="relative" ref={notifRef}>
-                    <button 
-                        onClick={() => setIsNotifOpen(!isNotifOpen)}
-                        className="relative p-2 text-stone-600 hover:text-rose-900 transition-colors rounded-full hover:bg-stone-100"
-                        aria-label="Notifications"
-                    >
-                        <Bell className="w-5 h-5" />
-                        {unreadCount > 0 && (
-                            <span className="absolute top-1.5 right-1.5 bg-rose-500 text-white text-[8px] font-bold rounded-full h-2.5 w-2.5 animate-pulse"></span>
-                        )}
-                    </button>
+             {/* Notifications */}
+             <div className="relative" ref={notifRef}>
+                {currentUser ? (
+                    <>
+                        <button 
+                            onClick={() => setIsNotifOpen(!isNotifOpen)}
+                            className="relative p-2 text-stone-600 hover:text-rose-900 transition-colors rounded-full hover:bg-stone-100"
+                            aria-label="Notifications"
+                        >
+                            <Bell className="w-5 h-5" />
+                            {unreadCount > 0 && (
+                                <span className="absolute top-1.5 right-1.5 bg-rose-500 text-white text-[8px] font-bold rounded-full h-2.5 w-2.5 animate-pulse"></span>
+                            )}
+                        </button>
 
-                    {isNotifOpen && (
-                        <div className="absolute right-0 mt-4 w-72 md:w-80 bg-white rounded-2xl shadow-xl py-2 ring-1 ring-black ring-opacity-5 origin-top-right transform transition-all duration-300 z-50 overflow-hidden border border-stone-100">
-                           <div className="px-5 py-3 border-b border-stone-50 flex justify-between items-center bg-stone-50/50">
-                                <h3 className="font-heading font-bold text-sm text-stone-900">Notifications</h3>
-                                <span className="px-2 py-0.5 bg-rose-100 text-rose-800 text-[10px] rounded-full font-bold">{unreadCount} New</span>
-                            </div>
-                            <div className="max-h-80 overflow-y-auto">
-                                {notifications.length > 0 ? (
-                                    notifications.map(notif => (
-                                        <div 
-                                            key={notif.id} 
-                                            onClick={() => !notif.is_read && handleMarkRead(notif.id)}
-                                            className={`px-5 py-3 border-b border-stone-50 hover:bg-stone-50 cursor-pointer transition-colors ${!notif.is_read ? 'bg-orange-50/30' : ''}`}
-                                        >
-                                            <div className="flex justify-between items-start mb-1 gap-2">
-                                                <h4 className={`text-xs flex-1 ${!notif.is_read ? 'font-bold text-stone-900' : 'font-medium text-stone-600'}`}>{notif.title}</h4>
-                                                <button 
-                                                    onClick={(e) => handleDeleteNotification(notif.id, e)}
-                                                    className="text-stone-300 hover:text-rose-600 transition-colors p-1"
-                                                    aria-label="Delete notification"
-                                                >
-                                                    <Trash2 className="w-3 h-3" />
-                                                </button>
+                        {isNotifOpen && (
+                            <div className="absolute right-0 mt-4 w-72 md:w-80 bg-white rounded-2xl shadow-xl py-2 ring-1 ring-black ring-opacity-5 origin-top-right transform transition-all duration-300 z-50 overflow-hidden border border-stone-100">
+                               <div className="px-5 py-3 border-b border-stone-50 flex justify-between items-center bg-stone-50/50">
+                                    <h3 className="font-heading font-bold text-sm text-stone-900">Notifications</h3>
+                                    <span className="px-2 py-0.5 bg-rose-100 text-rose-800 text-[10px] rounded-full font-bold">{unreadCount} New</span>
+                                </div>
+                                <div className="max-h-80 overflow-y-auto">
+                                    {notifications.length > 0 ? (
+                                        notifications.map(notif => (
+                                            <div 
+                                                key={notif.id} 
+                                                onClick={() => !notif.is_read && handleMarkRead(notif.id)}
+                                                className={`px-5 py-3 border-b border-stone-50 hover:bg-stone-50 cursor-pointer transition-colors ${!notif.is_read ? 'bg-orange-50/30' : ''}`}
+                                            >
+                                                <div className="flex justify-between items-start mb-1 gap-2">
+                                                    <h4 className={`text-xs flex-1 ${!notif.is_read ? 'font-bold text-stone-900' : 'font-medium text-stone-600'}`}>{notif.title}</h4>
+                                                    <button 
+                                                        onClick={(e) => handleDeleteNotification(notif.id, e)}
+                                                        className="text-stone-300 hover:text-rose-600 transition-colors p-1"
+                                                        aria-label="Delete notification"
+                                                    >
+                                                        <Trash2 className="w-3 h-3" />
+                                                    </button>
+                                                </div>
+                                                <p className="text-xs text-stone-500 line-clamp-2 leading-relaxed">{notif.message}</p>
                                             </div>
-                                            <p className="text-xs text-stone-500 line-clamp-2 leading-relaxed">{notif.message}</p>
+                                        ))
+                                    ) : (
+                                        <div className="px-4 py-8 text-center text-stone-400 text-xs">
+                                            No recent notifications
                                         </div>
-                                    ))
-                                ) : (
-                                    <div className="px-4 py-8 text-center text-stone-400 text-xs">
-                                        No recent notifications
-                                    </div>
-                                )}
+                                    )}
+                                </div>
                             </div>
-                        </div>
-                    )}
-                </div>
-            )}
+                        )}
+                    </>
+                ) : (
+                    <Link to="/login" className="relative p-2 text-stone-600 hover:text-rose-900 transition-colors rounded-full hover:bg-stone-100 block" aria-label="Notifications via Login">
+                         <Bell className="w-5 h-5" />
+                    </Link>
+                )}
+             </div>
             
             {/* Cart */}
             <Link to="/cart" className="relative p-2 text-stone-600 hover:text-rose-900 transition-colors rounded-full hover:bg-stone-100 group" aria-label="Cart">
-              <ShoppingBag className="w-5 h-5 group-hover:scale-110 transition-transform" />
+              <ShoppingBag className={`w-5 h-5 group-hover:scale-110 transition-transform ${cartCount > 0 ? 'animate-cart-bounce' : ''}`} key={cartCount} />
               {cartCount > 0 && (
-                <span className="absolute top-1 right-0.5 bg-rose-900 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center shadow-lg border-2 border-white">
+                <span className="absolute top-1 right-0.5 bg-rose-900 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center shadow-lg border-2 border-white animate-badge-pop" key={`badge-${cartCount}`}>
                   {cartCount}
                 </span>
               )}
@@ -359,6 +370,10 @@ const Navbar = () => {
         </div>
       </div>
     </nav>
+      <div className={`transition-all duration-300 overflow-hidden ${isScrolled ? 'h-0 opacity-0 min-h-0' : 'h-auto opacity-100'}`}>
+        <AnnouncementBar />
+      </div>
+    </header>
 
     {/* Mobile Side Drawer */}
     <div className={`fixed inset-0 z-[60] lg:hidden transition-all duration-500 ${isMobileMenuOpen ? 'visible' : 'invisible'}`}>
@@ -425,6 +440,8 @@ const Navbar = () => {
             </div>
         </div>
     </div>
+
+
     </>
   );
 };

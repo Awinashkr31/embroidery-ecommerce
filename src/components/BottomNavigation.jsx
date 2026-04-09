@@ -30,7 +30,8 @@ const BottomNavigation = () => {
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
     >
       <div className="flex items-stretch h-16">
-        {navItems.map(({ to, label, Icon, end, badge }) => (
+        {/* eslint-disable-next-line no-unused-vars */}
+        {navItems.map(({ to, label, Icon: IconComponent, end, badge }) => (
           <NavLink
             key={to}
             to={to}
@@ -49,7 +50,7 @@ const BottomNavigation = () => {
                 <div className={`relative flex items-center justify-center w-11 h-7 rounded-xl transition-all duration-200 ${
                   isActive ? 'bg-rose-900/10' : ''
                 }`}>
-                  <Icon
+                  <IconComponent
                     size={20}
                     strokeWidth={isActive ? 2.5 : 2}
                     className={`transition-colors duration-200 ${
@@ -59,7 +60,7 @@ const BottomNavigation = () => {
 
                   {/* Badge */}
                   {badge > 0 && (
-                    <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 bg-rose-600 text-white text-[9px] font-black flex items-center justify-center rounded-full border border-white leading-none">
+                    <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-4 px-1 bg-rose-600 text-white text-[9px] font-black flex items-center justify-center rounded-full border border-white leading-none animate-badge-pop" key={`bnav-badge-${badge}`}>
                       {badge > 9 ? '9+' : badge}
                     </span>
                   )}

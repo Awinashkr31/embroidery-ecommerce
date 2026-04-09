@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Trash2, ArrowRight, Tag, X, User } from 'lucide-react';
+import { Trash2, ArrowRight, Tag, X, User, Truck } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import SEO from '../components/SEO';
@@ -86,42 +86,12 @@ const Cart = () => {
                     </div>
                 )}
 
-                {/* Free Delivery Progress */}
-                {isOrderDeployable && subtotal < FREE_DELIVERY_THRESHOLD && (
-                    <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4 mb-6 flex items-center gap-4 animate-in fade-in slide-in-from-top-2">
-                        <div className="p-2 bg-emerald-100 rounded-full text-emerald-600 shrink-0">
-                            <Tag className="w-4 h-4" />
-                        </div>
-                        <div className="flex-1">
-                            <div className="flex justify-between text-xs font-bold text-emerald-900 mb-1.5">
-                                <span>Add ₹{FREE_DELIVERY_THRESHOLD - subtotal} for Free Delivery</span>
-                                <span>{Math.round((subtotal / FREE_DELIVERY_THRESHOLD) * 100)}%</span>
-                            </div>
-                            <div className="h-2 bg-emerald-100 rounded-full overflow-hidden">
-                                <div 
-                                    className="h-full bg-emerald-500 rounded-full transition-all duration-500"
-                                    style={{ width: `${(subtotal / FREE_DELIVERY_THRESHOLD) * 100}%` }}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                )}
-                
-                {/* Free Delivery Qualified */}
-                {subtotal >= FREE_DELIVERY_THRESHOLD && (
-                     <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-3 mb-6 flex items-center gap-3 animate-in fade-in slide-in-from-top-2">
-                        <div className="p-1.5 bg-emerald-100 rounded-full text-emerald-600 shrink-0">
-                            <Tag className="w-3 h-3" />
-                        </div>
-                        <p className="text-xs font-bold text-emerald-800">Yay! You've unlocked Free Delivery.</p>
-                    </div>
-                )}
 
                 <div className="flex flex-col lg:flex-row gap-12">
                     {/* Cart Items */}
                     <div className="lg:w-2/3 space-y-6">
                         {cart.map((item, idx) => (
-                            <div key={`${item.id}-${item.selectedSize || 'nosize'}-${item.selectedColor || 'nocolor'}-${idx}`} className="bg-white p-3 md:p-6 rounded-2xl shadow-sm border border-stone-100 flex gap-3 md:gap-6 items-start md:items-center">
+                            <div key={`${item.id}-${item.selectedSize || 'nosize'}-${item.selectedColor || 'nocolor'}-${idx}`} className="card-premium p-3 md:p-6 flex gap-3 md:gap-6 items-start md:items-center group animate-stagger-fade" style={{ animationDelay: `${idx * 0.08}s` }}>
                                 <div className="w-20 h-20 md:w-28 md:h-28 rounded-xl overflow-hidden bg-stone-100 shrink-0">
                                     <img
                                         src={
@@ -232,7 +202,7 @@ const Cart = () => {
                     {/* Order Summary */}
                     <div className="lg:w-1/3">
                         {/* Desktop Summary Card */}
-                        <div className="bg-white rounded-2xl shadow-lg border border-stone-100 p-8 sticky top-28 hidden lg:block">
+                        <div className="glass-panel rounded-2xl p-8 sticky top-28 hidden lg:block border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
                             <h2 className="text-xl font-heading font-bold text-stone-900 mb-6">Order Summary</h2>
                             <div className="space-y-4 mb-8">
                                 <div className="flex justify-between text-stone-600">
@@ -251,6 +221,27 @@ const Cart = () => {
                                         {shippingCharge === 0 ? 'Free' : `₹${shippingCharge}`}
                                     </span>
                                 </div>
+
+                                {/* Free Delivery Progress — below shipping */}
+                                {subtotal < FREE_DELIVERY_THRESHOLD && (
+                                    <div className="mt-1 rounded-lg overflow-hidden">
+                                        <div className="flex items-center gap-2 text-[11px] font-semibold text-emerald-800 mb-1">
+                                            <Truck className="w-3.5 h-3.5 text-emerald-600" />
+                                            <span>Add <strong>₹{FREE_DELIVERY_THRESHOLD - subtotal}</strong> more for <strong>Free Delivery</strong></span>
+                                        </div>
+                                        <div className="h-1 bg-stone-100 rounded-full overflow-hidden">
+                                            <div 
+                                                className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full transition-all duration-700 ease-out"
+                                                style={{ width: `${Math.min((subtotal / FREE_DELIVERY_THRESHOLD) * 100, 100)}%` }}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+                                {subtotal >= FREE_DELIVERY_THRESHOLD && shippingCharge === 0 && (
+                                    <div className="flex items-center gap-2 text-[11px] font-bold text-emerald-700 mt-0.5">
+                                        <Truck className="w-3.5 h-3.5" /> Free Delivery applied ✓
+                                    </div>
+                                )}
 
                                 <div className="flex justify-between text-stone-600">
                                     <span>Estimated Delivery</span>
@@ -320,7 +311,7 @@ const Cart = () => {
                         </div>
 
                         {/* Mobile Summary & Coupon (Non-Sticky) */}
-                         <div className="bg-white rounded-2xl shadow-sm border border-stone-100 p-6 lg:hidden mb-6">
+                         <div className="glass-panel rounded-2xl border border-white/60 p-6 lg:hidden mb-6 shadow-md">
                             <h2 className="text-lg font-heading font-bold text-stone-900 mb-4">Order Details</h2>
                              <div className="space-y-3 mb-6">
                                 <div className="flex justify-between text-stone-600 text-sm">
@@ -339,6 +330,25 @@ const Cart = () => {
                                         {shippingCharge === 0 ? 'Free' : `₹${shippingCharge}`}
                                     </span>
                                 </div>
+                                {subtotal < FREE_DELIVERY_THRESHOLD && (
+                                    <div className="mt-0.5 rounded-lg">
+                                        <div className="flex items-center gap-1.5 text-[10px] font-semibold text-emerald-800 mb-1">
+                                            <Truck className="w-3 h-3 text-emerald-600" />
+                                            <span>Add <strong>₹{FREE_DELIVERY_THRESHOLD - subtotal}</strong> for <strong>Free Delivery</strong></span>
+                                        </div>
+                                        <div className="h-1 bg-stone-100 rounded-full overflow-hidden">
+                                            <div 
+                                                className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full transition-all duration-700 ease-out"
+                                                style={{ width: `${Math.min((subtotal / FREE_DELIVERY_THRESHOLD) * 100, 100)}%` }}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
+                                {subtotal >= FREE_DELIVERY_THRESHOLD && shippingCharge === 0 && (
+                                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-emerald-700 mt-0.5">
+                                        <Truck className="w-3 h-3" /> Free Delivery applied ✓
+                                    </div>
+                                )}
                             </div>
                             
                             {/* Mobile Coupon Input */}

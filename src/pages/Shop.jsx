@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { getOptimizedImageUrl } from '../utils/imageUtils';
 import { Package, Heart, Search, ChevronDown, Sparkles, ChevronLeft, ChevronRight, SlidersHorizontal } from 'lucide-react';
 import { useProducts } from '../context/ProductContext';
@@ -11,6 +11,11 @@ const slugify = (str) => (str || '').toLowerCase().trim().replace(/\s+/g, '-').r
 
 const ProductCardWithVariants = ({ product, toggleWishlist, isInWishlist }) => {
     const [selectedVariant, setSelectedVariant] = useState(product.preselectedVariant || null);
+    const [currentImageIndex, setCurrentImageIndex] = useState(0);
+    const [isHovering, setIsHovering] = useState(false);
+    const touchStartX = useRef(0);
+    const touchEndX = useRef(0);
+    const hoverTimerRef = useRef(null);
     
     useEffect(() => {
         if (product.preselectedVariant) {
@@ -26,10 +31,72 @@ const ProductCardWithVariants = ({ product, toggleWishlist, isInWishlist }) => {
     const validVariants = variants.filter(v => v.color && v.images && v.images.length > 0);
     const hasVariants = validVariants.length > 0;
 
-    // Determine current display image
-    const displayImage = selectedVariant && selectedVariant.images && selectedVariant.images.length > 0 
-        ? selectedVariant.images[0] 
-        : product.image;
+    // Get all images for the current view
+    const allImages = useMemo(() => {
+        if (selectedVariant && selectedVariant.images && selectedVariant.images.length > 0) {
+            return selectedVariant.images.filter(Boolean);
+        }
+        if (product.images && product.images.length > 0) {
+            return product.images.filter(Boolean);
+        }
+        if (product.image) return [product.image];
+        return [];
+    }, [selectedVariant, product.images, product.image]);
+
+    const hasMultipleImages = allImages.length > 1;
+    const cardRef = useRef(null);
+    const [isVisible, setIsVisible] = useState(false);
+
+    // Reset index when variant changes
+    useEffect(() => {
+        setCurrentImageIndex(0);
+    }, [selectedVariant]);
+
+    // IntersectionObserver for mobile auto-advance when card is visible
+    useEffect(() => {
+        if (!hasMultipleImages || !cardRef.current) return;
+        const observer = new IntersectionObserver(
+            ([entry]) => setIsVisible(entry.isIntersecting),
+            { threshold: 0.5 }
+        );
+        observer.observe(cardRef.current);
+        return () => observer.disconnect();
+    }, [hasMultipleImages]);
+
+    // Auto-advance: on hover (desktop) OR when visible (mobile)
+    useEffect(() => {
+        if (!hasMultipleImages) return;
+        if (isHovering || isVisible) {
+            hoverTimerRef.current = setInterval(() => {
+                setCurrentImageIndex(prev => (prev + 1) % allImages.length);
+            }, isHovering ? 1500 : 2500);
+        }
+        return () => {
+            if (hoverTimerRef.current) clearInterval(hoverTimerRef.current);
+        };
+    }, [isHovering, isVisible, hasMultipleImages, allImages.length]);
+
+    // Touch handlers for mobile swipe
+    const handleTouchStart = (e) => {
+        touchStartX.current = e.touches[0].clientX;
+    };
+    const handleTouchMove = (e) => {
+        touchEndX.current = e.touches[0].clientX;
+    };
+    const handleTouchEnd = () => {
+        if (!hasMultipleImages) return;
+        const diff = touchStartX.current - touchEndX.current;
+        if (Math.abs(diff) > 40) {
+            if (diff > 0) {
+                // Swipe left → next
+                setCurrentImageIndex(prev => (prev + 1) % allImages.length);
+            } else {
+                // Swipe right → prev
+                setCurrentImageIndex(prev => (prev - 1 + allImages.length) % allImages.length);
+            }
+        }
+    };
+
 
     // Determine current display price
     let displayPrice = product.price;
@@ -40,20 +107,55 @@ const ProductCardWithVariants = ({ product, toggleWishlist, isInWishlist }) => {
     return (
         <div className="h-full flex flex-col">
             {/* Image Card */}
-            <div className="relative aspect-[2/3] overflow-hidden bg-stone-100 mb-3 md:mb-5 rounded-[20px] md:rounded-2xl shrink-0">
-                <img
-                    src={getOptimizedImageUrl(displayImage, { width: 600, quality: 80 })}
-                    alt={product.name}
-                    loading="lazy"
-                    decoding="async"
-                    className={`w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 ${!product.inStock ? 'grayscale opacity-80' : ''}`}
-                    onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = '/logo.png';
-                        e.target.parentElement.className += " bg-stone-50"; 
-                        e.target.className = `w-full h-full object-contain p-8 opacity-50 ${!product.inStock ? 'grayscale' : ''}`;
-                    }}
-                />
+            <div 
+                ref={cardRef}
+                className="relative aspect-[2/3] overflow-hidden bg-stone-100 mb-3 md:mb-5 rounded-[20px] md:rounded-2xl shrink-0"
+                onMouseEnter={() => setIsHovering(true)}
+                onMouseLeave={() => { setIsHovering(false); setCurrentImageIndex(0); }}
+                onTouchStart={handleTouchStart}
+                onTouchMove={handleTouchMove}
+                onTouchEnd={handleTouchEnd}
+            >
+                {/* Image Stack with Crossfade */}
+                {allImages.map((img, idx) => (
+                    <img
+                        key={idx}
+                        src={getOptimizedImageUrl(img, { width: 600, quality: 80 })}
+                        alt={`${product.name} ${idx + 1}`}
+                        loading={idx === 0 ? 'eager' : 'lazy'}
+                        decoding="async"
+                        style={{
+                            transition: 'opacity 800ms cubic-bezier(0.4, 0, 0.2, 1), transform 1200ms cubic-bezier(0.4, 0, 0.2, 1)',
+                            opacity: idx === currentImageIndex ? 1 : 0,
+                            transform: idx === currentImageIndex ? 'scale(1)' : 'scale(1.06)',
+                            zIndex: idx === currentImageIndex ? 2 : 1,
+                        }}
+                        className={`absolute inset-0 w-full h-full object-cover ${!product.inStock ? 'grayscale opacity-80' : ''}`}
+                        onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = '/logo.png';
+                            e.target.className = `absolute inset-0 w-full h-full object-contain p-8 opacity-50 ${!product.inStock ? 'grayscale' : ''}`;
+                        }}
+                    />
+                ))}
+
+                {/* Image Dots Indicator */}
+                {hasMultipleImages && (
+                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-20">
+                        {allImages.map((_, idx) => (
+                            <button
+                                key={idx}
+                                onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCurrentImageIndex(idx); }}
+                                className={`rounded-full transition-all duration-300 ${
+                                    idx === currentImageIndex 
+                                        ? 'w-4 h-1.5 bg-white shadow-md' 
+                                        : 'w-1.5 h-1.5 bg-white/50 hover:bg-white/80'
+                                }`}
+                                aria-label={`View image ${idx + 1}`}
+                            />
+                        ))}
+                    </div>
+                )}
                 
                 {/* Sold Out Overlay */}
                 {!product.inStock && (
@@ -110,7 +212,7 @@ const ProductCardWithVariants = ({ product, toggleWishlist, isInWishlist }) => {
                                             isSelected ? 'border-stone-900 ring-1 ring-stone-900 ring-offset-1 scale-110' : 'border-stone-300 hover:border-stone-400'
                                         }`}
                                         title={variant.color}
-                                        style={{ backgroundColor: variant.color.toLowerCase() }} // Crude color parsing. Could be improved if color is a hex.
+                                        style={{ backgroundColor: variant.color.toLowerCase() }}
                                         aria-label={`Select ${variant.color} variant`}
                                     >
                                         <span className="sr-only">{variant.color}</span>
