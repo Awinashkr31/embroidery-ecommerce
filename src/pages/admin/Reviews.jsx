@@ -21,7 +21,7 @@ const Reviews = () => {
             const payload = {
                 reviews: reviewsData.map(r => ({ id: r.id.toString(), text: r.comment || '' }))
             };
-            const apiUrl = import.meta.env.VITE_ML_API_URL || 'http://localhost:8000';
+            const apiUrl = import.meta.env.VITE_ML_API_URL || 'https://embroidery-ml-api.onrender.com';
             const res = await fetch(`${apiUrl}/api/admin/analyze_reviews`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

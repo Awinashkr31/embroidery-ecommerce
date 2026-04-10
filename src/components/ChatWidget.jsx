@@ -80,7 +80,7 @@ export default function ChatWidget() {
         setIsLoading(true);
 
         try {
-            const apiUrl = import.meta.env.VITE_ML_API_URL || 'http://localhost:8000';
+            const apiUrl = import.meta.env.VITE_ML_API_URL || 'https://embroidery-ml-api.onrender.com';
             const res = await fetch(`${apiUrl}/api/chat/${sessionId}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

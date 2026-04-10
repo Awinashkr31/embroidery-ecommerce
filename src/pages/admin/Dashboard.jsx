@@ -108,7 +108,7 @@ const Dashboard = () => {
   const fetchForecast = async () => {
     setLoadingForecast(true);
     try {
-      const apiUrl = import.meta.env.VITE_ML_API_URL || 'http://localhost:8000';
+      const apiUrl = import.meta.env.VITE_ML_API_URL || 'https://embroidery-ml-api.onrender.com';
       const res = await fetch(`${apiUrl}/api/admin/forecast`).catch(() => null);
       if (res && res.ok) {
         const json = await res.json();

@@ -71,7 +71,7 @@ const ProductDetails = () => {
         if (!product) return;
         setRecommendedIds([]);
         // Fetch ML recommendations
-        const apiUrl = import.meta.env.VITE_ML_API_URL || 'http://localhost:8000';
+        const apiUrl = import.meta.env.VITE_ML_API_URL || 'https://embroidery-ml-api.onrender.com';
         fetch(`${apiUrl}/api/recommendations/${product.id}`)
             .then(res => {
                 if(!res.ok) throw new Error("API not found");
