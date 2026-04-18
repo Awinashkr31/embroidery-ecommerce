@@ -289,9 +289,9 @@ const ProductDetails = () => {
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 mb-16 lg:mb-28">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 xl:gap-16 mb-16 lg:mb-28">
                     {/* Image Section */}
-                    <div className="relative h-fit lg:sticky lg:top-28 space-y-4 lg:space-y-0 lg:flex lg:gap-4">
+                    <div className="lg:col-span-5 relative h-fit lg:sticky lg:top-28 space-y-4 lg:space-y-0 lg:flex lg:gap-4 xl:max-w-lg">
                         {/* Desktop Thumbnails (Left Side) */}
                         {displayImages && displayImages.length > 1 && (
                             <div className="hidden lg:flex flex-col gap-2.5 w-[72px] flex-shrink-0 max-h-[75vh] overflow-y-auto no-scrollbar py-1">
@@ -300,13 +300,13 @@ const ProductDetails = () => {
                                         <button 
                                             key={idx}
                                             onClick={() => setSelectedImage(img)}
-                                            className={`aspect-[2/3] rounded-xl overflow-hidden border-2 transition-all duration-300 ${
+                                            className={`aspect-[2/3] lg:aspect-[4/5] rounded-xl overflow-hidden border-2 transition-all duration-300 ${
                                                 (selectedImage || displayImages[0]) === img 
                                                 ? 'border-rose-900 shadow-md ring-2 ring-rose-100' 
                                                 : 'border-transparent opacity-60 hover:opacity-100 hover:border-stone-300'
                                             }`}
                                         >
-                                            <img src={img} alt={`View ${idx + 1}`} className="w-full h-full object-cover" />
+                                            <img src={img} alt={`View ${idx + 1}`} className="w-full h-full object-cover object-top" />
                                         </button>
                                     )
                                 ))}
@@ -314,12 +314,12 @@ const ProductDetails = () => {
                         )}
 
                         {/* Main Image Area */}
-                        <div className="flex-1 rounded-2xl overflow-hidden relative shadow-sm group bg-stone-50 aspect-[2/3]">
+                        <div className="flex-1 rounded-2xl overflow-hidden relative shadow-sm group bg-stone-50 aspect-[2/3] lg:aspect-[4/5]">
                             <div className="hidden lg:block w-full h-full"> 
                                 <img 
                                     src={selectedImage || displayImages[0] || product.image || 'https://via.placeholder.com/500'} 
                                     alt={product.name} 
-                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" 
+                                    className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105" 
                                 />
                                 <div className="absolute top-4 right-4 flex flex-col gap-3">
                                     <button 
@@ -336,7 +336,7 @@ const ProductDetails = () => {
                                         <img 
                                             src={img} 
                                             alt={`${product.name} - View ${idx + 1}`} 
-                                            className="w-full h-full object-cover" 
+                                            className="w-full h-full object-cover object-top" 
                                         />
                                         <div className="absolute top-4 right-4">
                                             <button 
@@ -364,7 +364,7 @@ const ProductDetails = () => {
                     </div>
 
                     {/* Details Section - Clean Typography */}
-                    <div className="lg:pt-4 min-w-0"> 
+                    <div className="lg:col-span-7 lg:pt-4 min-w-0"> 
                         <div className="mb-6 space-y-3">
                              <div className="flex items-center justify-between">
                                 <span className="inline-flex items-center text-xs font-bold tracking-[0.18em] uppercase text-rose-900 bg-rose-50 border border-rose-100 px-3 py-1.5 rounded-full">

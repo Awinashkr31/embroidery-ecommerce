@@ -109,7 +109,7 @@ const ProductCardWithVariants = ({ product, toggleWishlist, isInWishlist }) => {
             {/* Image Card */}
             <div 
                 ref={cardRef}
-                className="relative aspect-[2/3] overflow-hidden bg-stone-100 mb-3 md:mb-5 rounded-[20px] md:rounded-2xl shrink-0"
+                className="relative aspect-[2/3] md:aspect-[4/5] overflow-hidden bg-stone-100 mb-3 md:mb-5 rounded-[20px] md:rounded-2xl shrink-0 md:group-hover:-translate-y-1 md:group-hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.15)] md:transition-all md:duration-500"
                 onMouseEnter={() => setIsHovering(true)}
                 onMouseLeave={() => { setIsHovering(false); setCurrentImageIndex(0); }}
                 onTouchStart={handleTouchStart}
@@ -130,7 +130,7 @@ const ProductCardWithVariants = ({ product, toggleWishlist, isInWishlist }) => {
                             transform: idx === currentImageIndex ? 'scale(1)' : 'scale(1.06)',
                             zIndex: idx === currentImageIndex ? 2 : 1,
                         }}
-                        className={`absolute inset-0 w-full h-full object-cover ${!product.inStock ? 'grayscale opacity-80' : ''}`}
+                        className={`absolute inset-0 w-full h-full object-cover object-top ${!product.inStock ? 'grayscale opacity-80' : ''}`}
                         onError={(e) => {
                             e.target.onerror = null;
                             e.target.src = '/logo.png';
@@ -182,7 +182,7 @@ const ProductCardWithVariants = ({ product, toggleWishlist, isInWishlist }) => {
                         e.stopPropagation();
                         toggleWishlist(product);
                     }}
-                    className="absolute top-2 right-2 md:top-3 md:right-3 p-2 bg-white/90 rounded-full text-stone-500 hover:text-rose-600 transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100 translate-y-0 md:translate-y-2 md:group-hover:translate-y-0 duration-300 shadow-sm"
+                    className="absolute top-2 right-2 md:top-4 md:right-4 p-2 bg-white/90 md:p-2.5 rounded-full text-stone-500 hover:text-rose-600 transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100 translate-y-0 md:translate-y-2 md:group-hover:translate-y-0 duration-500 shadow-sm md:hover:scale-110"
                 >
                     <Heart className={`w-4 h-4 md:w-4 md:h-4 ${isInWishlist(product.id) ? 'fill-rose-600 text-rose-600' : ''}`} />
                 </button>
@@ -537,9 +537,9 @@ const Shop = () => {
                     </div>
 
                     {/* Sidebar - Desktop */}
-                    <aside className="hidden lg:block w-64 shrink-0 sticky top-32 space-y-8 animate-in fade-in slide-in-from-left-4 duration-700">
-                        <div className="pb-4 border-b border-stone-200">
-                            <h2 className="font-heading font-bold text-lg text-stone-900">Refine</h2>
+                    <aside className="hidden lg:flex flex-col w-[280px] shrink-0 sticky top-32 space-y-8 animate-in fade-in slide-in-from-left-4 duration-700 bg-white p-6 rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-stone-100">
+                        <div className="pb-4 border-b border-stone-100">
+                            <h2 className="font-heading font-bold text-xl text-stone-900 tracking-tight">Refine Collection</h2>
                         </div>
                         {/* Categories */}
                         <div>
@@ -603,9 +603,15 @@ const Shop = () => {
                     </aside>
 
                     {/* Product Grid - with Sticky Header */}
-                    <div className="flex-1 w-full relative">
+                    <div className="flex-1 w-full relative min-w-0">
+                        {/* Desktop Header */}
+                        <div className="hidden md:block mb-8">
+                            <h1 className="font-heading text-3xl lg:text-4xl font-bold text-stone-900 mb-2">Our Collection</h1>
+                            <p className="text-stone-500 text-sm lg:text-base">Discover hand-crafted embroidery pieces tailored for you.</p>
+                        </div>
+
                         {/* Sticky Toolbar: Search, Sort, & Count */}
-                        <div className="sticky top-[60px] lg:top-24 z-30 bg-white/80 backdrop-blur-md py-2 md:py-4 mb-3 md:mb-8 border-b border-stone-200/60 shadow-sm md:shadow-none md:border-y md:border-stone-200 flex flex-row justify-between items-center gap-3 md:gap-4 transition-all duration-300 -mx-4 px-4 md:mx-0 md:px-0 md:rounded-none">
+                        <div className="sticky top-[60px] lg:top-24 z-30 bg-white/80 md:bg-white/90 backdrop-blur-md py-2 md:py-3 mb-3 md:mb-8 border-b border-stone-200/60 shadow-sm md:shadow-[0_8px_30px_rgb(0,0,0,0.04)] md:border md:border-stone-100 flex flex-row justify-between items-center gap-3 md:gap-4 transition-all duration-300 -mx-4 px-4 md:mx-0 md:px-6 md:rounded-2xl">
                              {/* Result Count (Desktop) */}
                             <div className="hidden md:block text-sm font-medium text-stone-500 pl-4">
                                 Showing {allFilteredProducts.length} results
@@ -663,7 +669,7 @@ const Shop = () => {
                             </div>
                         ) : (
                             <>
-                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8 md:gap-x-6 md:gap-y-10">
+                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8 md:gap-x-8 md:gap-y-14">
                                     {paginatedProducts.map((product) => (
                                         <Link 
                                             key={product.uniqueId} 

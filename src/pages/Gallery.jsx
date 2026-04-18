@@ -142,58 +142,58 @@ const Gallery = () => {
         <div className="bg-white min-h-screen font-sofia">
             
             {/* --- Banner Section --- */}
-            <div className="relative bg-stone-50 pt-24 pb-12 lg:pt-32 lg:pb-16 text-center px-4">
+            <div className="relative bg-[#fdfbf7] pt-32 pb-16 lg:pt-48 lg:pb-24 text-center px-4 overflow-hidden border-b border-stone-100">
+                 {/* Soft background glow */}
+                 <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-[120%] bg-gradient-to-b from-rose-100/50 to-transparent blur-3xl -z-10 rounded-full pointer-events-none"></div>
+
                  {bannerImage && (
-                    <div className="absolute inset-0 z-0 opacity-10">
+                    <div className="absolute inset-0 z-0 opacity-10 mix-blend-multiply">
                         <img src={bannerImage} alt="" className="w-full h-full object-cover" />
                     </div>
                  )}
                  <div className="relative z-10 max-w-4xl mx-auto">
-                    <h1 className="text-3xl lg:text-5xl font-heading text-stone-800 mb-4">{pageTitle}</h1>
-                    <p className="text-base lg:text-lg text-stone-500 max-w-2xl mx-auto">{pageSubtitle}</p>
+                    <span className="inline-block py-1 px-3 rounded-full bg-rose-50 border border-rose-100 text-rose-900 text-[10px] font-bold tracking-widest uppercase mb-6 shadow-sm">Our Portfolio</span>
+                    <h1 className="text-4xl lg:text-7xl font-heading font-medium text-stone-900 mb-6 tracking-tight leading-none">{pageTitle}</h1>
+                    <p className="text-lg lg:text-2xl text-stone-500 max-w-2xl mx-auto font-light leading-relaxed">{pageSubtitle}</p>
                  </div>
             </div>
 
             {/* --- Main Navigation Tabs --- */}
-            <div className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-stone-100 shadow-sm">
-                <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
-                    <div className="flex justify-center w-full">
-                        <div className="flex overflow-x-auto no-scrollbar py-2 px-4 gap-2 w-full md:w-auto md:justify-center">
-                            {['Mehndi', 'Hand Embroidery', 'Art', 'Custom Design'].map((tab) => (
-                                <button
-                                    key={tab}
-                                    onClick={() => { setActiveMainTab(tab); setActiveSubTab('All'); }}
-                                    className={`px-5 py-2 md:px-8 md:py-3 rounded-full text-sm md:text-lg font-heading whitespace-nowrap transition-all duration-300 flex-shrink-0 ${
-                                        activeMainTab === tab
-                                            ? 'bg-rose-900 text-white shadow-lg transform scale-105'
-                                            : 'text-stone-500 hover:bg-stone-100 hover:text-stone-800'
-                                    }`}
-                                >
-                                    {tab}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Sub Navigation (Only for Mehndi) */}
-                    {activeMainTab === 'Mehndi' && (
-                        <div className="flex overflow-x-auto py-3 gap-2 no-scrollbar px-4 justify-start md:justify-center border-t border-stone-100 mt-2">
-                            {['All', ...PREDEFINED_MEHNDI_TYPES].map((subTab) => (
-                                <button
-                                    key={subTab}
-                                    onClick={() => setActiveSubTab(subTab)}
-                                    className={`px-4 py-1.5 rounded-full text-xs md:text-sm font-medium whitespace-nowrap transition-all ${
-                                        activeSubTab === subTab
-                                            ? 'bg-rose-100 text-rose-800 ring-1 ring-rose-200'
-                                            : 'text-stone-500 hover:bg-stone-50'
-                                    }`}
-                                >
-                                    {subTab.replace(' Mehndi', '')}
-                                </button>
-                            ))}
-                        </div>
-                    )}
+            <div className="sticky top-4 lg:top-6 z-40 px-4 mb-8 md:-mt-8 transition-all duration-500 flex flex-col items-center gap-3">
+                <div className="bg-white/80 backdrop-blur-xl border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.08)] rounded-full p-1.5 flex overflow-x-auto no-scrollbar w-full md:w-auto snap-x">
+                    {['Mehndi', 'Hand Embroidery', 'Art', 'Custom Design'].map((tab) => (
+                        <button
+                            key={tab}
+                            onClick={() => { setActiveMainTab(tab); setActiveSubTab('All'); }}
+                            className={`px-6 py-2.5 md:px-8 md:py-3 rounded-full text-[11px] md:text-xs font-bold uppercase tracking-widest whitespace-nowrap transition-all duration-300 flex-shrink-0 snap-center ${
+                                activeMainTab === tab
+                                    ? 'bg-stone-900 text-white shadow-md'
+                                    : 'text-stone-500 hover:text-stone-900 hover:bg-white/60'
+                            }`}
+                        >
+                            {tab}
+                        </button>
+                    ))}
                 </div>
+
+                {/* Sub Navigation (Only for Mehndi) */}
+                {activeMainTab === 'Mehndi' && (
+                    <div className="flex overflow-x-auto gap-2 no-scrollbar px-2 max-w-full justify-start md:justify-center animate-in slide-in-from-top-2 fade-in duration-300">
+                        {['All', ...PREDEFINED_MEHNDI_TYPES].map((subTab) => (
+                            <button
+                                key={subTab}
+                                onClick={() => setActiveSubTab(subTab)}
+                                className={`px-4 py-1.5 rounded-full text-[10px] md:text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all border ${
+                                    activeSubTab === subTab
+                                        ? 'bg-rose-50 border-rose-200 text-rose-900 shadow-sm'
+                                        : 'bg-white/50 backdrop-blur-sm border-transparent text-stone-500 hover:bg-white hover:border-stone-200'
+                                }`}
+                            >
+                                {subTab.replace(' Mehndi', '')}
+                            </button>
+                        ))}
+                    </div>
+                )}
             </div>
 
             {/* --- Content Area --- */}
@@ -211,31 +211,34 @@ const Gallery = () => {
                         {filteredImages.map(image => (
                             <div 
                                 key={image.id} 
-                                className="break-inside-avoid group relative rounded-xl md:rounded-2xl overflow-hidden bg-stone-100 cursor-zoom-in"
+                                className="break-inside-avoid group relative rounded-[1.5rem] md:rounded-[2rem] overflow-hidden bg-stone-100 cursor-zoom-in transition-all duration-500 lg:hover:-translate-y-2 lg:hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.25)]"
                                 onClick={() => openLightbox(image)}
                             >
                                 <img 
                                     src={getOptimizedImageUrl(image.images[0], { width: 600, quality: 80 })} 
                                     alt={image.title}
-                                    className="w-full h-auto object-cover transition-transform duration-700 md:group-hover:scale-105"
+                                    className="w-full h-auto object-cover transition-transform duration-1000 md:group-hover:scale-[1.03]"
                                     loading="lazy"
                                 />
                                 
                                 {/* Multi-image Indicator */}
                                 {image.images.length > 1 && (
-                                    <div className="absolute top-2 right-2 md:top-3 md:right-3 bg-black/50 backdrop-blur-md text-white px-1.5 py-0.5 md:px-2 md:py-1 rounded md:rounded-lg text-[10px] md:text-xs font-medium flex items-center gap-1 z-10">
-                                        <Layers size={10} className="md:w-3 md:h-3" />
+                                    <div className="absolute top-3 right-3 md:top-5 md:right-5 bg-white/20 backdrop-blur-md border border-white/30 text-white px-2.5 py-1 rounded-full text-[10px] md:text-[11px] font-bold tracking-widest flex items-center gap-1.5 z-10 shadow-sm">
+                                        <Layers size={12} className="md:w-3.5 md:h-3.5" />
                                         <span>+{image.images.length - 1}</span>
                                     </div>
                                 )}
                                 
-                                {/* Hover Overlay - Adjusted for visibility/size */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-3 md:p-6">
-                                    <div className="transform translate-y-4 md:group-hover:translate-y-0 transition-transform duration-300">
-                                        <span className="text-rose-200 text-[10px] md:text-xs font-bold uppercase tracking-widest mb-0.5 md:mb-1 block">
-                                            {image.category}
-                                        </span>
-                                        <p className="text-white font-heading text-sm md:text-xl leading-tight">{image.title}</p>
+                                {/* Hover Overlay */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-stone-900/90 via-stone-900/20 to-transparent p-5 md:p-8 flex flex-col justify-end opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-all duration-500">
+                                    <div className="transform translate-y-0 md:translate-y-6 md:group-hover:translate-y-0 transition-transform duration-500 ease-out">
+                                        <div className="inline-flex items-center gap-1.5 mb-2">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-rose-400 shadow-[0_0_8px_rgba(251,113,133,0.8)] animate-pulse"></span>
+                                            <span className="text-rose-100 text-[10px] font-bold uppercase tracking-widest hidden md:inline-block">
+                                                {image.category}
+                                            </span>
+                                        </div>
+                                        <p className="text-white font-heading text-lg md:text-3xl font-medium leading-tight drop-shadow-md">{image.title}</p>
                                     </div>
                                 </div>
                             </div>

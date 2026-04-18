@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Loader, Sparkles, CheckCircle, Phone, MessageSquare, Palette, Scissors, Star, ImagePlus, X } from 'lucide-react';
+import { Send, Loader, Sparkles, CheckCircle, Phone, MessageSquare, Palette, Scissors, Star, ImagePlus, X, PenTool } from 'lucide-react';
 import { supabase } from '../config/supabase';
 import { useToast } from '../context/ToastContext';
 import { fetchSetting } from '../utils/settingsUtils';
@@ -144,30 +144,38 @@ const CustomDesign = () => {
 
   return (
     <div className="bg-[#fdfbf7] min-h-screen font-body pb-24 lg:pb-20">
-      {/* Hero — compact, mobile-friendly */}
-      <div className="relative w-full overflow-hidden">
+      {/* Hero — improved */}
+      <div className="relative w-full h-[60vh] min-h-[500px] overflow-hidden flex items-center justify-center">
         {/* Background */}
         <div className="absolute inset-0">
           {bannerImage ? (
             <img src={bannerImage} alt="Custom Design" className="w-full h-full object-cover" />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-stone-900 via-stone-800 to-rose-950" />
+            <div className="w-full h-full bg-stone-900" />
           )}
-          <div className="absolute inset-0 bg-stone-900/60" />
+          <div className="absolute inset-0 bg-gradient-to-t from-stone-900 via-stone-900/60 to-transparent opacity-90" />
         </div>
 
         {/* Content */}
-        <div className="relative pt-28 pb-16 md:pt-36 md:pb-20 px-5 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/10 backdrop-blur-md rounded-full border border-white/20 text-white/90 text-xs font-bold uppercase tracking-widest mb-5">
-            <Sparkles className="w-3.5 h-3.5" />
+        <div className="relative z-10 pt-16 px-5 text-center max-w-3xl">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-white/20 backdrop-blur-md rounded-full border border-white/20 text-white text-xs font-bold uppercase tracking-widest mb-6 shadow-sm">
+            <Sparkles className="w-3.5 h-3.5 text-rose-300" />
             Made Just For You
           </div>
-          <h1 className="text-3xl md:text-5xl lg:text-6xl font-heading font-bold text-white mb-3 leading-tight">
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-heading font-bold text-white mb-6 leading-tight drop-shadow-md">
             {pageTitle}
           </h1>
-          <p className="text-base md:text-lg text-stone-200/80 max-w-xl mx-auto leading-relaxed font-light">
+          <p className="text-lg md:text-xl text-stone-200 max-w-xl mx-auto leading-relaxed font-light mb-8 drop-shadow-sm">
             {pageSubtitle}
           </p>
+          <div className="flex justify-center gap-4 animate-fade-in-up">
+             <button 
+                onClick={() => document.getElementById('request-form').scrollIntoView({ behavior: 'smooth' })}
+                className="bg-white text-stone-900 px-8 py-4 rounded-full font-bold uppercase tracking-widest text-sm shadow-xl hover:-translate-y-1 transition-all hover:bg-rose-50 flex items-center gap-2"
+             >
+                Start Designing <PenTool className="w-4 h-4 ml-1" />
+             </button>
+          </div>
         </div>
       </div>
 
@@ -192,8 +200,59 @@ const CustomDesign = () => {
         </div>
       </div>
 
+      {/* ─── Gallery Section ─── */}
+      <div className="py-16 md:py-24 bg-white border-b border-t border-stone-100 mt-12 mb-12">
+         <div className="container-custom px-5">
+             <div className="text-center mb-12">
+                 <span className="text-rose-900 text-[10px] md:text-xs font-bold tracking-[0.2em] uppercase mb-2 block">Our Portfolio</span>
+                 <h2 className="text-3xl md:text-4xl font-heading font-bold text-stone-900">Custom Masterpieces</h2>
+                 <p className="text-stone-500 mt-3">A glimpse into unique items we've hand-crafted for clients.</p>
+             </div>
+             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                 {[
+                    "https://images.unsplash.com/photo-1584346045657-36e78eb265db?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+                    "https://images.unsplash.com/photo-1627918501256-42d4a5dbfdf4?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+                    "https://images.unsplash.com/photo-1605380536761-0cb1df7902d2?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+                    "https://images.unsplash.com/photo-1594498653385-d5172c532c00?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                 ].map((src, i) => (
+                    <div key={i} className="aspect-square bg-stone-100 rounded-[2rem] overflow-hidden group border border-stone-100 shadow-sm hover:shadow-xl transition-all">
+                        <img src={src} alt="Custom Work" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                    </div>
+                 ))}
+             </div>
+         </div>
+      </div>
+
+      {/* ─── Testimonials ─── */}
+      <div className="py-16 md:py-24 bg-[#fdfbf7] border-b border-stone-100 mb-16">
+         <div className="container-custom px-5">
+             <div className="text-center mb-12">
+                 <h2 className="text-3xl md:text-4xl font-heading font-bold text-stone-900 mb-4">Client Stories</h2>
+             </div>
+             <div className="grid md:grid-cols-3 gap-6">
+                 {[
+                     {name: "Sneha P.", text: "I requested a custom embroidered denim jacket for my sister's wedding. Sana's team took my rough sketch and turned it into an absolute masterpiece!"},
+                     {name: "Rahul M.", text: "Unbelievable attention to detail. The custom hoop art with my parents' portrait was the perfect anniversary gift. They were in tears."},
+                     {name: "Ananya T.", text: "The process was so smooth. They communicated at every step, sent me design mockups, and the final piece was stunning. Pure art."}
+                 ].map((t, i) => (
+                     <div key={i} className="bg-white p-8 rounded-[2rem] shadow-sm border border-stone-100 hover:-translate-y-2 hover:shadow-xl transition-all duration-300">
+                         <div className="flex text-amber-400 mb-4">
+                             <Star className="w-4 h-4 fill-current"/>
+                             <Star className="w-4 h-4 fill-current"/>
+                             <Star className="w-4 h-4 fill-current"/>
+                             <Star className="w-4 h-4 fill-current"/>
+                             <Star className="w-4 h-4 fill-current"/>
+                         </div>
+                         <p className="text-stone-600 mb-6 italic leading-relaxed">"{t.text}"</p>
+                         <p className="font-bold text-stone-900 font-heading">{t.name}</p>
+                     </div>
+                 ))}
+             </div>
+         </div>
+      </div>
+
       {/* Main Content */}
-      <div className="container-custom px-5 max-w-2xl">
+      <div id="request-form" className="container-custom px-5 max-w-2xl scroll-m-24">
 
         {submitted ? (
           /* ─── Success State ─── */
@@ -372,6 +431,16 @@ const CustomDesign = () => {
           </div>
         )}
 
+      </div>
+
+      {/* ─── Mobile Sticky CTA ─── */}
+      <div className="fixed bottom-6 left-4 right-4 p-2 bg-white/90 backdrop-blur-2xl border border-white/50 flex items-center justify-center gap-3 lg:hidden z-50 shadow-2xl rounded-full">
+          <button 
+             onClick={() => document.getElementById('request-form').scrollIntoView({ behavior: 'smooth' })}
+             className="w-full bg-stone-900 text-white border border-stone-900 px-4 py-3.5 rounded-full font-bold text-sm tracking-widest uppercase hover:bg-stone-800 transition-all flex items-center justify-center gap-2 shadow-xl active:scale-95"
+          >
+             Request Design <PenTool className="w-4 h-4" />
+          </button>
       </div>
     </div>
   );
