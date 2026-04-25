@@ -437,6 +437,9 @@ export const CartProvider = ({ children }) => {
     // Basic validation
     if (!Array.isArray(cart) || cart.length === 0) throw new Error("Cart is empty");
 
+    const codCharge = userDetails.codCharge || 0;
+    const finalTotal = userDetails.paymentMethod === 'cod' ? (cartTotal + codCharge) : cartTotal;
+
     const newOrder = {
       // let Supabase generate ID
       customer_name: `${userDetails.firstName} ${userDetails.lastName}`,
@@ -451,8 +454,9 @@ export const CartProvider = ({ children }) => {
       items: cart,
       subtotal: subtotal,
       shipping_cost: shippingCharge,
+      cod_charge: codCharge,
       discount: discountAmount,
-      total: cartTotal,
+      total: finalTotal,
       status: 'pending',
       payment_method: userDetails.paymentMethod,
       payment_status: paymentOverrides.status || 'pending',
@@ -792,6 +796,7 @@ export const CartProvider = ({ children }) => {
   const MIN_ORDER_VALUE = Number(settings?.shipping_min_order_value) || 200;
   const FREE_DELIVERY_THRESHOLD = Number(settings?.shipping_free_delivery_threshold) || 499;
   const DELIVERY_CHARGE = Number(settings?.shipping_delivery_charge) || 50;
+  const COD_EXTRA_CHARGE = Number(settings?.cod_extra_charge) || 0;
 
   const shippingCharge = subtotal < FREE_DELIVERY_THRESHOLD ? DELIVERY_CHARGE : 0;
   const cartTotal = subtotal - discountAmount + shippingCharge;
@@ -824,6 +829,7 @@ export const CartProvider = ({ children }) => {
       MIN_ORDER_VALUE,
       FREE_DELIVERY_THRESHOLD,
       DELIVERY_CHARGE,
+      COD_EXTRA_CHARGE,
       isOrderDeployable
     }}>
       {children}

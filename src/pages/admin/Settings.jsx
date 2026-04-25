@@ -38,6 +38,7 @@ const Settings = () => {
         shipping_min_order_value: 200,
         shipping_free_delivery_threshold: 499,
         shipping_delivery_charge: 50,
+        cod_extra_charge: 0,
 
         // Home
         home_hero_title: 'Weaving Stories in Thread',
@@ -511,6 +512,29 @@ const Settings = () => {
                                     placeholder="50"
                                     type="number"
                                 />
+                            </div>
+                            <div className="md:col-span-3 pt-2">
+                                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-4">
+                                    <h4 className="font-bold text-sm text-amber-800 flex items-center gap-2">
+                                        <IndianRupee className="w-4 h-4" /> Cash on Delivery (COD) Settings
+                                    </h4>
+                                    <div className="grid md:grid-cols-2 gap-4">
+                                        <EditableInput 
+                                            label="COD Extra Charge (₹)"
+                                            name="cod_extra_charge"
+                                            value={settings.cod_extra_charge}
+                                            onChange={handleChange}
+                                            isEditing={isEditing}
+                                            placeholder="0"
+                                            type="number"
+                                        />
+                                        <div className="flex items-end">
+                                            <p className="text-xs text-amber-700 leading-relaxed pb-2">
+                                                Extra charge applied when customers choose Cash on Delivery. Set to <strong>0</strong> to disable.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

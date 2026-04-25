@@ -19,7 +19,7 @@ const loadRazorpay = () => {
 };
 
 const Checkout = () => {
-    const { cart, cartLoading, cartTotal, subtotal, shippingCharge, discountAmount, appliedCoupon, applyCoupon, removeCoupon, placeOrder, savedAddresses, saveAddress } = useCart();
+    const { cart, cartLoading, cartTotal, subtotal, shippingCharge, discountAmount, appliedCoupon, applyCoupon, removeCoupon, placeOrder, savedAddresses, saveAddress, COD_EXTRA_CHARGE } = useCart();
     const { currentUser, loading: authLoading } = useAuth();
     const { addToast } = useToast();
     const navigate = useNavigate();
@@ -65,8 +65,12 @@ const Checkout = () => {
         city: '',
         state: '',
         zipCode: '',
-        paymentMethod: 'cod'
+        paymentMethod: 'online'
     });
+
+    // COD Charge Calculation
+    const codCharge = formData.paymentMethod === 'cod' ? COD_EXTRA_CHARGE : 0;
+    const finalTotal = cartTotal + codCharge;
 
     const handleAddressSelect = (id) => {
         setSelectedAddressId(id);
@@ -343,7 +347,8 @@ const Checkout = () => {
                     state: { 
                         formData: {
                             ...submissionData,
-                            paymentMethod: 'cod' 
+                            paymentMethod: 'cod',
+                            codCharge: codCharge
                         } 
                     } 
                 });
@@ -386,7 +391,7 @@ const Checkout = () => {
                                 <span className="font-bold text-stone-700 text-sm">Order Summary</span>
                                 <ChevronDown className={`w-4 h-4 text-stone-500 transition-transform ${isSummaryOpen ? 'rotate-180' : ''}`} />
                             </div>
-                            <span className="font-bold text-rose-900">₹{cartTotal.toLocaleString()}</span>
+                            <span className="font-bold text-rose-900">₹{finalTotal.toLocaleString()}</span>
                         </div>
                         
                         {isSummaryOpen && (
@@ -422,6 +427,12 @@ const Checkout = () => {
                                         <div className="flex justify-between text-emerald-600 text-xs">
                                             <span>Discount</span>
                                             <span>-₹{discountAmount.toLocaleString()}</span>
+                                        </div>
+                                    )}
+                                    {codCharge > 0 && (
+                                        <div className="flex justify-between text-amber-700 text-xs">
+                                            <span>COD Charge</span>
+                                            <span>+₹{codCharge.toLocaleString()}</span>
                                         </div>
                                     )}
                                 </div>
@@ -621,7 +632,7 @@ const Checkout = () => {
                                         />
                                         <div className="ml-4 relative z-10">
                                             <span className="block font-bold text-stone-900">Cash on Delivery</span>
-                                            <span className="text-xs text-stone-500">Pay cash upon delivery</span>
+                                            <span className="text-xs text-stone-500">Pay cash upon delivery{COD_EXTRA_CHARGE > 0 ? ` (+₹${COD_EXTRA_CHARGE} COD charge)` : ''}</span>
                                         </div>
                                         <CheckCircle className="ml-auto w-5 h-5 text-rose-900 relative z-10" />
                                     </label>
@@ -639,9 +650,22 @@ const Checkout = () => {
                                             onChange={handleChange}
                                             className="text-emerald-600 focus:ring-emerald-600 w-5 h-5 relative z-10"
                                         />
-                                        <div className="ml-4 relative z-10">
-                                            <span className={`block font-bold ${formData.paymentMethod === 'online' ? 'text-emerald-800' : 'text-stone-900'}`}>Online Payment</span>
-                                            <span className="text-xs text-stone-500">Fast & Secure</span>
+                                        <div className="ml-4 relative z-10 flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                            <div>
+                                                <span className={`block font-bold ${formData.paymentMethod === 'online' ? 'text-emerald-800' : 'text-stone-900'}`}>Online Payment</span>
+                                                <span className="text-xs text-stone-500">Fast & Secure • Zero Fees</span>
+                                            </div>
+                                            <div className="flex items-center gap-1.5 opacity-80">
+                                                <span className="px-1.5 py-0.5 bg-white border border-stone-200 rounded flex items-center text-[10px] font-bold text-stone-700 shadow-sm">
+                                                    UPI
+                                                </span>
+                                                <span className="px-1.5 py-0.5 bg-white border border-stone-200 rounded flex items-center text-[10px] font-bold text-stone-700 shadow-sm">
+                                                    <CreditCard className="w-3 h-3 mr-1 text-blue-600" /> Cards
+                                                </span>
+                                                <span className="px-1.5 py-0.5 bg-white border border-stone-200 rounded flex items-center text-[10px] font-bold text-stone-700 shadow-sm">
+                                                    NetBanking
+                                                </span>
+                                            </div>
                                         </div>
                                         {formData.paymentMethod === 'online' && (
                                             <CheckCircle className="ml-auto w-5 h-5 text-emerald-600 relative z-10" />
@@ -711,7 +735,12 @@ const Checkout = () => {
                                 disabled={isSubmitting}
                                 className={`hidden md:block w-full bg-rose-900 text-white py-4 rounded-xl font-bold text-lg uppercase tracking-widest hover:bg-rose-800 transition-all shadow-lg hover:shadow-rose-900/30 transform hover:-translate-y-0.5 mt-4 ${isSubmitting ? 'opacity-75 cursor-not-allowed' : ''}`}
                             >
-                                {isSubmitting ? 'Processing...' : `Place Order (₹${cartTotal.toLocaleString()})`}
+                                {isSubmitting 
+                                    ? 'Processing...' 
+                                    : formData.paymentMethod === 'cod' 
+                                        ? `Pay ₹${finalTotal.toLocaleString()} on Delivery`
+                                        : `Pay Now (₹${finalTotal.toLocaleString()})`
+                                }
                             </button>
                         </form>
                     </div>
@@ -810,9 +839,15 @@ const Checkout = () => {
                                         {shippingCharge === 0 ? 'Free' : `₹${shippingCharge}`}
                                     </span>
                                 </div>
+                                {codCharge > 0 && (
+                                    <div className="flex justify-between text-amber-700 text-sm">
+                                        <span>COD Charge</span>
+                                        <span className="font-medium">+₹{codCharge.toLocaleString()}</span>
+                                    </div>
+                                )}
                                 <div className="flex justify-between text-xl font-heading font-bold text-stone-900 pt-4 border-t border-stone-200 mt-2">
                                     <span>Total Pay</span>
-                                    <span className="text-rose-900">₹{cartTotal.toLocaleString()}</span>
+                                    <span className="text-rose-900">₹{finalTotal.toLocaleString()}</span>
                                 </div>
                                 <div className="text-xs text-stone-400 text-right font-medium">
                                     (Incl. of all taxes)
@@ -832,14 +867,19 @@ const Checkout = () => {
                 <div className="flex items-center gap-4">
                     <div className="flex-1">
                         <p className="text-xs text-stone-500 font-bold uppercase tracking-wider">Total to Pay</p>
-                        <p className="text-xl font-heading font-bold text-rose-900">₹{cartTotal.toLocaleString()}</p>
+                        <p className="text-xl font-heading font-bold text-rose-900">₹{finalTotal.toLocaleString()}</p>
                     </div>
                     <button
                         onClick={handleSubmit}
                         disabled={isSubmitting}
                         className={`flex-1 bg-rose-900 text-white py-3.5 px-6 rounded-xl font-bold uppercase tracking-wide text-sm shadow-lg shadow-rose-900/20 active:scale-95 transition-all ${isSubmitting ? 'opacity-75' : ''}`}
                     >
-                        {isSubmitting ? 'Processing...' : 'Place Order'}
+                        {isSubmitting 
+                            ? 'Processing...' 
+                            : formData.paymentMethod === 'cod' 
+                                ? 'Pay on Delivery'
+                                : 'Pay Now'
+                        }
                     </button>
                 </div>
             </div>

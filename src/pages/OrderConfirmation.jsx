@@ -11,7 +11,7 @@ import { supabase } from '../config/supabase';
 const OrderConfirmation = () => {
     const { state } = useLocation();
     const navigate = useNavigate();
-    const { cart, cartTotal, subtotal, shippingCharge, discountAmount, appliedCoupon, placeOrder, cartLoading } = useCart();
+    const { cart, cartTotal, subtotal, shippingCharge, discountAmount, appliedCoupon, placeOrder, cartLoading, COD_EXTRA_CHARGE } = useCart();
     const { addToast } = useToast();
     const { currentUser } = useAuth();
     const [isSubmitting, setIsSubmitting] = useState(false);
@@ -57,6 +57,10 @@ const OrderConfirmation = () => {
 
     const { formData } = state;
 
+    // COD charge from state (passed from Checkout) or recalculate from settings
+    const codCharge = formData.codCharge !== undefined ? Number(formData.codCharge) : (formData.paymentMethod === 'cod' ? COD_EXTRA_CHARGE : 0);
+    const finalTotal = cartTotal + codCharge;
+
     const handleConfirmOrder = async () => {
         setIsSubmitting(true);
         try {
@@ -74,7 +78,8 @@ const OrderConfirmation = () => {
                                 selectedColor: item.selectedColor
                             })),
                             couponCode: appliedCoupon?.code,
-                            clientTotal: cartTotal
+                            clientTotal: finalTotal,
+                            codCharge: codCharge
                         }
                     });
 
@@ -205,9 +210,15 @@ const OrderConfirmation = () => {
                                         <span>-₹{discountAmount.toLocaleString()}</span>
                                     </div>
                                 )}
+                                {codCharge > 0 && (
+                                    <div className="flex justify-between text-amber-700 text-sm">
+                                        <span>COD Charge</span>
+                                        <span className="font-medium">+₹{codCharge.toLocaleString()}</span>
+                                    </div>
+                                )}
                                 <div className="flex justify-between text-xl font-heading font-bold text-stone-900 pt-4 border-t border-stone-100 mt-2">
                                     <span>Total Pay</span>
-                                    <span className="text-rose-900">₹{cartTotal.toLocaleString()}</span>
+                                    <span className="text-rose-900">₹{finalTotal.toLocaleString()}</span>
                                 </div>
                                 <div className="text-xs text-stone-400 text-right font-medium">
                                     (Incl. of all taxes)
@@ -222,7 +233,7 @@ const OrderConfirmation = () => {
                         <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex gap-3 text-amber-800 text-sm">
                              <AlertTriangle className="w-5 h-5 shrink-0" />
                              <div className="space-y-2">
-                                 <p>By placing this order, you agree to pay <strong>₹{cartTotal.toLocaleString()}</strong> in cash upon delivery.</p>
+                                 <p>By placing this order, you agree to pay <strong>₹{finalTotal.toLocaleString()}</strong> in cash upon delivery.{codCharge > 0 && <span> (includes ₹{codCharge} COD charge)</span>}</p>
                                  <div className="border-t border-amber-200/50 pt-2 mt-2">
                                      <p className="font-bold text-xs uppercase tracking-wider mb-1">Important:</p>
                                      <p className="text-xs leading-relaxed">
@@ -240,7 +251,9 @@ const OrderConfirmation = () => {
                             {isSubmitting ? 'Processing...' : (
                                 <>
                                     <CheckCircle className="w-5 h-5" />
-                                    Confirm & Place Order
+                                    {formData.paymentMethod === 'cod' 
+                                        ? `Confirm Order (Pay ₹${finalTotal.toLocaleString()} on Delivery)`
+                                        : 'Confirm & Place Order'}
                                 </>
                             )}
                         </button>

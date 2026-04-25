@@ -55,7 +55,8 @@ const Orders = () => {
             trackingUrl: o.tracking_url,
             courierName: o.courier_name,
             expectedDeliveryDate: o.expected_delivery_date,
-            estimatedShippingDate: o.estimated_shipping_date
+            estimatedShippingDate: o.estimated_shipping_date,
+            cod_charge: o.cod_charge || 0
         };
     });
     setOrders(mappedOrders);
@@ -834,6 +835,12 @@ const Orders = () => {
                              {selectedOrder.paymentStatus}
                          </span>
                     </div>
+                    {selectedOrder.cod_charge > 0 && (
+                        <div className="flex justify-between text-sm text-amber-700">
+                            <span>COD Charge</span>
+                            <span>+₹{selectedOrder.cod_charge.toLocaleString()}</span>
+                        </div>
+                    )}
                     <div className="flex justify-between text-base font-bold text-stone-900 pt-2 border-t border-stone-200">
                         <span>Grand Total</span>
                         <span className="text-rose-900">₹{selectedOrder.total.toLocaleString()}</span>
