@@ -50,13 +50,36 @@ const AdminLayout = () => {
   
   useAdminPushNotifications(); // Request and handle push notifications
 
+  const [isStandalone, setIsStandalone] = useState(false);
+
+  useEffect(() => {
+    // Check if app is already installed (running as PWA)
+    const mqStandalone = window.matchMedia('(display-mode: standalone)');
+    setIsStandalone(mqStandalone.matches || window.navigator.standalone === true);
+    
+    const onChange = (e) => setIsStandalone(e.matches);
+    mqStandalone.addEventListener?.('change', onChange);
+    return () => mqStandalone.removeEventListener?.('change', onChange);
+  }, []);
+
   useEffect(() => {
     const handler = (e) => {
       e.preventDefault();
       setDeferredPrompt(e);
     };
     window.addEventListener('beforeinstallprompt', handler);
-    return () => window.removeEventListener('beforeinstallprompt', handler);
+    
+    // Hide button after install
+    const onInstalled = () => {
+      setDeferredPrompt(null);
+      setIsStandalone(true);
+    };
+    window.addEventListener('appinstalled', onInstalled);
+    
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handler);
+      window.removeEventListener('appinstalled', onInstalled);
+    };
   }, []);
 
   const handleInstallClick = async () => {
@@ -192,21 +215,17 @@ const AdminLayout = () => {
 
           {/* Right actions */}
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            <button
-              onClick={() => {
-                if (deferredPrompt) {
-                  handleInstallClick();
-                } else {
-                  alert("Install prompt is not available right now. \n\nPossible reasons:\n- The app is already installed.\n- You are using Safari on iOS (use the 'Share' > 'Add to Home Screen' option).\n- The site is not served over HTTPS.");
-                }
-              }}
-              className="flex items-center gap-1.5 text-xs font-bold text-rose-900 bg-rose-50 hover:bg-rose-100 transition-colors px-2 sm:px-3 py-1.5 rounded-lg border border-rose-200 shrink-0"
-              title="Install App"
-            >
-              <Download className="w-3.5 h-3.5 shrink-0" />
-              <span className="hidden sm:inline">Install App</span>
-              <span className="sm:hidden">Install</span>
-            </button>
+            {deferredPrompt && !isStandalone && (
+              <button
+                onClick={handleInstallClick}
+                className="flex items-center gap-1.5 text-xs font-bold text-rose-900 bg-rose-50 hover:bg-rose-100 transition-colors px-2 sm:px-3 py-1.5 rounded-lg border border-rose-200 shrink-0 animate-pulse hover:animate-none"
+                title="Install App"
+              >
+                <Download className="w-3.5 h-3.5 shrink-0" />
+                <span className="hidden sm:inline">Install App</span>
+                <span className="sm:hidden">Install</span>
+              </button>
+            )}
             <Link
               to="/"
               target="_blank"
