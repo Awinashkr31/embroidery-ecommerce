@@ -172,41 +172,41 @@ const Reviews = () => {
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-stone-900">Customer Reviews</h1>
+                    <h1 className="text-2xl font-heading font-bold text-stone-900">Customer Reviews</h1>
                     <p className="text-stone-500">Manage and moderate product reviews</p>
                 </div>
-                <div className="flex flex-col gap-3 items-end">
-                    <div className="flex gap-2">
-                        <select 
-                            value={aiFilter} 
-                            onChange={(e) => setAiFilter(e.target.value)}
-                            className="px-3 py-2 border border-stone-200 rounded-lg text-sm bg-stone-50 font-medium mr-2"
-                        >
-                            <option value="all">AI Filter: All</option>
-                            <option value="positive">Positive</option>
-                            <option value="negative">Negative</option>
-                            <option value="abusive">Abusive ⚠️</option>
-                        </select>
+                <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center w-full md:w-auto overflow-x-auto no-scrollbar pb-2 md:pb-0">
+                    <select 
+                        value={aiFilter} 
+                        onChange={(e) => setAiFilter(e.target.value)}
+                        className="px-3 py-2 border-0 rounded-lg text-sm bg-stone-50 font-medium shrink-0 focus:ring-2 focus:ring-rose-900/20"
+                    >
+                        <option value="all">AI Filter: All</option>
+                        <option value="positive">Positive</option>
+                        <option value="negative">Negative</option>
+                        <option value="abusive">Abusive ⚠️</option>
+                    </select>
+                    <div className="flex gap-2 shrink-0 bg-stone-50 p-1 rounded-xl">
                         <button
                             onClick={() => setFilter('pending')}
-                            className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
-                                filter === 'pending' ? 'bg-rose-900 text-white' : 'bg-white text-stone-600 border border-stone-200'
+                            className={`px-4 py-1.5 rounded-lg font-bold text-sm transition-colors ${
+                                filter === 'pending' ? 'bg-white text-rose-900 shadow-sm' : 'text-stone-500 hover:text-stone-700'
                             }`}
                         >
-                            Pending approval
+                            Pending
                         </button>
                         <button
                             onClick={() => setFilter('approved')}
-                            className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
-                                filter === 'approved' ? 'bg-rose-900 text-white' : 'bg-white text-stone-600 border border-stone-200'
+                            className={`px-4 py-1.5 rounded-lg font-bold text-sm transition-colors ${
+                                filter === 'approved' ? 'bg-white text-rose-900 shadow-sm' : 'text-stone-500 hover:text-stone-700'
                             }`}
                         >
                             Approved
                         </button>
                         <button
                             onClick={() => setFilter('rejected')}
-                            className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
-                                filter === 'rejected' ? 'bg-rose-900 text-white' : 'bg-white text-stone-600 border border-stone-200'
+                            className={`px-4 py-1.5 rounded-lg font-bold text-sm transition-colors ${
+                                filter === 'rejected' ? 'bg-white text-rose-900 shadow-sm' : 'text-stone-500 hover:text-stone-700'
                             }`}
                         >
                             Rejected
@@ -217,31 +217,31 @@ const Reviews = () => {
             
             {/* Bulk Toolbar */}
             {visibleReviews.length > 0 && !loading && (
-                <div className="flex items-center justify-between bg-stone-50 border border-stone-200 p-4 rounded-xl">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-white border-0 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] p-4 rounded-xl gap-4">
                     <div className="flex items-center gap-3">
                         <input 
                             type="checkbox" 
                             checked={selectedIds.length === visibleReviews.length && visibleReviews.length > 0}
                             onChange={(e) => toggleSelectAll(e, visibleReviews.map(r => r.id))}
-                            className="w-4 h-4 text-rose-600 rounded border-stone-300 focus:ring-rose-500"
+                            className="w-5 h-5 text-rose-600 rounded border-stone-300 focus:ring-rose-500"
                         />
-                        <span className="text-sm font-bold text-stone-700">Select All ({selectedIds.length} selected)</span>
+                        <span className="text-sm font-bold text-stone-700">Select All ({selectedIds.length})</span>
                     </div>
                     {selectedIds.length > 0 && (
-                        <div className="flex gap-2 animate-in fade-in">
+                        <div className="flex flex-wrap gap-2 animate-in fade-in">
                             {filter === 'pending' && (
                                 <button
                                     onClick={handleBulkApprove}
-                                    className="px-4 py-2 bg-green-100 text-green-700 hover:bg-green-200 rounded-lg text-sm font-bold transition-colors flex items-center gap-2"
+                                    className="px-4 py-2 bg-green-50 text-green-700 hover:bg-green-100 rounded-lg text-sm font-bold transition-colors flex items-center gap-2"
                                 >
-                                    <Check className="w-4 h-4" /> Approve Selected
+                                    <Check className="w-4 h-4" /> Approve
                                 </button>
                             )}
                             <button
                                 onClick={handleBulkDelete}
-                                className="px-4 py-2 bg-red-100 text-red-700 hover:bg-red-200 rounded-lg text-sm font-bold transition-colors flex items-center gap-2"
+                                className="px-4 py-2 bg-red-50 text-red-700 hover:bg-red-100 rounded-lg text-sm font-bold transition-colors flex items-center gap-2"
                             >
-                                <X className="w-4 h-4" /> {filter === 'rejected' ? 'Permanently Delete' : 'Reject Selected'}
+                                <X className="w-4 h-4" /> {filter === 'rejected' ? 'Perm. Delete' : 'Reject'}
                             </button>
                         </div>
                     )}
@@ -253,7 +253,7 @@ const Reviews = () => {
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-rose-900 mx-auto"></div>
                 </div>
             ) : reviews.length === 0 ? (
-                <div className="bg-white rounded-xl border border-stone-100 p-12 text-center">
+                <div className="bg-white rounded-2xl border-0 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] p-12 text-center">
                     <Star className="w-12 h-12 text-stone-200 mx-auto mb-4" />
                     <h3 className="text-lg font-bold text-stone-900 mb-2">No reviews found</h3>
                     <p className="text-stone-500">There are no reviews with {filter} status.</p>
@@ -261,9 +261,9 @@ const Reviews = () => {
             ) : (
                 <div className="grid gap-4">
                     {visibleReviews.map((review) => (
-                        <div key={review.id} className={`bg-white p-6 rounded-xl border shadow-sm flex flex-col md:flex-row gap-6 transition-colors ${selectedIds.includes(review.id) ? 'border-rose-300 bg-rose-50' : 'border-stone-100'}`}>
+                        <div key={review.id} className={`bg-white p-4 sm:p-6 rounded-2xl border-0 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] flex flex-col md:flex-row gap-4 sm:gap-6 transition-colors relative ${selectedIds.includes(review.id) ? 'ring-2 ring-rose-900 bg-rose-50/10' : ''}`}>
                             {/* Checkbox */}
-                            <div className="flex items-center justify-center md:pt-4 h-full">
+                            <div className="absolute top-4 right-4 md:static md:flex md:items-center md:justify-center md:pt-4 h-full">
                                 <input 
                                     type="checkbox"
                                     checked={selectedIds.includes(review.id)}
@@ -273,45 +273,45 @@ const Reviews = () => {
                             </div>
 
                             {/* Product Info */}
-                            <div className="flex items-center gap-4 md:w-1/4">
-                                <div className="w-16 h-16 rounded-lg bg-stone-50 overflow-hidden flex-shrink-0">
+                            <div className="flex items-center gap-4 md:w-1/4 pr-8 md:pr-0">
+                                <div className="w-16 h-16 rounded-xl bg-stone-50 overflow-hidden flex-shrink-0 border border-stone-100">
                                     {review.products?.images?.[0] && (
                                         <img src={review.products.images[0]} alt={review.products.name} className="w-full h-full object-cover" />
                                     )}
                                 </div>
                                 <div className="min-w-0">
                                     <h4 className="font-bold text-stone-900 text-sm truncate">{review.products?.name}</h4>
-                                    <p className="text-xs text-stone-500">ID: {review.product_id}</p>
+                                    <p className="text-[10px] text-stone-500 uppercase tracking-wider font-bold mt-0.5">ID: {review.product_id?.slice(0,8)}</p>
                                 </div>
                             </div>
 
                             {/* Review Content */}
-                            <div className="flex-1 space-y-2">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                        <div className="flex">{renderStars(review.rating)}</div>
+                            <div className="flex-1 space-y-3">
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                    <div className="flex flex-wrap items-center gap-2">
+                                        <div className="flex bg-stone-50 px-2 py-1 rounded-full">{renderStars(review.rating)}</div>
                                         <span className="font-bold text-stone-900 text-sm">{review.user_name}</span>
                                         {/* AI BADGES */}
                                         {aiAnalysis[review.id] && (
-                                            <div className="flex items-center gap-1.5 ml-2">
+                                            <div className="flex items-center gap-1.5">
                                                 {aiAnalysis[review.id].sentiment === 'POSITIVE' && <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-green-100 text-green-700 flex items-center gap-1"><CheckCircle className="w-3 h-3"/> POSITIVE</span>}
                                                 {aiAnalysis[review.id].sentiment === 'NEGATIVE' && <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-700 flex items-center gap-1"><XCircle className="w-3 h-3"/> NEGATIVE</span>}
                                                 {aiAnalysis[review.id].is_abusive && <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-stone-900 text-white flex items-center gap-1"><ShieldAlert className="w-3 h-3"/> ABUSIVE</span>}
                                             </div>
                                         )}
                                         {analyzing && !aiAnalysis[review.id] && (
-                                            <span className="flex items-center text-[10px] text-stone-400 gap-1 ml-2"><Loader2 className="w-3 h-3 animate-spin" /> analyzing...</span>
+                                            <span className="flex items-center text-[10px] text-stone-400 gap-1"><Loader2 className="w-3 h-3 animate-spin" /></span>
                                         )}
                                     </div>
-                                    <span className="text-xs text-stone-400">
+                                    <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">
                                         {new Date(review.created_at).toLocaleDateString()}
                                     </span>
                                 </div>
-                                <p className="text-stone-600 text-sm leading-relaxed">
-                                    {review.comment}
+                                <p className="text-stone-700 text-sm leading-relaxed bg-stone-50 p-3 rounded-xl border border-stone-100">
+                                    {review.comment || <span className="text-stone-400 italic">No comment provided</span>}
                                 </p>
                                 {review.image_url && (
-                                    <a href={review.image_url} target="_blank" rel="noopener noreferrer" className="mt-2 inline-block w-16 h-16 rounded-lg overflow-hidden border border-stone-200 hover:border-rose-300 transition-colors">
+                                    <a href={review.image_url} target="_blank" rel="noopener noreferrer" className="mt-2 inline-block w-20 h-20 rounded-xl overflow-hidden border border-stone-200 hover:border-rose-300 transition-all shadow-sm hover:shadow-md">
                                         <img src={review.image_url} alt="Review photo" className="w-full h-full object-cover" />
                                     </a>
                                 )}
@@ -319,36 +319,36 @@ const Reviews = () => {
 
                             {/* Actions */}
                             {filter === 'pending' && (
-                                <div className="flex md:flex-col gap-2 justify-center border-t md:border-t-0 md:border-l border-stone-100 pt-4 md:pt-0 md:pl-6 md:w-32">
+                                <div className="flex md:flex-col gap-2 justify-center border-t md:border-t-0 md:border-l border-stone-100 pt-4 md:pt-0 md:pl-6 md:w-32 mt-2 md:mt-0 shrink-0">
                                     <button
                                         onClick={() => handleUpdateStatus(review.id, 'approved')}
-                                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-green-50 text-green-700 hover:bg-green-100 rounded-lg text-sm font-bold transition-colors"
+                                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-green-50 text-green-700 hover:bg-green-100 rounded-xl text-sm font-bold transition-colors"
                                     >
                                         <Check className="w-4 h-4" /> Approve
                                     </button>
                                     <button
                                         onClick={() => handleUpdateStatus(review.id, 'rejected')}
-                                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-orange-50 text-orange-700 hover:bg-orange-100 rounded-lg text-sm font-bold transition-colors"
+                                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-orange-50 text-orange-700 hover:bg-orange-100 rounded-xl text-sm font-bold transition-colors"
                                     >
                                         <X className="w-4 h-4" /> Reject
                                     </button>
                                 </div>
                             )}
                             {filter === 'approved' && (
-                                <div className="flex md:flex-col gap-2 justify-center border-t md:border-t-0 md:border-l border-stone-100 pt-4 md:pt-0 md:pl-6 md:w-32">
+                                <div className="flex md:flex-col gap-2 justify-center border-t md:border-t-0 md:border-l border-stone-100 pt-4 md:pt-0 md:pl-6 md:w-32 mt-2 md:mt-0 shrink-0">
                                     <button
                                         onClick={() => handleUpdateStatus(review.id, 'rejected')}
-                                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-orange-50 text-orange-700 hover:bg-orange-100 rounded-lg text-sm font-bold transition-colors"
+                                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-orange-50 text-orange-700 hover:bg-orange-100 rounded-xl text-sm font-bold transition-colors"
                                     >
                                         <X className="w-4 h-4" /> Reject
                                     </button>
                                 </div>
                             )}
                             {filter === 'rejected' && (
-                                <div className="flex md:flex-col gap-2 justify-center border-t md:border-t-0 md:border-l border-stone-100 pt-4 md:pt-0 md:pl-6 md:w-32">
+                                <div className="flex md:flex-col gap-2 justify-center border-t md:border-t-0 md:border-l border-stone-100 pt-4 md:pt-0 md:pl-6 md:w-32 mt-2 md:mt-0 shrink-0">
                                     <button
                                         onClick={() => handleUpdateStatus(review.id, 'pending')}
-                                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-stone-100 text-stone-700 hover:bg-stone-200 rounded-lg text-sm font-bold transition-colors"
+                                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-stone-100 text-stone-700 hover:bg-stone-200 rounded-xl text-sm font-bold transition-colors"
                                     >
                                         <Check className="w-4 h-4" /> Restore
                                     </button>
@@ -358,7 +358,7 @@ const Reviews = () => {
                                                 handleUpdateStatus(review.id, 'delete');
                                             }
                                         }}
-                                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-red-50 text-red-700 hover:bg-red-100 rounded-lg text-sm font-bold transition-colors"
+                                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-red-50 text-red-700 hover:bg-red-100 rounded-xl text-sm font-bold transition-colors"
                                     >
                                         <X className="w-4 h-4" /> Delete
                                     </button>

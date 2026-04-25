@@ -16,6 +16,7 @@
     "@vercel/speed-insights": "^2.0.0",
     "browser-image-compression": "^2.0.2",
     "firebase": "^12.9.0",
+    "framer-motion": "^12.38.0",
     "html2pdf.js": "^0.14.0",
     "lucide-react": "^0.561.0",
     "react": "^19.1.0",

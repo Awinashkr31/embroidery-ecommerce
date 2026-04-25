@@ -39,7 +39,7 @@ const StatCard = ({ title, value, icon, iconBg, delta, deltaLabel }) => {
   const positive = delta >= 0;
   const IconComponent = icon;
   return (
-    <div className="bg-white p-6 rounded-2xl border border-stone-100 shadow-sm hover:shadow-md transition-all duration-300 group relative overflow-hidden">
+    <div className="bg-white p-6 rounded-2xl border-0 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] hover:shadow-[0_8px_30px_-4px_rgba(0,0,0,0.08)] transition-all duration-300 group relative overflow-hidden">
       {/* Subtle corner accent */}
       <div className={`absolute -top-6 -right-6 w-20 h-20 rounded-full ${iconBg} opacity-30 group-hover:opacity-50 transition-opacity`} />
       
@@ -199,7 +199,7 @@ const Dashboard = () => {
       <div className="grid lg:grid-cols-3 gap-6">
         
         {/* Bar chart */}
-        <div className="lg:col-span-2 bg-white p-6 rounded-2xl border border-stone-100 shadow-sm">
+        <div className="lg:col-span-2 bg-white p-6 rounded-2xl border-0 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)]">
           <div className="flex justify-between items-center mb-6">
             <div>
               <h2 className="text-base font-bold text-stone-900">Revenue — Last 7 Days</h2>
@@ -213,7 +213,7 @@ const Dashboard = () => {
         </div>
 
         {/* Alerts */}
-        <div className="bg-white p-6 rounded-2xl border border-stone-100 shadow-sm flex flex-col gap-4">
+        <div className="bg-white p-6 rounded-2xl border-0 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] flex flex-col gap-4">
           <h2 className="text-base font-bold text-stone-900 flex items-center gap-2">
             <AlertTriangle className="w-4 h-4 text-amber-500" /> Attention Needed
           </h2>
@@ -267,8 +267,8 @@ const Dashboard = () => {
 
 
       {/* ── Recent Orders table ─ */}
-      <div className="bg-white rounded-2xl border border-stone-100 shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-stone-100 flex justify-between items-center">
+      <div className="bg-white rounded-2xl border-0 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] overflow-hidden">
+        <div className="px-6 py-4 border-b border-stone-50 flex justify-between items-center">
           <div>
             <h2 className="text-base font-bold text-stone-900">Recent Orders</h2>
             <p className="text-xs text-stone-400 mt-0.5">Last {stats.recentOrders.length} orders</p>

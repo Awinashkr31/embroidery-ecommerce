@@ -9,40 +9,35 @@ import SEO from '../components/SEO';
 import AutoSlideImage from '../components/AutoSlideImage';
 import { useSettings } from '../context/SettingsContext';
 
-const ScrollRevealSection = ({ children, className }) => {
-    const [isVisible, setIsVisible] = useState(false);
-    const ref = useRef(null);
-  
-    useEffect(() => {
-      const observer = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) {
-            setIsVisible(true);
-            observer.disconnect();
-          }
-        },
-        { threshold: 0.1 }
-      );
-  
-      if (ref.current) {
-        observer.observe(ref.current);
-      }
-      
-      const currentRef = ref.current;
-      return () => {
-        if (currentRef) {
-          observer.unobserve(currentRef);
+import { motion } from 'framer-motion';
+
+const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+        opacity: 1,
+        transition: {
+            staggerChildren: 0.1,
+            delayChildren: 0.2
         }
-      };
-    }, []);
-  
+    }
+};
+
+const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+};
+
+const ScrollRevealSection = ({ children, className }) => {
     return (
-      <section 
-        ref={ref} 
-        className={`${className} transition-all duration-1000 transform ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'}`}
+      <motion.section 
+        initial="hidden"
+        whileInView="visible"
+        viewport={{ once: true, amount: 0.15 }}
+        variants={containerVariants}
+        className={className}
       >
         {children}
-      </section>
+      </motion.section>
     );
 };
 
@@ -156,7 +151,12 @@ const Home = () => {
 
           {/* Hero Text — always visible, not slide-locked */}
           <div className="absolute inset-0 flex items-end justify-center pb-16 md:pb-24 z-10 px-4">
-              <div className="text-center text-white animate-in fade-in slide-in-from-bottom-8 duration-1000 delay-300">
+              <motion.div 
+                initial={{ opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
+                className="text-center text-white"
+              >
                   <h1 className="text-4xl md:text-7xl font-heading mb-3 md:mb-4 drop-shadow-md leading-tight">
                     {settings.home_hero_title}
                   </h1>
@@ -166,18 +166,18 @@ const Home = () => {
                   <div className="flex items-center justify-center gap-3 flex-wrap">
                       <Link 
                           to="/shop"
-                          className="px-7 py-3 bg-white text-stone-900 rounded-full font-bold text-xs md:text-sm tracking-widest uppercase hover:bg-rose-50 transition-all shadow-lg hover:-translate-y-0.5"
+                          className="px-7 py-3 bg-white text-stone-900 rounded-full font-bold text-xs md:text-sm tracking-widest uppercase hover:bg-rose-50 transition-all shadow-lg hover:-translate-y-1 active:scale-95 duration-300"
                       >
                           Shop Now
                       </Link>
                       <Link 
                           to="/custom-design"
-                          className="px-7 py-3 bg-transparent border-2 border-white/70 text-white rounded-full font-bold text-xs md:text-sm tracking-widest uppercase hover:bg-white/10 transition-all hover:-translate-y-0.5"
+                          className="px-7 py-3 bg-transparent border-2 border-white/70 text-white rounded-full font-bold text-xs md:text-sm tracking-widest uppercase hover:bg-white/10 transition-all hover:-translate-y-1 active:scale-95 duration-300"
                       >
                           Custom Design
                       </Link>
                   </div>
-              </div>
+              </motion.div>
           </div>
 
           {/* Slider Controls */}
@@ -268,36 +268,47 @@ const Home = () => {
             </div>
 
             {/* Dynamic Grid */}
-            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-8">
-                
+            <motion.div 
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, amount: 0.1 }}
+                variants={{
+                    hidden: { opacity: 0 },
+                    visible: {
+                        opacity: 1,
+                        transition: { staggerChildren: 0.05 }
+                    }
+                }}
+                className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-8"
+            >
                 {dynamicCategories.map((category) => (
-                    <Link 
-                        key={category.id} 
-                        to={`/shop?category=${encodeURIComponent(category.label)}`}
-                        className="group flex flex-col items-center gap-2 md:gap-4"
-                    >
-                        <div className="relative w-24 h-24 md:w-32 md:h-32 lg:w-40 lg:h-40 rounded-full overflow-hidden border-2 border-transparent group-hover:border-rose-200 transition-all duration-300 shadow-sm group-hover:shadow-lg">
-                            <img 
-                                src={getOptimizedImageUrl(category.image, { width: 300, quality: 80 })} 
-                                alt={category.label} 
-                                loading="lazy"
-                                decoding="async"
-                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
-                            />
-                            {/* Hover overlay with category name */}
-                            <div className="absolute inset-0 bg-rose-900/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                                <span className="text-white text-[10px] md:text-xs font-bold uppercase tracking-wider text-center px-2">{category.label}</span>
+                    <motion.div key={category.id} variants={itemVariants}>
+                        <Link 
+                            to={`/shop?category=${encodeURIComponent(category.label)}`}
+                            className="group flex flex-col items-center gap-2 md:gap-4"
+                        >
+                            <div className="relative w-24 h-24 md:w-32 md:h-32 lg:w-40 lg:h-40 rounded-full overflow-hidden border-2 border-transparent group-hover:border-rose-200 transition-all duration-300 shadow-sm group-hover:shadow-lg">
+                                <img 
+                                    src={getOptimizedImageUrl(category.image, { width: 300, quality: 80 })} 
+                                    alt={category.label} 
+                                    loading="lazy"
+                                    decoding="async"
+                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                                />
+                                {/* Hover overlay with category name */}
+                                <div className="absolute inset-0 bg-rose-900/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                    <span className="text-white text-[10px] md:text-xs font-bold uppercase tracking-wider text-center px-2">{category.label}</span>
+                                </div>
                             </div>
-                        </div>
-                        
-                        <div className="flex items-center gap-1 md:gap-2 text-stone-800 group-hover:text-rose-900 transition-colors">
-                            <span className="font-heading font-medium text-[11px] md:text-lg text-center leading-tight">{category.label}</span>
-                            <ArrowRight className="w-3 h-3 md:w-4 md:h-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 hidden md:block" />
-                        </div>
-                    </Link>
+                            
+                            <div className="flex items-center gap-1 md:gap-2 text-stone-800 group-hover:text-rose-900 transition-colors">
+                                <span className="font-heading font-medium text-[11px] md:text-lg text-center leading-tight">{category.label}</span>
+                                <ArrowRight className="w-3 h-3 md:w-4 md:h-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 hidden md:block" />
+                            </div>
+                        </Link>
+                    </motion.div>
                 ))}
-
-            </div>
+            </motion.div>
             
             <div className="text-center mt-8 md:hidden">
                 <Link to="/shop" className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-stone-500 hover:text-stone-900 transition-colors border-b border-stone-300 pb-1">
@@ -320,31 +331,33 @@ const Home = () => {
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
                 {featuredProducts.map((product) => (
-                    <Link key={product.id} to={`/product/${product.id}`} className="group relative">
-                        <div className="relative aspect-[2/3] bg-white rounded-2xl overflow-hidden mb-4 shadow-sm">
-                            <AutoSlideImage 
-                                product={product}
-                                className="absolute inset-0 w-full h-full"
-                            />
-                        </div>
+                    <motion.div key={product.id} variants={itemVariants}>
+                        <Link to={`/product/${product.id}`} className="group relative block">
+                            <div className="relative aspect-[2/3] bg-white rounded-2xl overflow-hidden mb-4 shadow-sm group-hover:shadow-xl transition-all duration-500 group-hover:-translate-y-2">
+                                <AutoSlideImage 
+                                    product={product}
+                                    className="absolute inset-0 w-full h-full"
+                                />
+                            </div>
 
-                        <div>
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <h3 className="font-heading font-bold text-stone-900 text-base md:text-lg group-hover:text-rose-900 transition-colors line-clamp-1">
-                                        {product.name}
-                                    </h3>
-                                    <p className="text-stone-500 text-xs md:text-sm mt-1 capitalize">{product.category}</p>
-                                </div>
-                                <div className="text-right pl-2">
-                                    <p className="font-bold text-stone-900 text-sm md:text-base">₹{product.price.toLocaleString()}</p>
-                                    {product.originalPrice > product.price && (
-                                        <p className="text-[10px] md:text-xs text-stone-400 line-through">₹{product.originalPrice.toLocaleString()}</p>
-                                    )}
+                            <div>
+                                <div className="flex justify-between items-start">
+                                    <div>
+                                        <h3 className="font-heading font-bold text-stone-900 text-base md:text-lg group-hover:text-rose-900 transition-colors line-clamp-1">
+                                            {product.name}
+                                        </h3>
+                                        <p className="text-stone-500 text-xs md:text-sm mt-1 capitalize">{product.category}</p>
+                                    </div>
+                                    <div className="text-right pl-2">
+                                        <p className="font-bold text-stone-900 text-sm md:text-base">₹{product.price.toLocaleString()}</p>
+                                        {product.originalPrice > product.price && (
+                                            <p className="text-[10px] md:text-xs text-stone-400 line-through">₹{product.originalPrice.toLocaleString()}</p>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </Link>
+                        </Link>
+                    </motion.div>
                 ))}
             </div>
 

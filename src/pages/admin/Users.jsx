@@ -386,12 +386,12 @@ const Users = () => {
             {/* Header */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h1 className="text-3xl font-heading font-bold text-gray-800">User Analytics</h1>
-                    <p className="text-gray-500">Insights from {users.length} unique customers</p>
+                    <h1 className="text-2xl font-heading font-bold text-stone-900">User Analytics</h1>
+                    <p className="text-stone-500 text-sm mt-0.5">Insights from {users.length} unique customers</p>
                 </div>
                 <button 
                   onClick={exportCSV}
-                  className="bg-white border border-gray-200 text-gray-600 px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-gray-50 transition-colors text-sm font-bold"
+                  className="w-full md:w-auto bg-white shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border-0 text-stone-600 px-4 py-2.5 rounded-xl flex items-center justify-center gap-2 hover:bg-stone-50 transition-colors text-sm font-bold tracking-wide shrink-0"
                 >
                     <Download className="w-4 h-4" /> Export CSV
                 </button>
@@ -399,7 +399,7 @@ const Users = () => {
 
             {/* KPI Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
+                <div className="bg-white p-6 rounded-2xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border-0 flex items-center gap-4">
                     <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-600">
                         <DollarSign className="w-6 h-6" />
                     </div>
@@ -408,7 +408,7 @@ const Users = () => {
                         <p className="text-2xl font-bold text-gray-800">₹{analytics.totalRevenue.toLocaleString()}</p>
                     </div>
                 </div>
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4">
+                <div className="bg-white p-6 rounded-2xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border-0 flex items-center gap-4">
                     <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600">
                         <User className="w-6 h-6" />
                     </div>
@@ -422,7 +422,7 @@ const Users = () => {
             {/* Charts Section - Tableau Style Dashboard */}
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
                  {/* 1. Revenue Trend (Area) */}
-                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 col-span-1 xl:col-span-2">
+                 <div className="bg-white p-6 rounded-2xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border-0 col-span-1 xl:col-span-2">
                     <h3 className="font-bold text-gray-800 mb-6 flex items-center gap-2 text-sm">
                         <TrendingUp className="w-4 h-4 text-rose-900" /> Revenue Trend Over Time
                     </h3>
@@ -446,7 +446,7 @@ const Users = () => {
                  </div>
 
                  {/* 2. User Status Breakdown (Donut) */}
-                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                 <div className="bg-white p-6 rounded-2xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border-0">
                     <h3 className="font-bold text-gray-800 mb-6 flex items-center gap-2 text-sm">
                         <Activity className="w-4 h-4 text-rose-900" /> User Health Breakdown
                     </h3>
@@ -479,7 +479,7 @@ const Users = () => {
                  </div>
 
                  {/* 3. Order Volume by Month (Bar) */}
-                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                 <div className="bg-white p-6 rounded-2xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border-0">
                     <h3 className="font-bold text-gray-800 mb-6 flex items-center gap-2 text-sm">
                         <ShoppingBag className="w-4 h-4 text-rose-900" /> Order Volume
                     </h3>
@@ -497,7 +497,7 @@ const Users = () => {
                  </div>
 
                  {/* 4. Top Locations by Revenue (Horizontal Bar) */}
-                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 col-span-1 xl:col-span-2">
+                 <div className="bg-white p-6 rounded-2xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border-0 col-span-1 xl:col-span-2">
                     <h3 className="font-bold text-gray-800 mb-6 flex items-center gap-2 text-sm">
                         <MapPin className="w-4 h-4 text-rose-900" /> Revenue by Location
                     </h3>
@@ -515,7 +515,7 @@ const Users = () => {
                  </div>
 
                  {/* 5. User Preferences/Categories (Pie) */}
-                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                 <div className="bg-white p-6 rounded-2xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border-0">
                     <h3 className="font-bold text-gray-800 mb-6 flex items-center gap-2 text-sm">
                         <Star className="w-4 h-4 text-rose-900" /> Category Preferences
                     </h3>
@@ -547,7 +547,7 @@ const Users = () => {
                  </div>
 
                  {/* 6. Order Value Distribution (Bar) */}
-                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                 <div className="bg-white p-6 rounded-2xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border-0">
                     <h3 className="font-bold text-gray-800 mb-6 flex items-center gap-2 text-sm">
                         <DollarSign className="w-4 h-4 text-rose-900" /> Ticket Size Distribution
                     </h3>
@@ -566,7 +566,7 @@ const Users = () => {
 
 
                  {/* 8. Purchase Frequency (Bar) */}
-                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                 <div className="bg-white p-6 rounded-2xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border-0">
                     <h3 className="font-bold text-gray-800 mb-6 flex items-center gap-2 text-sm">
                         <ShoppingBag className="w-4 h-4 text-rose-900" /> Purchase Frequency
                     </h3>
@@ -584,7 +584,7 @@ const Users = () => {
                  </div>
 
                  {/* 9. Sales by Day of Week (Radar) */}
-                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                 <div className="bg-white p-6 rounded-2xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border-0">
                     <h3 className="font-bold text-gray-800 mb-6 flex items-center gap-2 text-sm">
                         <Calendar className="w-4 h-4 text-rose-900" /> Sales by Day
                     </h3>
@@ -602,7 +602,7 @@ const Users = () => {
                  </div>
 
                  {/* 10. Order Status Distribution (Pie) */}
-                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                 <div className="bg-white p-6 rounded-2xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border-0">
                     <h3 className="font-bold text-gray-800 mb-6 flex items-center gap-2 text-sm">
                         <TrendingUp className="w-4 h-4 text-rose-900" /> Order Statuses
                     </h3>
@@ -628,7 +628,7 @@ const Users = () => {
                  </div>
                  
                  {/* 11. Customer Acquisition (Area) */}
-                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 col-span-1 xl:col-span-2">
+                 <div className="bg-white p-6 rounded-2xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border-0 col-span-1 xl:col-span-2">
                     <h3 className="font-bold text-gray-800 mb-6 flex items-center gap-2 text-sm">
                         <User className="w-4 h-4 text-rose-900" /> Customer Acquisition
                     </h3>
@@ -652,7 +652,7 @@ const Users = () => {
                  </div>
 
                  {/* 12. Average Order Value by Month (Bar) */}
-                 <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+                 <div className="bg-white p-6 rounded-2xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border-0">
                     <h3 className="font-bold text-gray-800 mb-6 flex items-center gap-2 text-sm">
                         <DollarSign className="w-4 h-4 text-rose-900" /> AOV Trend
                     </h3>
@@ -672,28 +672,28 @@ const Users = () => {
             </div>
 
             {/* Users Table */}
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="bg-white rounded-2xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border-0 overflow-hidden">
                 {/* Toolbar */}
-                <div className="p-4 border-b border-gray-100 flex flex-col md:flex-row gap-4 justify-between bg-gray-50/50">
-                    <div className="relative max-w-sm w-full">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <div className="p-4 border-b border-stone-100 flex flex-col xl:flex-row gap-4 justify-between">
+                    <div className="relative flex-1 max-w-sm">
+                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-stone-400" />
                         <input 
                             type="text" 
                             placeholder="Search by name or email..." 
-                            className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-rose-900/10 text-sm"
+                            className="w-full pl-12 pr-4 py-2.5 rounded-xl bg-stone-50 border-none focus:outline-none focus:bg-white focus:ring-2 focus:ring-rose-900/20 text-sm font-medium transition-all"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
                         />
                     </div>
-                    <div className="flex items-center gap-2 overflow-x-auto">
+                    <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
                         {['all', 'active', 'registered', 'new', 'churned', 'whales'].map(status => (
                             <button
                                 key={status}
                                 onClick={() => setFilterStatus(status)}
-                                className={`px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-colors ${
+                                className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all ${
                                     filterStatus === status 
-                                    ? 'bg-rose-900 text-white' 
-                                    : 'bg-white border border-gray-200 text-gray-500 hover:bg-gray-50'
+                                    ? 'bg-rose-900 text-white shadow-sm' 
+                                    : 'bg-stone-50 text-stone-500 hover:bg-stone-100'
                                 }`}
                             >
                                 {status === 'whales' ? 'High Spenders' : status}
@@ -702,7 +702,69 @@ const Users = () => {
                     </div>
                 </div>
 
-                <div className="overflow-x-auto">
+                {/* Mobile View */}
+                <div className="md:hidden divide-y divide-gray-100">
+                    {sortedUsers.length === 0 ? (
+                        <div className="p-8 text-center text-gray-500">
+                            No users found matching your filters.
+                        </div>
+                    ) : (
+                        sortedUsers.map(user => (
+                            <div key={user.id} className="p-4 flex flex-col gap-3">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 rounded-full bg-rose-50 flex items-center justify-center text-rose-900 font-bold border border-rose-100 overflow-hidden">
+                                            {user.photo ? (
+                                                <img src={user.photo} alt={user.name} className="w-full h-full object-cover" />
+                                            ) : (
+                                                user.name.charAt(0)
+                                            )}
+                                        </div>
+                                        <div>
+                                            <p className="font-bold text-gray-900 text-sm">{user.name}</p>
+                                            <p className="text-xs text-gray-500">{user.email}</p>
+                                        </div>
+                                    </div>
+                                    <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border ${
+                                        user.status === 'Active' ? 'bg-green-100 text-green-700 border-green-200' :
+                                        user.status === 'Churned' ? 'bg-gray-100 text-gray-600 border-gray-200' :
+                                        user.status === 'At Risk' ? 'bg-red-100 text-red-700 border-red-200' :
+                                        'bg-blue-100 text-blue-700 border-blue-200'
+                                    }`}>
+                                        {user.status}
+                                    </span>
+                                </div>
+                                <div className="grid grid-cols-2 gap-2 bg-gray-50 p-2 rounded-lg">
+                                    <div>
+                                        <p className="text-[10px] text-gray-500 uppercase font-bold">Lifetime Spend</p>
+                                        <p className="font-bold text-gray-900 text-sm">₹{user.totalSpend.toLocaleString()}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] text-gray-500 uppercase font-bold">Orders</p>
+                                        <p className="text-sm font-medium text-gray-800">{user.orderCount}</p>
+                                    </div>
+                                </div>
+                                <div className="flex justify-end gap-2 mt-1">
+                                    <button 
+                                        onClick={() => setSelectedUser(user)}
+                                        className="text-rose-900 bg-rose-50 px-3 py-1.5 text-xs font-bold rounded-lg transition-colors flex items-center gap-1"
+                                    >
+                                        <Search className="w-3.5 h-3.5" /> Details
+                                    </button>
+                                    <button 
+                                        onClick={() => { setNotifTarget(user); setShowNotifModal(true); }}
+                                        className="text-gray-600 bg-gray-100 px-3 py-1.5 text-xs font-bold rounded-lg transition-colors flex items-center gap-1"
+                                    >
+                                        <Bell className="w-3.5 h-3.5" /> Notify
+                                    </button>
+                                </div>
+                            </div>
+                        ))
+                    )}
+                </div>
+
+                {/* Desktop View */}
+                <div className="hidden md:block overflow-x-auto">
                     <table className="w-full text-left">
                         <thead className="bg-gray-50 border-b border-gray-100">
                             <tr>
@@ -837,7 +899,7 @@ const Users = () => {
                                         <div key={order.id} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
                                             <div className="flex items-center justify-center w-5 h-5 rounded-full border border-white bg-slate-300 group-[.is-active]:bg-rose-900 text-slate-500 group-[.is-active]:text-emerald-50 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10"></div>
                                             
-                                            <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+                                            <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-white p-4 rounded-xl border-0 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)]">
                                                 <div className="flex justify-between items-start mb-1">
                                                     <span className="font-bold text-gray-900 text-sm">Order #{order.id.slice(0,6)}</span>
                                                     <time className="font-caveat font-medium text-rose-900 text-xs">{new Date(order.created_at).toLocaleDateString()}</time>

@@ -55,15 +55,15 @@ const AdminCoupons = () => {
 
   return (
     <div>
-       <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-gray-800 mb-2">Discount Coupons</h1>
-        <p className="text-gray-600">Manage promotional codes, invalidity rules, and targeting.</p>
+      <div className="mb-8">
+        <h1 className="text-2xl font-heading font-bold text-stone-900">Discount Coupons</h1>
+        <p className="text-stone-500 text-sm mt-0.5">Manage promotional codes, invalidity rules, and targeting.</p>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-8">
         {/* Add Coupon Form */}
         <div className="lg:col-span-1">
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 sticky top-6">
+            <div className="bg-white p-6 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border-0 sticky top-6">
                 <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
                     <Plus className="w-5 h-5 mr-2 text-rose-900" />
                     Create New Coupon
@@ -232,7 +232,7 @@ const AdminCoupons = () => {
 
         {/* Coupons List */}
         <div className="lg:col-span-2">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="bg-white rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border-0 overflow-hidden">
                 <div className="p-6 border-b border-gray-100">
                     <h2 className="text-lg font-semibold text-gray-800 flex items-center">
                         <Tag className="w-5 h-5 mr-2 text-rose-900" />
@@ -244,8 +244,65 @@ const AdminCoupons = () => {
                         No coupons created yet.
                     </div>
                 ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left">
+                    <>
+                        {/* Mobile View */}
+                        <div className="md:hidden divide-y divide-gray-100">
+                            {coupons.map((coupon) => {
+                                const isExpired = new Date(coupon.expiry) < new Date();
+                                return (
+                                    <div key={coupon.id} className="p-4 flex flex-col gap-3 hover:bg-gray-50">
+                                        <div className="flex justify-between items-start">
+                                            <div>
+                                                <div className="font-bold text-gray-900 text-lg">{coupon.code}</div>
+                                                <div className="text-xs text-gray-500">{coupon.type === 'flat' ? 'Flat Amount' : 'Percentage'}</div>
+                                            </div>
+                                            <div className="flex flex-col items-end gap-2">
+                                                <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-wide border ${isExpired ? 'bg-red-100 text-red-700 border-red-200' : 'bg-green-100 text-green-700 border-green-200'}`}>
+                                                    {isExpired ? 'Expired' : 'Active'}
+                                                </span>
+                                                <div className="text-rose-900 font-bold text-sm">
+                                                    {coupon.type === 'flat' ? `₹${coupon.discount}` : `${coupon.discount}%`}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-2 text-xs bg-gray-50 p-3 rounded-lg border border-gray-100/50">
+                                            <div className="flex flex-col gap-1 text-gray-600">
+                                                <span className="font-semibold text-gray-800">Rules</span>
+                                                {coupon.minOrder > 0 && <span>Min: ₹{coupon.minOrder}</span>}
+                                                {coupon.maxDiscount > 0 && <span>Max Disc: ₹{coupon.maxDiscount}</span>}
+                                                {coupon.includedCategories?.length > 0 && (
+                                                    <span className="text-emerald-700 font-medium">
+                                                        {coupon.includedCategories.length} Categories
+                                                    </span>
+                                                )}
+                                                {coupon.usageLimit > 0 && <span>Limit: {coupon.usageLimit} uses</span>}
+                                                {(!coupon.minOrder && !coupon.maxDiscount && (!coupon.includedCategories || coupon.includedCategories.length === 0) && !coupon.usageLimit) && <span>No restrictions</span>}
+                                            </div>
+                                            <div className="flex flex-col gap-1 text-gray-600">
+                                                <span className="font-semibold text-gray-800">Validity</span>
+                                                <div>From: {coupon.startDate ? new Date(coupon.startDate).toLocaleDateString() : 'Immediate'}</div>
+                                                <div>Exp: {new Date(coupon.expiry).toLocaleDateString()}</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="flex justify-end mt-1">
+                                            <button
+                                                onClick={() => deleteCoupon(coupon.id)}
+                                                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors"
+                                                title="Delete Coupon"
+                                            >
+                                                <Trash2 className="w-3.5 h-3.5" /> Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        {/* Desktop View */}
+                        <div className="hidden md:block overflow-x-auto">
+                            <table className="w-full text-left">
                             <thead className="bg-gray-50 text-gray-500 text-xs uppercase font-semibold">
                                 <tr>
                                     <th className="px-6 py-3">Code</th>
@@ -304,6 +361,7 @@ const AdminCoupons = () => {
                             </tbody>
                         </table>
                     </div>
+                    </>
                 )}
             </div>
         </div>

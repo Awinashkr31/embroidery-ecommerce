@@ -184,32 +184,38 @@ const AdminLayout = () => {
           </button>
 
           {/* Page title */}
-          <div className="flex items-center gap-2">
-            <h1 className="text-lg font-heading font-bold text-stone-900 hidden lg:block">{currentPage}</h1>
+          <div className="flex items-center gap-2 min-w-0 flex-1 px-2">
+            <h1 className="text-lg font-heading font-bold text-stone-900 hidden lg:block truncate">{currentPage}</h1>
             {/* Breadcrumb pill on mobile */}
-            <span className="lg:hidden text-sm font-bold text-stone-900">{currentPage}</span>
+            <span className="lg:hidden text-sm font-bold text-stone-900 truncate">{currentPage}</span>
           </div>
 
           {/* Right actions */}
-          <div className="flex items-center gap-3">
-            {deferredPrompt && (
-              <button
-                onClick={handleInstallClick}
-                className="hidden sm:flex items-center gap-1.5 text-xs font-bold text-rose-900 bg-rose-50 hover:bg-rose-100 transition-colors px-3 py-1.5 rounded-lg border border-rose-200"
-              >
-                <Download className="w-3.5 h-3.5" />
-                Install App
-              </button>
-            )}
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            <button
+              onClick={() => {
+                if (deferredPrompt) {
+                  handleInstallClick();
+                } else {
+                  alert("Install prompt is not available right now. \n\nPossible reasons:\n- The app is already installed.\n- You are using Safari on iOS (use the 'Share' > 'Add to Home Screen' option).\n- The site is not served over HTTPS.");
+                }
+              }}
+              className="flex items-center gap-1.5 text-xs font-bold text-rose-900 bg-rose-50 hover:bg-rose-100 transition-colors px-2 sm:px-3 py-1.5 rounded-lg border border-rose-200 shrink-0"
+              title="Install App"
+            >
+              <Download className="w-3.5 h-3.5 shrink-0" />
+              <span className="hidden sm:inline">Install App</span>
+              <span className="sm:hidden">Install</span>
+            </button>
             <Link
               to="/"
               target="_blank"
-              className="hidden sm:flex items-center gap-1.5 text-xs font-bold text-stone-500 hover:text-rose-900 transition-colors px-3 py-1.5 rounded-lg hover:bg-stone-50 border border-stone-200"
+              className="hidden sm:flex items-center gap-1.5 text-xs font-bold text-stone-500 hover:text-rose-900 transition-colors px-3 py-1.5 rounded-lg hover:bg-stone-50 border border-stone-200 shrink-0"
             >
-              <ExternalLink className="w-3.5 h-3.5" />
+              <ExternalLink className="w-3.5 h-3.5 shrink-0" />
               View Site
             </Link>
-            <div className="w-8 h-8 rounded-full bg-rose-900 flex items-center justify-center text-white shadow-sm">
+            <div className="w-8 h-8 rounded-full bg-rose-900 flex items-center justify-center text-white shadow-sm shrink-0">
               <User className="w-4 h-4" />
             </div>
           </div>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useProducts } from '../context/ProductContext';
 import { useCart } from '../context/CartContext';
@@ -176,8 +177,31 @@ const ProductDetails = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex justify-center items-center bg-[#fdfbf7]">
-                <div className="w-12 h-12 border-2 border-stone-200 border-t-rose-900 rounded-full animate-spin"></div>
+            <div className="min-h-screen bg-[#fdfbf7] pt-8 lg:pt-20">
+                <div className="container-custom">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 xl:gap-16">
+                        {/* Image Skeleton */}
+                        <div className="lg:col-span-5 aspect-[4/5] bg-stone-100 rounded-2xl animate-pulse relative overflow-hidden">
+                            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full animate-[shimmer_2s_infinite]"></div>
+                        </div>
+                        
+                        {/* Content Skeleton */}
+                        <div className="lg:col-span-7 space-y-6">
+                            <div className="h-6 w-24 bg-stone-100 rounded-full animate-pulse"></div>
+                            <div className="h-12 w-3/4 bg-stone-100 rounded-xl animate-pulse"></div>
+                            <div className="h-4 w-1/2 bg-stone-100 rounded-md animate-pulse"></div>
+                            <div className="pt-8 space-y-4">
+                                <div className="h-16 w-40 bg-stone-100 rounded-xl animate-pulse"></div>
+                                <div className="h-4 w-full bg-stone-100 rounded-md animate-pulse"></div>
+                                <div className="h-4 w-5/6 bg-stone-100 rounded-md animate-pulse"></div>
+                            </div>
+                            <div className="pt-10 flex gap-4">
+                                <div className="h-14 flex-1 bg-stone-100 rounded-2xl animate-pulse"></div>
+                                <div className="h-14 w-40 bg-stone-100 rounded-2xl animate-pulse"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         );
     }
@@ -279,7 +303,7 @@ const ProductDetails = () => {
         <div className="min-h-screen bg-[#fdfbf7] pt-4 md:pt-8 pb-28 lg:pb-20 font-body selection:bg-rose-100 selection:text-rose-900">
             <div className="container-custom">
                 {/* Breadcrumb */}
-                <div className="mb-6 md:mb-10">
+                <div className="hidden md:block mb-6 md:mb-10">
                     <div className="flex items-center gap-2 text-sm text-stone-400">
                         <Link to="/" className="hover:text-rose-900 transition-colors">Home</Link>
                         <span>/</span>
@@ -315,19 +339,28 @@ const ProductDetails = () => {
 
                         {/* Main Image Area */}
                         <div className="flex-1 rounded-2xl overflow-hidden relative shadow-sm group bg-stone-50 aspect-[2/3] lg:aspect-[4/5]">
-                            <div className="hidden lg:block w-full h-full"> 
-                                <img 
-                                    src={selectedImage || displayImages[0] || product.image || 'https://via.placeholder.com/500'} 
-                                    alt={product.name} 
-                                    className="w-full h-full object-cover object-top transition-transform duration-700 group-hover:scale-105" 
-                                />
-                                <div className="absolute top-4 right-4 flex flex-col gap-3">
-                                    <button 
+                            <div className="hidden lg:block w-full h-full relative overflow-hidden"> 
+                                <AnimatePresence mode="wait">
+                                    <motion.img 
+                                        key={selectedImage || displayImages[0] || product.image}
+                                        initial={{ opacity: 0, scale: 1.05 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        exit={{ opacity: 0, scale: 0.95 }}
+                                        transition={{ duration: 0.4, ease: "easeOut" }}
+                                        src={selectedImage || displayImages[0] || product.image || 'https://via.placeholder.com/500'} 
+                                        alt={product.name} 
+                                        className="w-full h-full object-cover object-top" 
+                                    />
+                                </AnimatePresence>
+                                <div className="absolute top-4 right-4 flex flex-col gap-3 z-10">
+                                    <motion.button 
+                                        whileHover={{ scale: 1.1 }}
+                                        whileTap={{ scale: 0.9 }}
                                         onClick={() => toggleWishlist(product)}
                                         className="p-3 bg-white/90 backdrop-blur rounded-full shadow-sm hover:shadow-md hover:bg-white transition-all text-stone-600 hover:text-rose-600 group/btn"
                                     >
                                         <Heart className={`w-5 h-5 ${isInWishlist(product.id) ? 'fill-rose-600 text-rose-600' : ''}`} />
-                                    </button>
+                                    </motion.button>
                                 </div>
                             </div>
                             <div className="lg:hidden flex overflow-x-auto snap-x snap-mandatory w-full h-full no-scrollbar">
@@ -364,7 +397,12 @@ const ProductDetails = () => {
                     </div>
 
                     {/* Details Section - Clean Typography */}
-                    <div className="lg:col-span-7 lg:pt-4 min-w-0"> 
+                    <motion.div 
+                        initial={{ opacity: 0, x: 20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.6, delay: 0.2 }}
+                        className="lg:col-span-7 lg:pt-4 min-w-0"
+                    > 
                         <div className="mb-6 space-y-3">
                              <div className="flex items-center justify-between">
                                 <span className="inline-flex items-center text-xs font-bold tracking-[0.18em] uppercase text-rose-900 bg-rose-50 border border-rose-100 px-3 py-1.5 rounded-full">
@@ -572,7 +610,9 @@ const ProductDetails = () => {
                         {/* Actions (Desktop) */}
                         <div className="hidden lg:flex flex-col gap-3 mb-12">
                             <div className="flex gap-3">
-                                <button
+                                <motion.button
+                                    whileHover={{ y: -4, scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
                                     onClick={async () => {
                                         if (isInCart) {
                                             navigate('/cart');
@@ -588,15 +628,17 @@ const ProductDetails = () => {
                                         isStockAvailable
                                         ? isInCart 
                                             ? 'bg-emerald-700 text-white hover:bg-emerald-800 shadow-lg shadow-emerald-900/15' 
-                                            : 'bg-stone-900 text-white hover:bg-stone-800 shadow-xl shadow-stone-900/15 hover:-translate-y-0.5'
+                                            : 'bg-stone-900 text-white hover:bg-stone-800 shadow-xl shadow-stone-900/15'
                                         : 'bg-stone-200 text-stone-400 cursor-not-allowed'
                                     }`}
                                 >
                                     <ShoppingBag className="w-4 h-4" />
                                     {isStockAvailable ? (isInCart ? 'Go to Bag' : 'Add to Bag') : 'Sold Out'}
-                                </button>
+                                </motion.button>
                                 
-                                <button 
+                                <motion.button 
+                                    whileHover={{ y: -4, scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
                                     onClick={async () => {
                                             if(isStockAvailable) {
                                             if (!validateSelection()) return;
@@ -608,18 +650,7 @@ const ProductDetails = () => {
                                     className="px-8 py-4 rounded-2xl border-2 border-stone-900 font-bold uppercase tracking-widest text-sm text-stone-900 hover:bg-stone-900 hover:text-white transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed bg-white"
                                 >
                                     Buy Now
-                                </button>
-
-                                <button
-                                    onClick={() => toggleWishlist(product)}
-                                    className={`p-4 rounded-2xl border-2 transition-all duration-200 ${
-                                        isInWishlist(product.id) 
-                                        ? 'border-rose-200 bg-rose-50 text-rose-600' 
-                                        : 'border-stone-200 text-stone-400 hover:border-rose-200 hover:text-rose-500 hover:bg-rose-50'
-                                    }`}
-                                >
-                                    <Heart className={`w-5 h-5 ${isInWishlist(product.id) ? 'fill-rose-500' : ''}`} />
-                                </button>
+                                </motion.button>
                             </div>
                         </div>
 
@@ -854,7 +885,7 @@ const ProductDetails = () => {
                                 </div>
                             )}
                         </div>
-                    </div>
+                    </motion.div>
                 </div>
 
                 {/* Related Products Section */}
@@ -865,11 +896,32 @@ const ProductDetails = () => {
                             <h2 className="text-xl lg:text-2xl font-heading font-semibold text-stone-900 text-center whitespace-nowrap">You May Also Love</h2>
                             <div className="flex-1 h-px bg-stone-200" />
                         </div>
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6">
+                        <motion.div 
+                            initial="hidden"
+                            whileInView="show"
+                            viewport={{ once: true }}
+                            variants={{
+                                hidden: { opacity: 0 },
+                                show: {
+                                    opacity: 1,
+                                    transition: {
+                                        staggerChildren: 0.1
+                                    }
+                                }
+                            }}
+                            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6"
+                        >
                             {relatedProducts.map(p => {
                                 const discount = p.originalPrice ? Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100) : 0;
                                 return (
-                                    <div key={p.id} className="group relative">
+                                    <motion.div 
+                                        key={p.id} 
+                                        variants={{
+                                            hidden: { opacity: 0, y: 20 },
+                                            show: { opacity: 1, y: 0 }
+                                        }}
+                                        className="group relative"
+                                    >
                                         <div className="aspect-[2/3] overflow-hidden bg-stone-50 rounded-2xl mb-3 relative">
                                             <Link to={`/product/${p.id}`}>
                                                 <img 
@@ -914,10 +966,10 @@ const ProductDetails = () => {
                                                 )}
                                             </div>
                                         </Link>
-                                    </div>
+                                    </motion.div>
                                 );
                             })}
-                        </div>
+                        </motion.div>
                     </div>
                 )}
             </div>
@@ -1008,7 +1060,7 @@ const ProductDetails = () => {
 
                         if (!validateSelection()) return;
                         
-                        await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice });
+                        await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice, variantId: selectedVariant?.id });
                     }}
                     disabled={!isStockAvailable}
                     className={`flex-1 py-3 rounded-xl font-bold uppercase tracking-widest text-xs transition-all flex items-center justify-center gap-2 ${
@@ -1027,7 +1079,7 @@ const ProductDetails = () => {
                     onClick={async () => {
                             if(isStockAvailable) {
                             if (!validateSelection()) return;
-                            await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice });
+                            await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice, variantId: selectedVariant?.id });
                             navigate('/cart');
                             }
                     }}

@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MessageSquare, X, Send, PackageSearch, ShoppingBag, RefreshCcw, Sparkles, Gift, Palette } from 'lucide-react';
+import { AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 import { Link, useLocation } from 'react-router-dom';
 
 export default function ChatWidget() {
     const { currentUser } = useAuth();
+    const { CHATBOT_ENABLED } = useCart();
     const location = useLocation();
     const [isOpen, setIsOpen] = useState(() => {
         return sessionStorage.getItem('chat_is_open') === 'true';
@@ -14,7 +17,9 @@ export default function ChatWidget() {
         if (stored) {
             try {
                 return JSON.parse(stored);
-            } catch(e) {}
+            } catch {
+                // Return default on parse error
+            }
         }
         return [{ sender: 'bot', text: 'Hi! I am the Embroidery By Sana AI assistant. How can I help you today?' }];
     });
@@ -134,96 +139,121 @@ export default function ChatWidget() {
         });
     };
 
-    // Don't render on hidden routes
-    if (shouldHide) return null;
+    // Don't render on hidden routes or if disabled by admin
+    if (shouldHide || !CHATBOT_ENABLED) return null;
 
     return (
         <>
             {/* Chat Window - fullscreen on mobile, floating on desktop */}
-            {isOpen && (
-                <div className="fixed inset-0 md:inset-auto md:bottom-6 md:right-6 z-[60] md:z-50 flex flex-col md:block">
-                    <div className="bg-white w-full h-full md:w-[400px] md:h-[500px] md:max-h-[80vh] md:rounded-2xl shadow-2xl flex flex-col md:mb-4 border-0 md:border md:border-stone-200 overflow-hidden">
-                        {/* Header */}
-                        <div className="bg-rose-900 text-white p-4 flex items-center justify-between shadow-sm flex-shrink-0">
-                            <div>
-                                <h3 className="font-heading font-semibold text-lg">Sana Assistant</h3>
-                                <p className="text-rose-200 text-xs text-left">Always online</p>
-                            </div>
-                            <button onClick={() => setIsOpen(false)} className="hover:bg-rose-800 p-1 rounded-full transition-colors">
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
-
-                        {/* Messages Body */}
-                        <div className="flex-1 p-4 overflow-y-auto bg-stone-50 space-y-4">
-                            {messages.map((msg, i) => (
-                                <div key={i} className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                    <div className={`max-w-[80%] rounded-2xl px-4 py-2 ${msg.sender === 'user' ? 'bg-stone-900 text-white rounded-br-none' : 'bg-white border border-stone-200 text-stone-800 rounded-bl-none shadow-sm'}`}>
-                                        <p className="text-sm break-words whitespace-pre-wrap leading-relaxed">{renderMessage(msg.text)}</p>
-                                    </div>
+            <AnimatePresence>
+                {isOpen && (
+                    <motion.div 
+                        initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                        transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                        className="fixed inset-0 md:inset-auto md:bottom-6 md:right-6 z-[60] md:z-50 flex flex-col md:block"
+                    >
+                        <div className="bg-white w-full h-full md:w-[400px] md:h-[500px] md:max-h-[80vh] md:rounded-2xl shadow-2xl flex flex-col md:mb-4 border-0 md:border md:border-stone-200 overflow-hidden">
+                            {/* Header */}
+                            <div className="bg-rose-900 text-white p-4 flex items-center justify-between shadow-sm flex-shrink-0">
+                                <div>
+                                    <h3 className="font-heading font-semibold text-lg">Sana Assistant</h3>
+                                    <p className="text-rose-200 text-xs text-left">Always online</p>
                                 </div>
-                            ))}
-                            {isLoading && (
-                                <div className="flex justify-start">
-                                    <div className="bg-white border border-stone-200 rounded-2xl rounded-bl-none px-4 py-2 shadow-sm flex gap-2 items-center">
-                                        <div className="w-2 h-2 bg-stone-300 rounded-full animate-bounce"></div>
-                                        <div className="w-2 h-2 bg-stone-300 rounded-full animate-bounce [animation-delay:-.1s]"></div>
-                                        <div className="w-2 h-2 bg-stone-300 rounded-full animate-bounce [animation-delay:-.2s]"></div>
-                                    </div>
-                                </div>
-                            )}
-                            <div ref={messagesEndRef} />
-                        </div>
-
-                        {/* Input Area Group */}
-                        <div className="bg-white border-t border-stone-100 flex flex-col flex-shrink-0" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-                            {/* Quick Replies */}
-                            <div className="px-3 pt-3 pb-1 flex gap-2 overflow-x-auto no-scrollbar" style={{ scrollbarWidth: 'none' }}>
-                                {quickReplies.map((chip, idx) => (
-                                    <button 
-                                        key={idx}
-                                        onClick={() => submitMessage(chip.text)}
-                                        disabled={isLoading}
-                                        className="whitespace-nowrap flex items-center gap-1.5 text-xs font-medium bg-rose-50/50 text-rose-800 border border-rose-200 shadow-sm px-3.5 py-1.5 rounded-full hover:bg-rose-100 hover:border-rose-300 transform hover:-translate-y-0.5 hover:shadow-md transition-all duration-200 ease-out disabled:opacity-50 disabled:hover:transform-none disabled:cursor-not-allowed active:scale-95"
-                                    >
-                                        {chip.icon}
-                                        {chip.text}
-                                    </button>
-                                ))}
-                            </div>
-
-                            {/* Text Input */}
-                            <form onSubmit={handleSend} className="p-3 flex items-center gap-2">
-                                <input
-                                    type="text"
-                                    value={input}
-                                    onChange={(e) => setInput(e.target.value)}
-                                    placeholder="Type a message..."
-                                    className="flex-1 bg-stone-100 border border-stone-200 px-4 py-2.5 rounded-full text-sm focus:outline-none focus:border-rose-300"
-                                />
-                                <button 
-                                    type="submit" 
-                                    disabled={!input.trim() || isLoading}
-                                    className="bg-rose-900 text-white p-2.5 rounded-full hover:bg-rose-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                                >
-                                    <Send className="w-4 h-4" />
+                                <button onClick={() => setIsOpen(false)} className="hover:bg-rose-800 p-1 rounded-full transition-colors">
+                                    <X className="w-5 h-5" />
                                 </button>
-                            </form>
+                            </div>
+
+                            {/* Messages Body */}
+                            <div className="flex-1 p-4 overflow-y-auto bg-stone-50 space-y-4">
+                                <AnimatePresence initial={false}>
+                                    {messages.map((msg, i) => (
+                                        <motion.div 
+                                            key={i}
+                                            initial={{ opacity: 0, x: msg.sender === 'user' ? 20 : -20, y: 10 }}
+                                            animate={{ opacity: 1, x: 0, y: 0 }}
+                                            className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                                        >
+                                            <div className={`max-w-[80%] rounded-2xl px-4 py-2 ${msg.sender === 'user' ? 'bg-stone-900 text-white rounded-br-none' : 'bg-white border border-stone-200 text-stone-800 rounded-bl-none shadow-sm'}`}>
+                                                <p className="text-sm break-words whitespace-pre-wrap leading-relaxed">{renderMessage(msg.text)}</p>
+                                            </div>
+                                        </motion.div>
+                                    ))}
+                                </AnimatePresence>
+                                {isLoading && (
+                                    <motion.div 
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        className="flex justify-start"
+                                    >
+                                        <div className="bg-white border border-stone-200 rounded-2xl rounded-bl-none px-4 py-2 shadow-sm flex gap-2 items-center">
+                                            <div className="w-2 h-2 bg-stone-300 rounded-full animate-bounce"></div>
+                                            <div className="w-2 h-2 bg-stone-300 rounded-full animate-bounce [animation-delay:-.1s]"></div>
+                                            <div className="w-2 h-2 bg-stone-300 rounded-full animate-bounce [animation-delay:-.2s]"></div>
+                                        </div>
+                                    </motion.div>
+                                )}
+                                <div ref={messagesEndRef} />
+                            </div>
+
+                            {/* Input Area Group */}
+                            <div className="bg-white border-t border-stone-100 flex flex-col flex-shrink-0" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+                                {/* Quick Replies */}
+                                <div className="px-3 pt-3 pb-1 flex gap-2 overflow-x-auto no-scrollbar" style={{ scrollbarWidth: 'none' }}>
+                                    {quickReplies.map((chip, idx) => (
+                                        <motion.button 
+                                            key={idx}
+                                            whileHover={{ y: -2 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={() => submitMessage(chip.text)}
+                                            disabled={isLoading}
+                                            className="whitespace-nowrap flex items-center gap-1.5 text-xs font-medium bg-rose-50/50 text-rose-800 border border-rose-200 shadow-sm px-3.5 py-1.5 rounded-full hover:bg-rose-100 hover:border-rose-300 transition-all duration-200 ease-out disabled:opacity-50 disabled:hover:transform-none disabled:cursor-not-allowed"
+                                        >
+                                            {chip.icon}
+                                            {chip.text}
+                                        </motion.button>
+                                    ))}
+                                </div>
+
+                                {/* Text Input */}
+                                <form onSubmit={handleSend} className="p-3 flex items-center gap-2">
+                                    <input
+                                        type="text"
+                                        value={input}
+                                        onChange={(e) => setInput(e.target.value)}
+                                        placeholder="Type a message..."
+                                        className="flex-1 bg-stone-100 border border-stone-200 px-4 py-2.5 rounded-full text-sm focus:outline-none focus:border-rose-300"
+                                    />
+                                    <button 
+                                        type="submit" 
+                                        disabled={!input.trim() || isLoading}
+                                        className="bg-rose-900 text-white p-2.5 rounded-full hover:bg-rose-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                                    >
+                                        <Send className="w-4 h-4" />
+                                    </button>
+                                </form>
+                            </div>
                         </div>
-                    </div>
-                </div>
-            )}
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Toggle Button — positioned above bottom nav on mobile */}
             {!isOpen && (
-                <button 
+                <motion.button 
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    whileHover={{ scale: 1.1, rotate: 5 }}
+                    whileTap={{ scale: 0.9 }}
                     onClick={() => setIsOpen(true)}
-                    className={`fixed right-4 z-50 bg-rose-900 text-white p-3.5 md:p-4 flex items-center justify-center rounded-full shadow-lg hover:bg-rose-800 hover:-translate-y-1 transition-all hover:shadow-xl group ${
+                    className={`fixed right-4 z-50 bg-rose-900 text-white p-3.5 md:p-4 flex items-center justify-center rounded-full shadow-lg hover:bg-rose-800 transition-all hover:shadow-xl group ${
                         bottomNavHidden ? 'bottom-4' : 'bottom-20 md:bottom-6'
                     }`}
                 >
-                    <MessageSquare className="w-5 h-5 md:w-6 md:h-6 group-hover:animate-pulse" />
-                </button>
+                    <MessageSquare className="w-5 h-5 md:w-6 md:h-6" />
+                </motion.button>
             )}
         </>
     );

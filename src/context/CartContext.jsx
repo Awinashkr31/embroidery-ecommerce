@@ -797,6 +797,8 @@ export const CartProvider = ({ children }) => {
   const FREE_DELIVERY_THRESHOLD = Number(settings?.shipping_free_delivery_threshold) || 499;
   const DELIVERY_CHARGE = Number(settings?.shipping_delivery_charge) || 50;
   const COD_EXTRA_CHARGE = Number(settings?.cod_extra_charge) || 0;
+  const COD_STATUS = settings?.cod_status || 'active';
+  const CHATBOT_ENABLED = settings?.chatbot_enabled === 'true';
 
   const shippingCharge = subtotal < FREE_DELIVERY_THRESHOLD ? DELIVERY_CHARGE : 0;
   const cartTotal = subtotal - discountAmount + shippingCharge;
@@ -830,6 +832,8 @@ export const CartProvider = ({ children }) => {
       FREE_DELIVERY_THRESHOLD,
       DELIVERY_CHARGE,
       COD_EXTRA_CHARGE,
+      COD_STATUS,
+      CHATBOT_ENABLED,
       isOrderDeployable
     }}>
       {children}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../../config/supabase';
-import { Save, Globe, Mail, Phone, MapPin, Facebook, Instagram, Twitter, Loader, Image as ImageIcon, Upload, FileText, LayoutTemplate, Type, Pencil, X, Plus, Trash2, IndianRupee, Clock } from 'lucide-react';
+import { Save, Globe, Mail, Phone, MapPin, Facebook, Instagram, Twitter, Loader, Image as ImageIcon, Upload, FileText, LayoutTemplate, Type, Pencil, X, Plus, Trash2, IndianRupee, Clock, MessageSquare, AlertCircle } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '../../context/ToastContext';
 import imageCompression from 'browser-image-compression';
 import ImageCropper from '../../components/ImageCropper';
@@ -39,6 +40,8 @@ const Settings = () => {
         shipping_free_delivery_threshold: 499,
         shipping_delivery_charge: 50,
         cod_extra_charge: 0,
+        cod_status: 'active',
+        chatbot_enabled: 'false',
 
         // Home
         home_hero_title: 'Weaving Stories in Thread',
@@ -301,17 +304,17 @@ const Settings = () => {
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h1 className="text-2xl font-bold text-stone-900">Settings & Content</h1>
-                    <p className="text-stone-500">Manage global settings and page content.</p>
+                    <h1 className="text-2xl font-heading font-bold text-stone-900">Settings & Content</h1>
+                    <p className="text-stone-500 text-sm mt-0.5">Manage global settings and page content.</p>
                 </div>
-                <div className="flex gap-3">
+                <div className="flex flex-wrap w-full md:w-auto gap-2">
                     {isEditing && (
                         <button
                             onClick={handleSubmit}
                             disabled={saving}
-                            className="flex items-center px-4 py-2 bg-rose-900 text-white rounded-lg hover:bg-rose-800 disabled:opacity-70 transition-colors shadow-sm font-medium"
+                            className="flex-1 md:flex-none justify-center flex items-center px-4 py-2.5 bg-rose-900 text-white rounded-xl hover:bg-rose-800 disabled:opacity-70 transition-colors shadow-sm text-sm font-bold tracking-wide"
                         >
                             {saving ? (
                                 <>
@@ -328,10 +331,10 @@ const Settings = () => {
                     )}
                     <button
                         onClick={() => setIsEditing(!isEditing)}
-                        className={`flex items-center px-4 py-2 rounded-lg font-medium transition-colors ${
+                        className={`flex-1 md:flex-none justify-center flex items-center px-4 py-2.5 rounded-xl text-sm font-bold tracking-wide transition-colors ${
                             isEditing 
                             ? 'bg-stone-100 text-stone-600 hover:bg-stone-200' 
-                            : 'bg-rose-900 text-white hover:bg-rose-800'
+                            : 'bg-stone-900 text-white hover:bg-stone-800 shadow-sm'
                         }`}
                     >
                         {isEditing ? (
@@ -348,35 +351,53 @@ const Settings = () => {
             </div>
 
             {/* Tabs */}
-            <div className="flex overflow-x-auto border-b border-stone-200 gap-1">
+            <div className="flex overflow-x-auto border-b border-stone-200 gap-1 no-scrollbar pb-1">
                 {tabs.map(tab => (
                     <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`px-6 py-3 text-sm font-medium whitespace-nowrap transition-colors relative
+                        className={`px-5 py-2.5 text-sm font-bold whitespace-nowrap transition-colors relative rounded-t-lg
                             ${activeTab === tab.id 
-                                ? 'text-rose-900' 
-                                : 'text-stone-500 hover:text-stone-800'
+                                ? 'text-rose-900 bg-rose-50/50' 
+                                : 'text-stone-500 hover:text-stone-800 hover:bg-stone-50'
                             }
                         `}
                     >
                         {tab.label}
                         {activeTab === tab.id && (
-                            <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-rose-900 rounded-t-full" />
+                            <div className="absolute bottom-[-5px] left-0 right-0 h-0.5 bg-rose-900 rounded-t-full" />
                         )}
                     </button>
                 ))}
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-8">
+            <AnimatePresence mode="wait">
+                <motion.form 
+                    key={activeTab}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.3 }}
+                    onSubmit={handleSubmit} 
+                    className="space-y-8"
+                >
                 
                 {/* GENERAL TAB */}
                 {activeTab === 'general' && (
                     <div className="space-y-6 animate-in fade-in duration-500">
-                        <div className="bg-white p-6 rounded-xl border border-stone-100 shadow-sm space-y-6">
-                            <h3 className="font-bold text-lg text-stone-900 flex items-center gap-2">
-                                <Globe className="w-5 h-5 text-rose-900" /> Announcement Bar
-                            </h3>
+                        <div className="bg-white p-6 rounded-xl border-0 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] space-y-6">
+                            <div className="flex justify-between items-center">
+                                <h3 className="font-bold text-lg text-stone-900 flex items-center gap-2">
+                                    <Globe className="w-5 h-5 text-rose-900" /> Announcement Bar
+                                </h3>
+                                <ToggleSwitch 
+                                    label="Enable Chatbot"
+                                    value={settings.chatbot_enabled}
+                                    onChange={(val) => handleChange({ target: { name: 'chatbot_enabled', value: val } })}
+                                    isEditing={isEditing}
+                                    icon={<MessageSquare className="w-4 h-4" />}
+                                />
+                            </div>
                             <div>
                                 <label className="block text-sm font-medium text-stone-700 mb-2">Announcements (One per line)</label>
                                 {isEditing ? (
@@ -413,7 +434,7 @@ const Settings = () => {
                             </div>
                         </div>
 
-                        <div className="bg-white p-6 rounded-xl border border-stone-100 shadow-sm space-y-6">
+                        <div className="bg-white p-6 rounded-xl border-0 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] space-y-6">
                             <h3 className="font-bold text-lg text-stone-900 flex items-center gap-2">
                                 <Globe className="w-5 h-5 text-rose-900" /> Contact Information
                             </h3>
@@ -448,7 +469,7 @@ const Settings = () => {
                             </div>
                         </div>
 
-                         <div className="bg-white p-6 rounded-xl border border-stone-100 shadow-sm space-y-6">
+                         <div className="bg-white p-6 rounded-xl border-0 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] space-y-6">
                             <h3 className="font-bold text-lg text-stone-900 flex items-center gap-2">
                                 <Globe className="w-5 h-5 text-rose-900" /> Social Links
                             </h3>
@@ -480,7 +501,7 @@ const Settings = () => {
                             </div>
                         </div>
 
-                         <div className="bg-white p-6 rounded-xl border border-stone-100 shadow-sm space-y-6">
+                         <div className="bg-white p-6 rounded-xl border-0 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] space-y-6">
                             <h3 className="font-bold text-lg text-stone-900 flex items-center gap-2">
                                 <IndianRupee className="w-5 h-5 text-rose-900" /> Store & Shipping Settings
                             </h3>
@@ -518,7 +539,7 @@ const Settings = () => {
                                     <h4 className="font-bold text-sm text-amber-800 flex items-center gap-2">
                                         <IndianRupee className="w-4 h-4" /> Cash on Delivery (COD) Settings
                                     </h4>
-                                    <div className="grid md:grid-cols-2 gap-4">
+                                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
                                         <EditableInput 
                                             label="COD Extra Charge (₹)"
                                             name="cod_extra_charge"
@@ -528,9 +549,31 @@ const Settings = () => {
                                             placeholder="0"
                                             type="number"
                                         />
+                                        <div className="relative group/select">
+                                            <SelectInput 
+                                                label="COD Payment Status"
+                                                name="cod_status"
+                                                value={settings.cod_status}
+                                                onChange={handleChange}
+                                                isEditing={isEditing}
+                                                options={[
+                                                    { value: 'active', label: 'Active (Recommended)' },
+                                                    { value: 'hidden', label: 'Hide Choice (Online Only)' },
+                                                    { value: 'coming_soon', label: 'Coming Soon (Display Only)' }
+                                                ]}
+                                            />
+                                            {!isEditing && settings.cod_status === 'coming_soon' && (
+                                                <div className="absolute -top-1 -right-1">
+                                                    <span className="flex h-3 w-3 relative">
+                                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                                                        <span className="relative inline-flex rounded-full h-3 w-3 bg-rose-500"></span>
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
                                         <div className="flex items-end">
                                             <p className="text-xs text-amber-700 leading-relaxed pb-2">
-                                                Extra charge applied when customers choose Cash on Delivery. Set to <strong>0</strong> to disable.
+                                                Control how Cash on Delivery appears to customers. Set extra charge to <strong>0</strong> for no fee.
                                             </p>
                                         </div>
                                     </div>
@@ -544,7 +587,7 @@ const Settings = () => {
                 {activeTab === 'home' && (
                     <div className="space-y-6 animate-in fade-in duration-500">
                         {/* Main Slider Images */}
-                        <div className="bg-white p-6 rounded-xl border border-stone-100 shadow-sm space-y-6">
+                        <div className="bg-white p-6 rounded-xl border-0 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] space-y-6">
                             <h3 className="font-bold text-lg text-stone-900 flex items-center gap-2">
                                 <ImageIcon className="w-5 h-5 text-rose-900" /> Main Slider Images
                             </h3>
@@ -576,7 +619,7 @@ const Settings = () => {
                             </div>
                         </div>
 
-                        <div className="bg-white p-6 rounded-xl border border-stone-100 shadow-sm space-y-6">
+                        <div className="bg-white p-6 rounded-xl border-0 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] space-y-6">
                             <h3 className="font-bold text-lg text-stone-900 flex items-center gap-2">
                                 <LayoutTemplate className="w-5 h-5 text-rose-900" /> Hero Section
                             </h3>
@@ -604,7 +647,7 @@ const Settings = () => {
 
 
                         {/* Brand Story Images */}
-                        <div className="bg-white p-6 rounded-xl border border-stone-100 shadow-sm space-y-6">
+                        <div className="bg-white p-6 rounded-xl border-0 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] space-y-6">
                             <h3 className="font-bold text-lg text-stone-900 flex items-center gap-2">
                                 <ImageIcon className="w-5 h-5 text-rose-900" /> Brand Story Images
                             </h3>
@@ -633,7 +676,7 @@ const Settings = () => {
                 {/* ABOUT TAB */}
                 {activeTab === 'about' && (
                     <div className="space-y-6 animate-in fade-in duration-500">
-                        <div className="bg-white p-6 rounded-xl border border-stone-100 shadow-sm space-y-6">
+                        <div className="bg-white p-6 rounded-xl border-0 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] space-y-6">
                             <h3 className="font-bold text-lg text-stone-900 flex items-center gap-2">
                                 <LayoutTemplate className="w-5 h-5 text-rose-900" /> Header Section
                             </h3>
@@ -656,7 +699,7 @@ const Settings = () => {
                             </div>
                         </div>
 
-                        <div className="bg-white p-6 rounded-xl border border-stone-100 shadow-sm space-y-6">
+                        <div className="bg-white p-6 rounded-xl border-0 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] space-y-6">
                             <h3 className="font-bold text-lg text-stone-900 flex items-center gap-2">
                                 <FileText className="w-5 h-5 text-rose-900" /> Story Section
                             </h3>
@@ -707,7 +750,7 @@ const Settings = () => {
                 {/* CUSTOM DESIGN TAB */}
                 {activeTab === 'custom' && (
                     <div className="space-y-6 animate-in fade-in duration-500">
-                         <div className="bg-white p-6 rounded-xl border border-stone-100 shadow-sm space-y-6">
+                         <div className="bg-white p-6 rounded-xl border-0 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] space-y-6">
                             <h3 className="font-bold text-lg text-stone-900 flex items-center gap-2">
                                 <LayoutTemplate className="w-5 h-5 text-rose-900" /> Banner & Header
                             </h3>
@@ -759,7 +802,7 @@ const Settings = () => {
                 {/* MEHNDI TAB */}
                 {activeTab === 'mehndi' && (
                     <div className="space-y-6 animate-in fade-in duration-500">
-                        <div className="bg-white p-6 rounded-xl border border-stone-100 shadow-sm space-y-6">
+                        <div className="bg-white p-6 rounded-xl border-0 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] space-y-6">
                             <h3 className="font-bold text-lg text-stone-900 flex items-center gap-2">
                                 <LayoutTemplate className="w-5 h-5 text-rose-900" /> Header Section
                             </h3>
@@ -795,7 +838,7 @@ const Settings = () => {
                         </div>
 
                         {/* Package Editor Section */}
-                        <div className="bg-white p-6 rounded-xl border border-stone-100 shadow-sm space-y-6">
+                        <div className="bg-white p-6 rounded-xl border-0 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] space-y-6">
                             <h3 className="font-bold text-lg text-stone-900 flex items-center gap-2">
                                 <IndianRupee className="w-5 h-5 text-rose-900" /> Package Pricing
                             </h3>
@@ -811,7 +854,7 @@ const Settings = () => {
                 {/* GALLERY TAB */}
                 {activeTab === 'gallery' && (
                     <div className="space-y-6 animate-in fade-in duration-500">
-                         <div className="bg-white p-6 rounded-xl border border-stone-100 shadow-sm space-y-6">
+                         <div className="bg-white p-6 rounded-xl border-0 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] space-y-6">
                             <h3 className="font-bold text-lg text-stone-900 flex items-center gap-2">
                                 <LayoutTemplate className="w-5 h-5 text-rose-900" /> Header Section
                             </h3>
@@ -849,7 +892,8 @@ const Settings = () => {
                 )}
 
 
-            </form>
+            </motion.form>
+            </AnimatePresence>
 
             <style jsx>{`
                 .input-field {
@@ -912,6 +956,55 @@ const EditableTextarea = ({ label, name, value, onChange, isEditing, rows = 3, p
         ) : (
             <div className="p-2 bg-stone-50 rounded-lg border border-transparent text-stone-800 whitespace-pre-wrap break-words">
                 {value || <span className="text-stone-400 italic">No content set</span>}
+            </div>
+        )}
+    </div>
+);
+
+const ToggleSwitch = ({ label, value, onChange, isEditing, icon }) => {
+    const isEnabled = value === 'true';
+
+    return (
+        <div className="flex items-center gap-3">
+            {icon && <div className={`${isEnabled ? 'text-rose-900' : 'text-stone-400'} transition-colors`}>{icon}</div>}
+            <span className="text-sm font-bold text-stone-700">{label}</span>
+            <button
+                type="button"
+                disabled={!isEditing}
+                onClick={() => onChange(isEnabled ? 'false' : 'true')}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
+                    isEnabled ? 'bg-rose-900' : 'bg-stone-200'
+                } ${!isEditing ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
+            >
+                <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        isEnabled ? 'translate-x-6' : 'translate-x-1'
+                    }`}
+                />
+            </button>
+        </div>
+    );
+};
+
+const SelectInput = ({ label, name, value, onChange, isEditing, options }) => (
+    <div>
+        <label className="block text-sm font-medium text-stone-700 mb-1">{label}</label>
+        {isEditing ? (
+            <select
+                name={name}
+                value={value}
+                onChange={onChange}
+                className="w-full input-field"
+            >
+                {options.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                        {opt.label}
+                    </option>
+                ))}
+            </select>
+        ) : (
+            <div className="p-2 bg-stone-50 rounded-lg border border-transparent text-stone-800 font-medium">
+                {options.find(opt => opt.value === value)?.label || value}
             </div>
         )}
     </div>

@@ -2,6 +2,8 @@ import React from 'react';
 import { useLocation } from 'react-router-dom';
 import Footer from './Footer';
 import BottomNavigation from './BottomNavigation';
+import { AnimatePresence } from 'framer-motion';
+import AnimatedPage from './AnimatedPage';
 
 const ConditionalLayout = ({ children }) => {
   const location = useLocation();
@@ -16,12 +18,16 @@ const ConditionalLayout = ({ children }) => {
   ];
 
   // Check if current path exact matches any of the distraction-free routes
-  // (Using simple include for now as these are top-level routes mostly)
   const isDistractionFree = distractionFreeRoutes.some(route => location.pathname === route);
 
   return (
     <>
-      {children}
+      <AnimatePresence mode="wait">
+        <AnimatedPage key={location.pathname}>
+          {children}
+        </AnimatedPage>
+      </AnimatePresence>
+      
       {!isDistractionFree && (
         <div className={(location.pathname === '/cart' || location.pathname === '/shop' || location.pathname.startsWith('/product/')) ? 'hidden md:block' : ''}>
           <Footer />

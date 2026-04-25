@@ -422,7 +422,7 @@ const Orders = () => {
                 </button>
                 </>
             )}
-            <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border border-stone-200 shadow-sm text-xs font-bold text-stone-600">
+            <div className="flex items-center gap-2 bg-white px-3 py-2 rounded-xl border-0 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] text-xs font-bold text-stone-600">
                  <span className={`w-2 h-2 rounded-full ${loading ? 'bg-amber-500' : 'bg-emerald-500'} animate-pulse`}></span>
                  {loading ? 'Syncing...' : 'Live'}
             </div>
@@ -438,7 +438,7 @@ const Orders = () => {
             { label: 'Shipped', count: orders.filter(o => o.status === 'shipped').length, color: 'bg-blue-100 text-blue-700' },
             { label: 'Delivered', count: orders.filter(o => ['delivered','completed'].includes(o.status)).length, color: 'bg-emerald-100 text-emerald-700' },
           ].map(({ label, count, color }) => (
-            <div key={label} className="bg-white rounded-xl border border-stone-100 px-4 py-3 flex items-center justify-between shadow-sm">
+            <div key={label} className="bg-white rounded-xl border-0 px-4 py-3 flex items-center justify-between shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)]">
               <span className="text-xs font-bold text-stone-500 uppercase tracking-wider">{label}</span>
               <span className={`text-sm font-bold px-2.5 py-0.5 rounded-full ${color}`}>{count}</span>
             </div>
@@ -448,7 +448,7 @@ const Orders = () => {
 
       {/* Toolbar */}
       <div className="grid md:grid-cols-[2fr_3fr] gap-4">
-        <div className="bg-white p-2 rounded-xl shadow-sm border border-stone-100 flex gap-2 overflow-x-auto">
+        <div className="bg-white p-2 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border-0 flex gap-2 overflow-x-auto">
             {['All', ...statusOptions].map(status => (
                 <button
                     key={status}
@@ -464,7 +464,7 @@ const Orders = () => {
             ))}
         </div>
 
-        <div className="bg-white p-2 rounded-xl shadow-sm border border-stone-100">
+        <div className="bg-white p-2 rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border-0">
              <div className="relative h-full">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 w-5 h-5" />
                 <input
@@ -481,7 +481,7 @@ const Orders = () => {
       {/* ── Mobile: order cards ─────────────────────────────── */}
       <div className="md:hidden space-y-3">
         {filteredOrders.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-stone-100 shadow-sm px-6 py-12 text-center">
+          <div className="bg-white rounded-2xl border-0 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] px-6 py-12 text-center">
             <Package className="w-10 h-10 mx-auto mb-3 text-stone-200" />
             <p className="font-medium text-stone-500">No orders found</p>
             <p className="text-xs text-stone-400 mt-1">Try adjusting your filters</p>
@@ -490,8 +490,8 @@ const Orders = () => {
           <button
             key={order.id}
             onClick={() => setSelectedOrder(order)}
-            className={`w-full text-left bg-white rounded-2xl border shadow-sm p-4 transition-all active:scale-[0.99] ${
-              selectedOrders.includes(order.id) ? 'border-rose-300 bg-rose-50/30' : 'border-stone-100'
+            className={`w-full text-left bg-white rounded-2xl border-0 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] p-5 transition-all active:scale-[0.99] ${
+              selectedOrders.includes(order.id) ? 'ring-2 ring-rose-900 bg-rose-50/10' : ''
             }`}
           >
             <div className="flex items-start justify-between gap-3 mb-3">
@@ -537,7 +537,7 @@ const Orders = () => {
       </div>
 
       {/* ── Desktop: full table ──────────────────────────────── */}
-      <div className="hidden md:block bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden">
+      <div className="hidden md:block bg-white rounded-2xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border-0 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead className="bg-stone-50 border-b border-stone-100">

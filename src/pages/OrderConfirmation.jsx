@@ -11,15 +11,12 @@ import { supabase } from '../config/supabase';
 const OrderConfirmation = () => {
     const { state } = useLocation();
     const navigate = useNavigate();
-    const { cart, cartTotal, subtotal, shippingCharge, discountAmount, appliedCoupon, placeOrder, cartLoading, COD_EXTRA_CHARGE } = useCart();
+    const { cart, cartTotal, subtotal, shippingCharge, discountAmount, appliedCoupon, placeOrder, cartLoading, COD_EXTRA_CHARGE, COD_STATUS } = useCart();
     const { addToast } = useToast();
     const { currentUser } = useAuth();
     const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Debugging Logs
-    // React.useEffect(() => {
-    //      console.log("OrderConfirmation Debug:", { state, cartLength: cart.length, cartLoading });
-    // }, [state, cart, cartLoading]);
+    const { formData } = state || {};
 
     // Redirect to cart if no state (direct access) or empty cart
     // BUT NOT when we're in the middle of submitting (placeOrder clears cart)
@@ -28,6 +25,14 @@ const OrderConfirmation = () => {
             navigate('/cart');
         }
     }, [state, cart, navigate, cartLoading, isSubmitting]);
+
+    // Security check: Redirect if COD is disabled but selected
+    React.useEffect(() => {
+        if (!isSubmitting && !cartLoading && formData?.paymentMethod === 'cod' && COD_STATUS !== 'active') {
+             addToast('COD is currently unavailable. Please choose another payment method.', 'info');
+             navigate('/checkout');
+        }
+    }, [formData, COD_STATUS, navigate, isSubmitting, cartLoading, addToast]);
 
     if (cartLoading) {
         return (
@@ -55,7 +60,7 @@ const OrderConfirmation = () => {
         );
     }
 
-    const { formData } = state;
+
 
     // COD charge from state (passed from Checkout) or recalculate from settings
     const codCharge = formData.codCharge !== undefined ? Number(formData.codCharge) : (formData.paymentMethod === 'cod' ? COD_EXTRA_CHARGE : 0);

@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { ArrowLeft, CreditCard, Truck, MapPin, Plus, CheckCircle, Tag, AlertTriangle, ChevronDown, ChevronUp, X } from 'lucide-react';
+import { ArrowLeft, CreditCard, Truck, MapPin, Plus, CheckCircle, Tag, AlertTriangle, ChevronDown, ChevronUp, X, Sparkles, ShieldCheck, Lock, Loader, ShoppingBag } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '../context/ToastContext';
 import { supabase } from '../config/supabase';
 import { DelhiveryService } from '../services/delhivery';
@@ -19,7 +20,7 @@ const loadRazorpay = () => {
 };
 
 const Checkout = () => {
-    const { cart, cartLoading, cartTotal, subtotal, shippingCharge, discountAmount, appliedCoupon, applyCoupon, removeCoupon, placeOrder, savedAddresses, saveAddress, COD_EXTRA_CHARGE } = useCart();
+    const { cart, cartLoading, cartTotal, subtotal, shippingCharge, discountAmount, appliedCoupon, applyCoupon, removeCoupon, placeOrder, savedAddresses, saveAddress, COD_EXTRA_CHARGE, COD_STATUS } = useCart();
     const { currentUser, loading: authLoading } = useAuth();
     const { addToast } = useToast();
     const navigate = useNavigate();
@@ -363,23 +364,38 @@ const Checkout = () => {
 
 
     return (
-        <div className="min-h-screen bg-[#fdfbf7] font-body pb-32 md:pb-24">
-            {/* Mobile Header */}
-            <div className="md:hidden sticky top-0 z-40 bg-white border-b border-stone-100 px-4 py-3 flex items-center justify-between shadow-sm">
-                <Link to="/cart" className="flex items-center text-stone-800">
-                    <ArrowLeft className="w-5 h-5 mr-2" />
-                    <span className="font-heading font-bold text-lg">Checkout</span>
-                </Link>
-                <div className="w-8"></div> {/* Spacer for center alignment feel if needed */}
+        <div className="min-h-screen bg-[#fdfbf7] font-body pb-32 md:pb-24 selection:bg-rose-100 selection:text-rose-900">
+            {/* Header - Glassmorphism */}
+            <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-stone-200/60 shadow-sm">
+                <div className="container-custom py-4 flex items-center justify-between">
+                    <button 
+                        onClick={() => navigate('/cart')}
+                        className="flex items-center gap-2 text-stone-500 hover:text-stone-900 transition-colors group"
+                    >
+                        <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
+                        <span className="font-medium hidden sm:inline">Back to Cart</span>
+                    </button>
+                    
+                    <Link to="/" className="font-heading text-xl md:text-2xl font-bold text-stone-900 tracking-tight">
+                        Embroidery <span className="text-rose-900">By Sana</span>
+                    </Link>
+
+                    <div className="flex items-center gap-2 text-emerald-600 text-[10px] md:text-xs font-bold uppercase tracking-widest">
+                        <Lock className="w-3 h-3 md:w-4 md:h-4" />
+                        <span className="hidden xs:inline">Secure Checkout</span>
+                    </div>
+                </div>
             </div>
 
             <div className="container-custom pt-6 md:pt-12">
-                <Link to="/cart" className="hidden md:inline-flex items-center text-stone-500 hover:text-rose-900 mb-8 transition-colors text-sm font-bold uppercase tracking-wide">
-                    <ArrowLeft className="w-4 h-4 mr-2" />
-                    Back to Cart
-                </Link>
-
-                <div className="flex flex-col md:grid md:grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-20">
+                <div className="flex flex-col lg:grid lg:grid-cols-12 gap-8 lg:gap-16">
+                    {/* Left Column: Form Details */}
+                    <div className="lg:col-span-7 space-y-8">
+                        <motion.div 
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            className="space-y-8"
+                        >
                     
                     {/* Order Summary - Mobile Collapsible */}
                     <div className="md:hidden bg-white rounded-xl shadow-sm border border-stone-100 overflow-hidden mb-2">
@@ -616,61 +632,97 @@ const Checkout = () => {
                                     Payment Method
                                 </h3>
                                 <div className="space-y-4">
-                                    <label className={`flex items-center p-4 md:p-5 border-2 rounded-xl cursor-pointer transition-all duration-300 relative overflow-hidden group ${
-                                        formData.paymentMethod === 'cod' 
-                                        ? 'border-rose-900 bg-rose-50/50 ring-4 ring-rose-900/10 shadow-md transform scale-[1.01]' 
-                                        : 'border-stone-100 hover:border-rose-200 hover:bg-stone-50'
-                                    }`}>
-                                        <div className="absolute inset-0 bg-white/50 group-hover:bg-transparent transition-colors"></div>
-                                        <input
-                                            type="radio"
-                                            name="paymentMethod"
-                                            value="cod"
-                                            checked={formData.paymentMethod === 'cod'}
-                                            onChange={handleChange}
-                                            className="text-rose-900 focus:ring-rose-900 w-5 h-5 relative z-10"
-                                        />
-                                        <div className="ml-4 relative z-10">
-                                            <span className="block font-bold text-stone-900">Cash on Delivery</span>
-                                            <span className="text-xs text-stone-500">Pay cash upon delivery{COD_EXTRA_CHARGE > 0 ? ` (+₹${COD_EXTRA_CHARGE} COD charge)` : ''}</span>
-                                        </div>
-                                        <CheckCircle className="ml-auto w-5 h-5 text-rose-900 relative z-10" />
-                                    </label>
-                                    <label className={`flex items-center p-4 md:p-5 border-2 rounded-xl cursor-pointer transition-all duration-300 relative overflow-hidden group ${
-                                        formData.paymentMethod === 'online' 
-                                        ? 'border-emerald-600 bg-emerald-50/50 ring-4 ring-emerald-600/10 shadow-md transform scale-[1.01]' 
-                                        : 'border-stone-100 hover:border-emerald-200 hover:bg-stone-50'
-                                    }`}>
-                                        <div className={`absolute inset-0 transition-colors ${formData.paymentMethod === 'online' ? '' : 'bg-white/50 group-hover:bg-transparent'}`}></div>
-                                        <input
-                                            type="radio"
-                                            name="paymentMethod"
-                                            value="online"
-                                            checked={formData.paymentMethod === 'online'}
-                                            onChange={handleChange}
-                                            className="text-emerald-600 focus:ring-emerald-600 w-5 h-5 relative z-10"
-                                        />
-                                        <div className="ml-4 relative z-10 flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                                            <div>
-                                                <span className={`block font-bold ${formData.paymentMethod === 'online' ? 'text-emerald-800' : 'text-stone-900'}`}>Online Payment</span>
-                                                <span className="text-xs text-stone-500">Fast & Secure • Zero Fees</span>
+                                    {COD_STATUS === 'hidden' ? (
+                                        <div className="bg-emerald-50/30 border-2 border-emerald-100/50 rounded-2xl p-5 md:p-6 flex items-center gap-4 relative overflow-hidden group animate-in fade-in slide-in-from-bottom-4 duration-700">
+                                            <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none">
+                                                <CreditCard className="w-20 h-20 text-emerald-600 rotate-12" />
                                             </div>
-                                            <div className="flex items-center gap-1.5 opacity-80">
-                                                <span className="px-1.5 py-0.5 bg-white border border-stone-200 rounded flex items-center text-[10px] font-bold text-stone-700 shadow-sm">
-                                                    UPI
-                                                </span>
-                                                <span className="px-1.5 py-0.5 bg-white border border-stone-200 rounded flex items-center text-[10px] font-bold text-stone-700 shadow-sm">
-                                                    <CreditCard className="w-3 h-3 mr-1 text-blue-600" /> Cards
-                                                </span>
-                                                <span className="px-1.5 py-0.5 bg-white border border-stone-200 rounded flex items-center text-[10px] font-bold text-stone-700 shadow-sm">
-                                                    NetBanking
-                                                </span>
+                                            <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-white flex items-center justify-center shadow-sm shrink-0 border border-emerald-50 group-hover:scale-110 transition-transform duration-500">
+                                                <CreditCard className="w-6 h-6 md:w-7 md:h-7 text-emerald-600" />
+                                            </div>
+                                            <div className="flex-1">
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <span className="font-bold text-stone-900 md:text-lg">Secure Online Payment</span>
+                                                    <span className="text-[10px] bg-emerald-600 text-white px-2 py-0.5 rounded-full font-bold uppercase tracking-wider animate-pulse">Default</span>
+                                                </div>
+                                                <p className="text-sm text-stone-600 leading-relaxed">
+                                                    Powered by Razorpay. Pay via UPI, Cards, Netbanking, or Wallets.
+                                                </p>
+                                            </div>
+                                            <div className="w-6 h-6 rounded-full bg-emerald-600 flex items-center justify-center shrink-0 shadow-lg shadow-emerald-600/20">
+                                                <CheckCircle className="w-4 h-4 text-white animate-in zoom-in duration-300 delay-300" />
                                             </div>
                                         </div>
-                                        {formData.paymentMethod === 'online' && (
-                                            <CheckCircle className="ml-auto w-5 h-5 text-emerald-600 relative z-10" />
-                                        )}
-                                    </label>
+                                    ) : (
+                                        <div className="grid gap-4">
+                                            <label className={`flex items-center p-4 md:p-5 border-2 rounded-xl cursor-pointer transition-all duration-300 relative overflow-hidden group animate-in fade-in slide-in-from-bottom-4 duration-500 ${
+                                                formData.paymentMethod === 'cod' 
+                                                ? 'border-rose-900 bg-rose-50/50 ring-4 ring-rose-900/10 shadow-md transform scale-[1.01]' 
+                                                : 'border-stone-100 hover:border-rose-200 hover:bg-stone-50'
+                                            } ${COD_STATUS === 'coming_soon' ? 'opacity-60 grayscale cursor-not-allowed' : ''}`}>
+                                                <div className="absolute inset-0 bg-white/50 group-hover:bg-transparent transition-colors"></div>
+                                                <input
+                                                    type="radio"
+                                                    name="paymentMethod"
+                                                    value="cod"
+                                                    disabled={COD_STATUS === 'coming_soon'}
+                                                    checked={formData.paymentMethod === 'cod'}
+                                                    onChange={handleChange}
+                                                    className="text-rose-900 focus:ring-rose-900 w-5 h-5 relative z-10"
+                                                />
+                                                <div className="ml-4 relative z-10">
+                                                    <span className="block font-bold text-stone-900">
+                                                        Cash on Delivery
+                                                        {COD_STATUS === 'coming_soon' && (
+                                                            <span className="ml-2 text-[10px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wide">Coming Soon</span>
+                                                        )}
+                                                    </span>
+                                                    <span className="text-xs text-stone-500">
+                                                        {COD_STATUS === 'coming_soon' ? 'Not available yet' : `Pay cash upon delivery${COD_EXTRA_CHARGE > 0 ? ` (+₹${COD_EXTRA_CHARGE} COD charge)` : ''}`}
+                                                    </span>
+                                                </div>
+                                                {formData.paymentMethod === 'cod' && (
+                                                    <CheckCircle className="ml-auto w-5 h-5 text-rose-900 relative z-10 animate-in zoom-in duration-300" />
+                                                )}
+                                            </label>
+
+                                            <label className={`flex items-center p-4 md:p-5 border-2 rounded-xl cursor-pointer transition-all duration-300 relative overflow-hidden group animate-in fade-in slide-in-from-bottom-4 duration-500 delay-75 ${
+                                                formData.paymentMethod === 'online' 
+                                                ? 'border-emerald-600 bg-emerald-50/50 ring-4 ring-emerald-600/10 shadow-md transform scale-[1.01]' 
+                                                : 'border-stone-100 hover:border-emerald-200 hover:bg-stone-50'
+                                            }`}>
+                                                <div className={`absolute inset-0 transition-colors ${formData.paymentMethod === 'online' ? '' : 'bg-white/50 group-hover:bg-transparent'}`}></div>
+                                                <input
+                                                    type="radio"
+                                                    name="paymentMethod"
+                                                    value="online"
+                                                    checked={formData.paymentMethod === 'online'}
+                                                    onChange={handleChange}
+                                                    className="text-emerald-600 focus:ring-emerald-600 w-5 h-5 relative z-10"
+                                                />
+                                                <div className="ml-4 relative z-10 flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                                                    <div>
+                                                        <span className={`block font-bold ${formData.paymentMethod === 'online' ? 'text-emerald-800' : 'text-stone-900'}`}>Online Payment</span>
+                                                        <span className="text-xs text-stone-500">Fast & Secure • Zero Fees</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-1.5 opacity-80 group-hover:opacity-100 transition-opacity">
+                                                        <span className="px-1.5 py-0.5 bg-white border border-stone-200 rounded flex items-center text-[10px] font-bold text-stone-700 shadow-sm group-hover:border-emerald-200 transition-colors">
+                                                            UPI
+                                                        </span>
+                                                        <span className="px-1.5 py-0.5 bg-white border border-stone-200 rounded flex items-center text-[10px] font-bold text-stone-700 shadow-sm group-hover:border-emerald-200 transition-colors">
+                                                            <CreditCard className="w-3 h-3 mr-1 text-blue-600" /> Cards
+                                                        </span>
+                                                        <span className="px-1.5 py-0.5 bg-white border border-stone-200 rounded flex items-center text-[10px] font-bold text-stone-700 shadow-sm group-hover:border-emerald-200 transition-colors">
+                                                            NetBanking
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                {formData.paymentMethod === 'online' && (
+                                                    <CheckCircle className="ml-auto w-5 h-5 text-emerald-600 relative z-10 animate-in zoom-in duration-300" />
+                                                )}
+                                            </label>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
@@ -729,7 +781,7 @@ const Checkout = () => {
                             </div>
 
 
-                            {/* Desktop Submit Button (Hidden on Mobile) */}
+                            {/* Submit Button */}
                             <button
                                 type="submit"
                                 disabled={isSubmitting}
@@ -744,11 +796,26 @@ const Checkout = () => {
                             </button>
                         </form>
                     </div>
+                    </motion.div>
+                    </div>
 
-                    {/* Order Summary - Desktop Sider */}
-                    <div className="hidden md:block lg:w-auto order-1 md:order-2">
-                        <div className="glass-panel rounded-2xl p-8 sticky top-28 border border-white/60 shadow-[0_8px_30px_rgb(0,0,0,0.08)]">
-                            <h2 className="text-xl font-heading font-bold text-stone-900 mb-6 border-b border-stone-100 pb-4">Order Summary</h2>
+                    {/* Right Column: Order Summary (Sticky) */}
+                    <div className="lg:col-span-5">
+                        <motion.div 
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            className="lg:sticky lg:top-32 space-y-6"
+                        >
+                            {/* Summary Card */}
+                            <div className="bg-white rounded-3xl p-6 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-stone-100 relative overflow-hidden">
+                                <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none">
+                                    <ShoppingBag className="w-32 h-32 text-stone-900" />
+                                </div>
+                                
+                                <h3 className="text-xl font-heading font-bold text-stone-900 mb-6 flex items-center justify-between">
+                                    Order Summary
+                                    <span className="text-xs bg-stone-100 text-stone-500 px-2 py-1 rounded-full font-bold">{cart.length} {cart.length === 1 ? 'Item' : 'Items'}</span>
+                                </h3>
                             <div className="space-y-4 mb-6 max-h-[calc(100vh-400px)] overflow-y-auto custom-scrollbar pr-2">
                                 {cart.map((item, idx) => (
                                     <div key={`${item.id}-${item.selectedSize || 'nosize'}-${item.selectedColor || 'nocolor'}-${idx}`} className="flex gap-4 py-3 border-b border-stone-100 last:border-0">
@@ -858,31 +925,41 @@ const Checkout = () => {
                                 </div>
                             </div>
                         </div>
+                        </motion.div>
                     </div>
                 </div>
             </div>
 
             {/* Mobile Sticky Bottom Action Bar */}
-            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200 p-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] md:hidden z-50">
-                <div className="flex items-center gap-4">
-                    <div className="flex-1">
-                        <p className="text-xs text-stone-500 font-bold uppercase tracking-wider">Total to Pay</p>
-                        <p className="text-xl font-heading font-bold text-rose-900">₹{finalTotal.toLocaleString()}</p>
-                    </div>
-                    <button
-                        onClick={handleSubmit}
-                        disabled={isSubmitting}
-                        className={`flex-1 bg-rose-900 text-white py-3.5 px-6 rounded-xl font-bold uppercase tracking-wide text-sm shadow-lg shadow-rose-900/20 active:scale-95 transition-all ${isSubmitting ? 'opacity-75' : ''}`}
+            <AnimatePresence>
+                {!isSubmitting && (
+                    <motion.div 
+                        initial={{ y: 100 }}
+                        animate={{ y: 0 }}
+                        exit={{ y: 100 }}
+                        className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-stone-200 p-4 shadow-[0_-8px_30px_rgb(0,0,0,0.08)] md:hidden z-50 pb-[calc(1rem+env(safe-area-inset-bottom))]"
                     >
-                        {isSubmitting 
-                            ? 'Processing...' 
-                            : formData.paymentMethod === 'cod' 
-                                ? 'Pay on Delivery'
-                                : 'Pay Now'
-                        }
-                    </button>
-                </div>
-            </div>
+                        <div className="flex items-center gap-6">
+                            <div className="flex-1">
+                                <p className="text-[10px] text-stone-500 font-bold uppercase tracking-widest mb-0.5">Payable Amount</p>
+                                <p className="text-2xl font-heading font-bold text-rose-900 leading-none">₹{finalTotal.toLocaleString()}</p>
+                            </div>
+                            <button
+                                onClick={handleSubmit}
+                                disabled={isSubmitting}
+                                className="flex-[1.5] bg-rose-900 text-white py-4 px-6 rounded-2xl font-bold uppercase tracking-widest text-xs shadow-xl shadow-rose-900/20 active:scale-95 transition-all flex items-center justify-center gap-2"
+                            >
+                                {isSubmitting 
+                                    ? <Loader className="w-4 h-4 animate-spin" />
+                                    : formData.paymentMethod === 'cod' 
+                                        ? 'Place Order (COD)'
+                                        : 'Proceed to Pay'
+                                }
+                            </button>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };

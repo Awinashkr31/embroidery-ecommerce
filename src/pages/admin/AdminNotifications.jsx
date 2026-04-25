@@ -130,7 +130,7 @@ const AdminNotifications = () => {
 
             <div className="grid md:grid-cols-3 gap-8">
                 {/* Composer */}
-                <div className="md:col-span-2 bg-white rounded-2xl shadow-sm border border-stone-100 p-8">
+                <div className="md:col-span-2 bg-white rounded-2xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border-0 p-8">
                     <form onSubmit={handleSend} className="space-y-6">
                         {/* Target Selection */}
                         <div>
@@ -180,51 +180,51 @@ const AdminNotifications = () => {
                         {/* Message Content */}
                         <div className="space-y-4 pt-4 border-t border-stone-100">
                             <div>
-                                <label className="block text-sm font-bold text-stone-700 mb-2">Notification Type</label>
-                                <div className="flex gap-4">
+                                <label className="block text-xs font-bold text-stone-700 mb-2 uppercase tracking-wide">Notification Type</label>
+                                <div className="flex flex-wrap gap-4">
                                     {['info', 'promo', 'warning', 'success'].map(t => (
-                                        <label key={t} className="flex items-center gap-2 cursor-pointer">
+                                        <label key={t} className="flex items-center gap-2 cursor-pointer bg-stone-50 px-3 py-2 rounded-lg border-none hover:bg-stone-100 transition-colors">
                                             <input 
                                                 type="radio" 
                                                 name="type" 
                                                 value={t} 
                                                 checked={type === t} 
                                                 onChange={e => setType(e.target.value)}
-                                                className="text-rose-900 focus:ring-rose-900" 
+                                                className="text-rose-900 focus:ring-rose-900 w-4 h-4" 
                                             />
-                                            <span className="capitalize text-sm text-stone-600">{t}</span>
+                                            <span className="capitalize text-sm font-bold text-stone-700">{t}</span>
                                         </label>
                                     ))}
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-sm font-bold text-stone-700 mb-2">Title</label>
+                                <label className="block text-xs font-bold text-stone-700 mb-1.5 uppercase tracking-wide">Title</label>
                                 <input 
                                     type="text" 
                                     value={title} 
                                     onChange={e => setTitle(e.target.value)}
                                     placeholder="e.g., Flash Sale: 50% Off Approved!" 
-                                    className="w-full px-4 py-2 border border-stone-200 rounded-lg focus:ring-2 focus:ring-rose-900/20 outline-none font-bold text-stone-800"
+                                    className="w-full px-4 py-2.5 rounded-lg border-none bg-stone-50 focus:bg-white focus:ring-2 focus:ring-rose-900/20 outline-none font-bold text-stone-800 transition-all"
                                     required
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-bold text-stone-700 mb-2">Message</label>
+                                <label className="block text-xs font-bold text-stone-700 mb-1.5 uppercase tracking-wide">Message</label>
                                 <textarea 
                                     value={message} 
                                     onChange={e => setMessage(e.target.value)}
                                     placeholder="Write your notification message here..." 
                                     rows="4"
-                                    className="w-full px-4 py-2 border border-stone-200 rounded-lg focus:ring-2 focus:ring-rose-900/20 outline-none resize-none"
+                                    className="w-full px-4 py-2.5 rounded-lg border-none bg-stone-50 focus:bg-white focus:ring-2 focus:ring-rose-900/20 outline-none resize-none text-stone-700 transition-all"
                                     required
                                 ></textarea>
                             </div>
                         </div>
 
                         {feedback.msg && (
-                            <div className={`p-4 rounded-lg flex items-center gap-2 ${feedback.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                            <div className={`p-4 rounded-xl flex items-center gap-2 ${feedback.type === 'success' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-red-50 text-red-700 border border-red-100'}`}>
                                 {feedback.type === 'success' ? <CheckCircle className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
                                 <span className="font-bold text-sm">{feedback.msg}</span>
                             </div>
@@ -233,7 +233,7 @@ const AdminNotifications = () => {
                         <button 
                             type="submit" 
                             disabled={sending || audienceCount === 0}
-                            className="w-full py-3 bg-rose-900 text-white rounded-xl font-bold hover:bg-rose-800 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full py-3.5 bg-rose-900 text-white rounded-xl font-bold tracking-wide hover:bg-rose-800 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
                         >
                             {sending ? (
                                 <>Sending...</>

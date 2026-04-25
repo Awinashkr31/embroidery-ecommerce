@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { motion } from 'framer-motion';
 import { getOptimizedImageUrl } from '../utils/imageUtils';
 import { Package, Heart, Search, ChevronDown, Sparkles, ChevronLeft, ChevronRight, SlidersHorizontal } from 'lucide-react';
 import { useProducts } from '../context/ProductContext';
@@ -653,8 +654,14 @@ const Shop = () => {
                         </div>
 
                         {productsLoading ? (
-                            <div className="flex flex-col items-center justify-center py-32 opacity-50">
-                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-stone-900"></div>
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8 md:gap-x-8 md:gap-y-14">
+                                {[...Array(8)].map((_, i) => (
+                                    <div key={i} className="animate-pulse">
+                                        <div className="aspect-[2/3] md:aspect-[4/5] bg-stone-200 rounded-2xl mb-4" />
+                                        <div className="h-4 bg-stone-200 rounded w-3/4 mb-2" />
+                                        <div className="h-4 bg-stone-200 rounded w-1/2" />
+                                    </div>
+                                ))}
                             </div>
                         ) : allFilteredProducts.length === 0 ? (
                             <div className="text-center py-32">
@@ -669,20 +676,35 @@ const Shop = () => {
                             </div>
                         ) : (
                             <>
-                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8 md:gap-x-8 md:gap-y-14">
+                                <motion.div 
+                                    initial="hidden"
+                                    animate="visible"
+                                    variants={{
+                                        hidden: { opacity: 0 },
+                                        visible: {
+                                            opacity: 1,
+                                            transition: { staggerChildren: 0.05 }
+                                        }
+                                    }}
+                                    className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8 md:gap-x-8 md:gap-y-14"
+                                >
                                     {paginatedProducts.map((product) => (
-                                        <Link 
-                                            key={product.uniqueId} 
-                                            to={`/product/${product.id}${product.preselectedVariant ? `?color=${encodeURIComponent(product.preselectedVariant.color)}` : ''}`}
-                                            className="group block"
-                                            onMouseEnter={() => {
-                                                // Optional pre-fetch or highlight
+                                        <motion.div
+                                            key={product.uniqueId}
+                                            variants={{
+                                                hidden: { opacity: 0, y: 20 },
+                                                visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
                                             }}
                                         >
-                                            <ProductCardWithVariants product={product} toggleWishlist={toggleWishlist} isInWishlist={isInWishlist} />
-                                        </Link>
+                                            <Link 
+                                                to={`/product/${product.id}${product.preselectedVariant ? `?color=${encodeURIComponent(product.preselectedVariant.color)}` : ''}`}
+                                                className="group block"
+                                            >
+                                                <ProductCardWithVariants product={product} toggleWishlist={toggleWishlist} isInWishlist={isInWishlist} />
+                                            </Link>
+                                        </motion.div>
                                     ))}
-                                </div>
+                                </motion.div>
 
                                 {/* Load More (Mobile) */}
                                 {isMobile && currentPage < totalPages && (

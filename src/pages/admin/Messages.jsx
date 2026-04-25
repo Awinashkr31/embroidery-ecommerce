@@ -46,26 +46,26 @@ const Messages = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-stone-900">Messages</h1>
-          <p className="text-stone-600">View and manage customer inquiries ({messages.length})</p>
+          <h1 className="text-2xl font-heading font-bold text-stone-900">Messages</h1>
+          <p className="text-stone-500 text-sm mt-0.5">View and manage customer inquiries ({messages.length})</p>
         </div>
         
-        <div className="flex gap-2 w-full sm:w-auto">
-          <div className="relative flex-1 sm:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-stone-400 w-4 h-4" />
+        <div className="flex gap-2 w-full md:w-auto">
+          <div className="relative flex-1 md:w-64">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 w-5 h-5" />
             <input
               type="text"
               placeholder="Search messages..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 bg-white border border-stone-200 rounded-lg focus:ring-2 focus:ring-rose-900/20 focus:border-rose-900 transition-all outline-none"
+              className="w-full pl-12 pr-4 py-2.5 bg-white shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border-0 rounded-xl focus:ring-2 focus:ring-rose-900/20 transition-all outline-none font-medium text-stone-800"
             />
           </div>
           <button 
             onClick={fetchMessages}
-            className="p-2 bg-white border border-stone-200 rounded-lg hover:bg-stone-50 text-stone-600 transition-colors"
+            className="p-2.5 bg-white shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border-0 rounded-xl hover:bg-stone-50 text-stone-600 transition-colors shrink-0"
             title="Refresh"
           >
             <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
@@ -78,7 +78,7 @@ const Messages = () => {
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-rose-900"></div>
         </div>
       ) : filteredMessages.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm border border-stone-100 p-12 text-center">
+        <div className="bg-white rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border-0 p-12 text-center">
           <div className="w-16 h-16 bg-stone-50 rounded-full flex items-center justify-center mx-auto mb-4">
             <Mail className="w-8 h-8 text-stone-400" />
           </div>
@@ -92,7 +92,7 @@ const Messages = () => {
           {filteredMessages.map((msg) => (
             <div 
               key={msg.id} 
-              className="bg-white rounded-xl shadow-sm border border-stone-100 p-6 hover:shadow-md transition-shadow"
+              className="bg-white rounded-xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border-0 p-6 hover:shadow-md transition-shadow"
             >
               <div className="flex flex-col md:flex-row justify-between gap-4 mb-4">
                 <div>

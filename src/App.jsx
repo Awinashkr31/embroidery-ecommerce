@@ -106,7 +106,6 @@ function App() {
                     <Route path="users" element={<AdminUsers />} />
                     <Route path="design-requests" element={<AdminDesignRequests />} />
                     <Route path="notifications" element={<AdminNotifications />} />
-                    <Route path="messages" element={<AdminMessages />} />
                     <Route path="bookings" element={<AdminBookings />} />
                     <Route path="coupons" element={<AdminCoupons />} />
                     <Route path="gallery" element={<AdminGallery />} />
@@ -118,15 +117,15 @@ function App() {
               {/* Public Routes — all wrapped in the shared layout */}
               <Route element={
                 <div className="flex flex-col min-h-screen pb-16 md:pb-0">
-                  <ConditionalLayout>
-                    <Navbar />
-                    <ChatWidget />
-                    <main className="flex-grow">
+                  <Navbar />
+                  <ChatWidget />
+                  <main className="flex-grow">
+                    <ConditionalLayout>
                       <Suspense fallback={<PageLoader />}>
                         <Outlet />
                       </Suspense>
-                    </main>
-                  </ConditionalLayout>
+                    </ConditionalLayout>
+                  </main>
                 </div>
               }>
                 <Route path="/" element={<Home />} />
