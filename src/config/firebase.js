@@ -1,6 +1,7 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider } from 'firebase/auth';
 import { getAnalytics, isSupported } from 'firebase/analytics';
+import { getMessaging, isSupported as isMessagingSupported } from 'firebase/messaging';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -21,5 +22,13 @@ export let analytics = null;
 isSupported().then((supported) => {
   if (supported) {
     analytics = getAnalytics(app);
+  }
+});
+
+// Initialize Firebase Messaging conditionally
+export let messaging = null;
+isMessagingSupported().then((supported) => {
+  if (supported) {
+    messaging = getMessaging(app);
   }
 });

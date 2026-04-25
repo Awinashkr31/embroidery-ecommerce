@@ -102,24 +102,9 @@ const Dashboard = () => {
   const [products, setProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [forecastData, setForecastData] = useState([]);
-  const [loadingForecast, setLoadingForecast] = useState(true);
 
-  const fetchForecast = async () => {
-    setLoadingForecast(true);
-    try {
-      const apiUrl = import.meta.env.VITE_ML_API_URL || 'https://embroidery-ml-api.onrender.com';
-      const res = await fetch(`${apiUrl}/api/admin/forecast`).catch(() => null);
-      if (res && res.ok) {
-        const json = await res.json();
-        setForecastData(json.forecast || []);
-      }
-    } catch (err) {
-      console.warn("Forecast API offline:", err);
-    } finally {
-      setLoadingForecast(false);
-    }
-  };
+
+
 
   const fetchData = useCallback(async (isRefresh = false) => {
     if (isRefresh) {
@@ -140,7 +125,7 @@ const Dashboard = () => {
     }
   }, [refreshAdminData]);
 
-  useEffect(() => { fetchData(); fetchForecast(); }, [fetchData]);
+  useEffect(() => { fetchData(); }, [fetchData]);
   
   const loading = adminLoading || loadingProducts;
 
@@ -280,59 +265,6 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* ── Prophet Forecast ── */}
-      <div className="bg-white rounded-2xl border border-stone-100 shadow-sm p-6">
-        <div className="flex justify-between items-center mb-6">
-          <div>
-            <h2 className="text-base font-bold text-stone-900 flex items-center gap-2">
-              <TrendingUp className="w-4 h-4 text-emerald-600" />
-              Machine Learning: 30-Day Sales Forecast
-            </h2>
-            <p className="text-xs text-stone-400 mt-0.5">Powered by Meta Prophet</p>
-          </div>
-          {loadingForecast && (
-            <span className="flex items-center gap-1.5 text-xs font-bold text-stone-400">
-              <Loader2 className="w-3.5 h-3.5 animate-spin" /> Analyzing trends...
-            </span>
-          )}
-        </div>
-        
-        <div className="h-72 w-full">
-          {forecastData.length > 0 ? (
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={forecastData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <defs>
-                  <linearGradient id="colorForecast" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                  </linearGradient>
-                  <linearGradient id="colorActual" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#be123c" stopOpacity={0.3}/>
-                    <stop offset="95%" stopColor="#be123c" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 10}} minTickGap={10} />
-                <YAxis axisLine={false} tickLine={false} tick={{fill: '#9ca3af', fontSize: 10}} tickFormatter={(value) => `₹${value/1000}k`} />
-                <Tooltip 
-                   formatter={(value, name) => [`₹${Math.round(value).toLocaleString()}`, name === 'forecast' ? 'Predicted' : 'Actual']}
-                   contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'}} 
-                />
-                
-                {/* Historical Area */}
-                <Area type="monotone" dataKey="actual" stroke="#be123c" strokeWidth={2} fill="url(#colorActual)" />
-                {/* Forecast Area */}
-                <Area type="monotone" dataKey="forecast" strokeDasharray="5 5" stroke="#10b981" strokeWidth={2} fill="url(#colorForecast)" />
-              </AreaChart>
-            </ResponsiveContainer>
-          ) : !loadingForecast ? (
-             <div className="w-full h-full flex flex-col items-center justify-center text-stone-400 bg-stone-50 rounded-xl border-2 border-dashed border-stone-200">
-               <AlertTriangle className="w-6 h-6 mb-2 opacity-50" />
-               <p className="text-xs font-bold">Forecast API offline or unreachable.</p>
-             </div>
-          ) : null}
-        </div>
-      </div>
 
       {/* ── Recent Orders table ─ */}
       <div className="bg-white rounded-2xl border border-stone-100 shadow-sm overflow-hidden">

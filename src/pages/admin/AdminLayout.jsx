@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
 import { useAuth } from '../../context/AuthContext';
+import { useAdminPushNotifications } from '../../hooks/useAdminPushNotifications';
 import {
   LayoutDashboard,
   Package,
@@ -21,11 +22,12 @@ import {
   Image as ImageIcon,
   ChevronRight,
   ExternalLink,
+  Download,
 } from 'lucide-react';
 
 const menuItems = [
   { icon: LayoutDashboard, label: 'Dashboard',       path: '/sadmin/dashboard' },
-  { icon: ShoppingBag,     label: 'Products',        path: '/sadmin/products' },
+  { icon: ShoppingBag,     label: 'Product Listing', path: '/sadmin/products' },
   { icon: ShoppingCart,    label: 'Orders',          path: '/sadmin/orders' },
   { icon: User,            label: 'Users',           path: '/sadmin/users' },
   { icon: Palette,         label: 'Design Requests', path: '/sadmin/design-requests' },
@@ -41,9 +43,32 @@ const menuItems = [
 const AdminLayout = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
   const { currentUser } = useAuth();
+  
+  useAdminPushNotifications(); // Request and handle push notifications
+
+  useEffect(() => {
+    const handler = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setDeferredPrompt(null);
+      }
+    }
+  };
+
 
   // Derive current page label from path
   const currentPage = menuItems.find(m => location.pathname.startsWith(m.path))?.label ?? 'Admin';
@@ -167,6 +192,15 @@ const AdminLayout = () => {
 
           {/* Right actions */}
           <div className="flex items-center gap-3">
+            {deferredPrompt && (
+              <button
+                onClick={handleInstallClick}
+                className="hidden sm:flex items-center gap-1.5 text-xs font-bold text-rose-900 bg-rose-50 hover:bg-rose-100 transition-colors px-3 py-1.5 rounded-lg border border-rose-200"
+              >
+                <Download className="w-3.5 h-3.5" />
+                Install App
+              </button>
+            )}
             <Link
               to="/"
               target="_blank"

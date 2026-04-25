@@ -2,8 +2,10 @@
 import React, { Suspense, lazy } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import ScrollToTop from './components/ScrollToTop'
+import { SpeedInsights } from '@vercel/speed-insights/react'
 
 import Navbar from './components/Navbar'
+
 import Footer from './components/Footer'
 import BottomNavigation from './components/BottomNavigation'
 import { CartProvider } from './context/CartContext'
@@ -81,6 +83,7 @@ function App() {
       <ProductProvider>
         <Router>
           <ScrollToTop />
+          <SpeedInsights />
           <Suspense fallback={<PageLoader />}>
             <Routes>
               {/* Admin Routes — wrapped in AdminProvider */}
