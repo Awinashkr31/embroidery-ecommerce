@@ -3,12 +3,14 @@ import { supabase } from '../../../config/supabase';
 import { Save, Globe, Mail, Phone, MapPin, Facebook, Instagram, Twitter, Loader, Image as ImageIcon, Upload, FileText, LayoutTemplate, Type, Pencil, X, Plus, Trash2, IndianRupee, Clock, MessageSquare, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '../../context/ToastContext';
+import { useSettings } from '../../context/SettingsContext';
 import imageCompression from 'browser-image-compression';
 import ImageCropper from '../../components/ImageCropper';
 import { deleteImage } from '../../utils/uploadUtils';
 
 const Settings = () => {
     const { addToast } = useToast();
+    const { refreshSettings } = useSettings();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [uploading, setUploading] = useState(false);
@@ -275,6 +277,12 @@ const Settings = () => {
             });
 
             await Promise.all(updates);
+            
+            // Force global context to refresh immediately
+            if (refreshSettings) {
+                await refreshSettings(true);
+            }
+            
             addToast('All settings saved successfully', 'success');
             setIsEditing(false);
         } catch (error) {

@@ -655,36 +655,38 @@ const Checkout = () => {
                                         </div>
                                     ) : (
                                         <div className="grid gap-4">
-                                            <label className={`flex items-center p-4 md:p-5 border-2 rounded-xl cursor-pointer transition-all duration-300 relative overflow-hidden group animate-in fade-in slide-in-from-bottom-4 duration-500 ${
-                                                formData.paymentMethod === 'cod' 
-                                                ? 'border-rose-900 bg-rose-50/50 ring-4 ring-rose-900/10 shadow-md transform scale-[1.01]' 
-                                                : 'border-stone-100 hover:border-rose-200 hover:bg-stone-50'
-                                            } ${COD_STATUS === 'coming_soon' ? 'opacity-60 grayscale cursor-not-allowed' : ''}`}>
-                                                <div className="absolute inset-0 bg-white/50 group-hover:bg-transparent transition-colors"></div>
-                                                <input
-                                                    type="radio"
-                                                    name="paymentMethod"
-                                                    value="cod"
-                                                    disabled={COD_STATUS === 'coming_soon'}
-                                                    checked={formData.paymentMethod === 'cod'}
-                                                    onChange={handleChange}
-                                                    className="text-rose-900 focus:ring-rose-900 w-5 h-5 relative z-10"
-                                                />
-                                                <div className="ml-4 relative z-10">
-                                                    <span className="block font-bold text-stone-900">
-                                                        Cash on Delivery
-                                                        {COD_STATUS === 'coming_soon' && (
-                                                            <span className="ml-2 text-[10px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wide">Coming Soon</span>
-                                                        )}
-                                                    </span>
-                                                    <span className="text-xs text-stone-500">
-                                                        {COD_STATUS === 'coming_soon' ? 'Not available yet' : `Pay cash upon delivery${COD_EXTRA_CHARGE > 0 ? ` (+₹${COD_EXTRA_CHARGE} COD charge)` : ''}`}
-                                                    </span>
-                                                </div>
-                                                {formData.paymentMethod === 'cod' && (
-                                                    <CheckCircle className="ml-auto w-5 h-5 text-rose-900 relative z-10 animate-in zoom-in duration-300" />
-                                                )}
-                                            </label>
+                                            {COD_STATUS !== 'hidden' && (
+                                                <label className={`flex items-center p-4 md:p-5 border-2 rounded-xl cursor-pointer transition-all duration-300 relative overflow-hidden group animate-in fade-in slide-in-from-bottom-4 duration-500 ${
+                                                    formData.paymentMethod === 'cod' 
+                                                    ? 'border-rose-900 bg-rose-50/50 ring-4 ring-rose-900/10 shadow-md transform scale-[1.01]' 
+                                                    : 'border-stone-100 hover:border-rose-200 hover:bg-stone-50'
+                                                } ${COD_STATUS === 'coming_soon' ? 'opacity-60 grayscale cursor-not-allowed' : ''}`}>
+                                                    <div className="absolute inset-0 bg-white/50 group-hover:bg-transparent transition-colors"></div>
+                                                    <input
+                                                        type="radio"
+                                                        name="paymentMethod"
+                                                        value="cod"
+                                                        disabled={COD_STATUS === 'coming_soon'}
+                                                        checked={formData.paymentMethod === 'cod'}
+                                                        onChange={handleChange}
+                                                        className="text-rose-900 focus:ring-rose-900 w-5 h-5 relative z-10"
+                                                    />
+                                                    <div className="ml-4 relative z-10">
+                                                        <span className="block font-bold text-stone-900">
+                                                            Cash on Delivery
+                                                            {COD_STATUS === 'coming_soon' && (
+                                                                <span className="ml-2 text-[10px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wide">Coming Soon</span>
+                                                            )}
+                                                        </span>
+                                                        <span className="text-xs text-stone-500">
+                                                            {COD_STATUS === 'coming_soon' ? 'Not available yet' : `Pay cash upon delivery${COD_EXTRA_CHARGE > 0 ? ` (+₹${COD_EXTRA_CHARGE} COD charge)` : ''}`}
+                                                        </span>
+                                                    </div>
+                                                    {formData.paymentMethod === 'cod' && (
+                                                        <CheckCircle className="ml-auto w-5 h-5 text-rose-900 relative z-10 animate-in zoom-in duration-300" />
+                                                    )}
+                                                </label>
+                                            )}
 
                                             <label className={`flex items-center p-4 md:p-5 border-2 rounded-xl cursor-pointer transition-all duration-300 relative overflow-hidden group animate-in fade-in slide-in-from-bottom-4 duration-500 delay-75 ${
                                                 formData.paymentMethod === 'online' 
