@@ -21,8 +21,7 @@ const Cart = () => {
         discountAmount,
         MIN_ORDER_VALUE,
         FREE_DELIVERY_THRESHOLD,
-        isOrderDeployable,
-        COD_EXTRA_CHARGE
+        isOrderDeployable
     } = useCart();
     const { currentUser } = useAuth();
     const navigate = useNavigate();
@@ -248,12 +247,7 @@ const Cart = () => {
                                     <span>Estimated Delivery</span>
                                     <span className="text-stone-900 font-medium">{getEstimatedDeliveryDate()}</span>
                                 </div>
-                                {COD_EXTRA_CHARGE > 0 && (
-                                    <div className="flex justify-between text-stone-600 text-xs">
-                                        <span>Cash on Delivery</span>
-                                        <span className="text-amber-600 font-medium">+₹{COD_EXTRA_CHARGE}</span>
-                                    </div>
-                                )}
+
                                 <div className="border-t border-stone-100 pt-4 flex justify-between text-lg font-heading font-bold text-stone-900">
                                     <div className="flex flex-col">
                                         <span>Total</span>
@@ -356,12 +350,7 @@ const Cart = () => {
                                         <Truck className="w-3 h-3" /> Free Delivery applied ✓
                                     </div>
                                 )}
-                                {COD_EXTRA_CHARGE > 0 && (
-                                    <div className="flex justify-between text-stone-600 text-[10px] mt-1">
-                                        <span>Cash on Delivery</span>
-                                        <span className="text-amber-600 font-medium">+₹{COD_EXTRA_CHARGE}</span>
-                                    </div>
-                                )}
+
                             </div>
                             
                             {/* Mobile Coupon Input */}
