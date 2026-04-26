@@ -30,18 +30,30 @@ export const ProductProvider = ({ children }) => {
 
             if (error) throw error;
 
-            const mappedProducts = data.map(p => ({
-                ...p,
-                image: p.images?.[0] || 'https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=500',
-                inStock: (p.stock_quantity || 0) > 0,
-                stock: p.stock_quantity,
-                clothingInformation: p.clothing_information,
-                originalPrice: p.original_price,
-                discountPercentage: (p.original_price && p.original_price > p.price)
-                    ? Math.round(((p.original_price - p.price) / p.original_price) * 100)
-                    : 0,
-                variants: p.variants || []
-            }));
+            const mappedProducts = data.map(p => {
+                let parsedImages = p.images;
+                if (typeof parsedImages === 'string') {
+                    try { parsedImages = JSON.parse(parsedImages); } catch (e) { parsedImages = []; }
+                }
+                let parsedVariants = p.variants;
+                if (typeof parsedVariants === 'string') {
+                    try { parsedVariants = JSON.parse(parsedVariants); } catch (e) { parsedVariants = []; }
+                }
+                
+                return {
+                    ...p,
+                    images: Array.isArray(parsedImages) ? parsedImages : [],
+                    image: (Array.isArray(parsedImages) && parsedImages.length > 0) ? parsedImages[0] : 'https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=500',
+                    inStock: (p.stock_quantity || 0) > 0,
+                    stock: p.stock_quantity,
+                    clothingInformation: p.clothing_information,
+                    originalPrice: p.original_price,
+                    discountPercentage: (p.original_price && p.original_price > p.price)
+                        ? Math.round(((p.original_price - p.price) / p.original_price) * 100)
+                        : 0,
+                    variants: Array.isArray(parsedVariants) ? parsedVariants : []
+                };
+            });
 
             setProducts(mappedProducts);
             lastFetchTime.current = now;

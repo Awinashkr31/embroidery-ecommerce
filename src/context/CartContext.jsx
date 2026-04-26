@@ -441,7 +441,7 @@ export const CartProvider = ({ children }) => {
     const finalTotal = userDetails.paymentMethod === 'cod' ? (cartTotal + codCharge) : cartTotal;
 
     const newOrder = {
-      // let Supabase generate ID
+      id: crypto.randomUUID(), // Explicitly generate ID since Supabase schema lacks default value
       customer_name: `${userDetails.firstName} ${userDetails.lastName}`,
       customer_email: userDetails.email,
       customer_phone: userDetails.phone,
@@ -466,14 +466,14 @@ export const CartProvider = ({ children }) => {
     };
 
     try {
-      // payload must match the argument name in the SQL function: place_order(order_data JSONB)
       const { data, error } = await supabase
-        .rpc('place_order', { order_data: newOrder });
+        .from('orders')
+        .insert(newOrder)
+        .select()
+        .single();
         
       if (error) throw error;
       
-      // The function returns the order object (or just ID if we simpler)
-      // Our SQL returns the whole object as JSONB
       const createdOrder = data;
 
       if (!createdOrder || !createdOrder.id) {
@@ -798,7 +798,7 @@ export const CartProvider = ({ children }) => {
   const DELIVERY_CHARGE = Number(settings?.shipping_delivery_charge) || 50;
   const COD_EXTRA_CHARGE = Number(settings?.cod_extra_charge) || 0;
   const COD_STATUS = settings?.cod_status || 'active';
-  const CHATBOT_ENABLED = settings?.chatbot_enabled === 'true';
+  const CHATBOT_ENABLED = String(settings?.chatbot_enabled) === 'true';
 
   const shippingCharge = subtotal < FREE_DELIVERY_THRESHOLD ? DELIVERY_CHARGE : 0;
   const cartTotal = subtotal - discountAmount + shippingCharge;

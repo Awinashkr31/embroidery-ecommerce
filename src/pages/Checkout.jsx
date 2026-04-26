@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -39,6 +39,8 @@ const Checkout = () => {
     const [couponError, setCouponError] = useState('');
     const [couponLoading, setCouponLoading] = useState(false);
 
+
+
     const handleApplyCoupon = () => {
         if (!couponCode.trim()) return;
         setCouponError('');
@@ -69,6 +71,12 @@ const Checkout = () => {
         paymentMethod: 'online'
     });
 
+    // Force payment method to online if COD is not active
+    useEffect(() => {
+        if (COD_STATUS !== 'active' && formData.paymentMethod === 'cod') {
+            setFormData(prev => ({ ...prev, paymentMethod: 'online' }));
+        }
+    }, [COD_STATUS, formData.paymentMethod]);
     // COD Charge Calculation
     const codCharge = formData.paymentMethod === 'cod' ? COD_EXTRA_CHARGE : 0;
     const finalTotal = cartTotal + codCharge;

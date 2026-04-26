@@ -970,7 +970,7 @@ const EditableTextarea = ({ label, name, value, onChange, isEditing, rows = 3, p
 );
 
 const ToggleSwitch = ({ label, value, onChange, isEditing, icon }) => {
-    const isEnabled = value === 'true';
+    const isEnabled = String(value) === 'true';
 
     return (
         <div className="flex items-center gap-3">

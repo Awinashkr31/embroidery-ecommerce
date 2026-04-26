@@ -174,7 +174,7 @@ export const SettingsProvider = ({ children }) => {
     }, [fetchSettings]);
 
     // Function to force refresh (e.g. after Admin update)
-    const refreshSettings = () => fetchSettings();
+    const refreshSettings = (force = false) => fetchSettings(force);
 
     return (
         <SettingsContext.Provider value={{ settings, loading, refreshSettings }}>
