@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { supabase } from '../../config/supabase';
 import { useAuth } from './AuthContext';
 import { useToast } from './ToastContext';
@@ -6,6 +6,7 @@ import { useSettings } from './SettingsContext';
 
 const CartContext = createContext();
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useCart = () => useContext(CartContext);
 
 export const CartProvider = ({ children }) => {
@@ -491,8 +492,11 @@ export const CartProvider = ({ children }) => {
 
   // Coupon Management - Supabase Integration
   const [coupons, setCoupons] = useState([]);
+  const hasFetchedCoupons = useRef(false);
 
   const fetchCoupons = async () => {
+      if (hasFetchedCoupons.current) return;
+      hasFetchedCoupons.current = true;
       try {
           const { data, error } = await supabase
               .from('coupons')
@@ -524,9 +528,7 @@ export const CartProvider = ({ children }) => {
       }
   };
 
-  useEffect(() => {
-      fetchCoupons();
-  }, []); // Run once on mount
+  // Coupons are deferred — NOT fetched on mount (only when needed at cart/checkout)
 
   const addCoupon = async (couponData) => {
     try {
@@ -816,6 +818,7 @@ export const CartProvider = ({ children }) => {
       cartCount,
       cartTotal,
       coupons,
+      fetchCoupons,
       addCoupon,
       deleteCoupon,
       applyCoupon,

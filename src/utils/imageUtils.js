@@ -8,16 +8,18 @@
  * @param {number} options.width - Target width
  * @param {number} options.height - Target height
  * @param {number} options.quality - Image quality (0-100), default 80
- * @param {string} options.format - 'origin' | 'webp' | 'avif', default 'origin' (Supabase auto-detects usually)
+ * @param {string} options.format - 'origin' | 'webp' | 'avif', default 'origin'
  */
-export const getOptimizedImageUrl = (url, { format = 'origin' } = {}) => {
+export const getOptimizedImageUrl = (url, { width, height, quality, format = 'origin' } = {}) => {
     if (!url) return '';
     if (!url.includes('supabase.co')) return url; // Only optimize Supabase URLs
 
     try {
         const urlObj = new URL(url);
         
-        // Only set format if specifically requested, otherwise allow auto values
+        if (width) urlObj.searchParams.set('width', String(width));
+        if (height) urlObj.searchParams.set('height', String(height));
+        if (quality) urlObj.searchParams.set('quality', String(quality));
         if (format !== 'origin') {
              urlObj.searchParams.set('format', format);
         }
@@ -26,4 +28,18 @@ export const getOptimizedImageUrl = (url, { format = 'origin' } = {}) => {
     } catch {
         return url;
     }
+};
+
+/**
+ * Generate a responsive srcSet string for Supabase images.
+ * @param {string} url - Base image URL
+ * @param {number[]} widths - Array of widths to generate, e.g. [300, 600, 900]
+ * @param {number} quality - Image quality
+ * @returns {string} srcSet attribute value
+ */
+export const getResponsiveSrcSet = (url, widths = [300, 600, 900, 1200], quality = 80) => {
+    if (!url || !url.includes('supabase.co')) return '';
+    return widths
+        .map(w => `${getOptimizedImageUrl(url, { width: w, quality })} ${w}w`)
+        .join(', ');
 };

@@ -1,10 +1,9 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { getOptimizedImageUrl } from '../utils/imageUtils';
 
-const AutoSlideImage = ({ product, className = '' }) => {
+const AutoSlideImage = React.memo(({ product, className = '' }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isHovering, setIsHovering] = useState(false);
-    const [isVisible, setIsVisible] = useState(false);
     const containerRef = useRef(null);
     const timerRef = useRef(null);
     const touchStartX = useRef(0);
@@ -23,32 +22,19 @@ const AutoSlideImage = ({ product, className = '' }) => {
 
     const hasMultiple = allImages.length > 1;
 
-    // IntersectionObserver for auto-advance when visible on screen
+    // Auto-advance timer — ONLY on hover (removed viewport-based auto-advance to fix INP)
     useEffect(() => {
-        if (!hasMultiple || !containerRef.current) return;
-        const observer = new IntersectionObserver(
-            ([entry]) => setIsVisible(entry.isIntersecting),
-            { threshold: 0.5 }
-        );
-        observer.observe(containerRef.current);
-        return () => observer.disconnect();
-    }, [hasMultiple]);
-
-    // Auto-advance timer
-    useEffect(() => {
-        if (!hasMultiple) return;
-        if (isHovering || isVisible) {
-            timerRef.current = setInterval(() => {
-                setCurrentIndex(prev => (prev + 1) % allImages.length);
-            }, isHovering ? 1500 : 2500);
-        }
+        if (!hasMultiple || !isHovering) return;
+        timerRef.current = setInterval(() => {
+            setCurrentIndex(prev => (prev + 1) % allImages.length);
+        }, 1500);
         return () => { if (timerRef.current) clearInterval(timerRef.current); };
-    }, [isHovering, isVisible, hasMultiple, allImages.length]);
+    }, [isHovering, hasMultiple, allImages.length]);
 
     // Touch swipe
-    const onTouchStart = (e) => { touchStartX.current = e.touches[0].clientX; };
-    const onTouchMove = (e) => { touchEndX.current = e.touches[0].clientX; };
-    const onTouchEnd = () => {
+    const onTouchStart = useCallback((e) => { touchStartX.current = e.touches[0].clientX; }, []);
+    const onTouchMove = useCallback((e) => { touchEndX.current = e.touches[0].clientX; }, []);
+    const onTouchEnd = useCallback(() => {
         if (!hasMultiple) return;
         const diff = touchStartX.current - touchEndX.current;
         if (Math.abs(diff) > 40) {
@@ -58,14 +44,17 @@ const AutoSlideImage = ({ product, className = '' }) => {
                     : (prev - 1 + allImages.length) % allImages.length
             );
         }
-    };
+    }, [hasMultiple, allImages.length]);
+
+    const handleMouseEnter = useCallback(() => setIsHovering(true), []);
+    const handleMouseLeave = useCallback(() => { setIsHovering(false); setCurrentIndex(0); }, []);
 
     return (
         <div
             ref={containerRef}
             className={className}
-            onMouseEnter={() => setIsHovering(true)}
-            onMouseLeave={() => { setIsHovering(false); setCurrentIndex(0); }}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd}
@@ -75,6 +64,8 @@ const AutoSlideImage = ({ product, className = '' }) => {
                     key={idx}
                     src={getOptimizedImageUrl(img, { width: 400, quality: 80 })}
                     alt={`${product.name} ${idx + 1}`}
+                    width={400}
+                    height={600}
                     loading={idx === 0 ? 'eager' : 'lazy'}
                     decoding="async"
                     style={{
@@ -106,6 +97,8 @@ const AutoSlideImage = ({ product, className = '' }) => {
             )}
         </div>
     );
-};
+});
+
+AutoSlideImage.displayName = 'AutoSlideImage';
 
 export default AutoSlideImage;

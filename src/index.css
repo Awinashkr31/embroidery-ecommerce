@@ -70,6 +70,15 @@
     animation: fade-up 0.5s ease both;
   }
 
+  /* Simple fade-in for page transitions (replaces framer-motion AnimatePresence) */
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  .animate-fade-in {
+    animation: fade-in 0.25s ease-out both;
+  }
+
   /* ── Cart Bounce: triggers when item added ── */
   @keyframes cart-bounce {
     0%   { transform: scale(1); }

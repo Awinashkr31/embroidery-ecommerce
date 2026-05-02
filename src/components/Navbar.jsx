@@ -43,7 +43,12 @@ const Navbar = () => {
   useEffect(() => {
     if (!currentUser?.email) return;
 
-    const fetchNotifications = async () => {
+    // Fetch Notifications (deferred — not needed for first paint)
+    const fetchTimer = setTimeout(() => {
+      fetchNotifications();
+    }, 3000);
+
+    async function fetchNotifications() {
       const { data } = await supabase
         .from('notifications')
         .select('id, title, message, type, is_read, created_at')
@@ -55,9 +60,7 @@ const Navbar = () => {
         setNotifications(data);
         setUnreadCount(data.filter(n => !n.is_read).length);
       }
-    };
-
-    fetchNotifications();
+    }
 
     // Real-time subscription
     const channel = supabase
@@ -75,6 +78,7 @@ const Navbar = () => {
       .subscribe();
 
     return () => {
+      clearTimeout(fetchTimer);
       supabase.removeChannel(channel);
     };
   }, [currentUser, addToast]);
@@ -129,7 +133,7 @@ const Navbar = () => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
     };
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 

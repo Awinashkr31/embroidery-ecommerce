@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { motion } from 'framer-motion';
 import { getOptimizedImageUrl } from '../utils/imageUtils';
 import { Package, Heart, Search, ChevronDown, Sparkles, ChevronLeft, ChevronRight, SlidersHorizontal } from 'lucide-react';
 import { useProducts } from '../context/ProductContext';
@@ -46,36 +45,22 @@ const ProductCardWithVariants = ({ product, toggleWishlist, isInWishlist }) => {
 
     const hasMultipleImages = allImages.length > 1;
     const cardRef = useRef(null);
-    const [isVisible, setIsVisible] = useState(false);
 
     // Reset index when variant changes
     useEffect(() => {
         setCurrentImageIndex(0);
     }, [selectedVariant]);
 
-    // IntersectionObserver for mobile auto-advance when card is visible
+    // Auto-advance: on hover only (removed viewport-based to fix INP — same fix as AutoSlideImage)
     useEffect(() => {
-        if (!hasMultipleImages || !cardRef.current) return;
-        const observer = new IntersectionObserver(
-            ([entry]) => setIsVisible(entry.isIntersecting),
-            { threshold: 0.5 }
-        );
-        observer.observe(cardRef.current);
-        return () => observer.disconnect();
-    }, [hasMultipleImages]);
-
-    // Auto-advance: on hover (desktop) OR when visible (mobile)
-    useEffect(() => {
-        if (!hasMultipleImages) return;
-        if (isHovering || isVisible) {
-            hoverTimerRef.current = setInterval(() => {
-                setCurrentImageIndex(prev => (prev + 1) % allImages.length);
-            }, isHovering ? 1500 : 2500);
-        }
+        if (!hasMultipleImages || !isHovering) return;
+        hoverTimerRef.current = setInterval(() => {
+            setCurrentImageIndex(prev => (prev + 1) % allImages.length);
+        }, 1500);
         return () => {
             if (hoverTimerRef.current) clearInterval(hoverTimerRef.current);
         };
-    }, [isHovering, isVisible, hasMultipleImages, allImages.length]);
+    }, [isHovering, hasMultipleImages, allImages.length]);
 
     // Touch handlers for mobile swipe
     const handleTouchStart = (e) => {
@@ -123,6 +108,8 @@ const ProductCardWithVariants = ({ product, toggleWishlist, isInWishlist }) => {
                         key={idx}
                         src={getOptimizedImageUrl(img, { width: 600, quality: 80 })}
                         alt={`${product.name} ${idx + 1}`}
+                        width={600}
+                        height={900}
                         loading={idx === 0 ? 'eager' : 'lazy'}
                         decoding="async"
                         style={{
@@ -676,35 +663,18 @@ const Shop = () => {
                             </div>
                         ) : (
                             <>
-                                <motion.div 
-                                    initial="hidden"
-                                    animate="visible"
-                                    variants={{
-                                        hidden: { opacity: 0 },
-                                        visible: {
-                                            opacity: 1,
-                                            transition: { staggerChildren: 0.05 }
-                                        }
-                                    }}
-                                    className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8 md:gap-x-8 md:gap-y-14"
-                                >
+                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8 md:gap-x-8 md:gap-y-14 animate-fade-in">
                                     {paginatedProducts.map((product) => (
-                                        <motion.div
-                                            key={product.uniqueId}
-                                            variants={{
-                                                hidden: { opacity: 0, y: 20 },
-                                                visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
-                                            }}
-                                        >
+                                        <div key={product.uniqueId} className="animate-fade-up">
                                             <Link 
                                                 to={`/product/${product.id}${product.preselectedVariant ? `?color=${encodeURIComponent(product.preselectedVariant.color)}` : ''}`}
                                                 className="group block"
                                             >
                                                 <ProductCardWithVariants product={product} toggleWishlist={toggleWishlist} isInWishlist={isInWishlist} />
                                             </Link>
-                                        </motion.div>
+                                        </div>
                                     ))}
-                                </motion.div>
+                                </div>
 
                                 {/* Load More (Mobile) */}
                                 {isMobile && currentPage < totalPages && (

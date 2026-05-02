@@ -29,7 +29,7 @@ const AnnouncementBar = () => {
   };
 
   return (
-    <div className="bg-rose-900 text-white px-4 py-2 flex items-center justify-between text-xs md:text-sm font-medium">
+    <div className="bg-rose-900 text-white px-4 py-2 flex items-center justify-between text-xs md:text-sm font-medium h-9 md:h-10">
       <button 
         onClick={handlePrev} 
         className="text-white hover:text-white/80 p-1"

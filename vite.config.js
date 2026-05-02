@@ -38,6 +38,7 @@ export default defineConfig({
           'vendor-react': ['react', 'react-dom', 'react-router-dom'],
           'vendor-supabase': ['@supabase/supabase-js'],
           'vendor-firebase': ['firebase/app', 'firebase/auth'],
+          'vendor-motion': ['framer-motion'],
           'ui-icons': ['lucide-react']
         }
       }

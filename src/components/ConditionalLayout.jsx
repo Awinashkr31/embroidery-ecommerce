@@ -2,8 +2,6 @@ import React from 'react';
 import { useLocation } from 'react-router-dom';
 import Footer from './Footer';
 import BottomNavigation from './BottomNavigation';
-import { AnimatePresence } from 'framer-motion';
-import AnimatedPage from './AnimatedPage';
 
 const ConditionalLayout = ({ children }) => {
   const location = useLocation();
@@ -22,11 +20,10 @@ const ConditionalLayout = ({ children }) => {
 
   return (
     <>
-      <AnimatePresence mode="wait">
-        <AnimatedPage key={location.pathname}>
-          {children}
-        </AnimatedPage>
-      </AnimatePresence>
+      {/* Simple CSS fade instead of framer-motion AnimatePresence (INP fix) */}
+      <div className="animate-fade-in" key={location.pathname}>
+        {children}
+      </div>
       
       {!isDistractionFree && (
         <div className={(location.pathname === '/cart' || location.pathname === '/shop' || location.pathname.startsWith('/product/')) ? 'hidden md:block' : ''}>
@@ -39,3 +36,4 @@ const ConditionalLayout = ({ children }) => {
 };
 
 export default ConditionalLayout;
+

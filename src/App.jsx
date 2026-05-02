@@ -64,7 +64,7 @@ const NotFound = lazy(() => import('./pages/NotFound'));
 
 import ProtectedRoute from './components/admin/ProtectedRoute'
 import ConditionalLayout from './components/ConditionalLayout'
-import ChatWidget from './components/ChatWidget'
+const ChatWidget = lazy(() => import('./components/ChatWidget'));
 
 // Loading Component
 const PageLoader = () => (
@@ -118,7 +118,7 @@ function App() {
               <Route element={
                 <div className="flex flex-col min-h-screen pb-16 md:pb-0">
                   <Navbar />
-                  <ChatWidget />
+                  <Suspense fallback={null}><ChatWidget /></Suspense>
                   <main className="flex-grow">
                     <ConditionalLayout>
                       <Suspense fallback={<PageLoader />}>

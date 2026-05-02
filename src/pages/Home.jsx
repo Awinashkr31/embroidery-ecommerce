@@ -1,43 +1,39 @@
-import React, { useMemo, useState, useEffect, useRef } from 'react';
+import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useProducts } from '../context/ProductContext';
 import { useCategories } from '../context/CategoryContext';
 import { useCart } from '../context/CartContext';
 import { getOptimizedImageUrl } from '../utils/imageUtils';
-import { Star, ArrowRight, Flower, Heart, Scissors, PenTool, Sparkles, ChevronLeft, ChevronRight, Truck, Shield, Award, ShoppingBag, MessageSquare } from 'lucide-react';
+import { Star, ArrowRight, Heart, Scissors, ChevronLeft, ChevronRight, Truck, Shield, Award, MessageSquare } from 'lucide-react';
 import SEO from '../components/SEO';
 import AutoSlideImage from '../components/AutoSlideImage';
 import { useSettings } from '../context/SettingsContext';
 
-import { motion } from 'framer-motion';
-
-const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-        opacity: 1,
-        transition: {
-            staggerChildren: 0.1,
-            delayChildren: 0.2
-        }
-    }
-};
-
-const itemVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } }
+// Lightweight IntersectionObserver hook — replaces framer-motion for scroll reveal (INP fix)
+const useInView = (options = {}) => {
+    const ref = useRef(null);
+    const [isInView, setIsInView] = useState(false);
+    useEffect(() => {
+        if (!ref.current) return;
+        const observer = new IntersectionObserver(
+            ([entry]) => { if (entry.isIntersecting) { setIsInView(true); observer.disconnect(); } },
+            { threshold: 0.1, ...options }
+        );
+        observer.observe(ref.current);
+        return () => observer.disconnect();
+    }, []);
+    return [ref, isInView];
 };
 
 const ScrollRevealSection = ({ children, className }) => {
+    const [ref, isInView] = useInView();
     return (
-      <motion.section 
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true, amount: 0.15 }}
-        variants={containerVariants}
-        className={className}
+      <section 
+        ref={ref}
+        className={`${className} transition-all duration-700 ${isInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}
       >
         {children}
-      </motion.section>
+      </section>
     );
 };
 
@@ -139,6 +135,8 @@ const Home = () => {
                   <img 
                     src={getOptimizedImageUrl(img, { width: 1200, quality: 80 })} 
                     alt={`Slide ${idx + 1}`} 
+                    width={1200}
+                    height={800}
                     className="w-full h-full object-cover opacity-40"
                     loading={idx === 0 ? "eager" : "lazy"}
                     fetchPriority={idx === 0 ? "high" : "low"}
@@ -150,13 +148,9 @@ const Home = () => {
           ))}
 
           {/* Hero Text — always visible, not slide-locked */}
+          {/* Hero Text — CSS animation instead of framer-motion for faster paint */}
           <div className="absolute inset-0 flex items-end justify-center pb-16 md:pb-24 z-10 px-4">
-              <motion.div 
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
-                className="text-center text-white"
-              >
+              <div className="text-center text-white animate-fade-up" style={{ animationDelay: '0.3s' }}>
                   <h1 className="text-4xl md:text-7xl font-heading mb-3 md:mb-4 drop-shadow-md leading-tight">
                     {settings.home_hero_title}
                   </h1>
@@ -177,7 +171,7 @@ const Home = () => {
                           Custom Design
                       </Link>
                   </div>
-              </motion.div>
+              </div>
           </div>
 
           {/* Slider Controls */}
@@ -268,21 +262,9 @@ const Home = () => {
             </div>
 
             {/* Dynamic Grid */}
-            <motion.div 
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, amount: 0.1 }}
-                variants={{
-                    hidden: { opacity: 0 },
-                    visible: {
-                        opacity: 1,
-                        transition: { staggerChildren: 0.05 }
-                    }
-                }}
-                className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-8"
-            >
+            <div className="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 md:gap-8">
                 {dynamicCategories.map((category) => (
-                    <motion.div key={category.id} variants={itemVariants}>
+                    <div key={category.id}>
                         <Link 
                             to={`/shop?category=${encodeURIComponent(category.label)}`}
                             className="group flex flex-col items-center gap-2 md:gap-4"
@@ -291,6 +273,8 @@ const Home = () => {
                                 <img 
                                     src={getOptimizedImageUrl(category.image, { width: 300, quality: 80 })} 
                                     alt={category.label} 
+                                    width={300}
+                                    height={300}
                                     loading="lazy"
                                     decoding="async"
                                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
@@ -306,9 +290,9 @@ const Home = () => {
                                 <ArrowRight className="w-3 h-3 md:w-4 md:h-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300 hidden md:block" />
                             </div>
                         </Link>
-                    </motion.div>
+                    </div>
                 ))}
-            </motion.div>
+            </div>
             
             <div className="text-center mt-8 md:hidden">
                 <Link to="/shop" className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-stone-500 hover:text-stone-900 transition-colors border-b border-stone-300 pb-1">
@@ -331,7 +315,7 @@ const Home = () => {
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
                 {featuredProducts.map((product) => (
-                    <motion.div key={product.id} variants={itemVariants}>
+                    <div key={product.id}>
                         <Link to={`/product/${product.id}`} className="group relative block">
                             <div className="relative aspect-[2/3] bg-white rounded-2xl overflow-hidden mb-4 shadow-sm group-hover:shadow-xl transition-all duration-500 group-hover:-translate-y-2">
                                 <AutoSlideImage 
@@ -357,7 +341,7 @@ const Home = () => {
                                 </div>
                             </div>
                         </Link>
-                    </motion.div>
+                    </div>
                 ))}
             </div>
 
@@ -370,9 +354,9 @@ const Home = () => {
       </ScrollRevealSection>
 
       {/* ================= CATEGORY SECTIONS ================= */}
-      {categories.map((category) => {
+      {categories.slice(0, 3).map((category) => {
         const normalize = (str) => (str || '').toLowerCase().trim();
-        const categoryProducts = products.filter(p => normalize(p.category) === normalize(category.label)).slice(0, 8);
+        const categoryProducts = products.filter(p => normalize(p.category) === normalize(category.label)).slice(0, 4);
         
         if (categoryProducts.length === 0) return null;
 
