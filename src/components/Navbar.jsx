@@ -124,6 +124,10 @@ const Navbar = React.memo(() => {
       return 'Enbroidery By Sana';
   };
 
+  if (location.pathname === '/checkout') {
+      return null;
+  }
+
   return (
     <>
     <header className="sticky top-0 w-full z-50 flex flex-col transition-all duration-500 ease-in-out">
