@@ -152,8 +152,12 @@ const ProductDetails = () => {
         }
         if (hasOnlyNAColor) {
             setSelectedColor('NA');
+        } else if (!selectedColor && availableColors.length > 0) {
+            // Auto-select the first available color by default
+            setSelectedColor(availableColors[0]);
         }
-    }, [product, shouldAutoSelectSize, singleSizeKey, hasOnlyNAColor]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [product?.id, shouldAutoSelectSize, singleSizeKey, hasOnlyNAColor]);
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -688,7 +692,7 @@ const ProductDetails = () => {
                                     disabled={!isStockAvailable}
                                     className="px-8 py-4 rounded-2xl border-2 border-stone-900 font-bold uppercase tracking-widest text-sm text-stone-900 hover:bg-stone-900 hover:text-white transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed bg-white"
                                 >
-                                    Buy Now
+                                    Buy at ₹{currentPrice}
                                 </motion.button>
                             </div>
                         </div>
@@ -1263,7 +1267,7 @@ const ProductDetails = () => {
                     disabled={!isStockAvailable}
                     className="flex-1 py-3 rounded-xl border border-stone-900 font-bold uppercase tracking-widest text-xs text-stone-900 hover:bg-stone-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-white"
                 >
-                    Buy Now
+                    Buy at ₹{currentPrice}
                 </button>
             </div>
         </div>

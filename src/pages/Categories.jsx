@@ -63,23 +63,29 @@ const Categories = () => {
                   <Link 
                       key={category.id}
                       to={category.id === 'all' ? '/shop' : `/shop?category=${encodeURIComponent(category.label)}`}
-                      className="group flex flex-col gap-3 relative rounded-xl overflow-hidden bg-stone-50 border border-stone-100 shadow-sm"
+                      className={`group flex flex-col relative rounded-xl overflow-hidden bg-stone-50 border border-stone-100 shadow-sm aspect-square ${category.id === 'all' ? 'bg-gradient-to-br from-rose-900 to-rose-700 items-center justify-center p-4 text-center' : ''}`}
                   >
-                      <div className="aspect-square w-full overflow-hidden">
-                          <img 
-                              src={category.id === 'all' ? '/logo.png' : getOptimizedImageUrl(category.image, { width: 400, height: 400, quality: 80 })} 
-                              alt={category.label} 
-                              className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ${category.id === 'all' ? 'object-contain p-8' : ''}`}
-                              loading="lazy"
-                          />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-                      </div>
-                      <div className="absolute bottom-0 left-0 right-0 p-4 flex items-center justify-between">
-                          <span className="font-bold text-sm md:text-base text-white uppercase tracking-widest leading-tight">
-                              {category.label}
-                          </span>
-                          <ChevronRight className="w-5 h-5 text-white opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300" />
-                      </div>
+                      {category.id === 'all' ? (
+                          <span className="font-bold text-lg md:text-2xl text-white uppercase tracking-widest leading-tight">ALL<br/>CREATIONS</span>
+                      ) : (
+                          <>
+                              <div className="absolute inset-0 w-full h-full overflow-hidden">
+                                  <img 
+                                      src={getOptimizedImageUrl(category.image, { width: 400, height: 400, quality: 80 })} 
+                                      alt={category.label} 
+                                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                      loading="lazy"
+                                  />
+                                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+                              </div>
+                              <div className="absolute bottom-0 left-0 right-0 p-4 flex items-center justify-between z-10">
+                                  <span className="font-bold text-sm md:text-base text-white uppercase tracking-widest leading-tight">
+                                      {category.label}
+                                  </span>
+                                  <ChevronRight className="w-5 h-5 text-white opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300" />
+                              </div>
+                          </>
+                      )}
                   </Link>
               ))}
           </div>

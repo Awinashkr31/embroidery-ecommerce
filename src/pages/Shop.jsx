@@ -198,12 +198,16 @@ const Shop = () => {
                                             : 'bg-stone-200 hover:bg-stone-300'}
                                     `}>
                                         <div className="w-full h-full rounded-full overflow-hidden bg-white flex items-center justify-center border-2 border-white">
-                                            <img 
-                                                src={cat.id === 'all' ? '/logo.png' : (getOptimizedImageUrl(catImage, { width: 100, height: 100 }) || catImage)}
-                                                alt={cat.label}
-                                                onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/logo.png'; }}
-                                                className={cat.id === 'all' ? 'w-10 h-10 object-contain' : 'w-full h-full object-cover group-hover:scale-110 transition-transform duration-500'}
-                                            />
+                                            {cat.id === 'all' ? (
+                                                <span className="text-[11px] font-bold text-stone-800 uppercase tracking-widest leading-none">All</span>
+                                            ) : (
+                                                <img 
+                                                    src={getOptimizedImageUrl(catImage, { width: 100, height: 100 }) || catImage}
+                                                    alt={cat.label}
+                                                    onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/logo.png'; }}
+                                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                                />
+                                            )}
                                         </div>
                                     </div>
                                     <span className={`text-[10px] font-bold text-center leading-tight max-w-[72px] ${
