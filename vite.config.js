@@ -1,11 +1,23 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { fileURLToPath } from 'url'
+import path, { dirname } from 'path'
 import { VitePWA } from 'vite-plugin-pwa'
 
+import viteCompression from 'vite-plugin-compression';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
 export default defineConfig({
+  resolve: {
+    dedupe: ['react', 'react-dom', 'react-router-dom', 'react-helmet-async']
+  },
   plugins: [
     react(),
-    VitePWA({
+    viteCompression({ algorithm: 'brotliCompress' }),
+    viteCompression({ algorithm: 'gzip' })
+    /* VitePWA({
       strategies: 'injectManifest',
       srcDir: 'src',
       filename: 'firebase-messaging-sw.js',
@@ -29,21 +41,33 @@ export default defineConfig({
           }
         ]
       }
-    })
+    }) */
   ],
   build: {
     rollupOptions: {
       output: {
         manualChunks: {
-          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-          'vendor-supabase': ['@supabase/supabase-js'],
-          'vendor-firebase': ['firebase/app', 'firebase/auth'],
-          'vendor-motion': ['framer-motion'],
-          'ui-icons': ['lucide-react']
+          vendor: ['react', 'react-dom', 'react-router-dom', 'react-helmet-async'],
+          ui: ['framer-motion', 'lucide-react', 'recharts'],
+          firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage'],
+          supabase: ['@supabase/supabase-js']
         }
       }
     },
     sourcemap: false
+  },
+  optimizeDeps: {
+    include: [
+      'react', 
+      'react-dom', 
+      'react-router-dom', 
+      'react-helmet-async', 
+      'framer-motion', 
+      'lucide-react', 
+      '@supabase/supabase-js',
+      'firebase/auth',
+      'firebase/app'
+    ]
   },
   server: {
     headers: {

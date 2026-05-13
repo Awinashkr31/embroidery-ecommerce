@@ -3,14 +3,8 @@ import Cropper from 'react-easy-crop';
 import getCroppedImg from '../utils/cropImage';
 import { X, Check, ZoomIn, RotateCw } from 'lucide-react';
 
-const ImageCropper = ({ imageSrc, aspect: initialAspect = 2/3, onCancel, onCropComplete }) => {
-    // Determine initial aspect selection. If passed aspect is 1, 4/3 etc match it.
-    // If we want "Free" as an option, we need to handle aspect prop being undefined or similar in Cropper.
-    // However, react-easy-crop needs a number. We can use aspect={undefined} or aspect={null} maybe?
-    // Docs say: aspect (number) defaults to 4/3. 
-    // Wait, let's just stick to predefined ones and maybe a numeric input if needed?
-    // Let's stick to buttons.
-    const [aspect, setAspect] = useState(initialAspect); // Control aspect internally
+const ImageCropper = ({ imageSrc, aspect: initialAspect = 2/3, targetSize = null, onCancel, onCropComplete }) => {
+    const [aspect, setAspect] = useState(initialAspect);
     const [crop, setCrop] = useState({ x: 0, y: 0 });
     const [zoom, setZoom] = useState(1);
     const [rotation, setRotation] = useState(0);
@@ -35,7 +29,9 @@ const ImageCropper = ({ imageSrc, aspect: initialAspect = 2/3, onCancel, onCropC
             const croppedImage = await getCroppedImg(
                 imageSrc,
                 croppedAreaPixels,
-                rotation
+                rotation,
+                { horizontal: false, vertical: false },
+                targetSize
             );
             onCropComplete(croppedImage);
         } catch (e) {
@@ -69,32 +65,34 @@ const ImageCropper = ({ imageSrc, aspect: initialAspect = 2/3, onCancel, onCropC
                 </div>
 
                 <div className="p-6 space-y-6">
-                     {/* Aspect Ratio Controls */}
-                     <div>
-                        <span className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Aspect Ratio</span>
-                        <div className="flex flex-wrap gap-2">
-                            {[
-                                { label: 'Free', value: undefined }, // Free/Custom
-                                { label: '1:1', value: 1 },
-                                { label: '4:3', value: 4/3 },
-                                { label: '16:9', value: 16/9 },
-                                { label: '3:2', value: 3/2 },
-                                { label: '2:3', value: 2/3 }, // Portrait
-                            ].map((ratio) => (
-                                <button
-                                    key={ratio.label}
-                                    onClick={() => setAspect(ratio.value)}
-                                    className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all border ${
-                                        aspect === ratio.value
-                                            ? 'bg-rose-900 text-white border-rose-900 shadow-md'
-                                            : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                                    }`}
-                                >
-                                    {ratio.label}
-                                </button>
-                            ))}
-                        </div>
-                     </div>
+                     {/* Aspect Ratio Controls - Only show if no strict target size is set */}
+                     {!targetSize && (
+                         <div>
+                            <span className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3">Aspect Ratio</span>
+                            <div className="flex flex-wrap gap-2">
+                                {[
+                                    { label: 'Free', value: undefined }, // Free/Custom
+                                    { label: '1:1', value: 1 },
+                                    { label: '4:3', value: 4/3 },
+                                    { label: '16:9', value: 16/9 },
+                                    { label: '3:2', value: 3/2 },
+                                    { label: '2:3', value: 2/3 }, // Portrait
+                                ].map((ratio) => (
+                                    <button
+                                        key={ratio.label}
+                                        onClick={() => setAspect(ratio.value)}
+                                        className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all border ${
+                                            aspect === ratio.value
+                                                ? 'bg-rose-900 text-white border-rose-900 shadow-md'
+                                                : 'bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                                        }`}
+                                    >
+                                        {ratio.label}
+                                    </button>
+                                ))}
+                            </div>
+                         </div>
+                     )}
 
                     <div className="space-y-4">
                         <div className="flex items-center gap-4">

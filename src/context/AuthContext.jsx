@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import { supabase } from '../config/supabase';
 import { auth, googleProvider } from '../config/firebase';
 import { 
@@ -18,6 +18,10 @@ export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [adminUser, setAdminUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isLoginSheetOpen, setIsLoginSheetOpen] = useState(false);
+
+  const openLoginSheet = useCallback(() => setIsLoginSheetOpen(true), []);
+  const closeLoginSheet = useCallback(() => setIsLoginSheetOpen(false), []);
 
   useEffect(() => {
     // 1. Firebase Auth Listener (For regular users)
@@ -61,19 +65,19 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   // --- FIREBASE USER FUNCTIONS ---
-  const signup = async (email, password) => {
+  const signup = useCallback(async (email, password) => {
     return createUserWithEmailAndPassword(auth, email, password);
-  };
+  }, []);
 
-  const login = async (email, password) => {
+  const login = useCallback(async (email, password) => {
     return signInWithEmailAndPassword(auth, email, password);
-  };
+  }, []);
 
-  const signInWithGoogle = async () => {
+  const signInWithGoogle = useCallback(async () => {
     return signInWithPopup(auth, googleProvider);
-  };
+  }, []);
 
-  const updateUser = async (displayName, photoURL, phoneNumber) => {
+  const updateUser = useCallback(async (displayName, photoURL, phoneNumber) => {
     if (!auth.currentUser) return;
     
     // Firebase updateProfile handles basic info
@@ -85,28 +89,28 @@ export const AuthProvider = ({ children }) => {
     // Update local state to reflect changes instantly
     setCurrentUser({ ...auth.currentUser });
     return auth.currentUser;
-  };
+  }, []);
 
   // --- SUPABASE ADMIN FUNCTIONS ---
-  const loginWithOtp = async (email) => {
+  const loginWithOtp = useCallback(async (email) => {
       return supabase.auth.signInWithOtp({ email });
-  };
+  }, []);
 
-  const verifyOtp = async (email, token) => {
+  const verifyOtp = useCallback(async (email, token) => {
       return supabase.auth.verifyOtp({ email, token, type: 'email' });
-  };
+  }, []);
 
   // --- UNIFIED LOGOUT ---
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
         await firebaseSignOut(auth);
         await supabase.auth.signOut();
     } catch (error) {
         console.error("Logout Error:", error);
     }
-  };
+  }, []);
 
-  const value = {
+  const value = useMemo(() => ({
     currentUser,
     adminUser,
     signup,
@@ -116,8 +120,25 @@ export const AuthProvider = ({ children }) => {
     logout,
     loginWithOtp,
     verifyOtp,
-    loading
-  };
+    loading,
+    isLoginSheetOpen,
+    openLoginSheet,
+    closeLoginSheet
+  }), [
+    currentUser, 
+    adminUser, 
+    loading, 
+    isLoginSheetOpen,
+    signup,
+    login,
+    signInWithGoogle,
+    updateUser,
+    logout,
+    loginWithOtp,
+    verifyOtp,
+    openLoginSheet,
+    closeLoginSheet
+  ]);
 
   return (
     <AuthContext.Provider value={value}>

@@ -9,230 +9,15 @@ import { Link, useSearchParams } from 'react-router-dom';
 // Utility helper function extracted outside component to avoid recreation
 const slugify = (str) => (str || '').toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
-const ProductCardWithVariants = ({ product, toggleWishlist, isInWishlist }) => {
-    const [selectedVariant, setSelectedVariant] = useState(product.preselectedVariant || null);
-    const [currentImageIndex, setCurrentImageIndex] = useState(0);
-    const [isHovering, setIsHovering] = useState(false);
-    const touchStartX = useRef(0);
-    const touchEndX = useRef(0);
-    const hoverTimerRef = useRef(null);
-    
-    useEffect(() => {
-        if (product.preselectedVariant) {
-            setSelectedVariant(product.preselectedVariant);
-        } else {
-            setSelectedVariant(null);
-        }
-    }, [product.preselectedVariant]);
-
-    const variants = product.variants || [];
-    
-    // Only consider variants that have at least one image and a color
-    const validVariants = variants.filter(v => v.color && v.images && v.images.length > 0);
-    const hasVariants = validVariants.length > 0;
-
-    // Get all images for the current view
-    const allImages = useMemo(() => {
-        if (selectedVariant && selectedVariant.images && selectedVariant.images.length > 0) {
-            return selectedVariant.images.filter(Boolean);
-        }
-        if (product.images && product.images.length > 0) {
-            return product.images.filter(Boolean);
-        }
-        if (product.image) return [product.image];
-        return [];
-    }, [selectedVariant, product.images, product.image]);
-
-    const hasMultipleImages = allImages.length > 1;
-    const cardRef = useRef(null);
-
-    // Reset index when variant changes
-    useEffect(() => {
-        setCurrentImageIndex(0);
-    }, [selectedVariant]);
-
-    // Auto-advance: on hover only (removed viewport-based to fix INP — same fix as AutoSlideImage)
-    useEffect(() => {
-        if (!hasMultipleImages || !isHovering) return;
-        hoverTimerRef.current = setInterval(() => {
-            setCurrentImageIndex(prev => (prev + 1) % allImages.length);
-        }, 1500);
-        return () => {
-            if (hoverTimerRef.current) clearInterval(hoverTimerRef.current);
-        };
-    }, [isHovering, hasMultipleImages, allImages.length]);
-
-    // Touch handlers for mobile swipe
-    const handleTouchStart = (e) => {
-        touchStartX.current = e.touches[0].clientX;
-    };
-    const handleTouchMove = (e) => {
-        touchEndX.current = e.touches[0].clientX;
-    };
-    const handleTouchEnd = () => {
-        if (!hasMultipleImages) return;
-        const diff = touchStartX.current - touchEndX.current;
-        if (Math.abs(diff) > 40) {
-            if (diff > 0) {
-                // Swipe left → next
-                setCurrentImageIndex(prev => (prev + 1) % allImages.length);
-            } else {
-                // Swipe right → prev
-                setCurrentImageIndex(prev => (prev - 1 + allImages.length) % allImages.length);
-            }
-        }
-    };
-
-
-    // Determine current display price
-    let displayPrice = product.price;
-    if (selectedVariant && selectedVariant.price) {
-        displayPrice = Number(selectedVariant.price);
-    }
-
-    return (
-        <div className="h-full flex flex-col">
-            {/* Image Card */}
-            <div 
-                ref={cardRef}
-                className="relative aspect-[2/3] md:aspect-[4/5] overflow-hidden bg-stone-100 mb-3 md:mb-5 rounded-[20px] md:rounded-2xl shrink-0 md:group-hover:-translate-y-1 md:group-hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.15)] md:transition-all md:duration-500"
-                onMouseEnter={() => setIsHovering(true)}
-                onMouseLeave={() => { setIsHovering(false); setCurrentImageIndex(0); }}
-                onTouchStart={handleTouchStart}
-                onTouchMove={handleTouchMove}
-                onTouchEnd={handleTouchEnd}
-            >
-                {/* Image Stack with Crossfade */}
-                {allImages.map((img, idx) => (
-                    <img
-                        key={idx}
-                        src={getOptimizedImageUrl(img, { width: 600, quality: 80 })}
-                        alt={`${product.name} ${idx + 1}`}
-                        width={600}
-                        height={900}
-                        loading={idx === 0 ? 'eager' : 'lazy'}
-                        decoding="async"
-                        style={{
-                            transition: 'opacity 800ms cubic-bezier(0.4, 0, 0.2, 1), transform 1200ms cubic-bezier(0.4, 0, 0.2, 1)',
-                            opacity: idx === currentImageIndex ? 1 : 0,
-                            transform: idx === currentImageIndex ? 'scale(1)' : 'scale(1.06)',
-                            zIndex: idx === currentImageIndex ? 2 : 1,
-                        }}
-                        className={`absolute inset-0 w-full h-full object-cover object-top ${!product.inStock ? 'grayscale opacity-80' : ''}`}
-                        onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = '/logo.png';
-                            e.target.className = `absolute inset-0 w-full h-full object-contain p-8 opacity-50 ${!product.inStock ? 'grayscale' : ''}`;
-                        }}
-                    />
-                ))}
-
-                {/* Image Dots Indicator */}
-                {hasMultipleImages && (
-                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-20">
-                        {allImages.map((_, idx) => (
-                            <button
-                                key={idx}
-                                onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCurrentImageIndex(idx); }}
-                                className={`rounded-full transition-all duration-300 ${
-                                    idx === currentImageIndex 
-                                        ? 'w-4 h-1.5 bg-white shadow-md' 
-                                        : 'w-1.5 h-1.5 bg-white/50 hover:bg-white/80'
-                                }`}
-                                aria-label={`View image ${idx + 1}`}
-                            />
-                        ))}
-                    </div>
-                )}
-                
-                {/* Sold Out Overlay */}
-                {!product.inStock && (
-                    <div className="absolute inset-0 bg-stone-900/50 rounded-t-xl flex items-center justify-center z-10 pointer-events-none">
-                        <span className="bg-white/90 text-stone-900 text-[10px] md:text-xs font-bold uppercase tracking-widest px-4 py-1.5 rounded-full shadow-md">
-                            Sold Out
-                        </span>
-                    </div>
-                )}
-
-                {/* Badges */}
-                <div className="absolute top-2 left-2 md:top-3 md:left-3 flex flex-col gap-1 z-20">
-                    {product.inStock && product.discountPercentage > 0 && (
-                        <span className="bg-rose-900 text-white text-[8px] md:text-[10px] font-bold uppercase tracking-widest px-1.5 py-0.5 md:px-2 md:py-1 rounded-sm shadow-sm">
-                            {product.discountPercentage}% OFF
-                        </span>
-                    )}
-                </div>
-
-                {/* Wishlist */}
-                <button 
-                    onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        toggleWishlist(product);
-                    }}
-                    className="absolute top-2 right-2 md:top-4 md:right-4 p-2 bg-white/90 md:p-2.5 rounded-full text-stone-500 hover:text-rose-600 transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100 translate-y-0 md:translate-y-2 md:group-hover:translate-y-0 duration-500 shadow-sm md:hover:scale-110"
-                >
-                    <Heart className={`w-4 h-4 md:w-4 md:h-4 ${isInWishlist(product.id) ? 'fill-rose-600 text-rose-600' : ''}`} />
-                </button>
-            </div>
-
-            {/* Product Info */}
-            <div className="text-left flex-1 flex flex-col justify-between">
-                <div>
-                     <h3 className="font-heading text-sm md:text-lg text-stone-900 group-hover:text-rose-900 transition-colors duration-300 truncate mb-1">
-                        {product.name}
-                    </h3>
-
-                    {/* Variant Swatches */}
-                    {hasVariants && (
-                        <div className="flex flex-wrap gap-1.5 mb-3 mt-1.5" onClick={e => e.preventDefault()}>
-                            {validVariants.map((variant, idx) => {
-                                const isSelected = selectedVariant?.color === variant.color;
-                                return (
-                                    <button
-                                        key={idx}
-                                        onMouseEnter={() => setSelectedVariant(variant)}
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            setSelectedVariant(variant);
-                                        }}
-                                        className={`w-4 h-4 md:w-5 md:h-5 rounded-full border shadow-[0_1px_2px_rgba(0,0,0,0.05)] transition-all focus:outline-none ${
-                                            isSelected ? 'border-stone-900 ring-1 ring-stone-900 ring-offset-1 scale-110' : 'border-stone-300 hover:border-stone-400'
-                                        }`}
-                                        title={variant.color}
-                                        style={{ backgroundColor: variant.color.toLowerCase() }}
-                                        aria-label={`Select ${variant.color} variant`}
-                                    >
-                                        <span className="sr-only">{variant.color}</span>
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    )}
-                </div>
-                
-                <div className="flex flex-wrap items-center gap-1.5 text-xs md:text-sm mt-auto">
-                    <span className="font-medium text-stone-900">₹{displayPrice.toLocaleString()}</span>
-                    {product.originalPrice && (
-                        <>
-                            <span className="text-stone-400 line-through text-[10px] md:text-xs">
-                                ₹{product.originalPrice.toLocaleString()}
-                            </span>
-                            {product.discountPercentage > 0 && (
-                                <span className="text-rose-900 text-[10px] md:text-xs font-bold">
-                                    ({product.discountPercentage}% OFF)
-                                </span>
-                            )}
-                        </>
-                    )}
-                </div>
-            </div>
-        </div>
-    );
-};
+import { ProductCard as ProductCardWithVariants } from '../components/ProductCard';
 
 const Shop = () => {
-    const { products, loading: productsLoading } = useProducts();
+    const { products, loading: productsLoading, fetchProducts } = useProducts();
+
+    // Fetch products explicitly since context no longer auto-fetches on mount
+    useEffect(() => {
+        fetchProducts();
+    }, [fetchProducts]);
     const { categories: contextCategories } = useCategories();
     const [searchParams] = useSearchParams();
 
@@ -240,7 +25,20 @@ const Shop = () => {
 
     
     // Filter States
-    const [filter, setFilter] = useState('all');
+    const [selectedCategories, setSelectedCategories] = useState([]);
+    
+    const toggleCategory = (catId) => {
+        if (catId === 'all') {
+            setSelectedCategories([]);
+            return;
+        }
+        setSelectedCategories(prev => {
+            if (prev.includes(catId)) {
+                return prev.filter(id => id !== catId);
+            }
+            return [...prev, catId];
+        });
+    };
     const [sortBy, setSortBy] = useState('featured');
     const [priceRange, setPriceRange] = useState('all');
     const [inStockOnly, setInStockOnly] = useState(false);
@@ -262,14 +60,14 @@ const Shop = () => {
         
         // Handle URL params
         const categoryParam = searchParams.get('category');
-        if (categoryParam) {
-            setFilter(categoryParam);
+        if (categoryParam && categoryParam !== 'all') {
+            setSelectedCategories([categoryParam]);
         }
     }, [searchParams]);
 
     useEffect(() => {
         setCurrentPage(1);
-    }, [filter, sortBy, priceRange, inStockOnly]);
+    }, [selectedCategories, sortBy, priceRange, inStockOnly]);
 
     useEffect(() => {
         if (isMobileFiltersOpen) {
@@ -307,9 +105,17 @@ const Shop = () => {
         });
 
         return flattened.filter(product => {
-            // Category Filter
-            if (filter !== 'all') {
-                if (slugify(product.category) !== slugify(filter)) return false;
+            // Category Filter — build a set of all slug variations for selected categories
+            if (selectedCategories.length > 0) {
+                const selectedSlugs = new Set();
+                selectedCategories.forEach(catId => {
+                    selectedSlugs.add(slugify(catId));
+                    // Also add the label slug in case product.category stores the label
+                    const catObj = contextCategories.find(c => c.id === catId);
+                    if (catObj) selectedSlugs.add(slugify(catObj.label));
+                });
+                const productSlug = slugify(product.category);
+                if (!selectedSlugs.has(productSlug)) return false;
             }
 
             // Price Range Filter
@@ -329,13 +135,13 @@ const Shop = () => {
                 case 'price-high': return b.price - a.price;
                 case 'newest': return String(b.id).localeCompare(String(a.id));
                 default: 
-                    if (filter === 'all') {
+                    if (selectedCategories.length === 0) {
                         return a.randomOrder - b.randomOrder;
                     }
                     return (a.featured === b.featured) ? 0 : a.featured ? -1 : 1;
             }
         });
-    }, [products, filter, priceRange, inStockOnly, sortBy]);
+    }, [products, selectedCategories, contextCategories, priceRange, inStockOnly, sortBy]);
 
 
     const totalPages = Math.ceil(allFilteredProducts.length / ITEMS_PER_PAGE);
@@ -366,14 +172,23 @@ const Shop = () => {
                 <div className="lg:hidden mb-4 overflow-x-auto no-scrollbar py-2 -mx-4 px-4">
                     <div className="flex gap-4">
                         {categories.map(cat => {
-                            const isSelected = filter === cat.id;
-                            const catImage = cat.id === 'all'
-                                ? '/logo.png'
-                                : products.find(p => slugify(p.category) === slugify(cat.id))?.image || '/logo.png';
+                            const isSelected = cat.id === 'all' ? selectedCategories.length === 0 : selectedCategories.includes(cat.id);
+                            let catImage = '/logo.png';
+                            if (cat.id !== 'all') {
+                                const catSlug = slugify(cat.id);
+                                const catLabelSlug = slugify(cat.label);
+                                const prod = products.find(p => {
+                                    const pSlug = slugify(p.category);
+                                    return (pSlug === catSlug || pSlug === catLabelSlug) && (p.image || (p.images && p.images.length) || (p.variants && p.variants.some(v => v.images?.length)));
+                                });
+                                if (prod) {
+                                    catImage = prod.image || (prod.images && prod.images[0]) || (prod.variants && prod.variants.find(v => v.images?.length)?.images[0]) || '/logo.png';
+                                }
+                            }
                             return (
                                 <button 
                                     key={cat.id}
-                                    onClick={() => setFilter(cat.id)}
+                                    onClick={() => toggleCategory(cat.id)}
                                     className="flex flex-col items-center gap-2 min-w-[72px] group transition-all duration-300"
                                 >
                                     <div className={`
@@ -384,9 +199,9 @@ const Shop = () => {
                                     `}>
                                         <div className="w-full h-full rounded-full overflow-hidden bg-white flex items-center justify-center border-2 border-white">
                                             <img 
-                                                src={cat.id === 'all' ? '/logo.png' : getOptimizedImageUrl(catImage, { width: 100, height: 100 })}
+                                                src={cat.id === 'all' ? '/logo.png' : (getOptimizedImageUrl(catImage, { width: 100, height: 100 }) || catImage)}
                                                 alt={cat.label}
-                                                onError={(e) => e.currentTarget.src = '/logo.png'}
+                                                onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/logo.png'; }}
                                                 className={cat.id === 'all' ? 'w-10 h-10 object-contain' : 'w-full h-full object-cover group-hover:scale-110 transition-transform duration-500'}
                                             />
                                         </div>
@@ -407,7 +222,7 @@ const Shop = () => {
 
                     {/* Mobile Filters Drawer */}
                     <div 
-                        className={`fixed inset-0 z-50 lg:hidden text-left transition-opacity duration-300 ${isMobileFiltersOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
+                        className={`fixed inset-0 z-[100] lg:hidden text-left transition-opacity duration-300 ${isMobileFiltersOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
                     >
                         {/* Backdrop */}
                         <div 
@@ -439,19 +254,21 @@ const Shop = () => {
                                 <div>
                                     <h3 className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-4">Categories</h3>
                                     <div className="flex flex-wrap gap-2">
-                                        {categories.map(cat => (
+                                        {categories.map(cat => {
+                                            const isSelected = cat.id === 'all' ? selectedCategories.length === 0 : selectedCategories.includes(cat.id);
+                                            return (
                                             <button
                                                 key={cat.id}
-                                                onClick={() => setFilter(cat.id)}
+                                                onClick={() => toggleCategory(cat.id)}
                                                 className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 border ${
-                                                    filter === cat.id
+                                                    isSelected
                                                     ? 'bg-rose-900 border-rose-900 text-white shadow-md shadow-rose-900/20'
                                                     : 'bg-white border-stone-200 text-stone-600 hover:border-stone-300'
                                                 }`}
                                             >
                                                 {cat.label}
                                             </button>
-                                        ))}
+                                        )})}
                                     </div>
                                 </div>
 
@@ -503,10 +320,10 @@ const Shop = () => {
                             </div>
                             
                             {/* Footer actions */}
-                            <div className="p-5 border-t border-stone-100 bg-white shrink-0 flex gap-3 pb-8 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)] relative z-10">
+                            <div className="p-5 border-t border-stone-100 bg-white shrink-0 flex gap-3 pb-24 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)] relative z-10">
                                 <button
                                     onClick={() => {
-                                        setFilter('all');
+                                        setSelectedCategories([]);
                                         setPriceRange('all');
                                         setInStockOnly(false);
                                     }}
@@ -533,20 +350,22 @@ const Shop = () => {
                         <div>
                             <h3 className="font-heading font-bold text-stone-900 mb-4 text-base uppercase tracking-wider">Categories</h3>
                             <div className="flex flex-col gap-2">
-                                {categories.map(cat => (
+                                {categories.map(cat => {
+                                    const isSelected = cat.id === 'all' ? selectedCategories.length === 0 : selectedCategories.includes(cat.id);
+                                    return (
                                     <button
                                         key={cat.id}
-                                        onClick={() => setFilter(cat.id)}
+                                        onClick={() => toggleCategory(cat.id)}
                                         className={`text-left text-sm transition-all duration-300 py-1 flex items-center gap-2 group ${
-                                            filter === cat.id
+                                            isSelected
                                             ? 'text-rose-900 font-bold'
                                             : 'text-stone-500 hover:text-stone-900'
                                         }`}
                                     >
-                                        <span className={`w-1.5 h-1.5 rounded-full bg-rose-900 transition-all duration-300 ${filter === cat.id ? 'opacity-100' : 'opacity-0 pre-opacity'}`} />
+                                        <span className={`w-1.5 h-1.5 rounded-full bg-rose-900 transition-all duration-300 ${isSelected ? 'opacity-100' : 'opacity-0 pre-opacity'}`} />
                                         {cat.label}
                                     </button>
-                                ))}
+                                )})}
                             </div>
                         </div>
 
@@ -614,9 +433,9 @@ const Shop = () => {
                                 >
                                     <SlidersHorizontal className="w-4 h-4" />
                                     <span>Filters</span>
-                                    {(filter !== 'all' || priceRange !== 'all' || inStockOnly) && (
+                                    {(selectedCategories.length > 0 || priceRange !== 'all' || inStockOnly) && (
                                         <span className="bg-rose-900 text-white text-[9px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
-                                            {(filter !== 'all' ? 1 : 0) + (priceRange !== 'all' ? 1 : 0) + (inStockOnly ? 1 : 0)}
+                                            {(selectedCategories.length > 0 ? 1 : 0) + (priceRange !== 'all' ? 1 : 0) + (inStockOnly ? 1 : 0)}
                                         </span>
                                     )}
                                 </button>
@@ -655,7 +474,7 @@ const Shop = () => {
                                 <Sparkles className="w-8 h-8 text-stone-300 mx-auto mb-4" />
                                 <h3 className="text-2xl font-heading text-stone-900 mb-2">No results found</h3>
                                 <button 
-                                    onClick={() => {setFilter('all'); setPriceRange('all'); setInStockOnly(false);}}
+                                    onClick={() => {setSelectedCategories([]); setPriceRange('all'); setInStockOnly(false);}}
                                     className="text-rose-900 underline underline-offset-4 hover:text-rose-700 text-sm font-medium"
                                 >
                                     Reset collection

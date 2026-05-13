@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Trash2, ArrowRight, Tag, X, User, Truck } from 'lucide-react';
+import { Trash2, ArrowRight, Tag, X, User, Truck, Heart } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useWishlist } from '../context/WishlistContext';
 import SEO from '../components/SEO';
 import { getEstimatedDeliveryDate } from '../utils/dateUtils';
 
@@ -24,9 +25,36 @@ const Cart = () => {
         isOrderDeployable
     } = useCart();
     const { currentUser } = useAuth();
+    const { addToWishlist } = useWishlist();
     const navigate = useNavigate();
     const [couponCode, setCouponCode] = useState('');
     const [couponError, setCouponError] = useState('');
+
+    // Remove Sheet State
+    const [itemToRemove, setItemToRemove] = useState(null);
+    const [isRemoveSheetOpen, setIsRemoveSheetOpen] = useState(false);
+
+    const initiateRemove = (item) => {
+        setItemToRemove(item);
+        setIsRemoveSheetOpen(true);
+    };
+
+    const confirmRemove = () => {
+        if (itemToRemove) {
+            removeFromCart(itemToRemove.id, itemToRemove.selectedSize, itemToRemove.selectedColor, itemToRemove.variantId);
+        }
+        setIsRemoveSheetOpen(false);
+        setItemToRemove(null);
+    };
+
+    const confirmMoveToWishlist = () => {
+        if (itemToRemove) {
+            removeFromCart(itemToRemove.id, itemToRemove.selectedSize, itemToRemove.selectedColor, itemToRemove.variantId);
+            addToWishlist(itemToRemove);
+        }
+        setIsRemoveSheetOpen(false);
+        setItemToRemove(null);
+    };
 
     const handleApplyCoupon = () => {
         try {
@@ -112,7 +140,7 @@ const Cart = () => {
                                         <h3 className="text-sm md:text-base font-heading font-medium text-stone-900 mb-1 leading-tight pr-4 line-clamp-2 md:truncate">{item.name}</h3>
                                         {/* Mobile Remove (Top Right) */}
                                         <button 
-                                            onClick={() => removeFromCart(item.id, item.selectedSize, item.selectedColor, item.variantId)}
+                                            onClick={() => initiateRemove(item)}
                                             className="text-stone-400 hover:text-rose-900 transition-colors bg-white/80 backdrop-blur rounded-full p-1.5 shadow-sm lg:hidden absolute top-2 right-2 z-10"
                                             title="Remove Item"
                                         >
@@ -159,7 +187,13 @@ const Cart = () => {
                                          {/* Quantity Selector - Pill Style */}
                                         <div className="flex items-center bg-white border border-stone-200 rounded-full h-8 shadow-sm">
                                             <button
-                                                onClick={() => updateQuantity(item.id, item.quantity - 1, item.selectedSize, item.selectedColor, item.variantId)}
+                                                onClick={() => {
+                                                    if (item.quantity === 1) {
+                                                        initiateRemove(item);
+                                                    } else {
+                                                        updateQuantity(item.id, item.quantity - 1, item.selectedSize, item.selectedColor, item.variantId);
+                                                    }
+                                                }}
                                                 className="w-8 h-full flex items-center justify-center hover:bg-stone-50 transition-colors text-stone-500 rounded-l-full"
                                             >
                                                 <span className="text-lg leading-none mb-0.5">-</span>
@@ -188,7 +222,7 @@ const Cart = () => {
                                         ₹{(item.price * item.quantity).toLocaleString()}
                                     </div>
                                      <button
-                                        onClick={() => removeFromCart(item.id, item.selectedSize, item.selectedColor, item.variantId)}
+                                        onClick={() => initiateRemove(item)}
                                         className="p-2 text-stone-400 hover:text-rose-900 transition-colors rounded-lg hover:bg-rose-50"
                                         title="Remove Item"
                                     >
@@ -413,6 +447,54 @@ const Cart = () => {
                     </button>
                  </div>
             </div>
+
+            {/* Remove / Move to Wishlist Bottom Sheet */}
+            {isRemoveSheetOpen && itemToRemove && (
+                <>
+                    <div 
+                        className="fixed inset-0 bg-stone-900/60 z-[60] backdrop-blur-sm transition-opacity animate-in fade-in duration-300" 
+                        onClick={() => setIsRemoveSheetOpen(false)} 
+                    />
+                    <div className="fixed bottom-0 left-0 right-0 z-[70] bg-white rounded-t-[32px] p-6 pb-12 shadow-2xl transform transition-transform animate-in slide-in-from-bottom duration-300 md:max-w-md md:left-1/2 md:-translate-x-1/2 md:bottom-auto md:top-1/2 md:-translate-y-1/2 md:rounded-3xl md:slide-in-from-bottom-0 md:zoom-in-95">
+                        <button 
+                            onClick={() => setIsRemoveSheetOpen(false)} 
+                            className="absolute top-4 right-4 p-2 text-stone-400 hover:text-stone-900 bg-stone-100 rounded-full transition-colors"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+
+                        <div className="flex gap-4 items-center mb-6 mt-2 border-b border-stone-100 pb-6">
+                            <div className="w-16 h-16 rounded-xl overflow-hidden bg-stone-100 shrink-0">
+                                <img
+                                    src={itemToRemove.variants?.find(v => v.id === itemToRemove.variantId)?.images?.[0] || itemToRemove.image}
+                                    alt={itemToRemove.name}
+                                    className="w-full h-full object-cover"
+                                />
+                            </div>
+                            <div>
+                                <p className="text-sm font-bold text-stone-900 line-clamp-2 leading-tight">{itemToRemove.name}</p>
+                                <p className="text-xs text-stone-500 mt-1">Size: {itemToRemove.selectedSize} | Color: {itemToRemove.selectedColor}</p>
+                            </div>
+                        </div>
+
+                        <div className="space-y-3">
+                            <button 
+                                onClick={confirmMoveToWishlist}
+                                className="w-full flex items-center justify-center gap-2 bg-stone-900 text-white px-6 py-4 rounded-xl font-bold text-sm uppercase tracking-widest hover:bg-black transition-colors shadow-md"
+                            >
+                                <Heart className="w-4 h-4" /> Move to Wishlist
+                            </button>
+                            <button 
+                                onClick={confirmRemove}
+                                className="w-full flex items-center justify-center gap-2 bg-white border-2 border-rose-100 text-rose-600 px-6 py-3.5 rounded-xl font-bold text-sm uppercase tracking-widest hover:bg-rose-50 transition-colors"
+                            >
+                                <Trash2 className="w-4 h-4" /> Remove from Cart
+                            </button>
+                        </div>
+                    </div>
+                </>
+            )}
+            
         </div>
     );
 };

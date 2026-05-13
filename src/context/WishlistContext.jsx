@@ -8,53 +8,20 @@ const WishlistContext = createContext();
 export const useWishlist = () => useContext(WishlistContext);
 
 export const WishlistProvider = ({ children }) => {
-  const [wishlist, setWishlist] = useState(() => {
-    try {
-      const localWishlist = localStorage.getItem('wishlist');
-      return localWishlist ? JSON.parse(localWishlist) : [];
-    } catch (error) {
-       console.error('Error parsing wishlist', error);
-      return [];
-    }
-  });
+  const [wishlist, setWishlist] = useState([]);
   const { addToast } = useToast();
-  const { currentUser } = useAuth();
+  const { currentUser, openLoginSheet } = useAuth();
   
-  // Sync with Supabase on login
+  // Fetch remote wishlist on login
   useEffect(() => {
     let mounted = true;
     const fetchRemoteWishlist = async () => {
-        if (!(currentUser?.uid || currentUser?.id)) return;
+        if (!(currentUser?.uid || currentUser?.id)) {
+            setWishlist([]); // Clear if logged out
+            return;
+        }
         
         try {
-            // 1. Merge Local Items into DB (Sync on Login)
-            const localWishlistStr = localStorage.getItem('wishlist');
-            if (localWishlistStr) {
-                const localWishlist = JSON.parse(localWishlistStr);
-                if (localWishlist.length > 0) {
-                    // Get existing DB items first to avoid duplicates
-                    const { data: existingDB } = await supabase
-                        .from('wishlist_items')
-                        .select('product_id')
-                        .eq('user_id', (currentUser.uid || currentUser.id));
-
-                    const existingIds = new Set((existingDB || []).map(i => i.product_id));
-                    const itemsToSync = localWishlist.filter(item => !existingIds.has(item.id));
-
-                    if (itemsToSync.length > 0) {
-                        const { error: syncError } = await supabase
-                            .from('wishlist_items')
-                            .insert(itemsToSync.map(item => ({
-                                user_id: (currentUser.uid || currentUser.id),
-                                product_id: item.id
-                            })));
-                        
-                        if (syncError) console.error("Error syncing wishlist items:", syncError);
-                    }
-                }
-            }
-
-            // 2. Fetch Final Merged List
             const { data, error } = await supabase
                 .from('wishlist_items')
                 .select('*, products(id, name, price, original_price, images, stock_quantity)')
@@ -68,11 +35,7 @@ export const WishlistProvider = ({ children }) => {
                     wishlistItemId: item.id
                 }));
                 
-                // 3. Update State & Clear Local Storage only when we have real DB data
                 setWishlist(mappedWishlist);
-                if (mappedWishlist.length > 0) {
-                    localStorage.removeItem('wishlist');
-                }
             }
         } catch (error) {
             console.error('Error fetching remote wishlist:', error);
@@ -84,29 +47,20 @@ export const WishlistProvider = ({ children }) => {
     };
     window.addEventListener('online', handleOnline);
 
-    if (currentUser) {
-        fetchRemoteWishlist();
-    } else {
-         try {
-            const localWishlist = localStorage.getItem('wishlist');
-            if (localWishlist) setWishlist(JSON.parse(localWishlist));
-        } catch (e) {
-            console.error(e);
-        }
-    }
+    fetchRemoteWishlist();
+
     return () => { 
         mounted = false; 
         window.removeEventListener('online', handleOnline);
     };
   }, [currentUser]);
 
-  useEffect(() => {
-    if (!currentUser && wishlist.length > 0) {
-        localStorage.setItem('wishlist', JSON.stringify(wishlist));
-    }
-  }, [wishlist, currentUser]);
-
   const addToWishlist = async (product) => {
+    if (!currentUser) {
+        openLoginSheet();
+        return;
+    }
+
     // Check if already in wishlist to prevent duplicates (and double toasts)
     if (isInWishlist(product.id)) {
         addToast('Already in wishlist!', 'info');
@@ -137,6 +91,11 @@ export const WishlistProvider = ({ children }) => {
   };
 
   const removeFromWishlist = async (productId) => {
+    if (!currentUser) {
+        openLoginSheet();
+        return;
+    }
+    
     addToast('Removed from wishlist', 'info');
     setWishlist(prev => prev.filter(item => item.id !== productId));
 
@@ -158,6 +117,11 @@ export const WishlistProvider = ({ children }) => {
   };
   
   const toggleWishlist = (product) => {
+      if (!currentUser) {
+          openLoginSheet();
+          return;
+      }
+
       if (isInWishlist(product.id)) {
           removeFromWishlist(product.id);
       } else {

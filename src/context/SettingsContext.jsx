@@ -10,11 +10,6 @@ export const useSettings = () => useContext(SettingsContext);
 
 // Default structure matching exactly your JSON
 const DEFAULT_SETTINGS = {
-    announcement_bar: [
-      "Get 10% off your first order with code SANA10.",
-      "Free shipping on orders over ₹499.",
-      "New festive collection just dropped!"
-    ],
     hero: {
         title: "Elevate Your Style",
         subtitle: "Discover our latest collection of premium clothing",
@@ -24,8 +19,8 @@ const DEFAULT_SETTINGS = {
     },
     site_name: "Enbroidery",
     contact_email: "support@enbroidery.com",
-    contact_phone: "8002621430",
-    address: "Ashok Nagar, Ranchi, Jharkhand",
+    contact_phone: "7428013214",
+    address: "Ashok Nagar, Delhi, Delhi",
     social_links: {
         instagram: "https://instagram.com/enbroidery",
         facebook: "https://facebook.com/enbroidery",
@@ -94,15 +89,55 @@ const DEFAULT_SETTINGS = {
         }
     ],
     home_hero_image: "https://images.unsplash.com/photo-1620799140408-ed5341cd2431?q=80&w=1920",
-    home_slider_image_1: "https://images.unsplash.com/photo-1620799140408-ed5341cd2431?q=80&w=1600&auto=format&fit=crop",
-    home_slider_image_2: "https://images.unsplash.com/photo-1558171813-4c088753af8f?q=80&w=1600&auto=format&fit=crop",
-    home_slider_image_3: "https://images.unsplash.com/photo-1544816155-12df9643f363?q=80&w=1600&auto=format&fit=crop",
+    home_slides_data: [
+        {
+            id: 1,
+            desktopImage: "https://images.unsplash.com/photo-1620799140408-ed5341cd2431?q=80&w=1920",
+            mobileImage: "https://images.unsplash.com/photo-1620799140408-ed5341cd2431?q=80&w=800",
+            link: "/shop"
+        },
+        {
+            id: 2,
+            desktopImage: "https://images.unsplash.com/photo-1558171813-4c088753af8f?q=80&w=1920",
+            mobileImage: "https://images.unsplash.com/photo-1558171813-4c088753af8f?q=80&w=800",
+            link: "/category/traditional"
+        }
+    ],
     home_hero_title: "Weaving Stories in Thread",
     home_hero_subtitle: "Timeless hand embroidery blending tradition with modern aesthetics.",
     home_category_hoop_image: "https://images.unsplash.com/photo-1615561021463-569d643806a6?q=80&w=1200",
     home_category_bridal_image: "https://images.unsplash.com/photo-1546167889-0b4b5ff0afd0?q=80&w=800",
     home_brand_story_image_1: "https://images.unsplash.com/photo-1605218427368-35b8dd98ec65?q=80&w=600",
     home_brand_story_image_2: "https://images.unsplash.com/photo-1594913785162-e6785fdd27f2?q=80&w=600",
+    
+    // New Homepage Fields
+    home_promo_banner_image: "https://images.unsplash.com/photo-1584285406059-e9eb7b17d740?w=1600",
+    home_promo_banner_image_mobile: "https://images.unsplash.com/photo-1584285406059-e9eb7b17d740?w=800",
+    home_promo_banner_link: "/shop",
+    
+    home_masonry_1_image: "https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?w=800",
+    home_masonry_1_image_mobile: "https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?w=800",
+    home_masonry_1_text: "Gold Collection",
+    home_masonry_1_link: "/shop",
+    
+    home_masonry_2_image: "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=800",
+    home_masonry_2_image_mobile: "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=800",
+    home_masonry_2_text: "Festive Edit",
+    home_masonry_2_link: "/shop",
+    
+    home_masonry_3_image: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800",
+    home_masonry_3_image_mobile: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=800",
+    home_masonry_3_text: "Exclusive Masterpieces",
+    home_masonry_3_link: "/shop",
+    
+    home_craftsmanship_image: "https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?w=1600",
+    home_craftsmanship_image_mobile: "https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?w=800",
+    home_craftsmanship_link: "/shop",
+    
+    home_premium_banner_image: "https://images.unsplash.com/photo-1583939000240-410c5cb2ed29?w=1600",
+    home_premium_banner_image_mobile: "https://images.unsplash.com/photo-1583939000240-410c5cb2ed29?w=800",
+    home_premium_banner_link: "/shop",
+
     custom_design_banner_image: "",
     custom_design_body_image: "",
     shipping_min_order_value: 200,
@@ -141,7 +176,7 @@ export const SettingsProvider = ({ children }) => {
 
             const newSettings = data.reduce((acc, curr) => {
                 // Attempt to parse JSON strings for specific keys if they are objects/arrays
-                if (['announcement_bar', 'mehndi_packages', 'hero', 'social_links', 'about', 'categories', 'policies', 'payment_methods'].includes(curr.setting_key)) {
+                if (['mehndi_packages', 'hero', 'social_links', 'about', 'categories', 'policies', 'payment_methods', 'home_slides_data'].includes(curr.setting_key)) {
                     try {
                         acc[curr.setting_key] = JSON.parse(curr.setting_value);
                     } catch {

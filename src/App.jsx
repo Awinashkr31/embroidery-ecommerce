@@ -32,6 +32,8 @@ const OrderDetails = lazy(() => import('./pages/OrderDetails'));
 const Home = lazy(() => import('./pages/Home'));
 const About = lazy(() => import('./pages/About'));
 const Shop = lazy(() => import('./pages/Shop'));
+const Categories = lazy(() => import('./pages/Categories'));
+const NewArrivals = lazy(() => import('./pages/NewArrivals'));
 
 const ProductDetails = lazy(() => import('./pages/ProductDetails'));
 const CustomDesign = lazy(() => import('./pages/CustomDesign'));
@@ -64,6 +66,7 @@ const NotFound = lazy(() => import('./pages/NotFound'));
 
 import ProtectedRoute from './components/admin/ProtectedRoute'
 import ConditionalLayout from './components/ConditionalLayout'
+import LoginBottomSheet from './components/LoginBottomSheet'
 const ChatWidget = lazy(() => import('./components/ChatWidget'));
 
 // Loading Component
@@ -119,6 +122,7 @@ function App() {
                 <div className="flex flex-col min-h-screen pb-16 md:pb-0">
                   <Navbar />
                   <Suspense fallback={null}><ChatWidget /></Suspense>
+                  <LoginBottomSheet />
                   <main className="flex-grow">
                     <ConditionalLayout>
                       <Suspense fallback={<PageLoader />}>
@@ -131,6 +135,8 @@ function App() {
                 <Route path="/" element={<Home />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/shop" element={<Shop />} />
+                <Route path="/categories" element={<Categories />} />
+                <Route path="/new-arrivals" element={<NewArrivals />} />
                 <Route path="/product/:id" element={<ProductDetails />} />
                 <Route path="/custom-design" element={<CustomDesign />} />
                 <Route path="/mehndi-booking" element={<MehndiBooking />} />

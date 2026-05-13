@@ -10,7 +10,12 @@ import { Heart, ShoppingBag, ArrowLeft, Truck, Shield, Star, Award, Search, Spar
 
 const ProductDetails = () => {
     const { id } = useParams();
-    const { products } = useProducts();
+    const { products, fetchProducts } = useProducts();
+    
+    // Fetch products explicitly since context no longer auto-fetches on mount
+    useEffect(() => {
+        fetchProducts();
+    }, [fetchProducts]);
     const { addToCart, cart, FREE_DELIVERY_THRESHOLD } = useCart();
     const { toggleWishlist, isInWishlist } = useWishlist();
     const { addToast } = useToast();
@@ -30,10 +35,15 @@ const ProductDetails = () => {
     
     // Image Gallery State
     const [selectedImage, setSelectedImage] = useState(null);
+    const [mobileActiveIndex, setMobileActiveIndex] = useState(0);
     const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
 
     // Accordion State
     const [openSection, setOpenSection] = useState('description');
+
+    // Variant Sheet State (Mobile)
+    const [isVariantSheetOpen, setIsVariantSheetOpen] = useState(false);
+    const [pendingAction, setPendingAction] = useState(null); // 'add' or 'buy'
 
     // ML Recommendation State
     const [recommendedIds, setRecommendedIds] = useState([]);
@@ -242,7 +252,16 @@ const ProductDetails = () => {
      // Variant-Specific Images for Display
      const displayImages = (selectedVariant && selectedVariant.images && selectedVariant.images.length > 0 && selectedVariant.images[0])
         ? selectedVariant.images
-        : (product.images && product.images.length > 0 ? product.images : [product.image]);
+        : (() => {
+            let imgs = [];
+            if (product.image) imgs.push(product.image);
+            if (product.images && product.images.length > 0) {
+                product.images.forEach(img => {
+                    if (img && !imgs.includes(img)) imgs.push(img);
+                });
+            }
+            return imgs.length > 0 ? imgs : ['https://via.placeholder.com/500'];
+        })();
 
      // Price Logic
      const matrixKey = (selectedColor && effectiveSize) ? `${selectedColor}-${effectiveSize}` : null;
@@ -276,23 +295,35 @@ const ProductDetails = () => {
      const isStockAvailable = isCurrentVariantInStock;
 
     // Validation Helper
-    const validateSelection = () => {
+    const validateSelection = (actionType) => {
+        const isMobile = window.innerWidth < 1024;
+        
         // 1. Check Color
         // Use availableColors instead of info.colors to check if colors are relevant
         if (product.clothingInformation && availableColors.length > 0 && !hasOnlyNAColor && !selectedColor) {
             setColorError(true);
-            addToast('Please select a color first', 'error');
-            const el = document.getElementById('color-selector');
-            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            if (isMobile) {
+                setPendingAction(actionType);
+                setIsVariantSheetOpen(true);
+            } else {
+                addToast('Please select a color first', 'error');
+                const el = document.getElementById('color-selector');
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
             return false;
         }
 
         // 2. Check Size
         if (product.clothingInformation && hasSizes && !shouldHideSizeSelector && !selectedSize) {
             setSizeError(true);
-            addToast('Please select a size first', 'error');
-            const el = document.getElementById('size-selector');
-            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            if (isMobile) {
+                setPendingAction(actionType);
+                setIsVariantSheetOpen(true);
+            } else {
+                addToast('Please select a size first', 'error');
+                const el = document.getElementById('size-selector');
+                if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
             return false;
         }
 
@@ -363,8 +394,16 @@ const ProductDetails = () => {
                                     </motion.button>
                                 </div>
                             </div>
-                            <div className="lg:hidden flex overflow-x-auto snap-x snap-mandatory w-full h-full no-scrollbar">
-                                {(displayImages.length > 0 ? displayImages : [product.image]).map((img, idx) => (
+                            <div 
+                                className="lg:hidden flex overflow-x-auto snap-x snap-mandatory w-full h-full no-scrollbar"
+                                onScroll={(e) => {
+                                    const scrollPos = e.target.scrollLeft;
+                                    const width = e.target.clientWidth;
+                                    const index = Math.round(scrollPos / width);
+                                    if (index !== mobileActiveIndex) setMobileActiveIndex(index);
+                                }}
+                            >
+                                {displayImages.map((img, idx) => (
                                     <div key={idx} className="w-full h-full flex-shrink-0 snap-center relative">
                                         <img 
                                             src={img} 
@@ -383,11 +422,11 @@ const ProductDetails = () => {
                                 ))}
                             </div>
                             {displayImages && displayImages.length > 1 && (
-                                <div className="lg:hidden absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                                <div className="lg:hidden absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
                                     {displayImages.map((img, idx) => (
                                         <div key={idx} className={`rounded-full transition-all ${
-                                            (selectedImage || displayImages[0]) === img
-                                            ? 'w-4 h-1.5 bg-white'
+                                            idx === mobileActiveIndex
+                                            ? 'w-4 h-1.5 bg-white shadow-sm'
                                             : 'w-1.5 h-1.5 bg-white/60'
                                         }`}></div>
                                     ))}
@@ -619,7 +658,7 @@ const ProductDetails = () => {
                                             return;
                                         }
 
-                                        if (!validateSelection()) return;
+                                        if (!validateSelection('add')) return;
                                         
                                         await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice, variantId: selectedVariant?.id });
                                     }}
@@ -641,7 +680,7 @@ const ProductDetails = () => {
                                     whileTap={{ scale: 0.98 }}
                                     onClick={async () => {
                                             if(isStockAvailable) {
-                                            if (!validateSelection()) return;
+                                            if (!validateSelection('buy')) return;
                                             await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice, variantId: selectedVariant?.id });
                                             navigate('/cart');
                                             }
@@ -1049,6 +1088,144 @@ const ProductDetails = () => {
                 </div>
             )}
 
+            {/* Mobile Variant Selection Sheet */}
+            {isVariantSheetOpen && (
+                <>
+                    <div 
+                        className="fixed inset-0 bg-black/60 z-[60] backdrop-blur-sm transition-opacity lg:hidden" 
+                        onClick={() => setIsVariantSheetOpen(false)} 
+                    />
+                    <div className="fixed bottom-0 left-0 right-0 z-[70] bg-white rounded-t-[32px] p-6 pb-8 shadow-2xl transform transition-transform animate-in slide-in-from-bottom duration-300 lg:hidden max-h-[85vh] overflow-y-auto">
+                        <button 
+                            onClick={() => setIsVariantSheetOpen(false)} 
+                            className="absolute top-4 right-4 p-2 text-stone-400 hover:text-stone-900 bg-stone-100 rounded-full transition-colors"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+                        
+                        <div className="flex items-center gap-4 mb-6 mt-2">
+                            <div className="w-16 h-20 rounded-lg overflow-hidden bg-stone-50 shrink-0">
+                                <img src={selectedImage || displayImages[0] || product.image} alt="Product" className="w-full h-full object-cover" />
+                            </div>
+                            <div>
+                                <h3 className="font-heading font-bold text-stone-900 text-lg line-clamp-1">{product.name}</h3>
+                                <div className="text-rose-900 font-bold mt-1">₹{currentPrice.toLocaleString()}</div>
+                            </div>
+                        </div>
+
+                        <div className="space-y-6 mb-8">
+                            {/* Color Selection inside Sheet */}
+                            {availableColors && availableColors.length > 0 && !hasOnlyNAColor && (
+                                <div className="space-y-3">
+                                    <div className="flex justify-between items-center">
+                                        <h4 className="text-xs font-bold text-stone-900 uppercase tracking-widest">Color</h4>
+                                        {colorError && <span className="text-[10px] text-red-500 font-bold uppercase">Required</span>}
+                                    </div>
+                                    <div className="flex flex-wrap gap-2.5">
+                                        {availableColors.map((color) => (
+                                            <button
+                                                key={color}
+                                                onClick={() => { setSelectedColor(color); setColorError(false); }}
+                                                className={`px-4 py-2.5 rounded-xl border text-sm transition-all font-medium ${
+                                                    selectedColor === color 
+                                                        ? 'bg-stone-900 text-white border-stone-900 shadow-md' 
+                                                        : 'bg-white text-stone-900 border-stone-200 hover:border-stone-900'
+                                                }`}
+                                            >
+                                                {color}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Size Selection inside Sheet */}
+                            {!shouldHideSizeSelector && Object.keys(sizes).length > 0 && (
+                                <div className="space-y-3">
+                                    <div className="flex justify-between items-center">
+                                        <h4 className="text-xs font-bold text-stone-900 uppercase tracking-widest">Size</h4>
+                                        {sizeError && <span className="text-[10px] text-red-500 font-bold uppercase">Required</span>}
+                                    </div>
+                                    <div className="flex flex-wrap gap-2.5">
+                                        {Object.entries(sizes)
+                                            .sort((a, b) => {
+                                                const order = { 'XS': 1, 'S': 2, 'M': 3, 'L': 4, 'XL': 5, 'XXL': 6, '3XL': 7, 'Free': 8 };
+                                                return (order[a[0]] || 99) - (order[b[0]] || 99);
+                                            })
+                                            .map(([size, _legacyQty]) => {
+                                                let isAvailable = true;
+                                                if (info.variantStock) {
+                                                     if (selectedColor) {
+                                                         const vKey = `${selectedColor}-${size}`;
+                                                         if (info.variantStock[vKey] && info.variantStock[vKey].stock !== undefined) {
+                                                             isAvailable = Number(info.variantStock[vKey].stock) > 0;
+                                                         }
+                                                     }
+                                                } else if (selectedVariant) {
+                                                    isAvailable = (selectedVariant.stock || 0) > 0;
+                                                } else {
+                                                    isAvailable = _legacyQty > 0;
+                                                }
+
+                                                return (
+                                                    <button
+                                                        key={size}
+                                                        onClick={() => {
+                                                            if (isAvailable) {
+                                                                setSelectedSize(size);
+                                                                setSizeError(false);
+                                                            }
+                                                        }}
+                                                        disabled={!isAvailable}
+                                                        className={`w-12 h-12 rounded-xl border text-sm transition-all flex items-center justify-center font-medium ${
+                                                            selectedSize === size 
+                                                                ? 'bg-stone-900 text-white border-stone-900 shadow-md' 
+                                                                : isAvailable 
+                                                                    ? 'bg-white text-stone-900 border-stone-200 hover:border-stone-900' 
+                                                                    : 'bg-stone-50 text-stone-300 border-stone-100 cursor-not-allowed relative overflow-hidden'
+                                                        }`}
+                                                    >
+                                                        {size}
+                                                        {!isAvailable && (
+                                                            <div className="absolute inset-0 flex items-center justify-center">
+                                                                <div className="w-full h-[1px] bg-stone-300 rotate-45"></div>
+                                                            </div>
+                                                        )}
+                                                    </button>
+                                                );
+                                            })}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        <button
+                            onClick={async () => {
+                                // Final check inside the sheet
+                                if ((availableColors.length > 0 && !hasOnlyNAColor && !selectedColor) || 
+                                    (hasSizes && !shouldHideSizeSelector && !selectedSize)) {
+                                    if (!selectedColor) setColorError(true);
+                                    if (!selectedSize) setSizeError(true);
+                                    return;
+                                }
+                                
+                                setIsVariantSheetOpen(false);
+                                
+                                if (pendingAction === 'add') {
+                                    await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice, variantId: selectedVariant?.id });
+                                } else if (pendingAction === 'buy') {
+                                    await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice, variantId: selectedVariant?.id });
+                                    navigate('/cart');
+                                }
+                            }}
+                            className="w-full py-4 bg-stone-900 text-white rounded-xl font-bold text-sm tracking-wide shadow-md hover:bg-black transition-colors"
+                        >
+                            Confirm Selection
+                        </button>
+                    </div>
+                </>
+            )}
+
             {/* Mobile Sticky Action Bar */}
             <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200 p-4 shadow-[0_-4px_10px_rgba(0,0,0,0.1)] lg:hidden z-50 flex gap-3 px-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
                 <button
@@ -1058,7 +1235,7 @@ const ProductDetails = () => {
                             return;
                         }
 
-                        if (!validateSelection()) return;
+                        if (!validateSelection('add')) return;
                         
                         await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice, variantId: selectedVariant?.id });
                     }}
@@ -1078,7 +1255,7 @@ const ProductDetails = () => {
                 <button 
                     onClick={async () => {
                             if(isStockAvailable) {
-                            if (!validateSelection()) return;
+                            if (!validateSelection('buy')) return;
                             await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice, variantId: selectedVariant?.id });
                             navigate('/cart');
                             }

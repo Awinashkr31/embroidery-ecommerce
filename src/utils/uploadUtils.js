@@ -14,7 +14,7 @@ export const compressImage = async (file, maxWidth = 1920) => {
     }
 
     const options = {
-      maxSizeMB: 0.2,          // 200KB max size
+      maxSizeMB: 0.5,          // 500KB max size
       maxWidthOrHeight: maxWidth,
       useWebWorker: true,
       fileType: 'image/webp'   // Standardized on webp
@@ -47,22 +47,45 @@ export const uploadImage = async (file, bucketName = 'images', folder = '') => {
     const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
     const filePath = folder ? `${folder}/${fileName}` : fileName;
 
-    // 3. Upload
-    const { error } = await supabase.storage
-      .from(bucketName)
-      .upload(filePath, compressedFile, {
-        cacheControl: '3600',
-        upsert: false
+    // 3. Check for Cloudflare R2 Worker configuration
+    const workerUrl = import.meta.env.VITE_CLOUDFLARE_WORKER_URL;
+
+    if (workerUrl) {
+      // --- CLOUDFLARE R2 UPLOAD ---
+      const formData = new FormData();
+      formData.append('file', compressedFile, fileName);
+      formData.append('filePath', filePath);
+
+      const response = await fetch(workerUrl, {
+        method: 'POST',
+        body: formData
       });
 
-    if (error) throw error;
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}));
+        throw new Error(errData.error || 'Failed to upload to Cloudflare R2');
+      }
 
-    // 4. Get Public URL
-    const { data: { publicUrl } } = supabase.storage
-      .from(bucketName)
-      .getPublicUrl(filePath);
+      const data = await response.json();
+      return data.publicUrl;
+    } else {
+      // --- SUPABASE STORAGE UPLOAD (Fallback) ---
+      const { error } = await supabase.storage
+        .from(bucketName)
+        .upload(filePath, compressedFile, {
+          cacheControl: '3600',
+          upsert: false
+        });
 
-    return publicUrl;
+      if (error) throw error;
+
+      // 4. Get Public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from(bucketName)
+        .getPublicUrl(filePath);
+
+      return publicUrl;
+    }
   } catch (error) {
     console.error('Upload failed:', error);
     throw error;
@@ -82,6 +105,24 @@ export const deleteImage = async (publicUrl, bucketName) => {
     if (!publicUrl) return false;
 
     try {
+        const workerUrl = import.meta.env.VITE_CLOUDFLARE_WORKER_URL;
+        
+        // If it's a Cloudflare R2 image and worker is configured
+        if (workerUrl && !publicUrl.includes('supabase.co')) {
+            // Extract the path after the domain
+            const urlObj = new URL(publicUrl);
+            const filePath = urlObj.pathname.substring(1); // remove leading slash
+            
+            const response = await fetch(workerUrl, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ filePath })
+            });
+            
+            return response.ok;
+        }
+
+        // --- SUPABASE STORAGE DELETE (Fallback) ---
         // Auto-detect bucket from URL if not provided.
         // URL format: https://{project}.supabase.co/storage/v1/object/public/{bucket}/{path}
         let bucket = bucketName;

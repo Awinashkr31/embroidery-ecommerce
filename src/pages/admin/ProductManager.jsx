@@ -4,20 +4,27 @@ import { useCategories } from '../../context/CategoryContext';
 import { 
     Plus, Edit2, Trash2, X, Image as ImageIcon, Search, Filter, 
     Upload, Shirt, Save, ChevronRight, Package, Tag, 
-    Layers, Truck, Globe, Calculator, AlertCircle, ArrowUp, ArrowDown, Download, Sparkles, Loader
+    Layers, Truck, Globe, Calculator, AlertCircle, ArrowUp, ArrowDown, Download, Sparkles, Loader, Check
 } from 'lucide-react';
 import { uploadImage } from '../../utils/uploadUtils';
 import ImageCropper from '../../components/ImageCropper';
 import { useToast } from '../../context/ToastContext';
 
 const ProductManager = () => {
-    const { products, addProduct, updateProduct, deleteProduct, toggleStock } = useProducts();
+    const { products, addProduct, updateProduct, deleteProduct, toggleStock, fetchProducts } = useProducts();
     const { addToast } = useToast();
-    const { categories: categoryObjects, addCategory, deleteCategory, moveCategory } = useCategories();
+    const { categories: categoryObjects, addCategory, deleteCategory, moveCategory, updateCategory } = useCategories();
+    
+    // Fetch products explicitly since context no longer auto-fetches on mount
+    React.useEffect(() => {
+        fetchProducts();
+    }, [fetchProducts]);
     
     // UI State
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+    const [editingCategoryId, setEditingCategoryId] = useState(null);
+    const [editingCategoryLabel, setEditingCategoryLabel] = useState('');
     const [activeTab, setActiveTab] = useState('general');
     const [searchTerm, setSearchTerm] = useState('');
     const [categoryFilter, setCategoryFilter] = useState('All');
@@ -94,7 +101,8 @@ const ProductManager = () => {
         
         // Flags
         isClothing: false,
-        featured: false
+        featured: false,
+        homepage_tags: [] // ['new_arrival', 'bestseller', 'premium']
     };
 
     const [formData, setFormData] = useState(initialFormState);
@@ -227,6 +235,7 @@ const ProductManager = () => {
                 
                 // Flags
                 featured: product.featured || false,
+                homepage_tags: product.homepage_tags || [],
                 isClothing: !!(product.clothingInformation && (Object.keys(clothing.sizes || {}).length > 0 || clothing.fitType || clothing.lengthType)) // Only true if sizing/fit specs exist
             });
         } else {
@@ -340,6 +349,7 @@ const ProductManager = () => {
             })(), 
             stockQuantity: finalStock,
             featured: formData.featured,
+            homepage_tags: formData.homepage_tags || [],
             fabric: formData.fabric, // Legacy top level
             clothingInformation: hasClothingData ? clothingInfo : null,
             variants: formData.variants // Save the new variants structure
@@ -377,11 +387,6 @@ const ProductManager = () => {
         setCropModalOpen(false);
         try {
             let finalBlob = croppedBlob;
-
-            // For product images (not size charts), pad to 2:3 with white background
-            if (cropTarget.field !== 'sizeChart') {
-                finalBlob = await padImageTo2x3(croppedBlob);
-            }
 
             const file = new File([finalBlob], `upload-${Date.now()}.webp`, { type: 'image/webp' });
             // Use 'images' bucket, but in 'products' folder for organization
@@ -843,6 +848,44 @@ const ProductManager = () => {
                                                 <span className="block text-xs text-amber-700">Display on home page hero or top sections</span>
                                             </div>
                                         </div>
+
+                                        {/* Homepage Section Tags */}
+                                        <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 space-y-3">
+                                            <div>
+                                                <span className="block font-bold text-blue-900 text-sm">Homepage Sections</span>
+                                                <span className="block text-xs text-blue-700">Choose which homepage sections this product appears in</span>
+                                            </div>
+                                            <div className="flex flex-wrap gap-2">
+                                                {[
+                                                    { value: 'new_arrival', label: '🆕 New Arrival', color: 'emerald' },
+                                                    { value: 'bestseller', label: '🔥 Bestseller', color: 'orange' },
+                                                    { value: 'premium', label: '💎 Premium', color: 'violet' }
+                                                ].map(tag => {
+                                                    const isActive = (formData.homepage_tags || []).includes(tag.value);
+                                                    return (
+                                                        <button
+                                                            key={tag.value}
+                                                            type="button"
+                                                            onClick={() => {
+                                                                const tags = formData.homepage_tags || [];
+                                                                if (isActive) {
+                                                                    setFormData({...formData, homepage_tags: tags.filter(t => t !== tag.value)});
+                                                                } else {
+                                                                    setFormData({...formData, homepage_tags: [...tags, tag.value]});
+                                                                }
+                                                            }}
+                                                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                                                                isActive
+                                                                    ? 'bg-blue-900 text-white shadow-sm'
+                                                                    : 'bg-white border border-stone-200 text-stone-500 hover:border-blue-300'
+                                                            }`}
+                                                        >
+                                                            {tag.label}
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             )}
@@ -1049,58 +1092,61 @@ const ProductManager = () => {
                             {/* TAB: VARIANTS & MEDIA */}
                             {activeTab === 'variants' && (
                                 <div className="space-y-8">
-                                    {/* Main Product Images */}
-                                    <div className="space-y-4">
-                                        <h3 className="section-title">Default Product Images</h3>
-                                        <p className="text-sm text-stone-500">These images show if no specific variant is selected. <span className="text-rose-600 font-medium">Leave empty to automatically use the first variant's image.</span></p>
-                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                            {formData.images.map((img, idx) => (
-                                                <div key={idx} className="space-y-2">
-                                                    <div className="aspect-[2/3] bg-stone-100 rounded-xl border-2 border-dashed border-stone-200 flex items-center justify-center relative group overflow-hidden">
-                                                        {img ? (
-                                                            <>
-                                                                <img src={img} alt="" className="w-full h-full object-cover" />
-                                                                <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                                                                    <button 
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            handleDownloadImage(img, `product-${idx}.jpg`);
-                                                                        }} 
-                                                                        className="bg-white/90 p-1.5 rounded-full text-stone-600 hover:text-stone-900 shadow-sm"
-                                                                        title="Download"
-                                                                    >
-                                                                        <Download className="w-4 h-4" />
-                                                                    </button>
-                                                                    <button 
-                                                                        onClick={(e) => {
-                                                                            e.stopPropagation();
-                                                                            const newImages = [...formData.images];
-                                                                            newImages[idx] = '';
-                                                                            setFormData({...formData, images: newImages});
-                                                                        }} 
-                                                                        className="bg-white/90 p-1.5 rounded-full text-red-500 hover:text-red-700 shadow-sm"
-                                                                        title="Delete"
-                                                                    >
-                                                                        <Trash2 className="w-4 h-4" />
-                                                                    </button>
-                                                                </div>
-                                                            </>
-                                                        ) : (
-                                                            <div className="text-center text-stone-400">
-                                                                <ImageIcon className="w-6 h-6 mx-auto mb-2 opacity-50" />
-                                                                <span className="text-xs font-bold uppercase">View {idx + 1}</span>
+                                    {/* Main Product Images (Hidden if variants exist) */}
+                                    {formData.variants.length === 0 && (
+                                        <>
+                                            <div className="space-y-4">
+                                                <h3 className="section-title">Product Images</h3>
+                                                <p className="text-sm text-stone-500">Upload images for this product here. <span className="text-rose-600 font-medium">Note: If you add Color Variants below, this section will hide and you should upload images directly into the variants.</span></p>
+                                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                                    {formData.images.map((img, idx) => (
+                                                        <div key={idx} className="space-y-2">
+                                                            <div className="aspect-[2/3] bg-stone-100 rounded-xl border-2 border-dashed border-stone-200 flex items-center justify-center relative group overflow-hidden">
+                                                                {img ? (
+                                                                    <>
+                                                                        <img src={img} alt="" className="w-full h-full object-cover" />
+                                                                        <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                                                                            <button 
+                                                                                onClick={(e) => {
+                                                                                    e.stopPropagation();
+                                                                                    handleDownloadImage(img, `product-${idx}.jpg`);
+                                                                                }} 
+                                                                                className="bg-white/90 p-1.5 rounded-full text-stone-600 hover:text-stone-900 shadow-sm"
+                                                                                title="Download"
+                                                                            >
+                                                                                <Download className="w-4 h-4" />
+                                                                            </button>
+                                                                            <button 
+                                                                                onClick={(e) => {
+                                                                                    e.stopPropagation();
+                                                                                    const newImages = [...formData.images];
+                                                                                    newImages[idx] = '';
+                                                                                    setFormData({...formData, images: newImages});
+                                                                                }} 
+                                                                                className="bg-white/90 p-1.5 rounded-full text-red-500 hover:text-red-700 shadow-sm"
+                                                                                title="Delete"
+                                                                            >
+                                                                                <Trash2 className="w-4 h-4" />
+                                                                            </button>
+                                                                        </div>
+                                                                    </>
+                                                                ) : (
+                                                                    <div className="text-center text-stone-400">
+                                                                        <ImageIcon className="w-6 h-6 mx-auto mb-2 opacity-50" />
+                                                                        <span className="text-xs font-bold uppercase">View {idx + 1}</span>
+                                                                    </div>
+                                                                )}
+                                                                <label className="absolute inset-0 cursor-pointer">
+                                                                    <input type="file" className="hidden" onChange={e => handleImageSelect(e, 'images', idx)} />
+                                                                </label>
                                                             </div>
-                                                        )}
-                                                        <label className="absolute inset-0 cursor-pointer">
-                                                            <input type="file" className="hidden" onChange={e => handleImageSelect(e, 'images', idx)} />
-                                                        </label>
-                                                    </div>
+                                                        </div>
+                                                    ))}
                                                 </div>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    <hr className="border-stone-100" />
+                                            </div>
+                                            <hr className="border-stone-100" />
+                                        </>
+                                    )}
 
                                     {/* Color Variants Manager */}
                                     <div className="space-y-6">
@@ -1367,24 +1413,49 @@ const ProductManager = () => {
                         <div className="space-y-2 max-h-64 overflow-y-auto">
                             {categoryObjects.map((cat, index) => (
                                 <div key={cat.id} className="flex justify-between items-center p-3 bg-stone-50 rounded-lg group">
-                                    <span className="font-medium">{cat.label}</span>
-                                    <div className="flex gap-1 transition-opacity">
-                                        <button 
-                                            onClick={() => moveCategory(cat.id, 'up')} 
-                                            disabled={index === 0}
-                                            className="p-1.5 text-stone-400 hover:text-stone-900 hover:bg-stone-200 rounded disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-stone-400"
-                                        >
-                                            <ArrowUp className="w-4 h-4" />
-                                        </button>
-                                        <button 
-                                            onClick={() => moveCategory(cat.id, 'down')} 
-                                            disabled={index === categoryObjects.length - 1}
-                                            className="p-1.5 text-stone-400 hover:text-stone-900 hover:bg-stone-200 rounded disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-stone-400"
-                                        >
-                                            <ArrowDown className="w-4 h-4" />
-                                        </button>
-                                        <button onClick={() => deleteCategory(cat.id)} className="p-1.5 text-stone-400 hover:text-red-500 hover:bg-red-50 rounded ml-1"><Trash2 className="w-4 h-4" /></button>
-                                    </div>
+                                    {editingCategoryId === cat.id ? (
+                                        <div className="flex flex-1 items-center gap-2 mr-2">
+                                            <input
+                                                type="text"
+                                                autoFocus
+                                                className="input-field py-1 px-2 text-sm"
+                                                value={editingCategoryLabel}
+                                                onChange={e => setEditingCategoryLabel(e.target.value)}
+                                            />
+                                            <button onClick={() => {
+                                                if(editingCategoryLabel.trim() && editingCategoryLabel !== cat.label) {
+                                                    updateCategory(cat.id, editingCategoryLabel);
+                                                }
+                                                setEditingCategoryId(null);
+                                            }} className="text-emerald-600 hover:bg-emerald-50 p-1.5 rounded"><Check className="w-4 h-4"/></button>
+                                            <button onClick={() => setEditingCategoryId(null)} className="text-red-500 hover:bg-red-50 p-1.5 rounded"><X className="w-4 h-4"/></button>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <span className="font-medium">{cat.label}</span>
+                                            <div className="flex gap-1 transition-opacity">
+                                                <button onClick={() => {
+                                                    setEditingCategoryId(cat.id);
+                                                    setEditingCategoryLabel(cat.label);
+                                                }} className="p-1.5 text-stone-400 hover:text-blue-500 hover:bg-blue-50 rounded" title="Edit Category Name"><Edit2 className="w-4 h-4" /></button>
+                                                <button 
+                                                    onClick={() => moveCategory(cat.id, 'up')} 
+                                                    disabled={index === 0}
+                                                    className="p-1.5 text-stone-400 hover:text-stone-900 hover:bg-stone-200 rounded disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-stone-400"
+                                                >
+                                                    <ArrowUp className="w-4 h-4" />
+                                                </button>
+                                                <button 
+                                                    onClick={() => moveCategory(cat.id, 'down')} 
+                                                    disabled={index === categoryObjects.length - 1}
+                                                    className="p-1.5 text-stone-400 hover:text-stone-900 hover:bg-stone-200 rounded disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-stone-400"
+                                                >
+                                                    <ArrowDown className="w-4 h-4" />
+                                                </button>
+                                                <button onClick={() => deleteCategory(cat.id)} className="p-1.5 text-stone-400 hover:text-red-500 hover:bg-red-50 rounded ml-1"><Trash2 className="w-4 h-4" /></button>
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
                             ))}
                         </div>
@@ -1397,6 +1468,7 @@ const ProductManager = () => {
                 <ImageCropper 
                     imageSrc={cropImageSrc}
                     aspect={cropTarget.field === 'sizeChart' ? NaN : 2/3} // 2:3 portrait for product images, Free for size chart
+                    targetSize={cropTarget.field === 'sizeChart' ? null : { width: 800, height: 1200 }}
                     onCancel={() => { setCropModalOpen(false); setCropImageSrc(null); }}
                     onCropComplete={handleCropComplete}
                 />

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import AnnouncementBar from './AnnouncementBar';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { 
   ShoppingCart, 
   Menu, 
@@ -9,124 +8,69 @@ import {
   LogOut, 
   Heart,
   ShoppingBag,
-  Bell,
-  Trash2,
-
+  Search,
   ChevronDown,
   Package,
-  MapPin
+  MapPin,
+  ArrowLeft
 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../config/supabase';
 import { useToast } from '../context/ToastContext';
+import { useSettings } from '../context/SettingsContext';
 
-const Navbar = () => {
+const Navbar = React.memo(() => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
   
-  // Notification State
-  const [notifications, setNotifications] = useState([]);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [isNotifOpen, setIsNotifOpen] = useState(false);
-  const notifRef = useRef(null);
+  // Search State
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const searchInputRef = useRef(null);
+  const searchContainerRef = useRef(null);
   const userMenuRef = useRef(null);
 
   const { cartCount } = useCart();
-  const { currentUser, logout } = useAuth();
+  const { currentUser, logout, openLoginSheet } = useAuth();
   const { addToast } = useToast();
+  const { settings } = useSettings();
   const location = useLocation();
+  const navigate = useNavigate();
 
-  // Fetch Notifications
-  useEffect(() => {
-    if (!currentUser?.email) return;
-
-    // Fetch Notifications (deferred — not needed for first paint)
-    const fetchTimer = setTimeout(() => {
-      fetchNotifications();
-    }, 3000);
-
-    async function fetchNotifications() {
-      const { data } = await supabase
-        .from('notifications')
-        .select('id, title, message, type, is_read, created_at')
-        .eq('user_email', currentUser.email)
-        .order('created_at', { ascending: false })
-        .limit(10);
-      
-      if (data) {
-        setNotifications(data);
-        setUnreadCount(data.filter(n => !n.is_read).length);
+  const handleSearch = (e) => {
+      e.preventDefault();
+      if (searchQuery.trim()) {
+          setIsSearchOpen(false);
+          navigate('/shop');
       }
-    }
-
-    // Real-time subscription
-    const channel = supabase
-      .channel('public:notifications')
-      .on('postgres_changes', { 
-        event: 'INSERT', 
-        schema: 'public', 
-        table: 'notifications', 
-        filter: `user_email=eq.${currentUser.email}` 
-      }, (payload) => {
-        setNotifications(prev => [payload.new, ...prev]);
-        setUnreadCount(prev => prev + 1);
-        addToast(`New Notification: ${payload.new.title}`, 'info');
-      })
-      .subscribe();
-
-    return () => {
-      clearTimeout(fetchTimer);
-      supabase.removeChannel(channel);
-    };
-  }, [currentUser, addToast]);
-
-  // Mark as Read
-  const handleMarkRead = async (id) => {
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
-    setUnreadCount(prev => Math.max(0, prev - 1));
-    await supabase.from('notifications').update({ is_read: true }).eq('id', id);
   };
 
-  // Delete / Dismiss Notification
-  const handleDeleteNotification = async (id, e) => {
-    e.stopPropagation();
-    // Optimistically remove from UI first
-    const wasUnread = notifications.find(n => n.id === id && !n.is_read);
-    setNotifications(prev => prev.filter(n => n.id !== id));
-    if (wasUnread) setUnreadCount(prev => Math.max(0, prev - 1));
-
-    try {
-        // Try delete first
-        const { error: delError } = await supabase.from('notifications').delete().eq('id', id);
-        if (delError) {
-            // If delete blocked by RLS, mark as read instead (soft dismiss)
-            console.warn('Delete blocked, marking as read:', delError.message);
-            await supabase.from('notifications').update({ is_read: true }).eq('id', id);
-        }
-        addToast('Notification dismissed', 'success');
-    } catch (err) {
-        console.error("Error dismissing notification:", err);
-        // UI already updated, just show toast
-        addToast('Notification dismissed', 'success');
+  // Focus Search Input when opened
+  useEffect(() => {
+    if (isSearchOpen && searchInputRef.current) {
+      searchInputRef.current.focus();
     }
-  };
+  }, [isSearchOpen]);
 
   // Click Outside Handlers
   useEffect(() => {
     function handleClickOutside(event) {
-        if (notifRef.current && !notifRef.current.contains(event.target)) {
-            setIsNotifOpen(false);
-        }
         if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
           setIsUserMenuOpen(false);
+        }
+        if (searchContainerRef.current && !searchContainerRef.current.contains(event.target)) {
+          // Prevent closing if clicking the toggle button itself
+          if (!event.target.closest('#mobile-search-button')) {
+            setIsSearchOpen(false);
+          }
         }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [notifRef, userMenuRef]);
+  }, []);
 
   // Scroll Effect
   useEffect(() => {
@@ -159,11 +103,26 @@ const Navbar = () => {
     { name: 'Custom Design', path: '/custom-design' },
     { name: 'Mehndi', path: '/mehndi-booking' },
     { name: 'Gallery', path: '/gallery' },
-    { name: 'About', path: '/about' },
-    { name: 'Support', path: '/support' },
   ];
 
   const isActive = (path) => location.pathname === path;
+
+  const isHomePage = location.pathname === '/';
+
+  const getPageTitle = (pathname) => {
+      if (pathname.startsWith('/shop')) return 'Shop';
+      if (pathname.startsWith('/product')) return 'Product Details';
+      if (pathname.startsWith('/cart')) return 'Bag';
+      if (pathname.startsWith('/wishlist')) return 'Wishlist';
+      if (pathname.startsWith('/profile')) return 'Profile';
+      if (pathname.startsWith('/login')) return 'Login';
+      if (pathname.startsWith('/custom-design')) return 'Custom Design';
+      if (pathname.startsWith('/mehndi-booking')) return 'Mehndi';
+      if (pathname.startsWith('/gallery')) return 'Gallery';
+      if (pathname.startsWith('/about')) return 'About';
+      if (pathname.startsWith('/support')) return 'Support';
+      return 'Enbroidery By Sana';
+  };
 
   return (
     <>
@@ -176,27 +135,45 @@ const Navbar = () => {
           }`}
       >
       <div className="container-custom">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between relative">
 
-
-          
-            {/* 1. Left: Mobile Menu Trigger (hidden on desktop) */}
-          <div className="lg:hidden">
-            <button
-              type="button"
-              className="p-2 text-stone-800 hover:text-rose-900 transition-colors rounded-full hover:bg-stone-100"
-              onClick={() => setIsMobileMenuOpen(true)}
-              aria-label="Open menu"
-            >
-              <Menu className="w-5 h-5" />
-            </button>
-          </div>
-
-          {/* 2. Left: Logo (Desktop: Center/Left balanced) */}
-           <div className="flex-shrink-0 flex items-center gap-2 lg:w-1/4">
-            <Link to="/" className="flex flex-col group" aria-label="Home">
-              <img src="/logo.png" alt="Enbroidery By Sana" className="h-12 md:h-14 w-auto object-contain" />
+          {/* 1. Left: Mobile Layout changes based on page */}
+          <div className="flex items-center gap-2 lg:w-1/4">
+            {/* Desktop Logo (Always visible on lg) */}
+            <Link to="/" className="hidden lg:flex flex-col group" aria-label="Home">
+                <img src="/logo.png" alt="Enbroidery By Sana" className="h-14 w-auto object-contain" />
             </Link>
+
+            {/* Mobile Header Logic */}
+            {isHomePage ? (
+                <>
+                    <button
+                        type="button"
+                        className="p-1.5 -ml-1.5 text-stone-800 hover:text-rose-900 transition-colors rounded-full lg:hidden"
+                        onClick={() => setIsMobileMenuOpen(true)}
+                        aria-label="Open menu"
+                    >
+                        <Menu className="w-6 h-6" />
+                    </button>
+                    <Link to="/" className="flex flex-col group lg:hidden" aria-label="Home">
+                        <img src="/logo.png" alt="Enbroidery By Sana" className="h-10 w-auto object-contain" />
+                    </Link>
+                </>
+            ) : (
+                <div className="flex items-center gap-1 lg:hidden">
+                    <button
+                        type="button"
+                        className="p-2 -ml-2 text-stone-800 hover:text-rose-900 active:scale-90 transition-all rounded-full hover:bg-stone-100"
+                        onClick={() => navigate(-1)}
+                        aria-label="Go back"
+                    >
+                        <ArrowLeft className="w-5 h-5" strokeWidth={2.5} />
+                    </button>
+                    <Link to="/" className="flex shrink-0">
+                        <img src="/logo.png" alt="Enbroidery By Sana" className="h-9 w-auto object-contain" />
+                    </Link>
+                </div>
+            )}
           </div>
 
 
@@ -225,70 +202,30 @@ const Navbar = () => {
           {/* 4. Right: Icons & Actions */}
           <div className="flex items-center justify-end space-x-2 lg:space-x-4 lg:w-1/4">
 
+            {/* Mobile Search Icon */}
+            <button 
+                id="mobile-search-button"
+                onClick={() => setIsSearchOpen(!isSearchOpen)} 
+                className="p-2 text-stone-600 hover:text-rose-900 transition-colors rounded-full hover:bg-stone-100 lg:hidden animate-fade-in" 
+                aria-label="Search"
+            >
+                {isSearchOpen ? <X className="w-5 h-5" /> : <Search className="w-5 h-5" />}
+            </button>
 
              {/* Wishlist */}
-            <Link to="/wishlist" className="p-2 text-stone-600 hover:text-rose-900 transition-colors rounded-full hover:bg-stone-100" aria-label="Wishlist">
+            <Link 
+                to="/wishlist" 
+                onClick={(e) => {
+                    if (!currentUser) {
+                        e.preventDefault();
+                        openLoginSheet();
+                    }
+                }}
+                className="p-2 text-stone-600 hover:text-rose-900 transition-colors rounded-full hover:bg-stone-100" 
+                aria-label="Wishlist"
+            >
                <Heart className="w-5 h-5" />
             </Link>
-            
-             {/* Notifications */}
-             {/* Notifications */}
-             <div className="relative" ref={notifRef}>
-                {currentUser ? (
-                    <>
-                        <button 
-                            onClick={() => setIsNotifOpen(!isNotifOpen)}
-                            className="relative p-2 text-stone-600 hover:text-rose-900 transition-colors rounded-full hover:bg-stone-100"
-                            aria-label="Notifications"
-                        >
-                            <Bell className="w-5 h-5" />
-                            {unreadCount > 0 && (
-                                <span className="absolute top-1.5 right-1.5 bg-rose-500 text-white text-[8px] font-bold rounded-full h-2.5 w-2.5 animate-pulse"></span>
-                            )}
-                        </button>
-
-                        {isNotifOpen && (
-                            <div className="absolute right-0 mt-4 w-72 md:w-80 bg-white rounded-2xl shadow-xl py-2 ring-1 ring-black ring-opacity-5 origin-top-right transform transition-all duration-300 z-50 overflow-hidden border border-stone-100">
-                               <div className="px-5 py-3 border-b border-stone-50 flex justify-between items-center bg-stone-50/50">
-                                    <h3 className="font-heading font-bold text-sm text-stone-900">Notifications</h3>
-                                    <span className="px-2 py-0.5 bg-rose-100 text-rose-800 text-[10px] rounded-full font-bold">{unreadCount} New</span>
-                                </div>
-                                <div className="max-h-80 overflow-y-auto">
-                                    {notifications.length > 0 ? (
-                                        notifications.map(notif => (
-                                            <div 
-                                                key={notif.id} 
-                                                onClick={() => !notif.is_read && handleMarkRead(notif.id)}
-                                                className={`px-5 py-3 border-b border-stone-50 hover:bg-stone-50 cursor-pointer transition-colors ${!notif.is_read ? 'bg-orange-50/30' : ''}`}
-                                            >
-                                                <div className="flex justify-between items-start mb-1 gap-2">
-                                                    <h4 className={`text-xs flex-1 ${!notif.is_read ? 'font-bold text-stone-900' : 'font-medium text-stone-600'}`}>{notif.title}</h4>
-                                                    <button 
-                                                        onClick={(e) => handleDeleteNotification(notif.id, e)}
-                                                        className="text-stone-300 hover:text-rose-600 transition-colors p-1"
-                                                        aria-label="Delete notification"
-                                                    >
-                                                        <Trash2 className="w-3 h-3" />
-                                                    </button>
-                                                </div>
-                                                <p className="text-xs text-stone-500 line-clamp-2 leading-relaxed">{notif.message}</p>
-                                            </div>
-                                        ))
-                                    ) : (
-                                        <div className="px-4 py-8 text-center text-stone-400 text-xs">
-                                            No recent notifications
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        )}
-                    </>
-                ) : (
-                    <Link to="/login" className="relative p-2 text-stone-600 hover:text-rose-900 transition-colors rounded-full hover:bg-stone-100 block" aria-label="Notifications via Login">
-                         <Bell className="w-5 h-5" />
-                    </Link>
-                )}
-             </div>
             
             {/* Cart */}
             <Link to="/cart" className="relative p-2 text-stone-600 hover:text-rose-900 transition-colors rounded-full hover:bg-stone-100 group" aria-label="Cart">
@@ -372,11 +309,23 @@ const Navbar = () => {
 
           </div>
         </div>
+
+        {/* Mobile Search Bar (Bottom Row) - Hidden by default, shown on search icon click */}
+        <div ref={searchContainerRef} className={`lg:hidden transition-all duration-300 overflow-hidden ${isSearchOpen ? 'max-h-20 opacity-100 mt-2 mb-1' : 'max-h-0 opacity-0 m-0'}`}>
+            <form onSubmit={handleSearch} className="relative w-full">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400" />
+                <input 
+                    ref={searchInputRef}
+                    type="text" 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search for brands and products" 
+                    className="w-full bg-white border border-stone-200 rounded-full py-2.5 pl-11 pr-4 text-sm font-medium text-stone-700 focus:outline-none focus:border-stone-300 shadow-sm transition-all placeholder:text-stone-400"
+                />
+            </form>
+        </div>
       </div>
     </nav>
-      <div className={`transition-all duration-300 overflow-hidden ${isScrolled ? 'h-0 opacity-0 min-h-0' : 'h-auto opacity-100'}`}>
-        <AnnouncementBar />
-      </div>
     </header>
 
     {/* Mobile Side Drawer */}
@@ -448,6 +397,6 @@ const Navbar = () => {
 
     </>
   );
-};
+});
 
 export default Navbar;

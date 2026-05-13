@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MessageSquare, X, Send, PackageSearch, ShoppingBag, RefreshCcw, Sparkles, Gift, Palette } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { Link, useLocation } from 'react-router-dom';
@@ -28,9 +27,8 @@ export default function ChatWidget() {
     const [sessionId, setSessionId] = useState('');
     const messagesEndRef = useRef(null);
 
-    // Pages where chatbot should NOT appear
-    const hiddenRoutes = ['/checkout', '/login', '/register', '/forgot-password', '/reset-password', '/order-confirmation', '/order-success', '/order-failed'];
-    const shouldHide = hiddenRoutes.some(route => location.pathname === route) || location.pathname.startsWith('/sadmin');
+    // Only show the chatbot on the Home page ('/')
+    const shouldHide = location.pathname !== '/';
 
     // Check if bottom nav is visible (it hides on checkout, product pages, mehndi-booking, and full cart)
     const bottomNavHidden = ['/checkout', '/mehndi-booking'].includes(location.pathname) || location.pathname.startsWith('/product/');
@@ -145,15 +143,10 @@ export default function ChatWidget() {
     return (
         <>
             {/* Chat Window - fullscreen on mobile, floating on desktop */}
-            <AnimatePresence>
-                {isOpen && (
-                    <motion.div 
-                        initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                        exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                        transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-                        className="fixed inset-0 md:inset-auto md:bottom-6 md:right-6 z-[60] md:z-50 flex flex-col md:block"
-                    >
+            {isOpen && (
+                <div 
+                    className="fixed inset-0 md:inset-auto md:bottom-6 md:right-6 z-[60] md:z-50 flex flex-col md:block animate-fade-up"
+                >
                         <div className="bg-white w-full h-full md:w-[400px] md:h-[500px] md:max-h-[80vh] md:rounded-2xl shadow-2xl flex flex-col md:mb-4 border-0 md:border md:border-stone-200 overflow-hidden">
                             {/* Header */}
                             <div className="bg-rose-900 text-white p-4 flex items-center justify-between shadow-sm flex-shrink-0">
@@ -168,32 +161,24 @@ export default function ChatWidget() {
 
                             {/* Messages Body */}
                             <div className="flex-1 p-4 overflow-y-auto bg-stone-50 space-y-4">
-                                <AnimatePresence initial={false}>
-                                    {messages.map((msg, i) => (
-                                        <motion.div 
-                                            key={i}
-                                            initial={{ opacity: 0, x: msg.sender === 'user' ? 20 : -20, y: 10 }}
-                                            animate={{ opacity: 1, x: 0, y: 0 }}
-                                            className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-                                        >
-                                            <div className={`max-w-[80%] rounded-2xl px-4 py-2 ${msg.sender === 'user' ? 'bg-stone-900 text-white rounded-br-none' : 'bg-white border border-stone-200 text-stone-800 rounded-bl-none shadow-sm'}`}>
-                                                <p className="text-sm break-words whitespace-pre-wrap leading-relaxed">{renderMessage(msg.text)}</p>
-                                            </div>
-                                        </motion.div>
-                                    ))}
-                                </AnimatePresence>
-                                {isLoading && (
-                                    <motion.div 
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        className="flex justify-start"
+                                {messages.map((msg, i) => (
+                                    <div 
+                                        key={i}
+                                        className={`flex animate-fade-in ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
                                     >
+                                        <div className={`max-w-[80%] rounded-2xl px-4 py-2 ${msg.sender === 'user' ? 'bg-stone-900 text-white rounded-br-none' : 'bg-white border border-stone-200 text-stone-800 rounded-bl-none shadow-sm'}`}>
+                                            <p className="text-sm break-words whitespace-pre-wrap leading-relaxed">{renderMessage(msg.text)}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                                {isLoading && (
+                                    <div className="flex justify-start animate-fade-in">
                                         <div className="bg-white border border-stone-200 rounded-2xl rounded-bl-none px-4 py-2 shadow-sm flex gap-2 items-center">
                                             <div className="w-2 h-2 bg-stone-300 rounded-full animate-bounce"></div>
                                             <div className="w-2 h-2 bg-stone-300 rounded-full animate-bounce [animation-delay:-.1s]"></div>
                                             <div className="w-2 h-2 bg-stone-300 rounded-full animate-bounce [animation-delay:-.2s]"></div>
                                         </div>
-                                    </motion.div>
+                                    </div>
                                 )}
                                 <div ref={messagesEndRef} />
                             </div>
@@ -203,17 +188,15 @@ export default function ChatWidget() {
                                 {/* Quick Replies */}
                                 <div className="px-3 pt-3 pb-1 flex gap-2 overflow-x-auto no-scrollbar" style={{ scrollbarWidth: 'none' }}>
                                     {quickReplies.map((chip, idx) => (
-                                        <motion.button 
+                                        <button 
                                             key={idx}
-                                            whileHover={{ y: -2 }}
-                                            whileTap={{ scale: 0.95 }}
                                             onClick={() => submitMessage(chip.text)}
                                             disabled={isLoading}
-                                            className="whitespace-nowrap flex items-center gap-1.5 text-xs font-medium bg-rose-50/50 text-rose-800 border border-rose-200 shadow-sm px-3.5 py-1.5 rounded-full hover:bg-rose-100 hover:border-rose-300 transition-all duration-200 ease-out disabled:opacity-50 disabled:hover:transform-none disabled:cursor-not-allowed"
+                                            className="whitespace-nowrap flex items-center gap-1.5 text-xs font-medium bg-rose-50/50 text-rose-800 border border-rose-200 shadow-sm px-3.5 py-1.5 rounded-full hover:bg-rose-100 hover:border-rose-300 hover:-translate-y-0.5 active:scale-95 transition-all duration-200 ease-out disabled:opacity-50 disabled:hover:transform-none disabled:cursor-not-allowed"
                                         >
                                             {chip.icon}
                                             {chip.text}
-                                        </motion.button>
+                                        </button>
                                     ))}
                                 </div>
 
@@ -236,24 +219,19 @@ export default function ChatWidget() {
                                 </form>
                             </div>
                         </div>
-                    </motion.div>
+                    </div>
                 )}
-            </AnimatePresence>
 
             {/* Toggle Button — positioned above bottom nav on mobile */}
             {!isOpen && (
-                <motion.button 
-                    initial={{ scale: 0, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    whileHover={{ scale: 1.1, rotate: 5 }}
-                    whileTap={{ scale: 0.9 }}
+                <button 
                     onClick={() => setIsOpen(true)}
-                    className={`fixed right-4 z-50 bg-rose-900 text-white p-3.5 md:p-4 flex items-center justify-center rounded-full shadow-lg hover:bg-rose-800 transition-all hover:shadow-xl group ${
+                    className={`fixed right-4 z-50 bg-rose-900 text-white p-3.5 md:p-4 flex items-center justify-center rounded-full shadow-lg hover:bg-rose-800 transition-all hover:shadow-xl hover:scale-110 active:scale-90 animate-fade-in group ${
                         bottomNavHidden ? 'bottom-4' : 'bottom-20 md:bottom-6'
                     }`}
                 >
                     <MessageSquare className="w-5 h-5 md:w-6 md:h-6" />
-                </motion.button>
+                </button>
             )}
         </>
     );

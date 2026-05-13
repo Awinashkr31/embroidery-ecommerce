@@ -12,6 +12,7 @@ export const ProductProvider = ({ children }) => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const lastFetchTime = useRef(0);
+    const isFetching = useRef(false);
 
     // Fetch Products (with cache check)
     const fetchProducts = useCallback(async (force = false) => {
@@ -21,10 +22,13 @@ export const ProductProvider = ({ children }) => {
             return;
         }
 
+        if (isFetching.current) return;
+        isFetching.current = true;
+
         try {
             const { data, error } = await supabase
                 .from('products')
-                .select('id, name, description, price, original_price, category, images, featured, stock_quantity, fabric, clothing_information, variants, created_at, active')
+                .select('id, name, description, price, original_price, category, images, featured, stock_quantity, fabric, clothing_information, variants, created_at, active, homepage_tags')
                 .eq('active', true)
                 .order('created_at', { ascending: false });
 
@@ -51,7 +55,8 @@ export const ProductProvider = ({ children }) => {
                     discountPercentage: (p.original_price && p.original_price > p.price)
                         ? Math.round(((p.original_price - p.price) / p.original_price) * 100)
                         : 0,
-                    variants: Array.isArray(parsedVariants) ? parsedVariants : []
+                    variants: Array.isArray(parsedVariants) ? parsedVariants : [],
+                    homepage_tags: Array.isArray(p.homepage_tags) ? p.homepage_tags : []
                 };
             });
 
@@ -60,13 +65,12 @@ export const ProductProvider = ({ children }) => {
         } catch (error) {
             console.error('Error fetching products:', error);
         } finally {
+            isFetching.current = false;
             setLoading(false);
         }
     }, [products.length]); // Intentionally not including 'products' itself, only length if needed to avoid infinite loops, but realistically it's safe if structured well
 
-    useEffect(() => {
-        fetchProducts();
-    }, [fetchProducts]);
+    // Auto-fetch removed for performance. Components like Shop should call fetchProducts() themselves.
 
     const addProduct = async (product) => {
         try {
@@ -83,6 +87,7 @@ export const ProductProvider = ({ children }) => {
                 fabric: product.fabric, // Legacy field support (optional)
                 clothing_information: product.clothingInformation || null, // New JSONB field
                 variants: product.variants || [], // New Variants JSONB field
+                homepage_tags: product.homepage_tags || [], // Homepage section tags
                 active: true
             };
 
@@ -107,7 +112,8 @@ export const ProductProvider = ({ children }) => {
                 originalPrice: data.original_price,
                 discountPercentage: (data.original_price && data.original_price > data.price)
                     ? Math.round(((data.original_price - data.price) / data.original_price) * 100)
-                    : 0
+                    : 0,
+                homepage_tags: data.homepage_tags || []
             };
             setProducts(prev => [newProduct, ...prev]);
             return data;
@@ -134,6 +140,7 @@ export const ProductProvider = ({ children }) => {
             if (updatedData.fabric !== undefined) updates.fabric = updatedData.fabric;
             if (updatedData.clothingInformation !== undefined) updates.clothing_information = updatedData.clothingInformation;
             if (updatedData.variants !== undefined) updates.variants = updatedData.variants;
+            if (updatedData.homepage_tags !== undefined) updates.homepage_tags = updatedData.homepage_tags;
 
             const { data, error } = await supabase
                 .from('products')
@@ -158,7 +165,8 @@ export const ProductProvider = ({ children }) => {
                         inStock: (data.stock_quantity || 0) > 0,
                         discountPercentage: (data.original_price && data.original_price > data.price)
                             ? Math.round(((data.original_price - data.price) / data.original_price) * 100)
-                            : 0
+                            : 0,
+                        homepage_tags: data.homepage_tags || []
                     };
                 }
                 return prod;

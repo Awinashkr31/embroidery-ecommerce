@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../../config/supabase';
 import { useToast } from '../../context/ToastContext';
-import { Plus, Trash2, Search, Image as ImageIcon, Loader, X, Upload, FileImage, Layers } from 'lucide-react';
+import { Plus, Trash2, Search, Image as ImageIcon, Loader, X, Upload, FileImage, Layers, Edit2 } from 'lucide-react';
 import imageCompression from 'browser-image-compression';
 import { deleteImage } from '../../utils/uploadUtils';
 
@@ -15,6 +15,8 @@ const AdminGallery = () => {
     const [uploadProgress, setUploadProgress] = useState('');
     const [deletePendingId, setDeletePendingId] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
+    const [editingItem, setEditingItem] = useState(null);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     
     // Form State
     const [title, setTitle] = useState('');
@@ -47,6 +49,54 @@ const AdminGallery = () => {
     useEffect(() => {
         fetchGallery();
     }, [fetchGallery]);
+
+    const handleOpenEditModal = (item) => {
+        setEditingItem(item);
+        setTitle(item.title || '');
+        setDescription(item.description || '');
+        setSelectedCategory(item.category || '');
+        
+        // Determine mode based on current category or image count to show appropriate categories
+        if (MEHNDI_CATEGORIES.includes(item.category)) {
+            setModalMode('mehndi');
+        } else {
+            setModalMode('single');
+        }
+
+        setIsEditModalOpen(true);
+    };
+
+    const handleEditSubmit = async (e) => {
+        e.preventDefault();
+        if (!title) {
+            addToast('Please enter a title', 'error');
+            return;
+        }
+
+        setUploading(true);
+        try {
+            const { error } = await supabase
+                .from('gallery')
+                .update({
+                    title,
+                    category: selectedCategory,
+                    description
+                })
+                .eq('id', editingItem.id);
+
+            if (error) throw error;
+
+            addToast('Item updated successfully', 'success');
+            setIsEditModalOpen(false);
+            setEditingItem(null);
+            fetchGallery();
+        } catch (error) {
+            console.error('Error updating item:', error);
+            addToast('Failed to update item', 'error');
+        } finally {
+            setUploading(false);
+        }
+    };
 
     const handleOpenModal = (mode) => {
         setModalMode(mode);
@@ -93,7 +143,7 @@ const AdminGallery = () => {
 
     const compressImage = async (file) => {
         const options = {
-            maxSizeMB: 0.19, // ~195KB, ensuring < 200KB
+            maxSizeMB: 0.5, // ~500KB, ensuring < 500KB
             maxWidthOrHeight: 1920,
             useWebWorker: true,
             fileType: 'image/webp' // Convert to webp for better compression
@@ -284,6 +334,13 @@ const AdminGallery = () => {
                                 />
                                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                                     <button
+                                        onClick={() => handleOpenEditModal(item)}
+                                        className="p-2 bg-white/20 text-white rounded-full hover:bg-white/40 transition-colors backdrop-blur-sm"
+                                        title="Edit"
+                                    >
+                                        <Edit2 size={18} />
+                                    </button>
+                                    <button
                                         onClick={() => handleDelete(item)}
                                         className="p-2 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
                                         title="Delete"
@@ -312,6 +369,80 @@ const AdminGallery = () => {
                     ))
                 )}
             </div>
+
+            {/* Edit Modal */}
+            {isEditModalOpen && (
+                <div className="fixed inset-0 bg-stone-900/40 flex items-end sm:items-center justify-center sm:p-4 z-50 backdrop-blur-sm transition-opacity">
+                    <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl animate-in slide-in-from-bottom-4 sm:slide-in-from-bottom-0 sm:zoom-in-95">
+                        <div className="p-5 border-b border-stone-100 flex justify-between items-center sticky top-0 bg-white/90 backdrop-blur z-10">
+                            <h2 className="text-xl font-heading font-bold text-stone-900">
+                                Edit Item
+                            </h2>
+                            <button onClick={() => { setIsEditModalOpen(false); setEditingItem(null); }} className="text-stone-400 hover:text-stone-600 p-2 bg-stone-50 rounded-full hover:bg-stone-100 transition-colors">
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        <form onSubmit={handleEditSubmit} className="p-5 space-y-5">
+                            {/* Title */}
+                            <div>
+                                <label className="block text-xs font-bold text-stone-700 mb-1.5 uppercase tracking-wide">Title</label>
+                                <input
+                                    type="text"
+                                    value={title}
+                                    onChange={(e) => setTitle(e.target.value)}
+                                    className="w-full px-4 py-2.5 rounded-lg border-none bg-stone-50 focus:bg-white focus:ring-2 focus:ring-rose-900/20 outline-none transition-all font-medium text-stone-900"
+                                />
+                            </div>
+
+                            {/* Category Selection */}
+                            <div>
+                                <label className="block text-xs font-bold text-stone-700 mb-1.5 uppercase tracking-wide">Category</label>
+                                <select
+                                    value={selectedCategory}
+                                    onChange={(e) => setSelectedCategory(e.target.value)}
+                                    className="w-full px-4 py-2.5 rounded-lg border-none bg-stone-50 focus:bg-white focus:ring-2 focus:ring-rose-900/20 outline-none transition-all font-medium text-stone-900"
+                                >
+                                    {(modalMode === 'single' ? SINGLE_IMAGE_CATEGORIES : MEHNDI_CATEGORIES).map(cat => (
+                                        <option key={cat} value={cat}>{cat}</option>
+                                    ))}
+                                    {/* Include the current category if it's somehow not in the predefined lists */}
+                                    {!SINGLE_IMAGE_CATEGORIES.includes(selectedCategory) && !MEHNDI_CATEGORIES.includes(selectedCategory) && selectedCategory && (
+                                        <option value={selectedCategory}>{selectedCategory}</option>
+                                    )}
+                                </select>
+                            </div>
+
+                            {/* Description */}
+                            <div>
+                                <label className="block text-xs font-bold text-stone-700 mb-1.5 uppercase tracking-wide">Description</label>
+                                <textarea
+                                    value={description}
+                                    onChange={(e) => setDescription(e.target.value)}
+                                    rows="3"
+                                    className="w-full px-4 py-2.5 rounded-lg border-none bg-stone-50 focus:bg-white focus:ring-2 focus:ring-rose-900/20 outline-none transition-all font-medium text-stone-900 resize-none"
+                                />
+                            </div>
+
+                            {/* Submit */}
+                            <button
+                                type="submit"
+                                disabled={uploading}
+                                className="w-full bg-rose-900 text-white py-3.5 rounded-xl font-bold tracking-wide hover:bg-rose-800 transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm"
+                            >
+                                {uploading ? (
+                                    <>
+                                        <Loader className="animate-spin w-5 h-5" />
+                                        Updating...
+                                    </>
+                                ) : (
+                                    'Save Changes'
+                                )}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
 
             {/* Modal */}
             {isModalOpen && (
@@ -348,7 +479,7 @@ const AdminGallery = () => {
                                             Click to upload {modalMode === 'mehndi' ? '(Max 4)' : '(1 image)'}
                                         </p>
                                         <p className="text-stone-400 text-xs">
-                                            Images will be compressed to &lt; 200KB
+                                            Images will be compressed to &lt; 500KB
                                         </p>
                                     </label>
                                 </div>

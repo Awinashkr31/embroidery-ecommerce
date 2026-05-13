@@ -25,11 +25,6 @@ const Settings = () => {
 
     const [settings, setSettings] = useState({
         // General
-        announcement_bar: JSON.stringify([
-          "Get 10% off your first order with code SANA10.",
-          "Free shipping on orders over ₹499.",
-          "New festive collection just dropped!"
-        ]),
         contactEmail: '',
         contactPhone: '',
         address: '',
@@ -57,6 +52,21 @@ const Settings = () => {
         home_brand_story_image_1: '',
         home_brand_story_image_2: '',
         
+        home_promo_banner_image: '',
+        home_promo_banner_link: '/shop',
+        home_masonry_1_image: '',
+        home_masonry_1_text: 'Gold Collection',
+        home_masonry_1_link: '/shop',
+        home_masonry_2_image: '',
+        home_masonry_2_text: 'Festive Edit',
+        home_masonry_2_link: '/shop',
+        home_masonry_3_image: '',
+        home_masonry_3_text: 'Exclusive Masterpieces',
+        home_masonry_3_link: '/shop',
+        home_craftsmanship_image: '',
+        home_craftsmanship_link: '/shop',
+        home_premium_banner_image: '',
+        home_premium_banner_link: '/shop',
         // About
         about_hero_title: 'About Sana',
         about_hero_subtitle: 'A passionate artist dedicated to preserving and celebrating the timeless beauty of hand embroidery and mehndi art.',
@@ -159,9 +169,29 @@ const Settings = () => {
         setSettings(prev => ({ ...prev, [name]: value }));
     };
 
+    const getCropTargetSize = (key) => {
+        if (!key) return null;
+        
+        if (typeof key === 'object' && key.type === 'slide') {
+            // Desktop slider: 1920x800, Mobile slider: 800x1000
+            return key.field === 'mobileImage' ? { width: 800, height: 1000 } : { width: 1920, height: 800 };
+        }
 
-
-
+        if (typeof key === 'string') {
+            if (key === 'home_promo_banner_image_mobile') return { width: 800, height: 260 };
+            if (key.includes('_mobile')) return { width: 800, height: 800 }; // Mobile banners are typically square for generous height
+            
+            if (key === 'home_masonry_1_image') return { width: 900, height: 1200 }; // Left Tall Banner
+            if (key === 'home_masonry_2_image' || key === 'home_masonry_3_image') return { width: 1200, height: 800 }; // Right Stacked Banners (3:2 ratio to match 3:4 left banner)
+            if (key === 'home_craftsmanship_image' || key === 'home_premium_banner_image') return { width: 1920, height: 820 }; // Ultra wide banners
+            if (key.includes('promo_banner')) return { width: 1920, height: 400 };
+            if (key.includes('hero')) return { width: 1920, height: 800 };
+            if (key.includes('story')) return { width: 1200, height: 900 };
+            if (key.includes('category')) return { width: 800, height: 1000 };
+        }
+        
+        return { width: 1000, height: 1000 }; // Fallback square
+    };
 
     const handleImageUpload = (e, key) => {
         const file = e.target.files[0];
@@ -194,7 +224,7 @@ const Settings = () => {
             });
 
             const options = {
-                maxSizeMB: 0.2, // < 200KB
+                maxSizeMB: 0.5, // < 500KB
                 maxWidthOrHeight: 1920,
                 useWebWorker: true,
                 fileType: 'image/webp'
@@ -208,11 +238,21 @@ const Settings = () => {
             }
 
             const key = cropKey;
-            const oldUrl = settings[key];
+            
+            let oldUrl = null;
+            if (typeof key === 'string') {
+                oldUrl = settings[key];
+            } else if (key?.type === 'slide') {
+                try {
+                    const slides = Array.isArray(settings.home_slides_data) ? settings.home_slides_data : JSON.parse(settings.home_slides_data || '[]');
+                    oldUrl = slides[key.index][key.field];
+                } catch(e) {}
+            }
+
             if (oldUrl) await deleteImage(oldUrl);
 
             const fileExt = 'webp';
-            const fileName = `${key}_${Date.now()}.${fileExt}`;
+            const fileName = `${typeof key === 'string' ? key : 'slide_' + key.field + '_' + Date.now()}_${Date.now()}.${fileExt}`;
             const filePath = `site-assets/${fileName}`;
 
             const { error: uploadError } = await supabase.storage
@@ -228,7 +268,15 @@ const Settings = () => {
                 .from('images')
                 .getPublicUrl(filePath);
 
-            setSettings(prev => ({ ...prev, [key]: publicUrl }));
+            if (typeof key === 'string') {
+                setSettings(prev => ({ ...prev, [key]: publicUrl }));
+            } else if (key?.type === 'slide') {
+                setSettings(prev => {
+                    const slides = Array.isArray(prev.home_slides_data) ? [...prev.home_slides_data] : JSON.parse(prev.home_slides_data || '[]');
+                    slides[key.index] = { ...slides[key.index], [key.field]: publicUrl };
+                    return { ...prev, home_slides_data: slides };
+                });
+            }
             addToast('Image uploaded! Click "Save Changes" at the bottom to apply.', 'success');
 
         } catch (error) {
@@ -242,17 +290,30 @@ const Settings = () => {
     };
 
     const handleImageDelete = async (key) => {
-        if (deleteImagePendingKey !== key) {
-            setDeleteImagePendingKey(key);
+        const keyString = typeof key === 'string' ? key : JSON.stringify(key);
+        if (deleteImagePendingKey !== keyString) {
+            setDeleteImagePendingKey(keyString);
             addToast('Tap remove again to confirm deletion.', 'error');
             return;
         }
         setDeleteImagePendingKey(null);
         try {
             setUploading(true);
-            const oldUrl = settings[key];
-            if (oldUrl) await deleteImage(oldUrl);
-            setSettings(prev => ({ ...prev, [key]: '' }));
+            let oldUrl = null;
+            if (typeof key === 'string') {
+                oldUrl = settings[key];
+                if (oldUrl) await deleteImage(oldUrl);
+                setSettings(prev => ({ ...prev, [key]: '' }));
+            } else if (key?.type === 'slide') {
+                const slides = Array.isArray(settings.home_slides_data) ? settings.home_slides_data : JSON.parse(settings.home_slides_data || '[]');
+                oldUrl = slides[key.index]?.[key.field];
+                if (oldUrl) await deleteImage(oldUrl);
+                setSettings(prev => {
+                    const newSlides = Array.isArray(prev.home_slides_data) ? [...prev.home_slides_data] : JSON.parse(prev.home_slides_data || '[]');
+                    newSlides[key.index] = { ...newSlides[key.index], [key.field]: '' };
+                    return { ...prev, home_slides_data: newSlides };
+                });
+            }
             addToast('Image removed. Click Save to persist.', 'info');
         } catch (error) {
              console.error('Delete failed:', error);
@@ -260,6 +321,32 @@ const Settings = () => {
         } finally {
             setUploading(false);
         }
+    };
+
+    const homeSlides = React.useMemo(() => {
+        try {
+            return Array.isArray(settings.home_slides_data) ? settings.home_slides_data : JSON.parse(settings.home_slides_data || '[]');
+        } catch {
+            return [];
+        }
+    }, [settings.home_slides_data]);
+
+    const handleSlideChange = (index, field, value) => {
+        const slides = [...homeSlides];
+        slides[index] = { ...slides[index], [field]: value };
+        setSettings(prev => ({...prev, home_slides_data: slides}));
+    };
+
+    const handleAddSlide = () => {
+        const slides = [...homeSlides];
+        slides.push({ id: Date.now(), desktopImage: '', mobileImage: '', link: '' });
+        setSettings(prev => ({...prev, home_slides_data: slides}));
+    };
+
+    const handleRemoveSlide = (index) => {
+        const slides = [...homeSlides];
+        slides.splice(index, 1);
+        setSettings(prev => ({...prev, home_slides_data: slides}));
     };
 
     const handleSubmit = async (e) => {
@@ -317,12 +404,13 @@ const Settings = () => {
                     <h1 className="text-2xl font-heading font-bold text-stone-900">Settings & Content</h1>
                     <p className="text-stone-500 text-sm mt-0.5">Manage global settings and page content.</p>
                 </div>
-                <div className="flex flex-wrap w-full md:w-auto gap-2">
+                {/* Floating Action Buttons */}
+                <div className="fixed bottom-6 right-6 z-50 flex flex-col md:flex-row shadow-2xl rounded-2xl p-2 bg-white/90 backdrop-blur-md border border-stone-200 gap-2 animate-fade-in">
                     {isEditing && (
                         <button
                             onClick={handleSubmit}
                             disabled={saving}
-                            className="flex-1 md:flex-none justify-center flex items-center px-4 py-2.5 bg-rose-900 text-white rounded-xl hover:bg-rose-800 disabled:opacity-70 transition-colors shadow-sm text-sm font-bold tracking-wide"
+                            className="flex-1 md:flex-none justify-center flex items-center px-6 py-3 bg-rose-900 text-white rounded-xl hover:bg-rose-800 disabled:opacity-70 transition-all shadow-sm text-sm font-bold tracking-wide hover:scale-105"
                         >
                             {saving ? (
                                 <>
@@ -339,10 +427,10 @@ const Settings = () => {
                     )}
                     <button
                         onClick={() => setIsEditing(!isEditing)}
-                        className={`flex-1 md:flex-none justify-center flex items-center px-4 py-2.5 rounded-xl text-sm font-bold tracking-wide transition-colors ${
+                        className={`flex-1 md:flex-none justify-center flex items-center px-6 py-3 rounded-xl text-sm font-bold tracking-wide transition-all shadow-sm hover:scale-105 ${
                             isEditing 
                             ? 'bg-stone-100 text-stone-600 hover:bg-stone-200' 
-                            : 'bg-stone-900 text-white hover:bg-stone-800 shadow-sm'
+                            : 'bg-stone-900 text-white hover:bg-stone-800'
                         }`}
                     >
                         {isEditing ? (
@@ -396,49 +484,17 @@ const Settings = () => {
                         <div className="bg-white p-6 rounded-xl border-0 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] space-y-6">
                             <div className="flex justify-between items-center">
                                 <h3 className="font-bold text-lg text-stone-900 flex items-center gap-2">
-                                    <Globe className="w-5 h-5 text-rose-900" /> Announcement Bar
+                                    <Globe className="w-5 h-5 text-rose-900" /> Site Preferences
                                 </h3>
-                                <ToggleSwitch 
-                                    label="Enable Chatbot"
-                                    value={settings.chatbot_enabled}
-                                    onChange={(val) => handleChange({ target: { name: 'chatbot_enabled', value: val } })}
-                                    isEditing={isEditing}
-                                    icon={<MessageSquare className="w-4 h-4" />}
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-stone-700 mb-2">Announcements (One per line)</label>
-                                {isEditing ? (
-                                    <textarea
-                                        value={(() => {
-                                            try { return JSON.parse(settings.announcement_bar || '[]').join('\n'); } 
-                                            catch { return ''; }
-                                        })()}
-                                        onChange={(e) => {
-                                            const lines = e.target.value.split('\n');
-                                            handleChange({ target: { name: 'announcement_bar', value: JSON.stringify(lines) } });
-                                        }}
-                                        className="w-full px-4 py-2 rounded-lg border border-stone-200 focus:ring-2 focus:ring-rose-900/20 focus:border-rose-900"
-                                        rows={4}
-                                        placeholder="Enter announcements here, one per line..."
+                                <div className="flex items-center gap-4">
+                                    <ToggleSwitch 
+                                        label="Enable Chatbot"
+                                        value={settings.chatbot_enabled}
+                                        onChange={(val) => handleChange({ target: { name: 'chatbot_enabled', value: val } })}
+                                        isEditing={isEditing}
+                                        icon={<MessageSquare className="w-4 h-4" />}
                                     />
-                                ) : (
-                                    <div className="bg-stone-50 p-4 rounded-lg space-y-2">
-                                        {(() => {
-                                            try {
-                                                const items = JSON.parse(settings.announcement_bar || '[]');
-                                                if (items.length === 0) return <p className="text-stone-500 italic text-sm">No announcements configured.</p>;
-                                                return items.map((item, idx) => (
-                                                    <div key={idx} className="flex gap-2 items-start text-sm text-stone-700 font-medium">
-                                                        <span className="text-rose-900 mt-0.5">•</span> {item}
-                                                    </div>
-                                                ));
-                                            } catch {
-                                                return <p className="text-stone-500 text-sm">Error loading announcements.</p>;
-                                            }
-                                        })()}
-                                    </div>
-                                )}
+                                </div>
                             </div>
                         </div>
 
@@ -596,63 +652,286 @@ const Settings = () => {
                     <div className="space-y-6 animate-in fade-in duration-500">
                         {/* Main Slider Images */}
                         <div className="bg-white p-6 rounded-xl border-0 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] space-y-6">
-                            <h3 className="font-bold text-lg text-stone-900 flex items-center gap-2">
-                                <ImageIcon className="w-5 h-5 text-rose-900" /> Main Slider Images
-                            </h3>
-                            <div className="grid md:grid-cols-3 gap-6">
-                                <ImageUploader 
-                                    label="Slide 1"
-                                    url={settings.home_slider_image_1} 
-                                    uploading={uploading}
-                                    onUpload={(e) => handleImageUpload(e, 'home_slider_image_1')}
-                                    onDelete={() => handleImageDelete('home_slider_image_1')}
-                                    isEditing={isEditing}
-                                />
-                                <ImageUploader 
-                                    label="Slide 2"
-                                    url={settings.home_slider_image_2} 
-                                    uploading={uploading}
-                                    onUpload={(e) => handleImageUpload(e, 'home_slider_image_2')}
-                                    onDelete={() => handleImageDelete('home_slider_image_2')}
-                                    isEditing={isEditing}
-                                />
-                                <ImageUploader 
-                                    label="Slide 3"
-                                    url={settings.home_slider_image_3} 
-                                    uploading={uploading}
-                                    onUpload={(e) => handleImageUpload(e, 'home_slider_image_3')}
-                                    onDelete={() => handleImageDelete('home_slider_image_3')}
-                                    isEditing={isEditing}
-                                />
+                            <div className="flex items-center justify-between">
+                                <h3 className="font-bold text-lg text-stone-900 flex items-center gap-2">
+                                    <ImageIcon className="w-5 h-5 text-rose-900" /> Main Slider Images
+                                </h3>
+                                {isEditing && (
+                                    <button 
+                                        type="button" 
+                                        onClick={handleAddSlide}
+                                        className="flex items-center gap-1 text-xs font-bold text-rose-700 hover:text-rose-900 bg-rose-50 px-3 py-1.5 rounded-full transition-colors"
+                                    >
+                                        <Plus className="w-3.5 h-3.5" /> Add Slide
+                                    </button>
+                                )}
+                            </div>
+                            
+                            <div className="space-y-8">
+                                {homeSlides.map((slide, index) => (
+                                    <div key={slide.id || index} className="p-4 border border-stone-200 rounded-lg relative bg-stone-50/50">
+                                        {isEditing && (
+                                            <button 
+                                                type="button"
+                                                onClick={() => handleRemoveSlide(index)}
+                                                className="absolute top-4 right-4 p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        )}
+                                        <h4 className="text-sm font-bold text-stone-700 mb-4 uppercase tracking-wider">Slide {index + 1}</h4>
+                                        <div className="grid md:grid-cols-2 gap-6 mb-4">
+                                            <ImageUploader 
+                                                label="Desktop Image (e.g. 1920x800)"
+                                                url={slide.desktopImage} 
+                                                uploading={uploading}
+                                                onUpload={(e) => handleImageUpload(e, { type: 'slide', index, field: 'desktopImage' })}
+                                                onDelete={() => handleImageDelete({ type: 'slide', index, field: 'desktopImage' })}
+                                                isEditing={isEditing}
+                                            />
+                                            <ImageUploader 
+                                                label="Mobile Image (e.g. 800x1000)"
+                                                url={slide.mobileImage} 
+                                                uploading={uploading}
+                                                onUpload={(e) => handleImageUpload(e, { type: 'slide', index, field: 'mobileImage' })}
+                                                onDelete={() => handleImageDelete({ type: 'slide', index, field: 'mobileImage' })}
+                                                isEditing={isEditing}
+                                            />
+                                        </div>
+                                        <EditableInput 
+                                            label="Click Link (e.g. /shop or /product/123)"
+                                            name={`slide_link_${index}`}
+                                            value={slide.link}
+                                            onChange={(e) => handleSlideChange(index, 'link', e.target.value)}
+                                            isEditing={isEditing}
+                                            placeholder="/shop"
+                                        />
+                                    </div>
+                                ))}
+                                {homeSlides.length === 0 && (
+                                    <p className="text-sm text-stone-500 italic text-center py-4">No slides added yet.</p>
+                                )}
                             </div>
                         </div>
 
+
+                        {/* Promotional Banner */}
                         <div className="bg-white p-6 rounded-xl border-0 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] space-y-6">
                             <h3 className="font-bold text-lg text-stone-900 flex items-center gap-2">
-                                <LayoutTemplate className="w-5 h-5 text-rose-900" /> Hero Section
+                                <ImageIcon className="w-5 h-5 text-rose-900" /> Secondary Promo Banner (Summer Edit)
                             </h3>
-                            
-                            <div className="space-y-4">
-                                <EditableInput 
-                                    label="Hero Title"
-                                    name="home_hero_title"
-                                    value={settings.home_hero_title}
-                                    onChange={handleChange}
+                            <div className="grid md:grid-cols-3 gap-4">
+                                <ImageUploader 
+                                    label="Promo Banner (Desktop 1920x400)"
+                                    url={settings.home_promo_banner_image} 
+                                    uploading={uploading}
+                                    onUpload={(e) => handleImageUpload(e, 'home_promo_banner_image')}
+                                    onDelete={() => handleImageDelete('home_promo_banner_image')}
                                     isEditing={isEditing}
-                                    placeholder="Weaving Stories in Thread"
                                 />
-                                <EditableTextarea 
-                                    label="Hero Subtitle"
-                                    name="home_hero_subtitle"
-                                    value={settings.home_hero_subtitle}
+                                <ImageUploader 
+                                    label="Promo Banner (Mobile 800x260)"
+                                    url={settings.home_promo_banner_image_mobile} 
+                                    uploading={uploading}
+                                    onUpload={(e) => handleImageUpload(e, 'home_promo_banner_image_mobile')}
+                                    onDelete={() => handleImageDelete('home_promo_banner_image_mobile')}
+                                    isEditing={isEditing}
+                                />
+                                <EditableInput 
+                                    label="Banner Link URL"
+                                    name="home_promo_banner_link"
+                                    value={settings.home_promo_banner_link}
                                     onChange={handleChange}
                                     isEditing={isEditing}
-                                    placeholder="Timeless hand embroidery..."
                                 />
                             </div>
                         </div>
 
+                        {/* Premium Collections (Masonry) */}
+                        <div className="bg-white p-6 rounded-xl border-0 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] space-y-6">
+                            <h3 className="font-bold text-lg text-stone-900 flex items-center gap-2">
+                                <LayoutTemplate className="w-5 h-5 text-rose-900" /> Premium Collections (Grid)
+                            </h3>
+                            
+                            <div className="space-y-8">
+                                {/* Masonry 1 */}
+                                <div className="p-4 border border-stone-200 rounded-lg space-y-4">
+                                    <h4 className="font-bold text-sm text-stone-700">Left Tall Banner (Collection 1)</h4>
+                                    <div className="grid md:grid-cols-2 gap-4">
+                                        <ImageUploader 
+                                            label="Desktop Image (900x1200)"
+                                            url={settings.home_masonry_1_image} 
+                                            uploading={uploading}
+                                            onUpload={(e) => handleImageUpload(e, 'home_masonry_1_image')}
+                                            onDelete={() => handleImageDelete('home_masonry_1_image')}
+                                            isEditing={isEditing}
+                                        />
+                                        <ImageUploader 
+                                            label="Mobile Image (800x800)"
+                                            url={settings.home_masonry_1_image_mobile} 
+                                            uploading={uploading}
+                                            onUpload={(e) => handleImageUpload(e, 'home_masonry_1_image_mobile')}
+                                            onDelete={() => handleImageDelete('home_masonry_1_image_mobile')}
+                                            isEditing={isEditing}
+                                        />
+                                        <EditableInput 
+                                            label="Overlay Text"
+                                            name="home_masonry_1_text"
+                                            value={settings.home_masonry_1_text}
+                                            onChange={handleChange}
+                                            isEditing={isEditing}
+                                        />
+                                        <EditableInput 
+                                            label="Link URL"
+                                            name="home_masonry_1_link"
+                                            value={settings.home_masonry_1_link}
+                                            onChange={handleChange}
+                                            isEditing={isEditing}
+                                        />
+                                    </div>
+                                </div>
 
+                                {/* Masonry 2 */}
+                                <div className="p-4 border border-stone-200 rounded-lg space-y-4">
+                                    <h4 className="font-bold text-sm text-stone-700">Top Right Banner (Collection 2)</h4>
+                                    <div className="grid md:grid-cols-2 gap-4">
+                                        <ImageUploader 
+                                            label="Desktop Image (1200x800)"
+                                            url={settings.home_masonry_2_image} 
+                                            uploading={uploading}
+                                            onUpload={(e) => handleImageUpload(e, 'home_masonry_2_image')}
+                                            onDelete={() => handleImageDelete('home_masonry_2_image')}
+                                            isEditing={isEditing}
+                                        />
+                                        <ImageUploader 
+                                            label="Mobile Image (800x800)"
+                                            url={settings.home_masonry_2_image_mobile} 
+                                            uploading={uploading}
+                                            onUpload={(e) => handleImageUpload(e, 'home_masonry_2_image_mobile')}
+                                            onDelete={() => handleImageDelete('home_masonry_2_image_mobile')}
+                                            isEditing={isEditing}
+                                        />
+                                        <EditableInput 
+                                            label="Overlay Text"
+                                            name="home_masonry_2_text"
+                                            value={settings.home_masonry_2_text}
+                                            onChange={handleChange}
+                                            isEditing={isEditing}
+                                        />
+                                        <EditableInput 
+                                            label="Link URL"
+                                            name="home_masonry_2_link"
+                                            value={settings.home_masonry_2_link}
+                                            onChange={handleChange}
+                                            isEditing={isEditing}
+                                        />
+                                    </div>
+                                </div>
+
+                                {/* Masonry 3 */}
+                                <div className="p-4 border border-stone-200 rounded-lg space-y-4">
+                                    <h4 className="font-bold text-sm text-stone-700">Bottom Right Banner (Collection 3)</h4>
+                                    <div className="grid md:grid-cols-2 gap-4">
+                                        <ImageUploader 
+                                            label="Desktop Image (1200x800)"
+                                            url={settings.home_masonry_3_image} 
+                                            uploading={uploading}
+                                            onUpload={(e) => handleImageUpload(e, 'home_masonry_3_image')}
+                                            onDelete={() => handleImageDelete('home_masonry_3_image')}
+                                            isEditing={isEditing}
+                                        />
+                                        <ImageUploader 
+                                            label="Mobile Image (800x800)"
+                                            url={settings.home_masonry_3_image_mobile} 
+                                            uploading={uploading}
+                                            onUpload={(e) => handleImageUpload(e, 'home_masonry_3_image_mobile')}
+                                            onDelete={() => handleImageDelete('home_masonry_3_image_mobile')}
+                                            isEditing={isEditing}
+                                        />
+                                        <EditableInput 
+                                            label="Overlay Text"
+                                            name="home_masonry_3_text"
+                                            value={settings.home_masonry_3_text}
+                                            onChange={handleChange}
+                                            isEditing={isEditing}
+                                        />
+                                        <EditableInput 
+                                            label="Link URL"
+                                            name="home_masonry_3_link"
+                                            value={settings.home_masonry_3_link}
+                                            onChange={handleChange}
+                                            isEditing={isEditing}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Brand Highlights & Craftsmanship */}
+                        <div className="bg-white p-6 rounded-xl border-0 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] space-y-6">
+                            <h3 className="font-bold text-lg text-stone-900 flex items-center gap-2">
+                                <ImageIcon className="w-5 h-5 text-rose-900" /> Additional Banners
+                            </h3>
+                            
+                            <div className="grid md:grid-cols-2 gap-6">
+                                <div className="space-y-4 border border-stone-200 p-4 rounded-lg">
+                                    <h4 className="font-bold text-sm text-stone-700">Craftsmanship Banner</h4>
+                                    <div className="grid md:grid-cols-2 gap-4">
+                                        <ImageUploader 
+                                            label="Desktop (1920x820)"
+                                            url={settings.home_craftsmanship_image} 
+                                            uploading={uploading}
+                                            onUpload={(e) => handleImageUpload(e, 'home_craftsmanship_image')}
+                                            onDelete={() => handleImageDelete('home_craftsmanship_image')}
+                                            isEditing={isEditing}
+                                        />
+                                        <ImageUploader 
+                                            label="Mobile (800x800)"
+                                            url={settings.home_craftsmanship_image_mobile} 
+                                            uploading={uploading}
+                                            onUpload={(e) => handleImageUpload(e, 'home_craftsmanship_image_mobile')}
+                                            onDelete={() => handleImageDelete('home_craftsmanship_image_mobile')}
+                                            isEditing={isEditing}
+                                        />
+                                    </div>
+                                    <EditableInput 
+                                        label="Link URL"
+                                        name="home_craftsmanship_link"
+                                        value={settings.home_craftsmanship_link}
+                                        onChange={handleChange}
+                                        isEditing={isEditing}
+                                    />
+                                </div>
+                                <div className="space-y-4 border border-stone-200 p-4 rounded-lg">
+                                    <h4 className="font-bold text-sm text-stone-700">Premium Collection Banner</h4>
+                                    <div className="grid md:grid-cols-2 gap-4">
+                                        <ImageUploader 
+                                            label="Desktop (1920x820)"
+                                            url={settings.home_premium_banner_image} 
+                                            uploading={uploading}
+                                            onUpload={(e) => handleImageUpload(e, 'home_premium_banner_image')}
+                                            onDelete={() => handleImageDelete('home_premium_banner_image')}
+                                            isEditing={isEditing}
+                                        />
+                                        <ImageUploader 
+                                            label="Mobile (800x800)"
+                                            url={settings.home_premium_banner_image_mobile} 
+                                            uploading={uploading}
+                                            onUpload={(e) => handleImageUpload(e, 'home_premium_banner_image_mobile')}
+                                            onDelete={() => handleImageDelete('home_premium_banner_image_mobile')}
+                                            isEditing={isEditing}
+                                        />
+                                    </div>
+                                    <EditableInput 
+                                        label="Link URL"
+                                        name="home_premium_banner_link"
+                                        value={settings.home_premium_banner_link}
+                                        onChange={handleChange}
+                                        isEditing={isEditing}
+                                    />
+                                </div>
+                            </div>
+                        </div>
 
                         {/* Brand Story Images */}
                         <div className="bg-white p-6 rounded-xl border-0 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] space-y-6">
@@ -913,10 +1192,8 @@ const Settings = () => {
             {cropModalOpen && (
                 <ImageCropper
                     imageSrc={cropImageSrc}
-                    aspect={
-                        (cropKey || '').includes('banner') || (cropKey || '').includes('hero') ? 16/9 : 
-                        (cropKey || '').includes('story') ? 4/3 : 1
-                    }
+                    aspect={getCropTargetSize(cropKey) ? getCropTargetSize(cropKey).width / getCropTargetSize(cropKey).height : 1}
+                    targetSize={getCropTargetSize(cropKey)}
                     onCancel={() => {
                         setCropModalOpen(false);
                         setCropImageSrc(null);

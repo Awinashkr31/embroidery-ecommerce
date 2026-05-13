@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import {
   Instagram,
   MessageCircle,
@@ -11,9 +11,10 @@ import {
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
+  const location = useLocation();
 
   return (
-    <footer className="bg-[#f0ece9] text-stone-600 border-t border-stone-200 font-sofia">
+    <footer className={`bg-[#f0ece9] text-stone-600 border-t border-stone-200 font-sofia ${location.pathname === '/' ? 'block' : 'hidden md:block'}`}>
       <div className="container-custom py-8 lg:py-10">
         <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-12 gap-x-4 gap-y-8 lg:gap-8">
           {/* 1. Brand Section - Full Width on Mobile */}
@@ -52,8 +53,8 @@ const Footer = () => {
           <div className="col-span-1 lg:col-span-2 space-y-4">
              <h4 className="font-heading text-sm lg:text-base font-bold text-stone-900 uppercase tracking-widest">Help</h4>
              <ul className="space-y-2 text-xs lg:text-sm">
-                <FooterLink to="/about" label="Our Story" />
-                <FooterLink to="/support" label="Contact Us" />
+                <FooterLink to="/about" label="About" />
+                <FooterLink to="/support" label="Support" />
                 <FooterLink to="/profile" label="Order History" />
              </ul>
           </div>

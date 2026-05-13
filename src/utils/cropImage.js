@@ -32,7 +32,8 @@ export default async function getCroppedImg(
   imageSrc,
   pixelCrop,
   rotation = 0,
-  flip = { horizontal: false, vertical: false }
+  flip = { horizontal: false, vertical: false },
+  targetSize = null
 ) {
   const image = await createImage(imageSrc)
   const canvas = document.createElement('canvas')
@@ -80,10 +81,22 @@ export default async function getCroppedImg(
   // paste generated rotate image at the top left corner
   ctx.putImageData(data, 0, 0)
 
+  // If a specific target size is requested, resize the final image
+  let finalCanvas = canvas;
+  if (targetSize && targetSize.width && targetSize.height) {
+      const resizeCanvas = document.createElement('canvas');
+      resizeCanvas.width = targetSize.width;
+      resizeCanvas.height = targetSize.height;
+      const resizeCtx = resizeCanvas.getContext('2d');
+      // Draw the cropped canvas onto the target sized canvas
+      resizeCtx.drawImage(canvas, 0, 0, canvas.width, canvas.height, 0, 0, targetSize.width, targetSize.height);
+      finalCanvas = resizeCanvas;
+  }
+
   // As a Blob
   return new Promise((resolve) => {
-    canvas.toBlob((file) => {
+    finalCanvas.toBlob((file) => {
       resolve(file)
-    }, 'image/jpeg')
+    }, 'image/jpeg', 0.95) // High quality jpeg
   })
 }
