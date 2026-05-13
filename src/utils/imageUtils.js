@@ -15,16 +15,18 @@ export const getOptimizedImageUrl = (url, { width, height, quality, format = 'we
     if (!url.includes('supabase.co')) return url; // Only optimize Supabase URLs
 
     try {
-        const urlObj = new URL(url);
+        // Use wsrv.nl proxy to enforce image resizing on Free Tier
+        const proxyUrl = new URL('https://wsrv.nl/');
+        proxyUrl.searchParams.set('url', url);
         
-        if (width) urlObj.searchParams.set('width', String(width));
-        if (height) urlObj.searchParams.set('height', String(height));
-        if (quality) urlObj.searchParams.set('quality', String(quality));
+        if (width) proxyUrl.searchParams.set('w', String(width));
+        if (height) proxyUrl.searchParams.set('h', String(height));
+        if (quality) proxyUrl.searchParams.set('q', String(quality));
         if (format !== 'origin') {
-             urlObj.searchParams.set('format', format);
+             proxyUrl.searchParams.set('output', format);
         }
 
-        return urlObj.toString();
+        return proxyUrl.toString();
     } catch {
         return url;
     }
