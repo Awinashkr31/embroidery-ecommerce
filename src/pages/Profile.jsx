@@ -150,7 +150,7 @@ const Profile = () => {
         e.preventDefault();
         setSubmittingAddress(true);
         try {
-            await saveAddress(addressForm);
+            await saveAddress(addressForm, (currentUser.uid || currentUser.id));
             setIsAddingAddress(false);
             setAddressForm({ firstName: '', lastName: '', phone: '', zipCode: '', address: '', city: '', state: '' });
             addToast('Address saved successfully!', 'success');
