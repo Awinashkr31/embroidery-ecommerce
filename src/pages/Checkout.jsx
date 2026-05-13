@@ -110,15 +110,13 @@ const Checkout = () => {
         }
     };
 
+    const hasInitializedAddressRef = React.useRef(false);
+
     // Set default address if available
     React.useEffect(() => {
-        if (savedAddresses.length > 0 && selectedAddressId === 'new') {
+        if (savedAddresses.length > 0 && !hasInitializedAddressRef.current) {
             const defaultAddr = savedAddresses.find(addr => addr.userId === (currentUser?.uid || currentUser?.id));
             if (defaultAddr) {
-                // We can't call handleAddressSelect directly if it's not defined yet, 
-                // but here we are redefining it above.
-                // However, userAddresses is defined above.
-                // Let's just set state directly to avoid dependency issues or moving large blocks.
                  setSelectedAddressId(defaultAddr.id);
                  setFormData(prev => ({
                     ...prev,
@@ -130,8 +128,9 @@ const Checkout = () => {
                     zipCode: defaultAddr.zipCode
                 }));
             }
+            hasInitializedAddressRef.current = true;
         }
-    }, [savedAddresses, currentUser, selectedAddressId]);
+    }, [savedAddresses, currentUser]);
 
 
     const handleZipChange = (e) => {
