@@ -144,7 +144,7 @@ const Navbar = React.memo(() => {
         <div className="flex items-center justify-between relative">
 
           {/* 1. Left: Mobile Layout changes based on page */}
-          <div className="flex items-center gap-2 lg:w-1/4">
+          <div className="flex items-center gap-2 lg:flex-1">
             {/* Desktop Logo (Always visible on lg) */}
             <Link to="/" className="hidden lg:flex flex-col group" aria-label="Home">
                 <picture>
@@ -197,12 +197,12 @@ const Navbar = React.memo(() => {
 
 
           {/* 3. Center: Desktop Navigation */}
-          <div className="hidden lg:flex items-center justify-center space-x-2 lg:w-2/4">
+          <div className="hidden lg:flex items-center justify-center space-x-1 xl:space-x-2 shrink-0">
              {navLinks.map((link) => (
                 <Link 
                   key={link.path}
                   to={link.path} 
-                  className={`relative text-xs font-bold tracking-widest uppercase transition-all duration-300 px-4 py-2 rounded-full whitespace-nowrap group ${
+                  className={`relative text-[10px] xl:text-xs font-bold tracking-widest uppercase transition-all duration-300 px-2 xl:px-4 py-2 rounded-full whitespace-nowrap group ${
                     isActive(link.path) 
                       ? 'text-rose-900' 
                       : 'text-stone-600 hover:text-stone-900 hover:bg-stone-50'
@@ -218,7 +218,7 @@ const Navbar = React.memo(() => {
           </div>
 
           {/* 4. Right: Icons & Actions */}
-          <div className="flex items-center justify-end space-x-2 lg:space-x-4 lg:w-1/4">
+          <div className="flex items-center justify-end space-x-2 lg:space-x-4 lg:flex-1 shrink-0">
 
             {/* Global Pincode Header - Desktop/Tablet */}
             <div className="hidden sm:block border-r border-stone-200 pr-4 mr-2">
