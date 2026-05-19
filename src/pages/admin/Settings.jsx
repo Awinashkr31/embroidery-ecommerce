@@ -223,8 +223,17 @@ const Settings = () => {
                 lastModified: Date.now()
             });
 
+            const key = cropKey;
+            
+            let targetSizeMB = 0.08; // Default 80KB for regular images
+            if (typeof key === 'object' && key.type === 'slide') {
+                targetSizeMB = 0.15; // 150KB for main slides
+            } else if (typeof key === 'string' && (key.includes('hero') || key.includes('promo_banner') || key.includes('masonry') || key.includes('craftsmanship') || key.includes('premium_banner'))) {
+                targetSizeMB = 0.15; // 150KB for large banners and hero images
+            }
+
             const options = {
-                maxSizeMB: 0.5, // < 500KB
+                maxSizeMB: targetSizeMB,
                 maxWidthOrHeight: 1920,
                 useWebWorker: true,
                 fileType: 'image/webp'

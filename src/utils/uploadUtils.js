@@ -14,7 +14,7 @@ export const compressImage = async (file, maxWidth = 1920) => {
     }
 
     const options = {
-      maxSizeMB: 0.5,          // 500KB max size
+      maxSizeMB: 0.08,         // 80KB max size
       maxWidthOrHeight: maxWidth,
       useWebWorker: true,
       fileType: 'image/webp'   // Standardized on webp

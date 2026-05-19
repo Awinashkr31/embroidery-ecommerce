@@ -143,7 +143,7 @@ const AdminGallery = () => {
 
     const compressImage = async (file) => {
         const options = {
-            maxSizeMB: 0.5, // ~500KB, ensuring < 500KB
+            maxSizeMB: 0.08, // ~80KB, ensuring < 80KB
             maxWidthOrHeight: 1920,
             useWebWorker: true,
             fileType: 'image/webp' // Convert to webp for better compression
