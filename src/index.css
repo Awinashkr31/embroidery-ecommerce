@@ -18,8 +18,8 @@
     --color-text-muted: #57534e; /* Stone 600 */
     --color-text-light: #a8a29e; /* Stone 400 */
 
-    --font-heading: 'Playfair Display', serif;
-    --font-body: 'Outfit', 'Inter', sans-serif;
+    --font-heading: 'Playfair Display', Georgia, serif;
+    --font-body: 'Outfit', system-ui, -apple-system, sans-serif;
   }
 
   body {

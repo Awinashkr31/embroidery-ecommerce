@@ -60,6 +60,7 @@ const BottomNavigation = () => {
                 end={end}
                 onClick={handleClick}
                 className="flex-1"
+                aria-label={label}
               >
                 {() => (
                   <div className="relative flex flex-col items-center justify-center gap-1 h-full px-1 transition-all duration-150 active:scale-95">

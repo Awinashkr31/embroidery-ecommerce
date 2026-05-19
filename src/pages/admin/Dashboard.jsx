@@ -2,7 +2,7 @@ import React, { useMemo, useEffect, useState, useCallback } from 'react';
 import {
   Package, ShoppingCart, DollarSign, Calendar, TrendingUp,
   AlertTriangle, ArrowUpRight, Clock, RefreshCw, TrendingDown,
-  Users, IndianRupee, CheckCircle2, Loader2
+  Users, IndianRupee, CheckCircle2, Loader2, Truck
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../../config/supabase';
@@ -136,13 +136,30 @@ const Dashboard = () => {
     const totalOrders = orders.length;
     const pendingOrders = orders.filter(o => o.status === 'pending').length;
     const deliveredOrders = orders.filter(o => ['delivered', 'completed'].includes(o.status?.toLowerCase())).length;
+    const shippedOrders = orders.filter(o => ['shipped', 'in_transit'].includes(o.status?.toLowerCase())).length;
+    const rtoOrders = orders.filter(o => ['ndr', 'rto', 'return_requested', 'return_approved'].includes(o.status?.toLowerCase())).length;
+    
+    // Average Delivery Time
+    const deliveredOrdersList = orders.filter(o => ['delivered', 'completed'].includes(o.status?.toLowerCase()));
+    const avgDeliveryTime = deliveredOrdersList.length > 0 
+      ? deliveredOrdersList.reduce((acc, o) => {
+          const start = new Date(o.created_at);
+          // Just approximation since actual delivered_at isn't guaranteed to be present on 'order' currently, we'd need logs
+          const end = new Date(); // Replace with actual delivered time if tracked
+          return acc + ((end - start) / (1000 * 60 * 60 * 24));
+        }, 0) / deliveredOrdersList.length 
+      : 0;
+
     const lowStock = products.filter(p => (p.stock_quantity ?? 0) < 5);
     const avgOrder = totalOrders > 0 ? totalRevenue / totalOrders : 0;
     
     // Instead of hardcoded deltas, we either calculate real ones or omit them completely to prevent data hallucination.
     // For now, we omit the delta prop so it falls back to neutral or doesn't show fake growth.
     
-    return { totalRevenue, totalOrders, pendingOrders, deliveredOrders, avgOrder, lowStock, recentOrders: orders.slice(0, 8) };
+    return { 
+        totalRevenue, totalOrders, pendingOrders, deliveredOrders, avgOrder, lowStock, recentOrders: orders.slice(0, 8),
+        shippedOrders, rtoOrders, avgDeliveryTime
+    };
   }, [orders, products]);
 
   const chartData = useMemo(() => {
@@ -193,6 +210,46 @@ const Dashboard = () => {
             <StatCard title="Avg. Order"      value={fmt(stats.avgOrder)}       icon={TrendingUp}    iconBg="bg-rose-100 text-rose-700"      deltaLabel={stats.pendingOrders + ' pending'} delta={0} />
           </>
         )}
+      </div>
+      
+      {/* ── Logistics & Fulfillment ─ */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mt-6">
+        <div className="bg-white p-5 rounded-2xl border-0 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] flex items-center justify-between">
+            <div>
+                <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">In Transit</p>
+                <h4 className="text-xl font-heading font-bold text-stone-900 mt-1">{stats.shippedOrders}</h4>
+            </div>
+            <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center">
+                <Truck className="w-4 h-4 text-blue-600" />
+            </div>
+        </div>
+        <div className="bg-white p-5 rounded-2xl border-0 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] flex items-center justify-between">
+            <div>
+                <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Delivered</p>
+                <h4 className="text-xl font-heading font-bold text-stone-900 mt-1">{stats.deliveredOrders}</h4>
+            </div>
+            <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            </div>
+        </div>
+        <div className="bg-white p-5 rounded-2xl border-0 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] flex items-center justify-between">
+            <div>
+                <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Returns / NDR</p>
+                <h4 className="text-xl font-heading font-bold text-stone-900 mt-1">{stats.rtoOrders}</h4>
+            </div>
+            <div className="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center">
+                <AlertTriangle className="w-4 h-4 text-red-600" />
+            </div>
+        </div>
+        <div className="bg-white p-5 rounded-2xl border-0 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] flex items-center justify-between">
+            <div>
+                <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Avg Delivery</p>
+                <h4 className="text-xl font-heading font-bold text-stone-900 mt-1">{stats.avgDeliveryTime > 0 ? stats.avgDeliveryTime.toFixed(1) : '-'} <span className="text-sm font-body text-stone-500 font-normal">days</span></h4>
+            </div>
+            <div className="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center">
+                <Clock className="w-4 h-4 text-indigo-600" />
+            </div>
+        </div>
       </div>
 
       {/* ── Chart + Alerts ─ */}

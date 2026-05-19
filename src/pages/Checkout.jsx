@@ -8,6 +8,7 @@ import { useToast } from '../context/ToastContext';
 import { supabase } from '../config/supabase';
 import { DelhiveryService } from '../services/delhivery';
 import { getEstimatedDeliveryDate } from '../utils/dateUtils';
+import { usePincode } from '../context/PincodeContext';
 
 const loadRazorpay = () => {
     return new Promise((resolve) => {
@@ -23,6 +24,7 @@ const Checkout = () => {
     const { cart, cartLoading, cartTotal, subtotal, shippingCharge, discountAmount, appliedCoupon, applyCoupon, removeCoupon, placeOrder, savedAddresses, saveAddress, COD_EXTRA_CHARGE, COD_STATUS } = useCart();
     const { currentUser, loading: authLoading } = useAuth();
     const { addToast } = useToast();
+    const { pincode: globalPincode } = usePincode();
     const navigate = useNavigate();
     
     const [shouldSaveAddress, setShouldSaveAddress] = useState(true);
@@ -104,13 +106,43 @@ const Checkout = () => {
                 address: '',
                 city: '',
                 state: '',
-                zipCode: '',
+                zipCode: globalPincode || '',
                 email: currentUser?.email || prev.email || ''
             }));
+            
+            // Trigger check if global pincode exists
+            if (globalPincode && globalPincode.length === 6) {
+                simulateZipCheck(globalPincode);
+            }
         }
     };
 
     const hasInitializedAddressRef = React.useRef(false);
+
+    // Initial load logic for "new" address without saved addresses
+    React.useEffect(() => {
+        if (!hasInitializedAddressRef.current && savedAddresses.length === 0 && globalPincode) {
+             setFormData(prev => ({ ...prev, zipCode: globalPincode }));
+             simulateZipCheck(globalPincode);
+        }
+    }, [savedAddresses.length, globalPincode]);
+
+    // Helper to run check without event
+    const simulateZipCheck = async (zip) => {
+        setIsZipLoading(true);
+        try {
+            const sydneyCheck = await DelhiveryService.checkServiceability(zip);
+            if (sydneyCheck.serviceable === false) {
+                addToast('We do not deliver to this Pincode.', 'error');
+                setFormData(prev => ({ ...prev, city: '', state: '' }));
+            } else if (sydneyCheck.city || sydneyCheck.state) {
+                setFormData(prev => ({ ...prev, city: sydneyCheck.city || prev.city, state: sydneyCheck.state || prev.state }));
+            }
+        } catch (error) {
+            console.error('Serviceability check failed:', error);
+        }
+        setIsZipLoading(false);
+    };
 
     // Set default address if available
     React.useEffect(() => {

@@ -3,8 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hand Embroidery by Sana - Authentic Art & Mehndi</title>
-  <meta name="description" content="Explore handcrafted embroidery art, custom clothing, and unique designs by Sana. Shop now for premium quality handmade products.">
+  <title>Handmade Embroidery Gifts & Crochet Accessories India | Embroidery By Sana</title>
+  <meta name="description" content="Shop handmade embroidery hoops, crochet bouquets, personalized gifts, and aesthetic handmade accessories online in India.">
+  <meta name="keywords" content="crochet bouquet india, handmade gifts india, personalized handmade gifts, crochet flower bouquet, forever flower bouquet, crochet bouquet for girlfriend, aesthetic handmade gifts, custom handmade gifts, crochet accessories india, cute handmade accessories, personalized bouquet gift, aesthetic crochet bouquet, handmade anniversary gift, custom gift india, handmade flower bouquet">
   <meta name="theme-color" content="#881337">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
@@ -21,14 +22,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   
-  <!-- Preload primary font for faster FCP -->
-  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet"></noscript>
+  <!-- Preload primary font (Outfit) for faster FCP — reduced to 3 weights -->
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&display=swap" rel="stylesheet"></noscript>
 
-  <!-- Non-blocking Google Fonts loading (remaining fonts) -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <!-- Heading font (Playfair Display) — non-blocking, reduced to 3 weights -->
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
   <noscript>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
   </noscript>
 </head>
 <body>
@@ -44,14 +45,37 @@
     }
   </script>
 
-  <!-- Analytics deferred to after page load (was blocking FCP) -->
-  <script defer src="https://cloud.umami.is/script.js" data-website-id="%VITE_UMAMI_WEBSITE_ID%"></script>
-  <script defer src="https://www.googletagmanager.com/gtag/js?id=%VITE_FIREBASE_MEASUREMENT_ID%"></script>
+  <!-- Analytics: load after first user interaction (scroll/click) to avoid blocking FCP/LCP -->
   <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', '%VITE_FIREBASE_MEASUREMENT_ID%');
+    (function(){
+      var loaded = false;
+      function loadAnalytics() {
+        if (loaded) return;
+        loaded = true;
+        // Umami
+        var u = document.createElement('script');
+        u.src = 'https://cloud.umami.is/script.js';
+        u.dataset.websiteId = '%VITE_UMAMI_WEBSITE_ID%';
+        u.async = true;
+        document.head.appendChild(u);
+        // Google Analytics
+        var g = document.createElement('script');
+        g.src = 'https://www.googletagmanager.com/gtag/js?id=%VITE_FIREBASE_MEASUREMENT_ID%';
+        g.async = true;
+        document.head.appendChild(g);
+        g.onload = function() {
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', '%VITE_FIREBASE_MEASUREMENT_ID%');
+        };
+      }
+      // Trigger on first interaction or after 4s timeout (whichever comes first)
+      window.addEventListener('scroll', loadAnalytics, { once: true, passive: true });
+      document.addEventListener('click', loadAnalytics, { once: true });
+      document.addEventListener('touchstart', loadAnalytics, { once: true, passive: true });
+      setTimeout(loadAnalytics, 4000);
+    })();
   </script>
 </body>
 </html>

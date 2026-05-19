@@ -37,17 +37,65 @@ export const DelhiveryService = {
                     // Usually 'pre_paid' support is the baseline
                     const isServiceable = info.pre_paid === "Y" || info.cod === "Y";
 
+                    // EDD Calculation based on Delhivery zone data
+                    const processingDays = 2; // Handmade processing time
+
+                    // Use Delhivery's max_days if available, otherwise estimate by zone
+                    let transitDays;
+                    if (info.max_days && Number(info.max_days) > 0) {
+                        transitDays = Number(info.max_days);
+                    } else {
+                        // Zone-based heuristic using state and area type
+                        const originState = "PB"; // Punjab (warehouse state)
+                        const destState = (info.state_code || "").toUpperCase();
+                        const isODA = info.is_oda === "Y";
+                        const isMetro = ["DL", "MH", "KA", "TN", "WB", "TG", "GJ"].includes(destState);
+                        const isSameState = destState === originState;
+                        const isNorthIndia = ["PB", "HR", "HP", "UK", "UP", "RJ", "DL", "CH", "JK"].includes(destState);
+                        const isNorthEast = ["AS", "AR", "MN", "ML", "MZ", "NL", "TR", "SK"].includes(destState);
+
+                        if (isSameState) {
+                            transitDays = isODA ? 3 : 2;
+                        } else if (isNorthIndia) {
+                            transitDays = isODA ? 5 : 3;
+                        } else if (isMetro) {
+                            transitDays = isODA ? 6 : 4;
+                        } else if (isNorthEast) {
+                            transitDays = isODA ? 9 : 7;
+                        } else {
+                            transitDays = isODA ? 7 : 5;
+                        }
+                    }
+                    
+                    const minDays = processingDays + transitDays;
+                    const maxDays = minDays + 2;
+
+                    const minDate = new Date();
+                    minDate.setDate(minDate.getDate() + minDays);
+                    
+                    const maxDate = new Date();
+                    maxDate.setDate(maxDate.getDate() + maxDays);
+
+                    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                    // Handle cross-month display
+                    const eddString = minDate.getMonth() === maxDate.getMonth()
+                        ? `${minDate.getDate()}–${maxDate.getDate()} ${monthNames[maxDate.getMonth()]}`
+                        : `${minDate.getDate()} ${monthNames[minDate.getMonth()]}–${maxDate.getDate()} ${monthNames[maxDate.getMonth()]}`;
+
                     return {
                         serviceable: isServiceable,
                         city: info.district,
                         state: info.state_code, 
                         codAvailable: info.cod === "Y",
+                        eddString: eddString,
+                        processingDays,
+                        transitDays,
                         details: info
                     };
                 }
             }
 
-            return { serviceable: false };
+            return { serviceable: false, error: 'Pincode not serviceable' };
 
         } catch (error) {
             console.error('Delhivery Serviceability Error:', error);
@@ -133,6 +181,55 @@ export const DelhiveryService = {
             return data;
         } catch (error) {
             console.error('Delhivery Create Order Error:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Create Return / Reverse Pickup
+     * @param {object} returnDetails 
+     * @returns {Promise<any>}
+     */
+    createReturn: async (returnDetails) => {
+        const payload = {
+            "shipments": [
+                {
+                    "name": returnDetails.customerName,
+                    "add": returnDetails.address,
+                    "pin": returnDetails.pincode,
+                    "city": returnDetails.city,
+                    "state": returnDetails.state,
+                    "country": "India",
+                    "phone": returnDetails.phone,
+                    "order": returnDetails.orderId + "-RET",
+                    "payment_mode": "Prepaid", // Reverse pickups are prepaid by the merchant
+                    "return_direction": "R", // R indicates Reverse Pickup
+                    "products_desc": "Return: Embroidery Items",
+                    "cod_amount": 0,
+                    "order_date": new Date().toISOString(),
+                    "total_amount": returnDetails.amount,
+                    "seller_name": "Enbroidery",
+                    "quantity": returnDetails.items.reduce((acc, item) => acc + (item.quantity || 1), 0),
+                    "waybill": "",
+                    "shipment_width": "10",
+                    "shipment_height": "10",
+                    "shipment_depth": "10",
+                    "shipment_weight": "500"
+                }
+            ]
+        };
+
+        try {
+            const { data, error } = await supabase.functions.invoke('delhivery-api', {
+                body: { action: 'create-order', payload: { data: payload } } // Same endpoint
+            });
+
+            if (error) throw error;
+            if (data?.error) throw new Error(data.error);
+
+            return data;
+        } catch (error) {
+            console.error('Delhivery Create Return Error:', error);
             throw error;
         }
     },

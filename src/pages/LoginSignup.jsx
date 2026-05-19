@@ -79,7 +79,11 @@ const LoginSignup = () => {
           {/* Logo in full color on white background */}
           <div className="flex justify-center mb-6">
             <Link to="/">
-              <img src="/logo.png" alt="Enbroidery" className="h-14 w-auto object-contain" />
+              <picture>
+                <source srcSet="/logo.avif" type="image/avif" />
+                <source srcSet="/logo.webp" type="image/webp" />
+                <img src="/logo.png" alt="Enbroidery" className="h-14 w-auto object-contain" width={140} height={56} />
+              </picture>
             </Link>
           </div>
 
@@ -157,7 +161,11 @@ const LoginSignup = () => {
           <div className="absolute bottom-0 right-0 w-80 h-80 rounded-full bg-rose-800/25 blur-[90px] pointer-events-none" />
 
           <Link to="/">
-            <img src="/logo.png" alt="Enbroidery" className="h-12 w-auto object-contain brightness-0 invert" />
+            <picture>
+              <source srcSet="/logo.avif" type="image/avif" />
+              <source srcSet="/logo.webp" type="image/webp" />
+              <img src="/logo.png" alt="Enbroidery" className="h-12 w-auto object-contain brightness-0 invert" width={120} height={48} />
+            </picture>
           </Link>
 
           <div className="relative z-10 space-y-8">

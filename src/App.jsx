@@ -1,9 +1,6 @@
 
 import React, { Suspense, lazy } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom'
-import ScrollToTop from './components/ScrollToTop'
-import { SpeedInsights } from '@vercel/speed-insights/react'
-import { Analytics } from '@vercel/analytics/react'
 
 import Navbar from './components/Navbar'
 
@@ -17,6 +14,7 @@ import { WishlistProvider } from './context/WishlistContext'
 import { SettingsProvider } from './context/SettingsContext'
 import { CategoryProvider } from './context/CategoryContext'
 import { AdminProvider } from './context/AdminContext'
+import { PincodeProvider } from './context/PincodeContext'
 
 // Lazy Load Page Components for Performance
 const LoginSignup = lazy(() => import('./pages/LoginSignup'));
@@ -34,6 +32,9 @@ const About = lazy(() => import('./pages/About'));
 const Shop = lazy(() => import('./pages/Shop'));
 const Categories = lazy(() => import('./pages/Categories'));
 const NewArrivals = lazy(() => import('./pages/NewArrivals'));
+const Collection = lazy(() => import('./pages/Collection'));
+const Blog = lazy(() => import('./pages/Blog'));
+const BlogPost = lazy(() => import('./pages/BlogPost'));
 
 const ProductDetails = lazy(() => import('./pages/ProductDetails'));
 const CustomDesign = lazy(() => import('./pages/CustomDesign'));
@@ -43,6 +44,7 @@ const Contact = lazy(() => import('./pages/Contact'));
 const Cart = lazy(() => import('./pages/Cart'));
 const Checkout = lazy(() => import('./pages/Checkout'));
 const OrderFailed = lazy(() => import('./pages/OrderFailed'));
+const TrackOrder = lazy(() => import('./pages/TrackOrder'));
 
 // Admin Components
 const AdminLogin = lazy(() => import('./pages/admin/AdminLogin'));
@@ -53,6 +55,8 @@ const AdminLayout = lazy(() => import('./pages/admin/AdminLayout'));
 const Dashboard = lazy(() => import('./pages/admin/Dashboard'));
 const ProductManager = lazy(() => import('./pages/admin/ProductManager'));
 const AdminOrders = lazy(() => import('./pages/admin/Orders'));
+const AdminNDRManager = lazy(() => import('./pages/admin/NDRManager'));
+const AdminBulkShipments = lazy(() => import('./pages/admin/BulkShipments'));
 const AdminCoupons = lazy(() => import('./pages/admin/AdminCoupons'));
 const AdminMessages = lazy(() => import('./pages/admin/Messages'));
 const AdminUsers = lazy(() => import('./pages/admin/Users'));
@@ -66,8 +70,24 @@ const NotFound = lazy(() => import('./pages/NotFound'));
 
 import ProtectedRoute from './components/admin/ProtectedRoute'
 import ConditionalLayout from './components/ConditionalLayout'
-import LoginBottomSheet from './components/LoginBottomSheet'
+const LoginBottomSheet = lazy(() => import('./components/LoginBottomSheet'));
 const ChatWidget = lazy(() => import('./components/ChatWidget'));
+
+// Defer non-critical utilities
+const ScrollToTop = lazy(() => import('./components/ScrollToTop'));
+const VercelAnalytics = lazy(() => {
+  return new Promise(resolve => {
+    // Load Vercel analytics after main content renders
+    requestIdleCallback?.(() => resolve(import('@vercel/analytics/react'))) 
+      || setTimeout(() => resolve(import('@vercel/analytics/react')), 3000);
+  }).then(mod => ({ default: () => <mod.Analytics /> }));
+});
+const VercelSpeedInsights = lazy(() => {
+  return new Promise(resolve => {
+    requestIdleCallback?.(() => resolve(import('@vercel/speed-insights/react')))
+      || setTimeout(() => resolve(import('@vercel/speed-insights/react')), 3000);
+  }).then(mod => ({ default: () => <mod.SpeedInsights /> }));
+});
 
 // Loading Component
 const PageLoader = () => (
@@ -85,10 +105,11 @@ function App() {
       <CategoryProvider>
       <CartProvider>
       <ProductProvider>
+      <PincodeProvider>
         <Router>
-          <ScrollToTop />
-          <SpeedInsights />
-          <Analytics />
+          <Suspense fallback={null}><ScrollToTop /></Suspense>
+          <Suspense fallback={null}><VercelSpeedInsights /></Suspense>
+          <Suspense fallback={null}><VercelAnalytics /></Suspense>
           <Suspense fallback={<PageLoader />}>
             <Routes>
               {/* Admin Routes — wrapped in AdminProvider */}
@@ -105,6 +126,8 @@ function App() {
                     <Route path="dashboard" element={<Dashboard />} />
                     <Route path="products" element={<ProductManager />} />
                     <Route path="orders" element={<AdminOrders />} />
+                    <Route path="returns-ndr" element={<AdminNDRManager />} />
+                    <Route path="bulk-shipments" element={<AdminBulkShipments />} />
                     <Route path="reviews" element={<Reviews />} />
                     <Route path="users" element={<AdminUsers />} />
                     <Route path="design-requests" element={<AdminDesignRequests />} />
@@ -122,7 +145,7 @@ function App() {
                 <div className="flex flex-col min-h-screen pb-16 md:pb-0">
                   <Navbar />
                   <Suspense fallback={null}><ChatWidget /></Suspense>
-                  <LoginBottomSheet />
+                  <Suspense fallback={null}><LoginBottomSheet /></Suspense>
                   <main className="flex-grow">
                     <ConditionalLayout>
                       <Suspense fallback={<PageLoader />}>
@@ -136,7 +159,11 @@ function App() {
                 <Route path="/about" element={<About />} />
                 <Route path="/shop" element={<Shop />} />
                 <Route path="/categories" element={<Categories />} />
+                <Route path="/collections/:slug" element={<Collection />} />
                 <Route path="/new-arrivals" element={<NewArrivals />} />
+                <Route path="/blog" element={<Blog />} />
+                <Route path="/blog/:slug" element={<BlogPost />} />
+                <Route path="/about" element={<About />} />
                 <Route path="/product/:id" element={<ProductDetails />} />
                 <Route path="/custom-design" element={<CustomDesign />} />
                 <Route path="/mehndi-booking" element={<MehndiBooking />} />
@@ -154,11 +181,13 @@ function App() {
                 <Route path="/order-failed" element={<OrderFailed />} />
                 <Route path="/order-confirmation" element={<OrderConfirmation />} />
                 <Route path="/order/:id" element={<OrderDetails />} />
+                <Route path="/track-order" element={<TrackOrder />} />
                 <Route path="*" element={<NotFound />} />
               </Route>
             </Routes>
           </Suspense>
         </Router>
+      </PincodeProvider>
       </ProductProvider>
       </CartProvider>
       </CategoryProvider>

@@ -8,9 +8,11 @@ import ErrorBoundary from './components/ErrorBoundary'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <ErrorBoundary>
-      <App />
-    </ErrorBoundary>
+    <HelmetProvider>
+      <ErrorBoundary>
+        <App />
+      </ErrorBoundary>
+    </HelmetProvider>
   </StrictMode>,
 )
 

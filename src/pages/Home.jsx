@@ -94,7 +94,10 @@ const Home = () => {
     }
   };
 
+  // Autoplay only on desktop (mobile gets static hero for faster LCP)
   useEffect(() => {
+    const isDesktop = window.matchMedia('(min-width: 768px)').matches;
+    if (!isDesktop) return;
     const timer = setInterval(() => {
         setCurrentSlide((prev) => (prev + 1) % homeSlides.length);
     }, 6000);
@@ -140,13 +143,32 @@ const Home = () => {
       }
   };
 
+  const orgSchema = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Embroidery By Sana",
+    "url": "https://www.embroiderybysana.live",
+    "logo": "https://www.embroiderybysana.live/logo.png",
+    "description": "Embroidery By Sana is an Indian handmade embroidery and crochet brand specializing in personalized handmade gifts, aesthetic crochet bouquets, forever flower bouquets, and cute handmade accessories.",
+    "foundingLocation": {
+      "@type": "Place",
+      "name": "India"
+    }
+  };
+
   return (
     <div className="font-body bg-white selection:bg-rose-900 selection:text-white">
-      <SEO title="Home" description="Welcome to Sana's Hand Embroidery." />
+      <h1 className="sr-only">Handmade Embroidery Gifts, Crochet Bouquets & Aesthetic Personalized Gifts India | Embroidery By Sana</h1>
+      <SEO 
+          title="Handmade Embroidery & Crochet Bouquet India | Personalized Gifts" 
+          description="Shop handmade crochet bouquets, forever flower bouquets, personalized embroidery hoops, aesthetic handmade gifts, and cute crochet accessories online in India. Custom handmade gifts for birthdays, anniversaries & more." 
+          schema={orgSchema}
+      />
 
       {/* ================= HERO SLIDER ================= */}
+      {/* Hero uses aspect-ratio for CLS prevention instead of viewport height */}
       <section 
-        className="relative w-full h-[55vh] md:h-[80vh] overflow-hidden bg-stone-50"
+        className="relative w-full aspect-[4/5] md:aspect-[16/9] lg:aspect-[21/9] overflow-hidden bg-stone-50"
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
@@ -158,10 +180,12 @@ const Home = () => {
               >
                   <Link to={slide.link || '/shop'} className="block w-full h-full cursor-pointer">
                       <picture>
-                          <source media="(min-width: 768px)" srcSet={getOptimizedImageUrl(slide.desktopImage, { width: 1600, quality: 85 })} />
+                          <source media="(min-width: 768px)" srcSet={getOptimizedImageUrl(slide.desktopImage, { width: 1600, quality: 75 })} type="image/webp" />
                           <img 
-                              src={getOptimizedImageUrl(slide.mobileImage || slide.desktopImage, { width: 800, quality: 80 })} 
+                              src={getOptimizedImageUrl(slide.mobileImage || slide.desktopImage, { width: 600, quality: 70 })} 
                               alt={`Slide ${idx + 1}`} 
+                              width={800}
+                              height={600}
                               className="w-full h-full object-cover"
                               loading={idx === 0 ? "eager" : "lazy"}
                               decoding={idx === 0 ? "sync" : "async"}
@@ -172,14 +196,14 @@ const Home = () => {
               </div>
           ))}
 
-          {/* Slider Arrows */}
+          {/* Slider Arrows — hidden on mobile (swipe is sufficient), no backdrop-blur */}
           {homeSlides.length > 1 && (
             <>
-              <button onClick={() => setCurrentSlide((prev) => (prev - 1 + homeSlides.length) % homeSlides.length)} className="absolute left-3 md:left-6 top-1/2 -translate-y-1/2 z-20 w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/20 backdrop-blur-md hover:bg-white/40 text-white flex items-center justify-center transition-all hover:scale-110 shadow-lg" aria-label="Previous slide">
-                <ChevronLeft className="w-5 h-5 md:w-6 md:h-6" />
+              <button onClick={() => setCurrentSlide((prev) => (prev - 1 + homeSlides.length) % homeSlides.length)} className="absolute left-3 md:left-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white/30 hover:bg-white/50 text-white hidden md:flex items-center justify-center transition-all hover:scale-110 shadow-lg" aria-label="Previous slide">
+                <ChevronLeft className="w-6 h-6" />
               </button>
-              <button onClick={() => setCurrentSlide((prev) => (prev + 1) % homeSlides.length)} className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 z-20 w-10 h-10 md:w-12 md:h-12 rounded-full bg-white/20 backdrop-blur-md hover:bg-white/40 text-white flex items-center justify-center transition-all hover:scale-110 shadow-lg" aria-label="Next slide">
-                <ChevronRight className="w-5 h-5 md:w-6 md:h-6" />
+              <button onClick={() => setCurrentSlide((prev) => (prev + 1) % homeSlides.length)} className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white/30 hover:bg-white/50 text-white hidden md:flex items-center justify-center transition-all hover:scale-110 shadow-lg" aria-label="Next slide">
+                <ChevronRight className="w-6 h-6" />
               </button>
             </>
           )}
@@ -215,8 +239,10 @@ const Home = () => {
                           <div className="w-20 h-20 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-full overflow-hidden border-2 border-stone-200 group-hover:border-rose-400 transition-all duration-500 p-1 shadow-sm group-hover:shadow-lg group-hover:-translate-y-1">
                               <div className="w-full h-full rounded-full overflow-hidden">
                                   <img 
-                                      src={getOptimizedImageUrl(category.image, { width: 400, quality: 80 })} 
+                                      src={getOptimizedImageUrl(category.image, { width: 200, quality: 70 })} 
                                       alt={category.label} 
+                                      width={160}
+                                      height={160}
                                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
                                       loading="lazy"
                                       decoding="async"
@@ -247,10 +273,12 @@ const Home = () => {
           <section className="w-full bg-stone-50">
               <Link to={settings.home_promo_banner_link || "/shop"} className="block w-full">
                   <picture className="block w-full">
-                      <source media="(min-width: 768px)" srcSet={getOptimizedImageUrl(settings.home_promo_banner_image, { width: 1600, quality: 85 })} />
+                      <source media="(min-width: 768px)" srcSet={getOptimizedImageUrl(settings.home_promo_banner_image, { width: 1400, quality: 75 })} />
                       <img 
-                          src={getOptimizedImageUrl(settings.home_promo_banner_image_mobile || settings.home_promo_banner_image, { width: 800, quality: 80 })} 
+                          src={getOptimizedImageUrl(settings.home_promo_banner_image_mobile || settings.home_promo_banner_image, { width: 600, quality: 70 })} 
                           alt="Promo Banner" 
+                          width={800}
+                          height={400}
                           className="w-full h-auto md:h-[40vh] md:object-cover"
                           loading="lazy"
                           decoding="async"
@@ -306,10 +334,12 @@ const Home = () => {
                   {/* Left Tall Image */}
                   <Link to={settings.home_masonry_1_link || "/shop"} className="relative aspect-square md:aspect-[3/4] overflow-hidden group rounded-md shadow-sm block">
                       <picture>
-                          <source media="(min-width: 768px)" srcSet={getOptimizedImageUrl(settings.home_masonry_1_image, { width: 800, quality: 80 })} />
+                          <source media="(min-width: 768px)" srcSet={getOptimizedImageUrl(settings.home_masonry_1_image, { width: 600, quality: 75 })} />
                           <img 
-                              src={getOptimizedImageUrl(settings.home_masonry_1_image_mobile || settings.home_masonry_1_image, { width: 800, quality: 80 })} 
+                              src={getOptimizedImageUrl(settings.home_masonry_1_image_mobile || settings.home_masonry_1_image, { width: 500, quality: 70 })} 
                               alt={settings.home_masonry_1_text} 
+                              width={600}
+                              height={800}
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                               loading="lazy"
                               decoding="async"
@@ -322,10 +352,12 @@ const Home = () => {
                   <div className="grid grid-rows-2 gap-4 md:gap-6">
                       <Link to={settings.home_masonry_2_link || "/shop"} className="relative w-full h-full min-h-[250px] overflow-hidden group rounded-md shadow-sm block">
                           <picture>
-                              <source media="(min-width: 768px)" srcSet={getOptimizedImageUrl(settings.home_masonry_2_image, { width: 800, quality: 80 })} />
+                              <source media="(min-width: 768px)" srcSet={getOptimizedImageUrl(settings.home_masonry_2_image, { width: 600, quality: 75 })} />
                               <img 
-                                  src={getOptimizedImageUrl(settings.home_masonry_2_image_mobile || settings.home_masonry_2_image, { width: 800, quality: 80 })} 
+                                  src={getOptimizedImageUrl(settings.home_masonry_2_image_mobile || settings.home_masonry_2_image, { width: 500, quality: 70 })} 
                                   alt={settings.home_masonry_2_text} 
+                                  width={600}
+                                  height={400}
                                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                                   loading="lazy"
                                   decoding="async"
@@ -335,10 +367,12 @@ const Home = () => {
                       </Link>
                       <Link to={settings.home_masonry_3_link || "/shop"} className="relative w-full h-full min-h-[250px] overflow-hidden group rounded-md shadow-sm block">
                           <picture>
-                              <source media="(min-width: 768px)" srcSet={getOptimizedImageUrl(settings.home_masonry_3_image, { width: 800, quality: 80 })} />
+                              <source media="(min-width: 768px)" srcSet={getOptimizedImageUrl(settings.home_masonry_3_image, { width: 600, quality: 75 })} />
                               <img 
-                                  src={getOptimizedImageUrl(settings.home_masonry_3_image_mobile || settings.home_masonry_3_image, { width: 800, quality: 80 })} 
+                                  src={getOptimizedImageUrl(settings.home_masonry_3_image_mobile || settings.home_masonry_3_image, { width: 500, quality: 70 })} 
                                   alt={settings.home_masonry_3_text} 
+                                  width={600}
+                                  height={400}
                                   className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-700"
                                   loading="lazy"
                                   decoding="async"
@@ -394,10 +428,12 @@ const Home = () => {
                       className="col-span-1 md:col-span-2 relative block w-full overflow-hidden bg-stone-50 rounded-md shadow-sm aspect-square md:aspect-[24/7]"
                   >
                         <picture>
-                            <source media="(min-width: 768px)" srcSet={getOptimizedImageUrl(settings.home_craftsmanship_image, { width: 1600, quality: 85 })} />
+                            <source media="(min-width: 768px)" srcSet={getOptimizedImageUrl(settings.home_craftsmanship_image, { width: 1400, quality: 75 })} />
                             <img 
-                                src={getOptimizedImageUrl(settings.home_craftsmanship_image_mobile || settings.home_craftsmanship_image, { width: 800, quality: 85 })} 
+                                src={getOptimizedImageUrl(settings.home_craftsmanship_image_mobile || settings.home_craftsmanship_image, { width: 600, quality: 70 })} 
                                 alt="The Art of Embroidery" 
+                                width={1400}
+                                height={400}
                                 className="w-full h-full object-cover"
                                 loading="lazy"
                                 decoding="async"
@@ -415,10 +451,12 @@ const Home = () => {
                {settings.home_premium_banner_image && (
                    <div className="relative w-full aspect-[21/9] md:aspect-[24/7] overflow-hidden bg-stone-50 mb-12 shadow-2xl">
                         <picture>
-                            <source media="(min-width: 768px)" srcSet={getOptimizedImageUrl(settings.home_premium_banner_image, { width: 1600, quality: 85 })} />
+                            <source media="(min-width: 768px)" srcSet={getOptimizedImageUrl(settings.home_premium_banner_image, { width: 1400, quality: 75 })} />
                             <img 
-                                src={getOptimizedImageUrl(settings.home_premium_banner_image_mobile || settings.home_premium_banner_image, { width: 800, quality: 85 })} 
+                                src={getOptimizedImageUrl(settings.home_premium_banner_image_mobile || settings.home_premium_banner_image, { width: 600, quality: 70 })} 
                                 alt="Premium Collection Banner" 
+                                width={1400}
+                                height={500}
                                 className="w-full h-full object-cover"
                                 loading="lazy"
                                 decoding="async"

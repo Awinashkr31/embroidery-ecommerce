@@ -21,11 +21,17 @@ const Footer = () => {
           <div className="col-span-2 lg:col-span-4 space-y-3">
             <Link to="/" className="inline-block">
                {/* Logo */}
-              <img 
-                src="/logo.png" 
-                alt="Embroidery By Sana" 
-                className="h-16 lg:h-20 w-auto object-contain mix-blend-multiply opacity-90 hover:opacity-100 transition-opacity" 
-              />
+              <picture>
+                <source srcSet="/logo.avif" type="image/avif" />
+                <source srcSet="/logo.webp" type="image/webp" />
+                <img 
+                  src="/logo.png" 
+                  alt="Embroidery By Sana" 
+                  className="h-16 lg:h-20 w-auto object-contain mix-blend-multiply opacity-90 hover:opacity-100 transition-opacity" 
+                  width={200}
+                  height={80}
+                />
+              </picture>
             </Link>
             <p className="text-stone-500 leading-relaxed max-w-sm font-light text-xs lg:text-sm">
               Weaving stories into fabric. Handcrafted embroidery and detailed Mehndi designs 

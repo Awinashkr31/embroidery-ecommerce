@@ -109,7 +109,34 @@ serve(async (req: Request) => {
 
     if (logError) throw logError;
 
-    return new Response(JSON.stringify({ success: true, message: "Tracking updated" }), {
+    // 4. Trigger Notifications for key status changes
+    const notificationStatuses = ['shipped', 'out for delivery', 'delivered', 'rto initiated', 'delivery failed'];
+    if (notificationStatuses.includes(statusLower)) {
+        try {
+            // Call a central notification handler edge function
+            // In a real implementation, this would send Email/WhatsApp
+            const notificationUrl = `${supabaseUrl}/functions/v1/send-notification`;
+            await fetch(notificationUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${supabaseKey}`
+                },
+                body: JSON.stringify({
+                    orderId: order.id,
+                    status: newStatus,
+                    awb: awb,
+                    courier: 'Delhivery'
+                })
+            });
+            console.log(`Notification triggered for Order ${order.id} - ${newStatus}`);
+        } catch (notifErr) {
+            console.error("Failed to trigger notification:", notifErr);
+            // Don't throw, we still want to return 200 to Delhivery
+        }
+    }
+
+    return new Response(JSON.stringify({ success: true, message: "Tracking updated and notifications triggered" }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });

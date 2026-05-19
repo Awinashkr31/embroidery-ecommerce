@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Package, Clock, CheckCircle, XCircle, Search, Eye, Trash2, Filter, AlertTriangle, ArrowRight, Truck, Download, RefreshCw } from 'lucide-react';
+import { Package, Clock, CheckCircle, XCircle, Search, Eye, Trash2, Filter, AlertTriangle, ArrowRight, Truck, Download, RefreshCw, Printer } from 'lucide-react';
 import { supabase } from '../../../config/supabase';
 import { useToast } from '../../context/ToastContext';
 import ShipmentCreator from '../../components/admin/ShipmentCreator';
@@ -406,6 +406,18 @@ const Orders = () => {
         <div className="flex items-center gap-2">
             {selectedOrders.length > 0 && (
                 <>
+                <button 
+                  onClick={async () => {
+                      const { generateShippingLabels } = await import('../../utils/labelPrinter');
+                      const ordersToPrint = orders.filter(o => selectedOrders.includes(o.id));
+                      await generateShippingLabels(ordersToPrint);
+                      addToast(`Generating PDF labels for ${ordersToPrint.length} orders...`, 'info');
+                  }}
+                  className="bg-white text-stone-700 border border-stone-200 px-4 py-2 rounded-xl text-xs font-bold tracking-wide hover:bg-stone-50 transition-colors shadow-sm flex items-center gap-2"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  Print Labels ({selectedOrders.length})
+                </button>
                 <button 
                   onClick={downloadXpressbeesCSV}
                   className="bg-rose-900 text-white px-4 py-2 rounded-xl text-xs font-bold tracking-wide hover:bg-rose-800 transition-colors shadow-sm flex items-center gap-2"

@@ -6,7 +6,10 @@ import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useToast } from '../context/ToastContext';
 import { supabase } from '../../config/supabase';
-import { Heart, ShoppingBag, ArrowLeft, Truck, Shield, Star, Award, Search, Sparkles, Plus, Minus, ChevronDown, Share2, X, Loader } from 'lucide-react';
+import { Heart, ShoppingBag, ArrowLeft, Truck, Shield, Star, Award, Search, Sparkles, Plus, Minus, ChevronDown, Share2, X, Loader, Calendar } from 'lucide-react';
+import SEO from '../components/SEO';
+import { getEstimatedDeliveryDate } from '../utils/dateUtils';
+import { PincodeChecker } from '../components/PincodeChecker';
 
 const ProductDetails = () => {
     const { id } = useParams();
@@ -334,8 +337,97 @@ const ProductDetails = () => {
         return true;
     };
 
+    // Schema Construction
+    const productSchema = {
+        "@context": "https://schema.org/",
+        "@type": "Product",
+        "name": product.name,
+        "image": product.image,
+        "description": info.shortDescription || product.description,
+        "sku": product.id,
+        "brand": {
+            "@type": "Brand",
+            "name": "Embroidery By Sana"
+        },
+        "offers": {
+            "@type": "Offer",
+            "url": window.location.href,
+            "priceCurrency": "INR",
+            "price": currentPrice,
+            "availability": isStockAvailable ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"
+        }
+    };
+
+    if (reviews.length > 0) {
+        productSchema.aggregateRating = {
+            "@type": "AggregateRating",
+            "ratingValue": averageRating,
+            "reviewCount": reviews.length
+        };
+        productSchema.review = reviews.slice(0, 5).map(review => ({
+            "@type": "Review",
+            "reviewRating": {
+                "@type": "Rating",
+                "ratingValue": review.rating
+            },
+            "author": {
+                "@type": "Person",
+                "name": review.userName || "Customer"
+            },
+            "reviewBody": review.comment
+        }));
+    }
+
+    const breadcrumbSchema = {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Home",
+                "item": "https://www.embroiderybysana.live"
+            },
+            {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Shop",
+                "item": "https://www.embroiderybysana.live/shop"
+            },
+            {
+                "@type": "ListItem",
+                "position": 3,
+                "name": product.name,
+                "item": window.location.href
+            }
+        ]
+    };
+
+    const pageSchema = [productSchema, breadcrumbSchema];
+    if (info.faqs && info.faqs.length > 0) {
+        pageSchema.push({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": info.faqs.map(faq => ({
+                "@type": "Question",
+                "name": faq.question,
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": faq.answer
+                }
+            }))
+        });
+    }
+
     return (
         <div className="min-h-screen bg-[#fdfbf7] pt-4 md:pt-8 pb-28 lg:pb-20 font-body selection:bg-rose-100 selection:text-rose-900">
+            <SEO 
+                title={product.name} 
+                description={info.shortDescription || product.description?.substring(0, 150)} 
+                schema={pageSchema} 
+                image={product.image} 
+                url={window.location.href} 
+            />
             <div className="container-custom">
                 {/* Breadcrumb */}
                 <div className="hidden md:block mb-6 md:mb-10">
@@ -365,7 +457,7 @@ const ProductDetails = () => {
                                                 : 'border-transparent opacity-60 hover:opacity-100 hover:border-stone-300'
                                             }`}
                                         >
-                                            <img src={img} alt={`View ${idx + 1}`} className="w-full h-full object-cover object-top" />
+                                            <img src={img} alt={`${product.name} - View ${idx + 1}`} className="w-full h-full object-cover object-top" />
                                         </button>
                                     )
                                 ))}
@@ -451,26 +543,28 @@ const ProductDetails = () => {
                                 <span className="inline-flex items-center text-xs font-bold tracking-[0.18em] uppercase text-rose-900 bg-rose-50 border border-rose-100 px-3 py-1.5 rounded-full">
                                     {product.category}
                                 </span>
-                                <button
-                                    onClick={async () => {
-                                        const shareData = {
-                                            title: product.name,
-                                            text: `Check out ${product.name} on Enbroidery`,
-                                            url: window.location.href,
-                                        };
-                                        if (navigator.share) {
-                                            try { await navigator.share(shareData); } catch { /* user cancelled */ }
-                                        } else {
-                                            await navigator.clipboard.writeText(window.location.href);
-                                            addToast('Link copied to clipboard!', 'success');
-                                        }
-                                    }}
-                                    className="flex items-center gap-1.5 text-stone-400 hover:text-stone-700 transition-colors text-xs font-medium"
-                                >
-                                    <Share2 className="w-4 h-4" />
-                                    <span className="hidden lg:inline">Share</span>
-                                </button>
-                            </div>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={async () => {
+                                            const shareData = {
+                                                title: product.name,
+                                                text: `Check out ${product.name} on Embroidery By Sana`,
+                                                url: window.location.href,
+                                            };
+                                            if (navigator.share) {
+                                                try { await navigator.share(shareData); } catch { /* user cancelled */ }
+                                            } else {
+                                                await navigator.clipboard.writeText(window.location.href);
+                                                addToast('Link copied to clipboard!', 'success');
+                                            }
+                                        }}
+                                        className="flex items-center gap-1.5 text-stone-400 hover:text-stone-700 transition-colors text-xs font-medium bg-stone-50 px-2 py-1 rounded-md border border-stone-100"
+                                    >
+                                        <Share2 className="w-4 h-4" />
+                                        <span className="hidden lg:inline">Share</span>
+                                    </button>
+                                </div>
+                             </div>
 
                             <h1 className="text-3xl lg:text-4xl font-heading font-semibold text-stone-900 leading-tight break-words">
                                 {product.name}
@@ -513,7 +607,12 @@ const ProductDetails = () => {
                                     </>
                                 )}
                             </div>
-                            <p className="text-stone-400 text-xs">Inclusive of all taxes · Free delivery above ₹{FREE_DELIVERY_THRESHOLD}</p>
+                            <p className="text-stone-400 text-xs mb-3">Inclusive of all taxes · Free delivery above ₹{FREE_DELIVERY_THRESHOLD}</p>
+                            
+                            {/* Pincode Serviceability & EDD */}
+                            <div className="mt-4">
+                                <PincodeChecker />
+                            </div>
                         </div>
                    
                         

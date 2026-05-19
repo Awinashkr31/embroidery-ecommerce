@@ -23,12 +23,15 @@ import {
   ChevronRight,
   ExternalLink,
   Download,
+  FileText
 } from 'lucide-react';
 
 const menuItems = [
   { icon: LayoutDashboard, label: 'Dashboard',       path: '/sadmin/dashboard' },
   { icon: ShoppingBag,     label: 'Product Listing', path: '/sadmin/products' },
   { icon: ShoppingCart,    label: 'Orders',          path: '/sadmin/orders' },
+  { icon: Package,         label: 'Returns & NDR',   path: '/sadmin/returns-ndr' },
+  { icon: FileText,        label: 'Bulk Shipments',  path: '/sadmin/bulk-shipments' },
   { icon: User,            label: 'Users',           path: '/sadmin/users' },
   { icon: Palette,         label: 'Design Requests', path: '/sadmin/design-requests' },
   { icon: Star,            label: 'Reviews',         path: '/sadmin/reviews' },
@@ -128,7 +131,11 @@ const AdminLayout = () => {
 
         {/* Logo area */}
         <div className="h-16 flex items-center gap-3 px-5 border-b border-white/10 shrink-0">
-          <img src="/logo.png" alt="Enbroidery" className="h-9 w-auto object-contain brightness-0 invert opacity-90" />
+          <picture>
+            <source srcSet="/logo.avif" type="image/avif" />
+            <source srcSet="/logo.webp" type="image/webp" />
+            <img src="/logo.png" alt="Enbroidery" className="h-9 w-auto object-contain brightness-0 invert opacity-90" width={90} height={36} />
+          </picture>
           <div className="flex flex-col leading-tight">
             <span className="text-white font-heading font-bold text-sm tracking-wide">Enbroidery</span>
             <span className="text-rose-400 text-[10px] font-bold uppercase tracking-widest">Admin</span>

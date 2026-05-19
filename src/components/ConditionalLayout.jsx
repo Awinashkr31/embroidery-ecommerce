@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { useLocation } from 'react-router-dom';
-import Footer from './Footer';
-import BottomNavigation from './BottomNavigation';
+const Footer = lazy(() => import('./Footer'));
+const BottomNavigation = lazy(() => import('./BottomNavigation'));
 
 const ConditionalLayout = ({ children }) => {
   const location = useLocation();
@@ -27,10 +27,10 @@ const ConditionalLayout = ({ children }) => {
       
       {!isDistractionFree && (
         <div className={(location.pathname === '/cart' || location.pathname === '/shop' || location.pathname.startsWith('/product/')) ? 'hidden md:block' : ''}>
-          <Footer />
+          <Suspense fallback={null}><Footer /></Suspense>
         </div>
       )}
-      {!isDistractionFree && <BottomNavigation />}
+      {!isDistractionFree && <Suspense fallback={null}><BottomNavigation /></Suspense>}
     </>
   );
 };

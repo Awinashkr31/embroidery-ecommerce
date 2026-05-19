@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Heart } from 'lucide-react';
 import { getOptimizedImageUrl } from '../utils/imageUtils';
 
-export const ProductCard = React.memo(({ product, toggleWishlist, isInWishlist }) => {
+export const ProductCard = React.memo(({ product, toggleWishlist, isInWishlist, priority = false }) => {
     const [selectedVariant, setSelectedVariant] = useState(product.preselectedVariant || null);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [isHovering, setIsHovering] = useState(false);
@@ -40,60 +40,24 @@ export const ProductCard = React.memo(({ product, toggleWishlist, isInWishlist }
     }, [selectedVariant, product.images, product.image]);
 
     const hasMultipleImages = allImages.length > 1;
-    const cardRef = useRef(null);
-    const [isInView, setIsInView] = useState(false);
 
     // Reset index when variant changes
     useEffect(() => {
         setCurrentImageIndex(0);
     }, [selectedVariant]);
 
-    // Intersection Observer to detect if card is visible (for mobile auto-play)
+    // Auto-advance only on desktop hover (mobile auto-advance removed for INP performance)
     useEffect(() => {
-        const observer = new IntersectionObserver(
-            ([entry]) => {
-                setIsInView(entry.isIntersecting);
-            },
-            { threshold: 0.5 } // Trigger when at least 50% visible
-        );
-        if (cardRef.current) {
-            observer.observe(cardRef.current);
-        }
-        return () => observer.disconnect();
-    }, []);
+        if (!hasMultipleImages || !isHovering) return;
 
-    // Auto-advance: on hover (desktop) OR when in view (mobile)
-    useEffect(() => {
-        if (!hasMultipleImages) return;
-        
-        const isMobile = window.innerWidth < 768;
-        const shouldAutoPlay = isHovering || (isMobile && isInView);
-
-        if (!shouldAutoPlay) {
-            if (!isMobile) setCurrentImageIndex(0); // Reset on desktop mouse leave
-            return;
-        }
-
-        let timeoutId;
-        const startInterval = () => {
-            hoverTimerRef.current = setInterval(() => {
-                setCurrentImageIndex(prev => (prev + 1) % allImages.length);
-            }, isMobile ? 3000 : 1500); // Slower cycle on mobile, faster on hover
-        };
-
-        if (isMobile) {
-            // Add a random stagger delay (0 to 2 seconds) so multiple visible cards don't cycle at the exact same millisecond
-            const staggerDelay = Math.random() * 2000;
-            timeoutId = setTimeout(startInterval, staggerDelay);
-        } else {
-            startInterval();
-        }
+        hoverTimerRef.current = setInterval(() => {
+            setCurrentImageIndex(prev => (prev + 1) % allImages.length);
+        }, 1500);
 
         return () => {
-            if (timeoutId) clearTimeout(timeoutId);
             if (hoverTimerRef.current) clearInterval(hoverTimerRef.current);
         };
-    }, [isHovering, isInView, hasMultipleImages, allImages.length]);
+    }, [isHovering, hasMultipleImages, allImages.length]);
 
     // Touch handlers for mobile swipe
     const handleTouchStart = (e) => {
@@ -126,7 +90,6 @@ export const ProductCard = React.memo(({ product, toggleWishlist, isInWishlist }
         <div className="h-full flex flex-col">
             {/* Image Card */}
             <div 
-                ref={cardRef}
                 className="relative aspect-[2/3] md:aspect-[4/5] overflow-hidden bg-stone-100 mb-3 md:mb-5 rounded-[20px] md:rounded-2xl shrink-0 md:group-hover:-translate-y-1 md:group-hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.15)] md:transition-all md:duration-500"
                 onMouseEnter={() => setIsHovering(true)}
                 onMouseLeave={() => { setIsHovering(false); setCurrentImageIndex(0); }}
@@ -138,11 +101,11 @@ export const ProductCard = React.memo(({ product, toggleWishlist, isInWishlist }
                 {allImages.map((img, idx) => (
                     <img
                         key={idx}
-                        src={getOptimizedImageUrl(img, { width: 600, quality: 80 })}
+                        src={getOptimizedImageUrl(img, { width: 500, quality: 75 })}
                         alt={`${product.name} ${idx + 1}`}
                         width={600}
                         height={900}
-                        loading={idx === 0 ? 'eager' : 'lazy'}
+                        loading={priority && idx === 0 ? 'eager' : 'lazy'}
                         decoding="async"
                         style={{
                             transition: 'opacity 800ms cubic-bezier(0.4, 0, 0.2, 1), transform 1200ms cubic-bezier(0.4, 0, 0.2, 1)',

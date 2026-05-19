@@ -19,6 +19,7 @@ import { useAuth } from '../context/AuthContext';
 import { supabase } from '../config/supabase';
 import { useToast } from '../context/ToastContext';
 import { useSettings } from '../context/SettingsContext';
+import { GlobalPincodeHeader } from './GlobalPincodeHeader';
 
 const Navbar = React.memo(() => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -103,6 +104,7 @@ const Navbar = React.memo(() => {
     { name: 'Custom Design', path: '/custom-design' },
     { name: 'Mehndi', path: '/mehndi-booking' },
     { name: 'Gallery', path: '/gallery' },
+    { name: 'About', path: '/about' },
   ];
 
   const isActive = (path) => location.pathname === path;
@@ -132,10 +134,10 @@ const Navbar = React.memo(() => {
     <>
     <header className="sticky top-0 w-full z-50 flex flex-col transition-all duration-500 ease-in-out">
       <nav
-        className={`w-full relative z-20 transition-all duration-500 ease-in-out
+        className={`w-full relative z-20 transition-all duration-500 ease-in-out min-h-[56px] md:min-h-[72px]
           ${isScrolled
-            ? 'bg-white/98 backdrop-blur-2xl border-b border-stone-100 shadow-lg shadow-black/5 py-2 px-2 md:px-12 lg:px-20'
-            : 'bg-white/50 backdrop-blur-sm py-3 px-2 md:px-12 lg:px-20'
+            ? 'bg-white border-b border-stone-100 shadow-lg shadow-black/5 py-2 px-2 md:px-12 lg:px-20'
+            : 'bg-white/95 md:bg-white/50 md:backdrop-blur-sm py-3 px-2 md:px-12 lg:px-20'
           }`}
       >
       <div className="container-custom">
@@ -145,7 +147,11 @@ const Navbar = React.memo(() => {
           <div className="flex items-center gap-2 lg:w-1/4">
             {/* Desktop Logo (Always visible on lg) */}
             <Link to="/" className="hidden lg:flex flex-col group" aria-label="Home">
-                <img src="/logo.png" alt="Enbroidery By Sana" className="h-14 w-auto object-contain" />
+                <picture>
+                  <source srcSet="/logo.avif" type="image/avif" />
+                  <source srcSet="/logo.webp" type="image/webp" />
+                  <img src="/logo.png" alt="Enbroidery By Sana" className="h-14 w-auto object-contain" width={140} height={56} />
+                </picture>
             </Link>
 
             {/* Mobile Header Logic */}
@@ -160,7 +166,11 @@ const Navbar = React.memo(() => {
                         <Menu className="w-6 h-6" />
                     </button>
                     <Link to="/" className="flex flex-col group lg:hidden" aria-label="Home">
-                        <img src="/logo.png" alt="Enbroidery By Sana" className="h-10 w-auto object-contain" />
+                        <picture>
+                          <source srcSet="/logo.avif" type="image/avif" />
+                          <source srcSet="/logo.webp" type="image/webp" />
+                          <img src="/logo.png" alt="Enbroidery By Sana" className="h-10 w-auto object-contain" width={100} height={40} />
+                        </picture>
                     </Link>
                 </>
             ) : (
@@ -174,7 +184,11 @@ const Navbar = React.memo(() => {
                         <ArrowLeft className="w-5 h-5" strokeWidth={2.5} />
                     </button>
                     <Link to="/" className="flex shrink-0">
-                        <img src="/logo.png" alt="Enbroidery By Sana" className="h-9 w-auto object-contain" />
+                        <picture>
+                          <source srcSet="/logo.avif" type="image/avif" />
+                          <source srcSet="/logo.webp" type="image/webp" />
+                          <img src="/logo.png" alt="Enbroidery By Sana" className="h-9 w-auto object-contain" width={90} height={36} />
+                        </picture>
                     </Link>
                 </div>
             )}
@@ -205,6 +219,11 @@ const Navbar = React.memo(() => {
 
           {/* 4. Right: Icons & Actions */}
           <div className="flex items-center justify-end space-x-2 lg:space-x-4 lg:w-1/4">
+
+            {/* Global Pincode Header - Desktop/Tablet */}
+            <div className="hidden sm:block border-r border-stone-200 pr-4 mr-2">
+                <GlobalPincodeHeader />
+            </div>
 
             {/* Mobile Search Icon */}
             <button 
@@ -247,6 +266,7 @@ const Navbar = React.memo(() => {
                 <button 
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                   className="flex items-center space-x-2 pl-2 focus:outline-none group"
+                  aria-label="User menu"
                 >
                   <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-stone-200 group-hover:border-rose-900 transition-all p-0.5">
                      {currentUser.photoURL ? (
@@ -345,7 +365,11 @@ const Navbar = React.memo(() => {
             <div className="p-6 h-full flex flex-col">
                 <div className="flex items-center justify-between mb-10">
                     <Link to="/" className="flex flex-col" onClick={() => setIsMobileMenuOpen(false)}>
-                        <img src="/logo.png" alt="Enbroidery By Sana" className="h-16 w-auto object-contain" />
+                        <picture>
+                          <source srcSet="/logo.avif" type="image/avif" />
+                          <source srcSet="/logo.webp" type="image/webp" />
+                          <img src="/logo.png" alt="Enbroidery By Sana" className="h-16 w-auto object-contain" width={160} height={64} />
+                        </picture>
                     </Link>
                     <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-stone-500 hover:text-rose-900 rounded-full hover:bg-stone-100">
                         <X className="w-6 h-6" />
