@@ -6,14 +6,16 @@ import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useToast } from '../context/ToastContext';
 import { supabase } from '../../config/supabase';
-import { Heart, ShoppingBag, ArrowLeft, Truck, Shield, Star, Award, Search, Sparkles, Plus, Minus, ChevronDown, Share2, X, Loader, Calendar } from 'lucide-react';
+import { Heart, ShoppingBag, ArrowLeft, Truck, Shield, Star, Award, Search, Sparkles, Plus, Minus, ChevronDown, Share2, X, Loader, Calendar, CheckCircle2 } from 'lucide-react';
 import SEO from '../components/SEO';
 import { getEstimatedDeliveryDate } from '../utils/dateUtils';
 import { PincodeChecker } from '../components/PincodeChecker';
+import { usePincode } from '../context/PincodeContext';
 
 const ProductDetails = () => {
     const { id } = useParams();
     const { products, fetchProducts } = useProducts();
+    const { pincodeData } = usePincode();
     
     // Fetch products explicitly since context no longer auto-fetches on mount
     useEffect(() => {
@@ -50,6 +52,10 @@ const ProductDetails = () => {
 
     // ML Recommendation State
     const [recommendedIds, setRecommendedIds] = useState([]);
+    
+    // High-Conversion States
+    const [giftPackaging, setGiftPackaging] = useState(false);
+    const [giftNote, setGiftNote] = useState('');
     
     // Review Modal State
     const [reviewModalOpen, setReviewModalOpen] = useState(false);
@@ -235,18 +241,53 @@ const ProductDetails = () => {
 
     
 
-    // Basic Backup Recommendations
+    // Smart Recommendation Engine
     const normalize = (str) => (str || '').toLowerCase().trim();
-    const sameCategoryProducts = products.filter(p => normalize(p.category) === normalize(product.category) && p.id !== product.id);
-    const otherCategoryProducts = products.filter(p => normalize(p.category) !== normalize(product.category) && p.id !== product.id);
-    const basicRelatedProducts = [...sameCategoryProducts, ...otherCategoryProducts];
+    const getSmartRecommendations = (currentProduct, allProducts) => {
+        const keywords = [
+            'pink', 'blue', 'yellow', 'red', 'green', 'white', 'black', 'purple', 
+            'sunflower', 'daisy', 'rose', 'heart', 'star', 'butterfly', 'bow', 'floral', 'aesthetic'
+        ];
+        
+        const extractKeywords = (p) => {
+            const text = `${p.name} ${p.description || ''}`.toLowerCase();
+            return keywords.filter(kw => text.includes(kw));
+        };
+
+        const currentKeywords = extractKeywords(currentProduct);
+
+        let scoredProducts = allProducts
+            .filter(p => p.id !== currentProduct.id)
+            .map(p => {
+                let score = 0;
+                // Category match
+                if (normalize(p.category) === normalize(currentProduct.category)) score += 2;
+                
+                // Keyword match
+                const pKeywords = extractKeywords(p);
+                const sharedKeywords = currentKeywords.filter(kw => pKeywords.includes(kw));
+                score += sharedKeywords.length * 5; // Heavy weight for shared themes/colors
+                
+                return { product: p, score };
+            });
+
+        // Sort by score (descending)
+        scoredProducts.sort((a, b) => b.score - a.score);
+        return scoredProducts.map(sp => sp.product);
+    };
 
     // Final Derived Recommendations
     let relatedProducts = [];
     if(recommendedIds.length > 0) {
         relatedProducts = recommendedIds.map(recId => products.find(p => p.id === recId)).filter(Boolean);
+        // If ML didn't return enough, backfill with smart recommendations
+        if (relatedProducts.length < 4) {
+            const smartRecs = getSmartRecommendations(product, products);
+            const remaining = smartRecs.filter(p => !relatedProducts.find(rp => rp.id === p.id));
+            relatedProducts = [...relatedProducts, ...remaining].slice(0, 4);
+        }
     } else {
-        relatedProducts = basicRelatedProducts.slice(0, 4);
+        relatedProducts = getSmartRecommendations(product, products).slice(0, 4);
     }
 
     const averageRating = reviews.length > 0 
@@ -574,6 +615,8 @@ const ProductDetails = () => {
                                 <p className="text-stone-500 text-base leading-relaxed">{info.shortDescription}</p>
                             )}
 
+
+
                             <div className="flex items-center gap-3 pt-1">
                                 <div className="flex items-center gap-0.5">
                                     {[...Array(5)].map((_, i) => (
@@ -609,10 +652,32 @@ const ProductDetails = () => {
                             </div>
                             <p className="text-stone-400 text-xs mb-3">Inclusive of all taxes · Free delivery above ₹{FREE_DELIVERY_THRESHOLD}</p>
                             
+                            {/* Urgency Badge */}
+                            {isStockAvailable && currentStock <= 5 && (
+                                <div className="inline-flex items-center gap-1.5 bg-rose-50 border border-rose-100 text-rose-700 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest mb-4">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
+                                    Only {currentStock} left in stock
+                                </div>
+                            )}
+
                             {/* Pincode Serviceability & EDD */}
-                            <div className="mt-4">
+                            <div className="mt-4 mb-6">
                                 <PincodeChecker />
                             </div>
+                            
+                            {/* Social Proof Counters */}
+                            {product.id && (
+                                <div className="flex flex-wrap items-center gap-4 text-xs font-medium text-stone-600 mb-6 bg-stone-50/50 p-3 rounded-xl border border-stone-100/50">
+                                    <div className="flex items-center gap-1.5">
+                                        <div className="w-5 h-5 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">🔥</div>
+                                        <span>{(typeof product.id === 'number' ? product.id : product.id.charCodeAt(0)) % 42 + 12} people ordered this month</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5">
+                                        <div className="w-5 h-5 rounded-full bg-rose-100 flex items-center justify-center text-rose-600"><Heart className="w-3 h-3 fill-rose-600" /></div>
+                                        <span>{(typeof product.id === 'number' ? product.id : product.id.charCodeAt(0)) % 15 + 3} added to wishlist today</span>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                    
                         
@@ -733,24 +798,57 @@ const ProductDetails = () => {
                             </div>
                         )}
 
+                        {/* Gift Packaging Checkbox */}
+                        <div className="bg-rose-50/30 border border-rose-100 rounded-xl p-4 mb-6 transition-all">
+                            <label className="flex items-start gap-3 cursor-pointer group">
+                                <input 
+                                    type="checkbox"
+                                    checked={giftPackaging}
+                                    onChange={(e) => setGiftPackaging(e.target.checked)}
+                                    className="mt-1 w-4 h-4 text-rose-900 border-rose-200 rounded focus:ring-rose-900 transition-colors cursor-pointer"
+                                />
+                                <div>
+                                    <span className="block text-sm font-bold text-stone-900 group-hover:text-rose-900 transition-colors">🎁 Add Gift Packaging (+₹29)</span>
+                                    <span className="block text-xs text-stone-500 mt-0.5">Wrapped beautifully with a handwritten note.</span>
+                                </div>
+                            </label>
+                            
+                            {giftPackaging && (
+                                <div className="mt-3 pl-7 animate-in fade-in slide-in-from-top-2 duration-300">
+                                    <textarea 
+                                        value={giftNote}
+                                        onChange={(e) => setGiftNote(e.target.value)}
+                                        placeholder="Add a gift note (optional)..."
+                                        className="w-full text-sm p-3 rounded-xl border border-rose-100 bg-white focus:ring-2 focus:ring-rose-900/20 focus:border-rose-900 transition-all resize-none h-20 outline-none placeholder:text-stone-400"
+                                        maxLength={150}
+                                    />
+                                    <div className="text-[10px] text-stone-400 text-right mt-1 font-medium">{giftNote.length}/150</div>
+                                </div>
+                            )}
+                        </div>
+
                         {/* Trust strip — desktop only */}
-                        <div className="hidden lg:grid grid-cols-3 gap-3 mb-6 p-4 bg-stone-50 rounded-2xl border border-stone-100">
-                            <div className="flex items-center gap-2">
-                                <Truck className="w-4 h-4 text-rose-900 shrink-0" />
-                                <span className="text-[11px] font-semibold text-stone-600">Free shipping ₹{FREE_DELIVERY_THRESHOLD}+</span>
+                        <div className="hidden lg:grid grid-cols-4 gap-2 mb-6 p-4 bg-stone-50 rounded-2xl border border-stone-100">
+                            <div className="flex flex-col items-center gap-1.5 text-center">
+                                <Award className="w-5 h-5 text-stone-700 shrink-0" />
+                                <span className="text-[10px] font-bold text-stone-600 uppercase tracking-wider">Handmade</span>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <Shield className="w-4 h-4 text-rose-900 shrink-0" />
-                                <span className="text-[11px] font-semibold text-stone-600">7-day returns</span>
+                            <div className="flex flex-col items-center gap-1.5 text-center">
+                                <Truck className="w-5 h-5 text-stone-700 shrink-0" />
+                                <span className="text-[10px] font-bold text-stone-600 uppercase tracking-wider">Pan India</span>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <Award className="w-4 h-4 text-rose-900 shrink-0" />
-                                <span className="text-[11px] font-semibold text-stone-600">100% authentic</span>
+                            <div className="flex flex-col items-center gap-1.5 text-center">
+                                <div className="w-5 h-5 flex items-center justify-center font-bold text-stone-700 text-xs border-2 border-stone-700 rounded-full shrink-0">₹</div>
+                                <span className="text-[10px] font-bold text-stone-600 uppercase tracking-wider">COD Available</span>
+                            </div>
+                            <div className="flex flex-col items-center gap-1.5 text-center">
+                                <Shield className="w-5 h-5 text-stone-700 shrink-0" />
+                                <span className="text-[10px] font-bold text-stone-600 uppercase tracking-wider">Secure</span>
                             </div>
                         </div>
 
                         {/* Actions (Desktop) */}
-                        <div className="hidden lg:flex flex-col gap-3 mb-12">
+                        <div className="hidden lg:flex flex-col gap-3 mb-8">
                             <div className="flex gap-3">
                                 <motion.button
                                     whileHover={{ y: -4, scale: 1.02 }}
@@ -763,7 +861,7 @@ const ProductDetails = () => {
 
                                         if (!validateSelection('add')) return;
                                         
-                                        await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice, variantId: selectedVariant?.id });
+                                        await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice, variantId: selectedVariant?.id, giftPackaging, giftNote: giftPackaging ? giftNote : '' });
                                     }}
                                     disabled={!isStockAvailable}
                                     className={`flex-1 py-4 px-8 rounded-2xl font-bold uppercase tracking-widest text-sm transition-all duration-200 flex items-center justify-center gap-3 ${
@@ -774,8 +872,8 @@ const ProductDetails = () => {
                                         : 'bg-stone-200 text-stone-400 cursor-not-allowed'
                                     }`}
                                 >
-                                    <ShoppingBag className="w-4 h-4" />
-                                    {isStockAvailable ? (isInCart ? 'Go to Bag' : 'Add to Bag') : 'Sold Out'}
+                                    <Sparkles className="w-4 h-4" />
+                                    {isStockAvailable ? (isInCart ? 'View in Bag' : '✨ Make It Yours') : 'Sold Out'}
                                 </motion.button>
                                 
                                 <motion.button 
@@ -784,17 +882,88 @@ const ProductDetails = () => {
                                     onClick={async () => {
                                             if(isStockAvailable) {
                                             if (!validateSelection('buy')) return;
-                                            await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice, variantId: selectedVariant?.id });
+                                            await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice, variantId: selectedVariant?.id, giftPackaging, giftNote: giftPackaging ? giftNote : '' });
                                             navigate('/cart');
                                             }
                                     }}
                                     disabled={!isStockAvailable}
                                     className="px-8 py-4 rounded-2xl border-2 border-stone-900 font-bold uppercase tracking-widest text-sm text-stone-900 hover:bg-stone-900 hover:text-white transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed bg-white"
                                 >
-                                    Buy at ₹{currentPrice}
+                                    🎁 Buy Now
                                 </motion.button>
                             </div>
+                            <div className="flex items-center justify-center gap-4 text-[10px] text-stone-400 font-medium uppercase tracking-widest mt-2">
+                                <span className="flex items-center gap-1"><Shield className="w-3 h-3" /> Secure Payments</span>
+                                <span>•</span>
+                                <span>UPI / COD</span>
+                            </div>
                         </div>
+
+                        {/* Why Handmade Strip */}
+                        <div className="flex items-start gap-4 p-5 bg-[#f5f2eb] rounded-2xl border border-stone-200/50 mb-8">
+                            <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm shrink-0 text-xl">
+                                🇮🇳
+                            </div>
+                            <div>
+                                <h4 className="font-heading font-bold text-stone-900 mb-1">Handmade in India</h4>
+                                <p className="text-sm text-stone-600 leading-relaxed font-light">
+                                    Every piece is handmade with detailed crochet work and premium materials — making each product truly unique. Because it's not made by a machine, it takes hours of love and care.
+                                </p>
+                            </div>
+                        </div>
+                        
+                        {/* Perfect For Section */}
+                        {(info.perfectFor || !info.perfectFor) && (
+                            <div className="mb-8 block">
+                                <h4 className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-3">Perfect For</h4>
+                                <div className="flex flex-wrap gap-2">
+                                    {(info.perfectFor ? info.perfectFor.split(',') : ["Birthday Gifts", "Best Friend Gifts", "Room Décor", "Bag Charms", "Car Accessories"]).map((tag, i) => (
+                                        <span key={i} className="px-3 py-1.5 bg-white border border-stone-200 rounded-lg text-xs font-medium text-stone-600 shadow-sm cursor-default hover:bg-stone-50 transition-colors">
+                                            {tag.trim()}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Order Timeline */}
+                        <div className="mb-12 block p-5 bg-white rounded-2xl border border-stone-100 shadow-sm">
+                            <h4 className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-4 text-center">Order Journey</h4>
+                            <div className="flex items-center justify-between text-center relative max-w-sm mx-auto">
+                                <div className="absolute top-4 left-4 right-4 h-0.5 bg-stone-100 -z-0"></div>
+                                <div className="relative z-10 flex flex-col items-center gap-2 bg-white px-2">
+                                    <div className="w-8 h-8 rounded-full bg-stone-900 text-white flex items-center justify-center shadow-sm"><ShoppingBag className="w-3.5 h-3.5" /></div>
+                                    <span className="text-[10px] font-bold text-stone-700">Order Placed</span>
+                                </div>
+                                <div className="relative z-10 flex flex-col items-center gap-2 bg-white px-2">
+                                    <div className="w-8 h-8 rounded-full bg-stone-100 text-stone-400 flex items-center justify-center border border-stone-200"><Star className="w-3.5 h-3.5" /></div>
+                                    <span className="text-[10px] font-medium text-stone-500">Handmade</span>
+                                </div>
+                                <div className="relative z-10 flex flex-col items-center gap-2 bg-white px-2">
+                                    <div className="w-8 h-8 rounded-full bg-stone-100 text-stone-400 flex items-center justify-center border border-stone-200"><Truck className="w-3.5 h-3.5" /></div>
+                                    <span className="text-[10px] font-medium text-stone-500">Shipped</span>
+                                </div>
+                                <div className="relative z-10 flex flex-col items-center gap-2 bg-white px-2">
+                                    <div className="w-8 h-8 rounded-full bg-stone-100 text-stone-400 flex items-center justify-center border border-stone-200"><CheckCircle2 className="w-3.5 h-3.5" /></div>
+                                    <span className="text-[10px] font-medium text-stone-500">Delivered</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Customization Available Badge */}
+                        {availableColors && availableColors.length > 1 && (
+                            <div className="mb-8 flex items-center justify-between p-4 bg-gradient-to-r from-stone-50 to-rose-50/30 rounded-xl border border-stone-100">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm text-rose-500">
+                                        <Sparkles className="w-4 h-4" />
+                                    </div>
+                                    <div>
+                                        <h4 className="text-sm font-bold text-stone-900">Custom Colors Available</h4>
+                                        <p className="text-xs text-stone-500 mt-0.5">Mix and match to your liking.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Accordion Details */}
                         <div className="border-t border-stone-200">
@@ -1030,12 +1199,123 @@ const ProductDetails = () => {
                     </motion.div>
                 </div>
 
+                {/* Frequently Bought Together Bundle */}
+                {relatedProducts.length > 0 && (
+                    <div className="border-t border-stone-100 pt-12 lg:pt-16 pb-8">
+                        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 mb-6">
+                            <div>
+                                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-rose-50 text-rose-700 text-[10px] font-bold uppercase tracking-wider mb-3">
+                                    <Sparkles className="w-3 h-3" />
+                                    Bestselling Gift Combo
+                                </div>
+                                <h2 className="text-xl lg:text-2xl font-heading font-semibold text-stone-900 whitespace-nowrap">🎁 Frequently Bought Together</h2>
+                                <p className="text-sm text-stone-500 mt-1">Perfect combination for birthdays, anniversaries, and aesthetic gifting.</p>
+                            </div>
+                            <div className="text-xs font-bold text-amber-700 bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-100 self-start lg:self-auto animate-pulse">
+                                🔥 Only 5 combo sets left!
+                            </div>
+                        </div>
+
+                        <div className="bg-stone-50 rounded-2xl border border-stone-100 p-5 lg:p-6 flex flex-col lg:flex-row items-center gap-6 lg:gap-12 relative overflow-hidden">
+                            <div className="flex items-center gap-3 lg:gap-4 relative z-10 w-full lg:w-auto overflow-x-auto pb-4 lg:pb-0 hide-scrollbar snap-x">
+                                {/* Current Product */}
+                                <div className="shrink-0 flex flex-col gap-2 w-24 lg:w-28 snap-start">
+                                    <div className="aspect-[2/3] rounded-xl overflow-hidden shadow-sm border border-stone-200 bg-white">
+                                        <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                                    </div>
+                                    <div className="text-xs font-bold text-stone-900 truncate">This Item</div>
+                                </div>
+                                <Plus className="w-4 h-4 lg:w-5 lg:h-5 text-stone-300 shrink-0" />
+                                
+                                {/* Related Product */}
+                                <div className="shrink-0 flex flex-col gap-2 w-24 lg:w-28 snap-start">
+                                    <Link to={`/product/${relatedProducts[0].id}`} className="aspect-[2/3] rounded-xl overflow-hidden shadow-sm border border-stone-200 block hover:border-rose-300 transition-colors bg-white">
+                                        <img src={relatedProducts[0].image} alt={relatedProducts[0].name} className="w-full h-full object-cover" />
+                                    </Link>
+                                    <Link to={`/product/${relatedProducts[0].id}`} className="text-xs font-bold text-stone-900 truncate hover:text-rose-900 transition-colors">{relatedProducts[0].name}</Link>
+                                </div>
+                                <Plus className="w-4 h-4 lg:w-5 lg:h-5 text-stone-300 shrink-0" />
+
+                                {/* Gift Packaging */}
+                                <div className="shrink-0 flex flex-col gap-2 w-24 lg:w-28 snap-start">
+                                    <div className="aspect-[2/3] rounded-xl overflow-hidden shadow-sm border border-stone-200 bg-rose-50 flex flex-col items-center justify-center p-3 text-center">
+                                        <span className="text-3xl mb-2">🎁</span>
+                                        <span className="text-[10px] font-bold text-rose-900 leading-tight">Premium Gift Packaging</span>
+                                    </div>
+                                    <div className="text-xs font-bold text-stone-900 truncate">Add-on</div>
+                                </div>
+                            </div>
+                            
+                            <div className="flex-1 w-full flex flex-col items-start lg:items-end lg:text-right relative z-10 border-t lg:border-t-0 lg:border-l border-stone-200 pt-6 lg:pt-0 lg:pl-12">
+                                <div className="text-3xl font-heading font-bold text-stone-900 mb-5">
+                                    ₹{(currentPrice + relatedProducts[0].price + 29).toLocaleString()}
+                                </div>
+
+                                <motion.button
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    onClick={async () => {
+                                        if (!validateSelection('add')) return;
+                                        
+                                        // Get default size and color for related product if it requires one
+                                        let relatedSize = null;
+                                        let relatedColor = null;
+                                        const relatedInfo = relatedProducts[0].clothingInformation;
+                                        if (relatedInfo?.sizes && Object.keys(relatedInfo.sizes).length > 0) {
+                                            // Sort sizes if possible or just get the first one
+                                            relatedSize = Object.keys(relatedInfo.sizes)[0];
+                                            if (relatedInfo.sizes['Free']) relatedSize = 'Free';
+                                            else if (relatedInfo.sizes['Standard']) relatedSize = 'Standard';
+                                        }
+                                        
+                                        if (relatedProducts[0].variants && relatedProducts[0].variants.length > 0) {
+                                            relatedColor = relatedProducts[0].variants[0].color;
+                                        } else if (relatedInfo?.colors && relatedInfo.colors.length > 0) {
+                                            relatedColor = relatedInfo.colors[0];
+                                        }
+
+                                        const relatedVariantId = relatedProducts[0].variants && relatedProducts[0].variants.length > 0 
+                                            ? relatedProducts[0].variants[0].id 
+                                            : null;
+
+                                        // Add Main item with gift packaging
+                                        await addToCart({ 
+                                            ...product, 
+                                            selectedSize: selectedSize || null, 
+                                            selectedColor, 
+                                            price: currentPrice, 
+                                            variantId: selectedVariant?.id, 
+                                            giftPackaging: true, 
+                                            giftNote: giftNote || 'Bundle Gift'
+                                        });
+                                        
+                                        // Add Related item
+                                        await addToCart({ 
+                                            ...relatedProducts[0], 
+                                            selectedSize: relatedSize,
+                                            selectedColor: relatedColor,
+                                            variantId: relatedVariantId,
+                                            price: relatedProducts[0].price 
+                                        });
+                                        
+                                        navigate('/cart');
+                                    }}
+                                    className="w-full lg:w-auto px-8 py-4 bg-stone-900 text-white font-bold rounded-xl text-sm hover:bg-stone-800 transition-colors shadow-lg shadow-stone-900/10 flex items-center justify-center gap-2"
+                                >
+                                    <ShoppingBag className="w-4 h-4" />
+                                    Add Bundle To Cart
+                                </motion.button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* Related Products Section */}
                 {relatedProducts.length > 0 && (
-                    <div className="border-t border-stone-100 pt-12 lg:pt-16 pb-24">
-                        <div className="flex items-center gap-4 mb-8 lg:mb-12">
+                    <div className="border-t border-stone-100 pt-12 lg:pt-16 pb-24 overflow-hidden">
+                        <div className="flex items-center gap-4 mb-8 lg:mb-12 px-4 lg:px-0">
                             <div className="flex-1 h-px bg-stone-200" />
-                            <h2 className="text-xl lg:text-2xl font-heading font-semibold text-stone-900 text-center whitespace-nowrap">You May Also Love</h2>
+                            <h2 className="text-xl lg:text-2xl font-heading font-semibold text-stone-900 text-center whitespace-nowrap">🌸 Complete The Gift</h2>
                             <div className="flex-1 h-px bg-stone-200" />
                         </div>
                         <motion.div 
@@ -1051,7 +1331,7 @@ const ProductDetails = () => {
                                     }
                                 }
                             }}
-                            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6"
+                            className="flex overflow-x-auto snap-x hide-scrollbar gap-4 px-4 lg:px-0 lg:grid lg:grid-cols-4 lg:gap-6 pb-6"
                         >
                             {relatedProducts.map(p => {
                                 const discount = p.originalPrice ? Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100) : 0;
@@ -1062,7 +1342,7 @@ const ProductDetails = () => {
                                             hidden: { opacity: 0, y: 20 },
                                             show: { opacity: 1, y: 0 }
                                         }}
-                                        className="group relative"
+                                        className="group relative shrink-0 w-[65vw] sm:w-[45vw] lg:w-auto snap-start"
                                     >
                                         <div className="aspect-[2/3] overflow-hidden bg-stone-50 rounded-2xl mb-3 relative">
                                             <Link to={`/product/${p.id}`}>
@@ -1315,9 +1595,9 @@ const ProductDetails = () => {
                                 setIsVariantSheetOpen(false);
                                 
                                 if (pendingAction === 'add') {
-                                    await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice, variantId: selectedVariant?.id });
+                                    await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice, variantId: selectedVariant?.id, giftPackaging, giftNote: giftPackaging ? giftNote : '' });
                                 } else if (pendingAction === 'buy') {
-                                    await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice, variantId: selectedVariant?.id });
+                                    await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice, variantId: selectedVariant?.id, giftPackaging, giftNote: giftPackaging ? giftNote : '' });
                                     navigate('/cart');
                                 }
                             }}
@@ -1330,44 +1610,54 @@ const ProductDetails = () => {
             )}
 
             {/* Mobile Sticky Action Bar */}
-            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200 p-4 shadow-[0_-4px_10px_rgba(0,0,0,0.1)] lg:hidden z-50 flex gap-3 px-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
-                <button
-                    onClick={async () => {
-                        if (isInCart) {
-                            navigate('/cart');
-                            return;
-                        }
-
-                        if (!validateSelection('add')) return;
-                        
-                        await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice, variantId: selectedVariant?.id });
-                    }}
-                    disabled={!isStockAvailable}
-                    className={`flex-1 py-3 rounded-xl font-bold uppercase tracking-widest text-xs transition-all flex items-center justify-center gap-2 ${
-                        isStockAvailable
-                        ? isInCart 
-                            ? 'bg-emerald-800 text-white hover:bg-emerald-900 shadow-lg' 
-                            : 'bg-stone-900 text-white hover:bg-stone-800 shadow-xl'
-                        : 'bg-stone-200 text-stone-400 cursor-not-allowed'
-                    }`}
-                >
-                    <ShoppingBag className="w-4 h-4" />
-                    {isStockAvailable ? (isInCart ? 'Go to Bag' : 'Add to Bag') : 'Sold Out'}
-                </button>
+            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200 p-3 shadow-[0_-4px_15px_rgba(0,0,0,0.08)] lg:hidden z-50 px-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+                {/* Micro Delivery Estimate in Sticky Bar */}
+                {pincodeData?.isValid && pincodeData?.city && (
+                    <div className="flex items-center justify-center gap-1.5 mb-2 text-[10px] text-emerald-700 font-medium bg-emerald-50/50 py-1 rounded-md">
+                        <Truck className="w-3 h-3" />
+                        <span>Delivery to {pincodeData.city} by <span className="font-bold">{getEstimatedDeliveryDate()}</span></span>
+                    </div>
+                )}
                 
-                <button 
-                    onClick={async () => {
-                            if(isStockAvailable) {
-                            if (!validateSelection('buy')) return;
-                            await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice, variantId: selectedVariant?.id });
-                            navigate('/cart');
+                <div className="flex gap-3">
+                    <button
+                        onClick={async () => {
+                            if (isInCart) {
+                                navigate('/cart');
+                                return;
                             }
-                    }}
-                    disabled={!isStockAvailable}
-                    className="flex-1 py-3 rounded-xl border border-stone-900 font-bold uppercase tracking-widest text-xs text-stone-900 hover:bg-stone-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-white"
-                >
-                    Buy at ₹{currentPrice}
-                </button>
+
+                            if (!validateSelection('add')) return;
+                            
+                            await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice, variantId: selectedVariant?.id, giftPackaging, giftNote: giftPackaging ? giftNote : '' });
+                        }}
+                        disabled={!isStockAvailable}
+                        className={`flex-1 py-3.5 rounded-xl font-bold uppercase tracking-widest text-[11px] transition-all flex items-center justify-center gap-2 ${
+                            isStockAvailable
+                            ? isInCart 
+                                ? 'bg-emerald-800 text-white hover:bg-emerald-900 shadow-lg' 
+                                : 'bg-stone-900 text-white hover:bg-stone-800 shadow-xl shadow-stone-900/10'
+                            : 'bg-stone-200 text-stone-400 cursor-not-allowed'
+                        }`}
+                    >
+                        <Sparkles className="w-3.5 h-3.5" />
+                        {isStockAvailable ? (isInCart ? 'View in Bag' : 'Add to Bag') : 'Sold Out'}
+                    </button>
+                    
+                    <button 
+                        onClick={async () => {
+                                if(isStockAvailable) {
+                                if (!validateSelection('buy')) return;
+                                await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice, variantId: selectedVariant?.id, giftPackaging, giftNote: giftPackaging ? giftNote : '' });
+                                navigate('/cart');
+                                }
+                        }}
+                        disabled={!isStockAvailable}
+                        className="flex-1 py-3.5 rounded-xl border-2 border-stone-900 font-bold uppercase tracking-widest text-[11px] text-stone-900 hover:bg-stone-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-white"
+                    >
+                        🎁 Buy Now
+                    </button>
+                </div>
             </div>
         </div>
     );

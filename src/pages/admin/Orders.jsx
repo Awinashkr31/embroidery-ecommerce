@@ -821,6 +821,18 @@ const Orders = () => {
                                             </span>
                                         )}
                                     </div>
+                                    {item.giftPackaging && (
+                                        <div className="mt-1.5 flex items-center gap-1.5">
+                                            <span className="text-[10px] font-bold text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-100">
+                                                🎁 Gift Wrapped (+₹29)
+                                            </span>
+                                        </div>
+                                    )}
+                                    {item.giftNote && (
+                                        <div className="mt-1.5 text-[11px] text-stone-500 bg-amber-50 border border-amber-100 rounded-lg px-2.5 py-1.5 italic">
+                                            📝 Note: "{item.giftNote}"
+                                        </div>
+                                    )}
                                     <p className="text-xs text-stone-500 mt-1">₹{item.price.toLocaleString()} × {item.quantity}</p>
                                 </div>
                                 <p className="font-bold text-stone-900 text-sm">₹{(item.price * item.quantity).toLocaleString()}</p>

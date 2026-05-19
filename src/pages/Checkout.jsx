@@ -21,7 +21,7 @@ const loadRazorpay = () => {
 };
 
 const Checkout = () => {
-    const { cart, cartLoading, cartTotal, subtotal, shippingCharge, discountAmount, appliedCoupon, applyCoupon, removeCoupon, placeOrder, savedAddresses, saveAddress, COD_EXTRA_CHARGE, COD_STATUS } = useCart();
+    const { cart, cartLoading, cartTotal, subtotal, giftWrapTotal, shippingCharge, discountAmount, appliedCoupon, applyCoupon, removeCoupon, placeOrder, savedAddresses, saveAddress, COD_EXTRA_CHARGE, COD_STATUS } = useCart();
     const { currentUser, loading: authLoading } = useAuth();
     const { addToast } = useToast();
     const { pincode: globalPincode } = usePincode();
@@ -472,6 +472,12 @@ const Checkout = () => {
                                         <span>Subtotal</span>
                                         <span>₹{subtotal.toLocaleString()}</span>
                                     </div>
+                                    {giftWrapTotal > 0 && (
+                                        <div className="flex justify-between text-stone-500 text-xs">
+                                            <span>Gift Packaging</span>
+                                            <span>₹{giftWrapTotal.toLocaleString()}</span>
+                                        </div>
+                                    )}
                                     <div className="flex justify-between text-stone-500 text-xs">
                                         <span>Shipping</span>
                                         <span className={shippingCharge === 0 ? "text-emerald-700 font-bold" : ""}>
@@ -935,6 +941,12 @@ const Checkout = () => {
                                     <span>Subtotal</span>
                                     <span className="font-medium">₹{subtotal.toLocaleString()}</span>
                                 </div>
+                                {giftWrapTotal > 0 && (
+                                    <div className="flex justify-between text-stone-600 text-sm">
+                                        <span>Gift Packaging</span>
+                                        <span className="font-medium">₹{giftWrapTotal.toLocaleString()}</span>
+                                    </div>
+                                )}
                                 {appliedCoupon && (
                                     <div className="flex justify-between text-emerald-600 text-sm">
                                         <span className="flex items-center font-bold"><Tag className="w-3 h-3 mr-1"/> Discount ({appliedCoupon.code})</span>

@@ -154,7 +154,25 @@ export const CartProvider = ({ children }) => {
                      addToast("Sync issue: Showing local cart items.", "info");
                 }
 
-                setCart(Array.isArray(finalCart) ? finalCart : []);
+                setCart(prevCart => {
+                    const finalWithGift = finalCart.map(newItem => {
+                        const existingLocalItem = prevCart.find(localItem => 
+                            localItem.id === newItem.id && 
+                            localItem.selectedSize === newItem.selectedSize && 
+                            localItem.selectedColor === newItem.selectedColor &&
+                            (localItem.variantId || null) === (newItem.variantId || null)
+                        );
+                        if (existingLocalItem && existingLocalItem.giftPackaging) {
+                            return {
+                                ...newItem,
+                                giftPackaging: existingLocalItem.giftPackaging,
+                                giftNote: existingLocalItem.giftNote
+                            };
+                        }
+                        return newItem;
+                    });
+                    return Array.isArray(finalWithGift) ? finalWithGift : [];
+                });
             }
         } catch (error) {
             console.error('Error fetching remote cart:', error);
@@ -431,6 +449,14 @@ export const CartProvider = ({ children }) => {
     if ((currentUser?.uid || currentUser?.id)) {
         await supabase.from('cart_items').delete().eq('user_id', (currentUser.uid || currentUser.id));
     }
+  };
+
+  const removeGiftWrap = (productId, selectedSize = null, selectedColor = null, variantId = null) => {
+    setCart(prevCart => prevCart.map(item => 
+      (item.id === productId && (item.selectedSize || null) === selectedSize && (item.selectedColor || null) === selectedColor && (item.variantId || null) === variantId)
+        ? { ...item, giftPackaging: false, giftNote: null }
+        : item
+    ));
   };
 
   // Order Management
@@ -755,6 +781,7 @@ export const CartProvider = ({ children }) => {
 
   const cartCount = (cart || []).reduce((total, item) => total + (item.quantity || 0), 0);
   const subtotal = (cart || []).reduce((total, item) => total + ((item.price || 0) * (item.quantity || 0)), 0);
+  const giftWrapTotal = (cart || []).reduce((total, item) => total + (item.giftPackaging ? 29 * (item.quantity || 1) : 0), 0);
   
   const discountAmount = appliedCoupon ? (() => {
       // 1. Validate General Rules
@@ -803,7 +830,7 @@ export const CartProvider = ({ children }) => {
   const CHATBOT_ENABLED = String(settings?.chatbot_enabled) === 'true';
 
   const shippingCharge = subtotal < FREE_DELIVERY_THRESHOLD ? DELIVERY_CHARGE : 0;
-  const cartTotal = subtotal - discountAmount + shippingCharge;
+  const cartTotal = subtotal + giftWrapTotal - discountAmount + shippingCharge;
   const isOrderDeployable = subtotal >= MIN_ORDER_VALUE;
 
   return (
@@ -814,6 +841,7 @@ export const CartProvider = ({ children }) => {
       removeFromCart,
       updateQuantity,
       clearCart,
+      removeGiftWrap,
       placeOrder,
       cartCount,
       cartTotal,
@@ -827,6 +855,7 @@ export const CartProvider = ({ children }) => {
       discountAmount,
       shippingCharge,
       subtotal,
+      giftWrapTotal,
       savedAddresses,
       saveAddress,
       deleteAddress,

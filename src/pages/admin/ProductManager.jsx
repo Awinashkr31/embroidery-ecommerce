@@ -77,6 +77,7 @@ const ProductManager = () => {
         shortDescription: '',
         detailedDescription: '', // mapped to 'description' in DB
         keyFeatures: [], // Array of strings
+        perfectFor: '',
         
         // 7. Variants
         variants: [], // [{ id, color, price, stock, images: [] }]
@@ -144,6 +145,7 @@ const ProductManager = () => {
                 keywords: data.keywords || prev.keywords,
                 careInstructions: data.careInstructions || prev.careInstructions,
                 returnPeriod: data.returnPeriod || prev.returnPeriod,
+                perfectFor: data.perfectFor || prev.perfectFor,
             }));
             addToast('AI Auto Fill complete! Review and adjust the generated content.', 'success');
         } catch (err) {
@@ -184,6 +186,7 @@ const ProductManager = () => {
                 // Map description to detailedDescription for editing
                 detailedDescription: product.description || '', 
                 shortDescription: clothing.shortDescription || '',
+                perfectFor: clothing.perfectFor || '',
                 brand: clothing.brand || '',
                 subCategory: clothing.subCategory || '',
                 sku: clothing.sku || '',
@@ -281,6 +284,7 @@ const ProductManager = () => {
             subCategory: formData.subCategory,
             sku: formData.sku,
             shortDescription: formData.shortDescription,
+            perfectFor: formData.perfectFor,
             fitType: formData.fitType,
             lengthType: formData.lengthType,
             fabric: formData.fabric,
@@ -795,6 +799,10 @@ const ProductManager = () => {
                                         <div>
                                             <label className="text-xs font-bold text-stone-500 uppercase tracking-wider block mb-1">Short Description (Summary)</label>
                                             <textarea className="input-field min-h-[80px]" value={formData.shortDescription} onChange={e => setFormData({...formData, shortDescription: e.target.value})} placeholder="Brief 1-2 liner..." />
+                                        </div>
+                                        <div>
+                                            <label className="text-xs font-bold text-stone-500 uppercase tracking-wider block mb-1">Perfect For</label>
+                                            <input type="text" className="input-field" value={formData.perfectFor} onChange={e => setFormData({...formData, perfectFor: e.target.value})} placeholder="e.g. Weddings, Gifting, Casual Wear" />
                                         </div>
                                         <div>
                                             <label className="text-xs font-bold text-stone-500 uppercase tracking-wider block mb-1">Key Features (Bullet Points)</label>

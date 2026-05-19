@@ -12,9 +12,11 @@ const Cart = () => {
         cart, 
         cartLoading, // Destructure loading state
         removeFromCart, 
+        removeGiftWrap,
         updateQuantity, 
         cartTotal, 
         subtotal, 
+        giftWrapTotal,
         shippingCharge, 
         applyCoupon, 
         removeCoupon, 
@@ -180,6 +182,19 @@ const Cart = () => {
                                                     -{item.discountPercentage}%
                                                 </span>
                                              )}
+                                             {item.giftPackaging && (
+                                                <div className="flex items-center gap-1 mt-1 shrink-0">
+                                                    <span className="text-[10px] font-bold text-rose-700 bg-rose-50 px-1.5 py-0.5 rounded border border-rose-100 flex items-center gap-1">
+                                                        🎁 Gift Packaging (+₹29)
+                                                    </span>
+                                                    <button 
+                                                        onClick={() => removeGiftWrap(item.id, item.selectedSize, item.selectedColor, item.variantId)}
+                                                        className="text-[10px] text-stone-400 hover:text-rose-900 underline underline-offset-2 transition-colors ml-1"
+                                                    >
+                                                        Remove
+                                                    </button>
+                                                </div>
+                                             )}
                                         </div>
                                     </div>
 
@@ -214,6 +229,11 @@ const Cart = () => {
                                          
                                         <p className="text-rose-900 font-bold sm:hidden">₹{(item.price * item.quantity).toLocaleString()}</p>
                                     </div>
+                                    {item.giftNote && (
+                                        <div className="mt-2 text-xs text-stone-500 bg-rose-50/50 border border-rose-100 rounded-lg px-3 py-2 italic">
+                                            📝 "{item.giftNote}"
+                                        </div>
+                                    )}
                                 </div>
 
                                 {/* Desktop Remove & Total */}
@@ -243,6 +263,12 @@ const Cart = () => {
                                     <span>Subtotal</span>
                                     <span>₹{subtotal.toLocaleString()}</span>
                                 </div>
+                                {giftWrapTotal > 0 && (
+                                    <div className="flex justify-between text-stone-600">
+                                        <span>Gift Packaging</span>
+                                        <span>₹{giftWrapTotal.toLocaleString()}</span>
+                                    </div>
+                                )}
                                 {appliedCoupon && (
                                     <div className="flex justify-between text-emerald-600 bg-emerald-50 px-2 py-1 rounded">
                                         <span className="flex items-center text-sm font-bold"><Tag className="w-3 h-3 mr-1"/> {appliedCoupon.code}</span>
@@ -353,6 +379,12 @@ const Cart = () => {
                                     <span>Subtotal</span>
                                     <span>₹{subtotal.toLocaleString()}</span>
                                 </div>
+                                {giftWrapTotal > 0 && (
+                                    <div className="flex justify-between text-stone-600 text-sm">
+                                        <span>Gift Packaging</span>
+                                        <span>₹{giftWrapTotal.toLocaleString()}</span>
+                                    </div>
+                                )}
                                  {appliedCoupon && (
                                     <div className="flex justify-between text-emerald-600 bg-emerald-50 px-2 py-1 rounded text-xs">
                                         <span className="flex items-center font-bold"><Tag className="w-3 h-3 mr-1"/> {appliedCoupon.code}</span>
