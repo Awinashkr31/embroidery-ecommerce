@@ -74,7 +74,7 @@ const LoginBottomSheet = lazy(() => import('./components/LoginBottomSheet'));
 const ChatWidget = lazy(() => import('./components/ChatWidget'));
 
 // Defer non-critical utilities
-const ScrollToTop = lazy(() => import('./components/ScrollToTop'));
+import ScrollToTop from './components/ScrollToTop';
 const VercelAnalytics = lazy(() => {
   return new Promise(resolve => {
     // Load Vercel analytics after main content renders
@@ -107,7 +107,7 @@ function App() {
       <ProductProvider>
       <PincodeProvider>
         <Router>
-          <Suspense fallback={null}><ScrollToTop /></Suspense>
+          <ScrollToTop />
           <Suspense fallback={null}><VercelSpeedInsights /></Suspense>
           <Suspense fallback={null}><VercelAnalytics /></Suspense>
           <Suspense fallback={<PageLoader />}>

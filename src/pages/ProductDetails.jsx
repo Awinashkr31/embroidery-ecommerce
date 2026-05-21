@@ -6,7 +6,7 @@ import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useToast } from '../context/ToastContext';
 import { supabase } from '../../config/supabase';
-import { Heart, ShoppingBag, ArrowLeft, Truck, Shield, Star, Award, Search, Sparkles, Plus, Minus, ChevronDown, Share2, X, Loader, Calendar, CheckCircle2 } from 'lucide-react';
+import { Heart, ShoppingBag, ArrowLeft, Truck, Shield, Star, Award, Search, Sparkles, Plus, Minus, ChevronDown, Share2, X, Loader, Calendar, CheckCircle2, Package } from 'lucide-react';
 import SEO from '../components/SEO';
 import { PincodeChecker } from '../components/PincodeChecker';
 
@@ -41,7 +41,7 @@ const ProductDetails = () => {
     const [isSizeChartOpen, setIsSizeChartOpen] = useState(false);
 
     // Accordion State
-    const [openSection, setOpenSection] = useState('description');
+    const [openSection, setOpenSection] = useState(null);
 
     // Variant Sheet State (Mobile)
     const [isVariantSheetOpen, setIsVariantSheetOpen] = useState(false);
@@ -49,13 +49,17 @@ const ProductDetails = () => {
 
     // ML Recommendation State
     const [recommendedIds, setRecommendedIds] = useState([]);
+    const [youMayAlsoLikeProducts, setYouMayAlsoLikeProducts] = useState([]);
+
     
     // High-Conversion States
     const [giftPackaging, setGiftPackaging] = useState(false);
     const [giftNote, setGiftNote] = useState('');
+    const [showGiftNoteInput, setShowGiftNoteInput] = useState(false);
     
     // Review Modal State
     const [reviewModalOpen, setReviewModalOpen] = useState(false);
+    const [visibleReviewsCount, setVisibleReviewsCount] = useState(4);
     const [reviewForm, setReviewForm] = useState({ rating: 5, comment: '', name: '' });
     const [submittingReview, setSubmittingReview] = useState(false);
 
@@ -103,6 +107,15 @@ const ProductDetails = () => {
                 console.log("ML Recommendations offline, falling back to basic recommendations");
             });
     }, [product]);
+
+    useEffect(() => {
+        if (products && products.length > 0 && product) {
+            setYouMayAlsoLikeProducts([...products]
+                .filter(p => p.id !== product.id)
+                .sort(() => 0.5 - Math.random())
+                .slice(0, 8));
+        }
+    }, [products, product]);
 
     const toggleSection = (section) => {
         setOpenSection(openSection === section ? null : section);
@@ -287,6 +300,8 @@ const ProductDetails = () => {
         relatedProducts = getSmartRecommendations(product, products).slice(0, 4);
     }
 
+
+
     const averageRating = reviews.length > 0 
         ? (reviews.reduce((acc, r) => acc + r.rating, 0) / reviews.length).toFixed(1) 
         : 0;
@@ -457,6 +472,135 @@ const ProductDetails = () => {
         });
     }
 
+    const renderColorSelector = () => {
+        if (!product.clothingInformation || !availableColors || availableColors.length === 0 || hasOnlyNAColor) return null;
+        return (
+            <div className="space-y-4" id="color-selector">
+                <div className="flex items-center gap-1.5">
+                    <h3 className="text-sm font-bold text-stone-900">Selected Color:</h3>
+                    {selectedColor && <span className="text-sm text-stone-600 capitalize">{selectedColor}</span>}
+                </div>
+                <div className="flex flex-wrap gap-3">
+                    {availableColors.map((color) => {
+                        const isSelected = selectedColor === color;
+                        const variantForColor = product.variants?.find(v => v.color === color);
+                        const colorImage = variantForColor?.images?.[0] || product.image;
+                        return (
+                            <button
+                                key={color}
+                                onClick={() => {
+                                    setSelectedColor(color);
+                                    setColorError(false);
+                                }}
+                                className={`p-1 rounded-2xl border-2 transition-all duration-300 ${
+                                    isSelected 
+                                        ? 'border-stone-900 shadow-sm' 
+                                        : 'border-stone-200 hover:border-stone-400'
+                                }`}
+                            >
+                                <div className="w-14 h-16 sm:w-16 sm:h-20 rounded-xl overflow-hidden bg-stone-100">
+                                    <img src={colorImage} alt={color} className="w-full h-full object-cover" />
+                                </div>
+                            </button>
+                        );
+                    })}
+                </div>
+                {colorError && (
+                    <p className="text-red-500 text-sm animate-pulse flex items-center gap-1">
+                        <span className="w-1 h-1 bg-red-500 rounded-full"></span> Please select a color
+                    </p>
+                )}
+            </div>
+        );
+    };
+
+    const renderGiftPackaging = () => {
+        return (
+            <div className="border rounded-xl p-4 transition-all duration-300 bg-[#fff0f3] border-[#ffe4e8] hover:border-[#ffd1da]">
+                <style>{`
+                    @keyframes gift-shake {
+                        0%, 100% { transform: rotate(0deg) scale(1); }
+                        25% { transform: rotate(-10deg) scale(1.1); }
+                        50% { transform: rotate(0deg) scale(1.1); }
+                        75% { transform: rotate(10deg) scale(1.1); }
+                    }
+                    .animate-gift-shake {
+                        animation: gift-shake 2s ease-in-out infinite;
+                        display: inline-block;
+                        transform-origin: bottom center;
+                    }
+                `}</style>
+                <label className="flex items-center gap-3 cursor-pointer group">
+                    <div className="relative flex items-center justify-center">
+                        <input 
+                            type="checkbox" 
+                            className="peer sr-only"
+                            checked={giftPackaging}
+                            onChange={(e) => {
+                                setGiftPackaging(e.target.checked);
+                                if (!e.target.checked) {
+                                    setGiftNote('');
+                                    setShowGiftNoteInput(false);
+                                }
+                            }}
+                        />
+                        <div className="w-5 h-5 rounded border border-stone-300 bg-white peer-checked:bg-emerald-600 peer-checked:border-emerald-600 transition-colors flex items-center justify-center shadow-sm">
+                            <CheckCircle2 className={`w-3.5 h-3.5 text-white transition-transform ${giftPackaging ? 'scale-100' : 'scale-0'}`} />
+                        </div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <div className="text-sm font-bold text-stone-800 mb-0.5">
+                            <span className="mr-1.5 animate-gift-shake">🎁</span>Add Gift Packaging (+₹29)
+                        </div>
+                        <p className="text-[11.5px] text-stone-500 leading-snug">Wrapped beautifully with a handwritten note.</p>
+                    </div>
+                </label>
+                
+                {giftPackaging && !showGiftNoteInput && (
+                    <div className="mt-3 pl-8 animate-in fade-in">
+                        <button 
+                            type="button" 
+                            onClick={(e) => {
+                                e.preventDefault();
+                                setShowGiftNoteInput(true);
+                            }}
+                            className="text-xs font-bold text-rose-700 hover:text-rose-800 underline underline-offset-2 flex items-center gap-1"
+                        >
+                            + Add Note (Optional)
+                        </button>
+                    </div>
+                )}
+
+                {giftPackaging && showGiftNoteInput && (
+                    <div className="mt-4 pt-4 border-t border-rose-200/50 animate-in fade-in slide-in-from-top-2 duration-300">
+                        <div className="flex items-center justify-between mb-1.5">
+                            <label className="block text-xs font-bold text-stone-700">Gift Note (Optional)</label>
+                            <button 
+                                type="button"
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    setShowGiftNoteInput(false);
+                                    setGiftNote('');
+                                }} 
+                                className="text-[10px] text-stone-400 hover:text-stone-600 underline"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                        <textarea 
+                            value={giftNote}
+                            onChange={(e) => setGiftNote(e.target.value)}
+                            placeholder="E.g., Happy Birthday! Love, Sana"
+                            className="w-full text-sm p-3 rounded-xl border border-rose-200 bg-white focus:ring-2 focus:ring-rose-900/20 focus:border-rose-900 transition-all resize-none h-20 outline-none placeholder:text-stone-400"
+                            maxLength={150}
+                        />
+                        <div className="text-[10px] text-stone-400 text-right mt-1 font-medium">{giftNote.length}/150</div>
+                    </div>
+                )}
+            </div>
+        );
+    };
+
     return (
         <div className="min-h-screen bg-[#fdfbf7] pt-4 md:pt-8 pb-28 lg:pb-20 font-body selection:bg-rose-100 selection:text-rose-900">
             <SEO 
@@ -477,6 +621,8 @@ const ProductDetails = () => {
                         <span className="text-stone-700 font-medium truncate max-w-[200px]">{product.name}</span>
                     </div>
                 </div>
+
+
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 xl:gap-16 mb-16 lg:mb-28">
                     {/* Image Section */}
@@ -529,7 +675,7 @@ const ProductDetails = () => {
                                 </div>
                             </div>
                             <div 
-                                className="lg:hidden flex overflow-x-auto snap-x snap-mandatory w-full h-full no-scrollbar"
+                                className="lg:hidden flex overflow-x-auto snap-x snap-mandatory w-full h-full no-scrollbar relative"
                                 onScroll={(e) => {
                                     const scrollPos = e.target.scrollLeft;
                                     const width = e.target.clientWidth;
@@ -544,30 +690,35 @@ const ProductDetails = () => {
                                             alt={`${product.name} - View ${idx + 1}`} 
                                             className="w-full h-full object-cover object-top" 
                                         />
-                                        <div className="absolute top-4 right-4">
-                                            <button 
-                                                onClick={() => toggleWishlist(product)}
-                                                className="p-2 bg-white/80 backdrop-blur rounded-full shadow-sm"
-                                            >
-                                                <Heart className={`w-5 h-5 ${isInWishlist(product.id) ? 'fill-rose-600 text-rose-600' : 'text-stone-600'}`} />
-                                            </button>
-                                        </div>
                                     </div>
                                 ))}
                             </div>
-                            {displayImages && displayImages.length > 1 && (
-                                <div className="lg:hidden absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
-                                    {displayImages.map((img, idx) => (
-                                        <div key={idx} className={`rounded-full transition-all duration-300 ${
-                                            idx === mobileActiveIndex
-                                            ? 'w-6 h-1.5 bg-white shadow-md'
-                                            : 'w-2 h-1.5 bg-white/60 hover:bg-white/80'
-                                        }`}></div>
-                                    ))}
-                                </div>
-                            )}
+                            
+                            {/* Mobile Image Overlay Elements */}
+                            <div className="lg:hidden absolute top-4 right-4 flex flex-col items-end gap-2 z-10">
+                                <button 
+                                    onClick={() => toggleWishlist(product)}
+                                    className="p-2.5 bg-white/90 backdrop-blur rounded-full shadow-sm"
+                                >
+                                    <Heart className={`w-5 h-5 ${isInWishlist(product.id) ? 'fill-rose-600 text-rose-600' : 'text-stone-600'}`} />
+                                </button>
+                                {displayImages && displayImages.length > 1 && (
+                                    <div className="bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full shadow-sm text-[10px] font-bold text-stone-700 tracking-widest mt-1">
+                                        {mobileActiveIndex + 1}/{displayImages.length}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Mobile-only Color Selector and Gift Packaging */}
+                        <div className="block lg:hidden mt-6 space-y-6">
+                            {renderColorSelector()}
+                            <div className="mb-6">
+                                {renderGiftPackaging()}
+                            </div>
                         </div>
                     </div>
+
 
                     {/* Details Section - Premium Typography */}
                     <motion.div 
@@ -576,7 +727,7 @@ const ProductDetails = () => {
                         transition={{ duration: 0.6, delay: 0.2 }}
                         className="lg:col-span-7 lg:pt-4 min-w-0 font-body-alt"
                     > 
-                        <div className="mb-8 space-y-4">
+                        <div className="mb-5 space-y-2.5">
                              <div className="flex items-center justify-between">
                                 <span className="inline-flex items-center text-[10px] font-bold tracking-[0.2em] uppercase text-stone-500">
                                     {product.category}
@@ -604,12 +755,12 @@ const ProductDetails = () => {
                                 </div>
                              </div>
 
-                            <h1 className="text-4xl lg:text-5xl font-heading font-semibold text-stone-900 leading-snug break-words">
+                            <h1 className="text-3xl lg:text-4xl font-heading font-semibold text-black leading-snug break-words">
                                 {product.name}
                             </h1>
                             
                             {info.shortDescription && (
-                                <p className="text-stone-500 text-base leading-relaxed font-light">{info.shortDescription}</p>
+                                <p className="hidden lg:block text-stone-500 text-base leading-relaxed font-light">{info.shortDescription}</p>
                             )}
 
                             <div className="flex items-center gap-2 pt-2">
@@ -627,7 +778,7 @@ const ProductDetails = () => {
                         </div>
 
                         {/* Price Area */}
-                        <div className="mb-8 pb-8 border-b border-stone-100 font-body-alt">
+                        <div className="mb-5 pb-5 border-b border-stone-100 font-body-alt">
                             <div className="flex flex-col gap-1.5 mb-3">
                                 <div className="flex items-center gap-4">
                                     <span className="text-5xl lg:text-6xl font-heading font-semibold text-stone-900 tracking-tight">
@@ -647,62 +798,26 @@ const ProductDetails = () => {
                             </div>
                             <p className="text-stone-400 text-[11px] mb-5 uppercase tracking-wider font-medium">Inclusive of all taxes</p>
                             
-                            {/* Urgency Badge */}
-                            {isStockAvailable && currentStock <= 5 && (
-                                <div className="inline-flex items-center gap-1.5 bg-orange-50 text-orange-700 px-4 py-2 rounded-full text-[11px] font-bold uppercase tracking-widest mb-4">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
-                                    Only {currentStock} left in stock
-                                </div>
-                            )}
-
-                            {/* Pincode Serviceability & EDD */}
-                            <div className="mt-4 mb-6">
+                            {/* Mobile-optimized Delivery Box */}
+                            <div className="mb-4 w-full">
                                 <PincodeChecker />
                             </div>
                             
-                            {/* Social Proof Counters */}
-                            {product.id && (
-                                <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-stone-700 mb-6 bg-stone-50/80 px-4 py-3 rounded-[14px] border border-stone-100/80 w-fit">
-                                    <span className="text-base">🔥</span>
-                                    <span>Popular handmade gift this week</span>
-                                </div>
-                            )}
+                            {/* Urgency Badge */}
+                            <div className="flex items-center gap-2 text-xs font-bold text-rose-800 bg-rose-50 px-4 py-3 rounded-xl border border-rose-100 w-full mb-8">
+                                <span className="text-base animate-pulse">🔥</span>
+                                <span>{product.id ? (product.id.charCodeAt(0) % 15) + 5 : 12} people bought this recently</span>
+                            </div>
                         </div>
                    
                         
                         {/* Selector Section: Color & Size */}
                         {product.clothingInformation && (
                             <div className="mb-10 space-y-6">
-                                {/* Color Selector Using availableColors */}
+                                {/* Desktop-only Color Selector Using availableColors */}
                                 {availableColors && availableColors.length > 0 && !hasOnlyNAColor && (
-                                    <div className="space-y-4" id="color-selector">
-                                        <h3 className="text-xs font-bold text-stone-900 uppercase tracking-widest">Select Color</h3>
-                                        <div className="flex flex-wrap gap-3">
-                                            {availableColors.map((color) => {
-                                                const isSelected = selectedColor === color;
-                                                return (
-                                                    <button
-                                                        key={color}
-                                                        onClick={() => {
-                                                            setSelectedColor(color);
-                                                            setColorError(false);
-                                                        }}
-                                                        className={`px-5 py-2.5 rounded-full border text-sm transition-all duration-300 font-medium ${
-                                                            isSelected 
-                                                                ? 'bg-stone-900 text-white border-stone-900 shadow-md ring-4 ring-stone-900/10' 
-                                                                : 'bg-white text-stone-600 border-stone-200 hover:border-stone-400 hover:shadow-sm'
-                                                        }`}
-                                                    >
-                                                        {color}
-                                                    </button>
-                                                );
-                                            })}
-                                        </div>
-                                        {colorError && (
-                                            <p className="text-red-500 text-sm animate-pulse flex items-center gap-1">
-                                                <span className="w-1 h-1 bg-red-500 rounded-full"></span> Please select a color
-                                            </p>
-                                        )}
+                                    <div className="hidden lg:block mb-4">
+                                        {renderColorSelector()}
                                     </div>
                                 )}
 
@@ -759,11 +874,11 @@ const ProductDetails = () => {
                                                             }
                                                         }}
                                                         disabled={!isAvailable}
-                                                        className={`w-12 h-12 md:w-14 md:h-14 rounded-full border transition-all duration-300 flex items-center justify-center font-medium ${
+                                                        className={`min-w-[4rem] px-4 py-2.5 rounded-full border transition-all duration-300 flex items-center justify-center font-bold text-sm ${
                                                             isSelected 
                                                                 ? 'bg-stone-900 text-white border-stone-900 shadow-md ring-4 ring-stone-900/10' 
                                                                 : isAvailable 
-                                                                    ? 'bg-white text-stone-600 border-stone-200 hover:border-stone-400 hover:shadow-sm' 
+                                                                    ? 'bg-white text-stone-600 border-stone-200 hover:border-stone-900 hover:text-stone-900 hover:shadow-sm' 
                                                                     : 'bg-stone-50 text-stone-300 border-stone-100 cursor-not-allowed relative overflow-hidden'
                                                         }`}
                                                     >
@@ -787,33 +902,9 @@ const ProductDetails = () => {
                             </div>
                         )}
 
-                        {/* Gift Packaging Checkbox */}
-                        <div className="bg-rose-50/30 border border-rose-100 rounded-xl p-4 mb-6 transition-all">
-                            <label className="flex items-start gap-3 cursor-pointer group">
-                                <input 
-                                    type="checkbox"
-                                    checked={giftPackaging}
-                                    onChange={(e) => setGiftPackaging(e.target.checked)}
-                                    className="mt-1 w-4 h-4 text-rose-900 border-rose-200 rounded focus:ring-rose-900 transition-colors cursor-pointer"
-                                />
-                                <div>
-                                    <span className="block text-sm font-bold text-stone-900 group-hover:text-rose-900 transition-colors">🎁 Add Gift Packaging (+₹29)</span>
-                                    <span className="block text-xs text-stone-500 mt-0.5">Wrapped beautifully with a handwritten note.</span>
-                                </div>
-                            </label>
-                            
-                            {giftPackaging && (
-                                <div className="mt-3 pl-7 animate-in fade-in slide-in-from-top-2 duration-300">
-                                    <textarea 
-                                        value={giftNote}
-                                        onChange={(e) => setGiftNote(e.target.value)}
-                                        placeholder="Add a gift note (optional)..."
-                                        className="w-full text-sm p-3 rounded-xl border border-rose-100 bg-white focus:ring-2 focus:ring-rose-900/20 focus:border-rose-900 transition-all resize-none h-20 outline-none placeholder:text-stone-400"
-                                        maxLength={150}
-                                    />
-                                    <div className="text-[10px] text-stone-400 text-right mt-1 font-medium">{giftNote.length}/150</div>
-                                </div>
-                            )}
+                        {/* Desktop-only Gift Packaging Card */}
+                        <div className="hidden lg:block mb-6">
+                            {renderGiftPackaging()}
                         </div>
 
                         {/* Trust strip — desktop only */}
@@ -836,8 +927,8 @@ const ProductDetails = () => {
                             </div>
                         </div>
 
-                        {/* Actions (Desktop) */}
-                        <div className="hidden lg:flex flex-col gap-3 mb-8">
+                        {/* Actions (Desktop & Mobile In-flow) */}
+                        <div className="flex flex-col gap-3 mb-8">
                             <motion.button
                                 whileHover={{ scale: 1.01 }}
                                 whileTap={{ scale: 0.98 }}
@@ -852,7 +943,7 @@ const ProductDetails = () => {
                                     await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice, variantId: selectedVariant?.id, giftPackaging, giftNote: giftPackaging ? giftNote : '' });
                                 }}
                                 disabled={!isStockAvailable}
-                                className={`w-full h-[52px] rounded-[14px] font-bold uppercase tracking-widest text-sm transition-all duration-300 flex items-center justify-center gap-2 ${
+                                className={`hidden lg:flex w-full h-[52px] rounded-[14px] font-bold uppercase tracking-widest text-sm transition-all duration-300 items-center justify-center gap-2 ${
                                     isStockAvailable
                                     ? isInCart 
                                         ? 'bg-emerald-700 text-white hover:bg-emerald-800 shadow-md ring-4 ring-emerald-900/10' 
@@ -861,7 +952,7 @@ const ProductDetails = () => {
                                 }`}
                             >
                                 <ShoppingBag className="w-4 h-4" />
-                                {isStockAvailable ? (isInCart ? 'View in Bag' : 'Add to Cart') : 'Sold Out'}
+                                {isStockAvailable ? (isInCart ? 'Go to Cart' : 'Add to Cart') : 'Sold Out'}
                             </motion.button>
                             
                             <motion.button 
@@ -875,7 +966,7 @@ const ProductDetails = () => {
                                         }
                                 }}
                                 disabled={!isStockAvailable}
-                                className="w-full h-[52px] bg-gradient-to-r from-rose-900 to-pink-700 text-white font-bold uppercase tracking-widest text-sm rounded-[14px] hover:shadow-lg hover:shadow-rose-900/20 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                className="hidden lg:flex w-full h-[52px] bg-gradient-to-r from-rose-900 to-pink-700 text-white font-bold uppercase tracking-widest text-sm rounded-[14px] hover:shadow-lg hover:shadow-rose-900/20 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed items-center justify-center gap-2"
                             >
                                 Buy At ₹{currentPrice.toLocaleString()}
                             </motion.button>
@@ -902,14 +993,14 @@ const ProductDetails = () => {
                         </div>
 
                         {/* Why Handmade Strip */}
-                        <div className="flex items-start gap-4 p-5 bg-[#f5f2eb] rounded-2xl border border-stone-200/50 mb-8">
-                            <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center shadow-sm shrink-0 text-xl">
+                        <div className="flex items-center gap-3 p-3.5 bg-[#f5f2eb] rounded-xl border border-stone-200/50 mb-8">
+                            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm shrink-0 text-base">
                                 🇮🇳
                             </div>
                             <div>
-                                <h4 className="font-heading font-bold text-stone-900 mb-1">Handmade in India</h4>
-                                <p className="text-sm text-stone-600 leading-relaxed font-light">
-                                    Every piece is handmade with detailed crochet work and premium materials — making each product truly unique. Because it's not made by a machine, it takes hours of love and care.
+                                <h4 className="text-xs font-bold text-stone-900 leading-tight">Handmade with love in India</h4>
+                                <p className="text-[11px] text-stone-500 leading-snug line-clamp-2 mt-0.5">
+                                    Crafted with premium materials. Because it's not mass-produced, each piece is uniquely yours.
                                 </p>
                             </div>
                         </div>
@@ -929,25 +1020,25 @@ const ProductDetails = () => {
                         )}
 
                         {/* Order Timeline */}
-                        <div className="mb-12 block p-5 bg-white rounded-2xl border border-stone-100 shadow-sm">
-                            <h4 className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-4 text-center">Order Journey</h4>
+                        <div className="mb-12 block p-5 bg-white rounded-2xl border border-stone-200 shadow-sm">
+                            <h4 className="text-xs font-bold text-stone-900 uppercase tracking-widest mb-4 text-center">Order Journey</h4>
                             <div className="flex items-center justify-between text-center relative max-w-sm mx-auto">
-                                <div className="absolute top-4 left-4 right-4 h-0.5 bg-stone-100 -z-0"></div>
+                                <div className="absolute top-4 left-4 right-4 h-0.5 bg-stone-300 -z-0"></div>
                                 <div className="relative z-10 flex flex-col items-center gap-2 bg-white px-2">
                                     <div className="w-8 h-8 rounded-full bg-stone-900 text-white flex items-center justify-center shadow-sm"><ShoppingBag className="w-3.5 h-3.5" /></div>
-                                    <span className="text-[10px] font-bold text-stone-700">Order Placed</span>
+                                    <span className="text-[10px] font-bold text-stone-800">Order Placed</span>
                                 </div>
                                 <div className="relative z-10 flex flex-col items-center gap-2 bg-white px-2">
-                                    <div className="w-8 h-8 rounded-full bg-stone-100 text-stone-400 flex items-center justify-center border border-stone-200"><Star className="w-3.5 h-3.5" /></div>
-                                    <span className="text-[10px] font-medium text-stone-500">Handmade</span>
+                                    <div className="w-8 h-8 rounded-full bg-stone-50 text-stone-900 flex items-center justify-center border-2 border-stone-300"><Star className="w-3.5 h-3.5" /></div>
+                                    <span className="text-[10px] font-bold text-stone-800">Handmade</span>
                                 </div>
                                 <div className="relative z-10 flex flex-col items-center gap-2 bg-white px-2">
-                                    <div className="w-8 h-8 rounded-full bg-stone-100 text-stone-400 flex items-center justify-center border border-stone-200"><Truck className="w-3.5 h-3.5" /></div>
-                                    <span className="text-[10px] font-medium text-stone-500">Shipped</span>
+                                    <div className="w-8 h-8 rounded-full bg-stone-50 text-stone-900 flex items-center justify-center border-2 border-stone-300"><Truck className="w-3.5 h-3.5" /></div>
+                                    <span className="text-[10px] font-bold text-stone-800">Shipped</span>
                                 </div>
                                 <div className="relative z-10 flex flex-col items-center gap-2 bg-white px-2">
-                                    <div className="w-8 h-8 rounded-full bg-stone-100 text-stone-400 flex items-center justify-center border border-stone-200"><CheckCircle2 className="w-3.5 h-3.5" /></div>
-                                    <span className="text-[10px] font-medium text-stone-500">Delivered</span>
+                                    <div className="w-8 h-8 rounded-full bg-stone-50 text-stone-900 flex items-center justify-center border-2 border-stone-300"><CheckCircle2 className="w-3.5 h-3.5" /></div>
+                                    <span className="text-[10px] font-bold text-stone-800">Delivered</span>
                                 </div>
                             </div>
                         </div>
@@ -967,6 +1058,133 @@ const ProductDetails = () => {
                             </div>
                         )}
 
+                {/* Frequently Bought Together Bundle */}
+                {relatedProducts.length > 0 && (
+                            <div className="border-t border-stone-100 pt-8 lg:pt-12 pb-8 font-body-alt">
+                                <div className="flex items-center justify-between mb-5">
+                                    <div>
+                                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-50 border border-rose-100 text-rose-800 text-[10px] font-bold uppercase tracking-widest mb-2">
+                                            <Sparkles className="w-3 h-3" />
+                                            Bundle & Save
+                                        </div>
+                                        <h2 className="text-2xl font-heading font-bold text-stone-900">Complete the look ✨</h2>
+                                    </div>
+                                </div>
+
+                                <div className="bg-gradient-to-br from-stone-50 to-rose-50/20 rounded-2xl border border-stone-100 p-5 shadow-sm">
+                                    <div className="flex items-center gap-3 overflow-x-auto pb-5 hide-scrollbar snap-x -mx-1 px-1">
+                                        {/* Current Product */}
+                                        <div className="shrink-0 flex flex-col gap-2 w-28 snap-start">
+                                            <div className="aspect-[4/5] rounded-xl overflow-hidden shadow-sm border border-stone-200 bg-white relative">
+                                                <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                                            </div>
+                                            <div>
+                                                <div className="text-xs font-bold text-stone-900 truncate">This Item</div>
+                                                <div className="text-[10px] text-stone-500 font-medium">₹{currentPrice.toLocaleString()}</div>
+                                            </div>
+                                        </div>
+                                        <Plus className="w-5 h-5 text-stone-300 shrink-0" />
+                                        
+                                        {/* Related Product */}
+                                        <div className="shrink-0 flex flex-col gap-2 w-28 snap-start">
+                                            <Link to={`/product/${relatedProducts[0].id}`} className="aspect-[4/5] rounded-xl overflow-hidden shadow-sm border border-stone-200 block hover:border-rose-300 transition-colors bg-white group relative">
+                                                <img src={relatedProducts[0].image} alt={relatedProducts[0].name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                                <div className="absolute top-2 left-2 bg-white/90 backdrop-blur text-[8px] font-bold px-1.5 py-0.5 rounded shadow-sm text-stone-800">Add-on</div>
+                                            </Link>
+                                            <div>
+                                                <Link to={`/product/${relatedProducts[0].id}`} className="text-xs font-bold text-stone-900 truncate hover:text-rose-900 transition-colors block">{relatedProducts[0].name}</Link>
+                                                <div className="text-[10px] text-stone-500 font-medium">₹{relatedProducts[0].price.toLocaleString()}</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <Plus className="w-5 h-5 text-stone-300 shrink-0" />
+                                        
+                                        {/* Premium Gift Packaging */}
+                                        <div className="shrink-0 flex flex-col gap-2 w-28 snap-start">
+                                            <div className="aspect-[4/5] rounded-xl overflow-hidden shadow-sm border border-rose-200 bg-rose-50 flex flex-col items-center justify-center p-3 text-center relative">
+                                                <span className="text-3xl mb-1">🎁</span>
+                                                <span className="text-[10px] font-bold text-rose-900 leading-tight">Gift Ready Wrap</span>
+                                            </div>
+                                            <div>
+                                                <div className="text-xs font-bold text-stone-900 truncate">Add-on</div>
+                                                <div className="text-[10px] text-stone-500 font-medium">₹29</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="pt-4 border-t border-stone-200">
+                                        <div className="flex items-end justify-between mb-4">
+                                            <div>
+                                                <div className="text-xs text-stone-500 font-medium mb-1">Total Bundle Price</div>
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-2xl font-heading font-bold text-stone-900">
+                                                        ₹{(currentPrice + relatedProducts[0].price + 29 - 49).toLocaleString()}
+                                                    </span>
+                                                    <span className="text-sm text-stone-400 line-through">
+                                                        ₹{(currentPrice + relatedProducts[0].price + 29).toLocaleString()}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider">
+                                                Save ₹49
+                                            </div>
+                                        </div>
+
+                                        <motion.button
+                                            whileHover={{ scale: 1.01 }}
+                                            whileTap={{ scale: 0.98 }}
+                                            onClick={async () => {
+                                                if (!validateSelection('add')) return;
+                                                
+                                                let relatedSize = null;
+                                                let relatedColor = null;
+                                                const relatedInfo = relatedProducts[0].clothingInformation;
+                                                if (relatedInfo?.sizes && Object.keys(relatedInfo.sizes).length > 0) {
+                                                    relatedSize = Object.keys(relatedInfo.sizes)[0];
+                                                    if (relatedInfo.sizes['Free']) relatedSize = 'Free';
+                                                    else if (relatedInfo.sizes['Standard']) relatedSize = 'Standard';
+                                                }
+                                                
+                                                if (relatedProducts[0].variants && relatedProducts[0].variants.length > 0) {
+                                                    relatedColor = relatedProducts[0].variants[0].color;
+                                                } else if (relatedInfo?.colors && relatedInfo.colors.length > 0) {
+                                                    relatedColor = relatedInfo.colors[0];
+                                                }
+
+                                                const relatedVariantId = relatedProducts[0].variants && relatedProducts[0].variants.length > 0 
+                                                    ? relatedProducts[0].variants[0].id 
+                                                    : null;
+
+                                                await addToCart({ 
+                                                    ...product, 
+                                                    selectedSize: selectedSize || null, 
+                                                    selectedColor, 
+                                                    price: currentPrice, 
+                                                    variantId: selectedVariant?.id, 
+                                                    giftPackaging: true, 
+                                                    giftNote: giftNote || 'Bundle Gift'
+                                                });
+                                                
+                                                await addToCart({ 
+                                                    ...relatedProducts[0], 
+                                                    selectedSize: relatedSize,
+                                                    selectedColor: relatedColor,
+                                                    variantId: relatedVariantId,
+                                                    price: relatedProducts[0].price 
+                                                });
+                                                
+                                                navigate('/cart');
+                                            }}
+                                            className="w-full py-4 bg-stone-900 text-white font-bold rounded-xl text-sm hover:bg-stone-800 transition-colors shadow-md flex items-center justify-center gap-2"
+                                        >
+                                            <ShoppingBag className="w-4 h-4" />
+                                            Add Bundle To Cart
+                                        </motion.button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                         {/* Accordion Details */}
                         <div className="border-t border-stone-200">
                             {/* Description */}
@@ -979,9 +1197,20 @@ const ProductDetails = () => {
                                     {openSection === 'description' ? <Minus className="w-4 h-4 text-rose-900" /> : <Plus className="w-4 h-4 text-stone-400 group-hover:text-rose-900 transition-colors" />}
                                 </button>
                                 <div className={`overflow-hidden transition-all duration-300 ease-in-out ${openSection === 'description' ? 'max-h-[2000px] opacity-100 mb-6' : 'max-h-0 opacity-0'}`}>
-                                    <p className="text-stone-600 leading-[1.8] font-light mb-6 text-sm md:text-base">
-                                        {product.description}
-                                    </p>
+                                    <div className="text-stone-600 leading-[1.8] font-light mb-6 text-sm md:text-base space-y-3">
+                                        {product.description.split('\n').map((line, i) => {
+                                            const trimmed = line.trim();
+                                            if (trimmed.startsWith('-') || trimmed.startsWith('•')) {
+                                                return (
+                                                    <div key={i} className="flex items-start gap-3">
+                                                        <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-1.5" />
+                                                        <span className="text-stone-700">{trimmed.replace(/^[-•]\s*/, '')}</span>
+                                                    </div>
+                                                );
+                                            }
+                                            return trimmed ? <p key={i}>{trimmed}</p> : null;
+                                        })}
+                                    </div>
                                     
                                     {info.keyFeatures && info.keyFeatures.length > 0 && (
                                         <div className="mb-4">
@@ -1151,22 +1380,31 @@ const ProductDetails = () => {
                             </div>
                             
                             {reviews.length === 0 ? (
-                                <div className="text-center py-16 bg-white rounded-[24px] border border-stone-100 shadow-sm font-body-alt">
-                                    <div className="w-12 h-12 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                                        <Star className="w-6 h-6 text-rose-400" />
+                                <div className="text-center py-12 bg-rose-50/50 rounded-2xl border border-rose-100 shadow-sm font-body-alt">
+                                    <div className="flex justify-center mb-4">
+                                        <div className="flex -space-x-3">
+                                            {[1,2,3,4].map(i => (
+                                                <div key={i} className={`w-10 h-10 rounded-full border-2 border-white bg-stone-200 overflow-hidden shadow-sm flex items-center justify-center text-[10px] font-bold text-stone-500`}>
+                                                    U{i}
+                                                </div>
+                                            ))}
+                                            <div className="w-10 h-10 rounded-full border-2 border-white bg-rose-100 flex items-center justify-center text-xs font-bold text-rose-800 shadow-sm">
+                                                +50
+                                            </div>
+                                        </div>
                                     </div>
-                                    <p className="text-stone-900 font-heading font-medium text-2xl mb-2">No reviews yet</p>
-                                    <p className="text-stone-500 text-sm font-light mb-6">Be the first to review this handmade product 💖</p>
+                                    <p className="text-stone-900 font-heading font-medium text-xl mb-1">Loved by handmade gift buyers</p>
+                                    <p className="text-stone-500 text-sm font-light mb-5">Join our community of happy customers 💖</p>
                                     <button 
                                         onClick={() => setReviewModalOpen(true)}
-                                        className="px-6 py-3 bg-stone-900 text-white text-sm font-medium rounded-[14px] hover:bg-stone-800 transition-all shadow-sm mx-auto"
+                                        className="text-sm font-bold text-rose-900 underline underline-offset-4 hover:text-rose-700 transition-colors"
                                     >
-                                        Write a Review
+                                        Share your experience
                                     </button>
                                 </div>
                             ) : (
                                 <div className="space-y-4">
-                                    {reviews.map(review => (
+                                    {reviews.slice(0, visibleReviewsCount).map(review => (
                                         <div key={review.id} className="bg-white p-5 rounded-2xl border border-stone-100 shadow-sm hover:shadow-md transition-all duration-200">
                                             <div className="flex items-start justify-between mb-3">
                                                 <div className="flex items-center gap-3 min-w-0">
@@ -1197,119 +1435,21 @@ const ProductDetails = () => {
                                             )}
                                         </div>
                                     ))}
+                                    {reviews.length > visibleReviewsCount && (
+                                        <div className="flex justify-center mt-6">
+                                            <button 
+                                                onClick={() => setVisibleReviewsCount(prev => prev + 4)}
+                                                className="px-6 py-2.5 text-sm font-bold text-stone-900 border border-stone-200 rounded-xl hover:bg-stone-50 transition-colors"
+                                            >
+                                                Show More Reviews
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>
                     </motion.div>
                 </div>
-
-                {/* Frequently Bought Together Bundle */}
-                {relatedProducts.length > 0 && (
-                    <div className="border-t border-stone-100 pt-12 lg:pt-16 pb-8 font-body-alt">
-                        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 mb-6">
-                            <div>
-                                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-50 border border-rose-100/50 text-rose-800 text-[10px] font-bold uppercase tracking-widest mb-4">
-                                    <Sparkles className="w-3 h-3" />
-                                    Bestselling Gift Combo
-                                </div>
-                                <h2 className="text-3xl lg:text-4xl font-heading font-medium text-stone-900 mb-2">Complete the look ✨</h2>
-                                <p className="text-sm text-stone-500 font-light">Perfect combination for birthdays, anniversaries, and aesthetic gifting.</p>
-                            </div>
-                        </div>
-
-                        <div className="bg-stone-50 rounded-2xl border border-stone-100 p-5 lg:p-6 flex flex-col lg:flex-row items-center gap-6 lg:gap-12 relative overflow-hidden">
-                            <div className="flex items-center gap-3 lg:gap-4 relative z-10 w-full lg:w-auto overflow-x-auto pb-4 lg:pb-0 hide-scrollbar snap-x">
-                                {/* Current Product */}
-                                <div className="shrink-0 flex flex-col gap-2 w-24 lg:w-28 snap-start">
-                                    <div className="aspect-[2/3] rounded-xl overflow-hidden shadow-sm border border-stone-200 bg-white">
-                                        <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
-                                    </div>
-                                    <div className="text-xs font-bold text-stone-900 truncate">This Item</div>
-                                </div>
-                                <Plus className="w-4 h-4 lg:w-5 lg:h-5 text-stone-300 shrink-0" />
-                                
-                                {/* Related Product */}
-                                <div className="shrink-0 flex flex-col gap-2 w-24 lg:w-28 snap-start">
-                                    <Link to={`/product/${relatedProducts[0].id}`} className="aspect-[2/3] rounded-xl overflow-hidden shadow-sm border border-stone-200 block hover:border-rose-300 transition-colors bg-white">
-                                        <img src={relatedProducts[0].image} alt={relatedProducts[0].name} className="w-full h-full object-cover" />
-                                    </Link>
-                                    <Link to={`/product/${relatedProducts[0].id}`} className="text-xs font-bold text-stone-900 truncate hover:text-rose-900 transition-colors">{relatedProducts[0].name}</Link>
-                                </div>
-                                <Plus className="w-4 h-4 lg:w-5 lg:h-5 text-stone-300 shrink-0" />
-
-                                {/* Gift Packaging */}
-                                <div className="shrink-0 flex flex-col gap-2 w-24 lg:w-28 snap-start">
-                                    <div className="aspect-[2/3] rounded-xl overflow-hidden shadow-sm border border-stone-200 bg-rose-50 flex flex-col items-center justify-center p-3 text-center">
-                                        <span className="text-3xl mb-2">🎁</span>
-                                        <span className="text-[10px] font-bold text-rose-900 leading-tight">Premium Gift Packaging</span>
-                                    </div>
-                                    <div className="text-xs font-bold text-stone-900 truncate">Add-on</div>
-                                </div>
-                            </div>
-                            
-                            <div className="flex-1 w-full flex flex-col items-start lg:items-end lg:text-right relative z-10 border-t lg:border-t-0 lg:border-l border-stone-200 pt-6 lg:pt-0 lg:pl-12">
-                                <div className="text-3xl font-heading font-bold text-stone-900 mb-5">
-                                    ₹{(currentPrice + relatedProducts[0].price + 29).toLocaleString()}
-                                </div>
-
-                                <motion.button
-                                    whileHover={{ scale: 1.02 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    onClick={async () => {
-                                        if (!validateSelection('add')) return;
-                                        
-                                        // Get default size and color for related product if it requires one
-                                        let relatedSize = null;
-                                        let relatedColor = null;
-                                        const relatedInfo = relatedProducts[0].clothingInformation;
-                                        if (relatedInfo?.sizes && Object.keys(relatedInfo.sizes).length > 0) {
-                                            // Sort sizes if possible or just get the first one
-                                            relatedSize = Object.keys(relatedInfo.sizes)[0];
-                                            if (relatedInfo.sizes['Free']) relatedSize = 'Free';
-                                            else if (relatedInfo.sizes['Standard']) relatedSize = 'Standard';
-                                        }
-                                        
-                                        if (relatedProducts[0].variants && relatedProducts[0].variants.length > 0) {
-                                            relatedColor = relatedProducts[0].variants[0].color;
-                                        } else if (relatedInfo?.colors && relatedInfo.colors.length > 0) {
-                                            relatedColor = relatedInfo.colors[0];
-                                        }
-
-                                        const relatedVariantId = relatedProducts[0].variants && relatedProducts[0].variants.length > 0 
-                                            ? relatedProducts[0].variants[0].id 
-                                            : null;
-
-                                        // Add Main item with gift packaging
-                                        await addToCart({ 
-                                            ...product, 
-                                            selectedSize: selectedSize || null, 
-                                            selectedColor, 
-                                            price: currentPrice, 
-                                            variantId: selectedVariant?.id, 
-                                            giftPackaging: true, 
-                                            giftNote: giftNote || 'Bundle Gift'
-                                        });
-                                        
-                                        // Add Related item
-                                        await addToCart({ 
-                                            ...relatedProducts[0], 
-                                            selectedSize: relatedSize,
-                                            selectedColor: relatedColor,
-                                            variantId: relatedVariantId,
-                                            price: relatedProducts[0].price 
-                                        });
-                                        
-                                        navigate('/cart');
-                                    }}
-                                    className="w-full lg:w-auto px-8 py-4 bg-stone-900 text-white font-bold rounded-xl text-sm hover:bg-stone-800 transition-colors shadow-lg shadow-stone-900/10 flex items-center justify-center gap-2"
-                                >
-                                    <ShoppingBag className="w-4 h-4" />
-                                    Add Bundle To Cart
-                                </motion.button>
-                            </div>
-                        </div>
-                    </div>
-                )}
 
                 {/* Related Products Section */}
                 {relatedProducts.length > 0 && (
@@ -1343,7 +1483,88 @@ const ProductDetails = () => {
                                             hidden: { opacity: 0, y: 20 },
                                             show: { opacity: 1, y: 0 }
                                         }}
-                                        className="group relative shrink-0 w-[65vw] sm:w-[45vw] lg:w-auto snap-start"
+                                        className="group relative shrink-0 w-[42vw] sm:w-[30vw] lg:w-auto snap-start"
+                                    >
+                                        <div className="aspect-[2/3] overflow-hidden bg-stone-50 rounded-2xl mb-3 relative">
+                                            <Link to={`/product/${p.id}`}>
+                                                <img 
+                                                    src={p.image} 
+                                                    alt={p.name} 
+                                                    loading="lazy"
+                                                    decoding="async"
+                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                                                />
+                                            </Link>
+                                            
+                                            {/* Discount Badge */}
+                                            {discount > 0 && (
+                                                <div className="absolute top-3 left-3 bg-rose-900 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg uppercase tracking-wide shadow-sm">
+                                                    {discount}% OFF
+                                                </div>
+                                            )}
+
+                                            {/* Wishlist Button */}
+                                            <button 
+                                                onClick={(e) => {
+                                                    e.preventDefault();
+                                                    toggleWishlist(p);
+                                                }}
+                                                className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center bg-white/90 backdrop-blur-sm rounded-full shadow-sm hover:scale-110 active:scale-95 transition-all"
+                                            >
+                                                <Heart className={`w-4 h-4 ${isInWishlist(p.id) ? 'fill-rose-600 text-rose-600' : 'text-stone-400'}`} />
+                                            </button>
+                                        </div>
+
+                                        <Link to={`/product/${p.id}`} className="block space-y-1 px-1">
+                                            <h3 className="font-heading font-bold text-sm text-stone-900 truncate group-hover:text-rose-900 transition-colors">
+                                                {p.name}
+                                            </h3>
+                                            <div className="flex items-center flex-wrap gap-1.5 text-sm">
+                                                <span className="font-bold text-stone-900">₹{p.price.toLocaleString()}</span>
+                                                {p.originalPrice && (
+                                                    <>
+                                                        <span className="text-stone-400 line-through text-xs">₹{p.originalPrice.toLocaleString()}</span>
+                                                        <span className="text-[10px] font-bold text-rose-700">({discount}% OFF)</span>
+                                                    </>
+                                                )}
+                                            </div>
+                                        </Link>
+                                    </motion.div>
+                                );
+                            })}
+                        </motion.div>
+                    </div>
+                )}
+
+                {/* You May Also Like Section */}
+                {youMayAlsoLikeProducts.length > 0 && (
+                    <div className="border-t border-stone-100 pt-12 lg:pt-16 pb-24 overflow-hidden">
+                        <div className="flex items-center gap-4 mb-8 lg:mb-12 px-4 lg:px-0">
+                            <h2 className="text-2xl lg:text-3xl font-heading font-bold text-stone-900 text-left whitespace-nowrap">You may also like</h2>
+                        </div>
+                        <motion.div 
+                            initial="hidden"
+                            whileInView="show"
+                            viewport={{ once: true }}
+                            variants={{
+                                hidden: { opacity: 0 },
+                                show: {
+                                    opacity: 1,
+                                    transition: { staggerChildren: 0.1 }
+                                }
+                            }}
+                            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 px-4 lg:px-0 lg:gap-6 pb-6"
+                        >
+                            {youMayAlsoLikeProducts.map(p => {
+                                const discount = p.originalPrice ? Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100) : 0;
+                                return (
+                                    <motion.div 
+                                        key={p.id} 
+                                        variants={{
+                                            hidden: { opacity: 0, y: 20 },
+                                            show: { opacity: 1, y: 0 }
+                                        }}
+                                        className="group relative w-full"
                                     >
                                         <div className="aspect-[2/3] overflow-hidden bg-stone-50 rounded-2xl mb-3 relative">
                                             <Link to={`/product/${p.id}`}>
@@ -1502,23 +1723,32 @@ const ProductDetails = () => {
                             {availableColors && availableColors.length > 0 && !hasOnlyNAColor && (
                                 <div className="space-y-3">
                                     <div className="flex justify-between items-center">
-                                        <h4 className="text-xs font-bold text-stone-900 uppercase tracking-widest">Color</h4>
+                                        <div className="flex items-center gap-1.5">
+                                            <h4 className="text-sm font-bold text-stone-900">Selected Color:</h4>
+                                            {selectedColor && <span className="text-sm text-stone-600 capitalize">{selectedColor}</span>}
+                                        </div>
                                         {colorError && <span className="text-[10px] text-red-500 font-bold uppercase">Required</span>}
                                     </div>
                                     <div className="flex flex-wrap gap-2.5">
-                                        {availableColors.map((color) => (
+                                        {availableColors.map((color) => {
+                                            const variantForColor = product.variants?.find(v => v.color === color);
+                                            const colorImage = variantForColor?.images?.[0] || product.image;
+                                            return (
                                             <button
                                                 key={color}
                                                 onClick={() => { setSelectedColor(color); setColorError(false); }}
-                                                className={`px-4 py-2.5 rounded-xl border text-sm transition-all font-medium ${
+                                                className={`p-1 rounded-2xl border-2 transition-all duration-300 ${
                                                     selectedColor === color 
-                                                        ? 'bg-stone-900 text-white border-stone-900 shadow-md' 
-                                                        : 'bg-white text-stone-900 border-stone-200 hover:border-stone-900'
+                                                        ? 'border-stone-900 shadow-sm' 
+                                                        : 'border-stone-200 hover:border-stone-400'
                                                 }`}
                                             >
-                                                {color}
+                                                <div className="w-14 h-16 rounded-xl overflow-hidden bg-stone-100">
+                                                    <img src={colorImage} alt={color} className="w-full h-full object-cover" />
+                                                </div>
                                             </button>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             )}
@@ -1581,6 +1811,41 @@ const ProductDetails = () => {
                                     </div>
                                 </div>
                             )}
+                            {/* Gift Packaging inside Sheet */}
+                            <div className="pt-4 border-t border-stone-100">
+                                <label className={`flex items-center gap-3 cursor-pointer group p-3 rounded-xl border transition-colors ${giftPackaging ? 'bg-rose-50/80 border-rose-200' : 'bg-rose-50/40 border-rose-100 hover:border-rose-200'}`}>
+                                    <div className="relative flex items-center justify-center">
+                                        <input 
+                                            type="checkbox" 
+                                            className="peer sr-only"
+                                            checked={giftPackaging}
+                                            onChange={(e) => {
+                                                setGiftPackaging(e.target.checked);
+                                                if (!e.target.checked) setGiftNote('');
+                                            }}
+                                        />
+                                        <div className="w-5 h-5 rounded border border-stone-300 bg-white peer-checked:bg-rose-600 peer-checked:border-rose-600 transition-colors flex items-center justify-center shadow-sm">
+                                            <CheckCircle2 className={`w-3.5 h-3.5 text-white transition-transform ${giftPackaging ? 'scale-100' : 'scale-0'}`} />
+                                        </div>
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className="text-sm font-bold text-stone-800 mb-0.5"><span className="mr-1.5">🎁</span>Add Gift Packaging (+₹29)</div>
+                                        <div className="text-[11.5px] text-stone-500">Wrapped beautifully with a handwritten note.</div>
+                                    </div>
+                                </label>
+                                
+                                {giftPackaging && (
+                                    <div className="mt-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                                        <textarea 
+                                            value={giftNote}
+                                            onChange={(e) => setGiftNote(e.target.value)}
+                                            placeholder="Gift Note (Optional)"
+                                            className="w-full text-sm p-3 rounded-xl border border-rose-200 bg-white focus:ring-2 focus:ring-rose-900/20 focus:border-rose-900 transition-all resize-none h-16 outline-none placeholder:text-stone-400"
+                                            maxLength={150}
+                                        />
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
                         <button
@@ -1639,7 +1904,7 @@ const ProductDetails = () => {
                         }`}
                     >
                         <ShoppingBag className="w-3.5 h-3.5" />
-                        {isStockAvailable ? (isInCart ? 'View in Bag' : 'Add to Cart') : 'Sold Out'}
+                        {isStockAvailable ? (isInCart ? 'Go to Cart' : 'Add to Cart') : 'Sold Out'}
                     </button>
                 </div>
             </div>

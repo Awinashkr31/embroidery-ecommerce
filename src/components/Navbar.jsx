@@ -24,6 +24,7 @@ import { GlobalPincodeHeader } from './GlobalPincodeHeader';
 const Navbar = React.memo(() => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [scrollDirection, setScrollDirection] = useState('up');
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
   
@@ -75,8 +76,17 @@ const Navbar = React.memo(() => {
 
   // Scroll Effect
   useEffect(() => {
+    let lastScrollY = window.scrollY;
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      const currentScrollY = window.scrollY;
+      setIsScrolled(currentScrollY > 20);
+      
+      if (currentScrollY > lastScrollY && currentScrollY > 80) {
+          setScrollDirection('down');
+      } else if (currentScrollY < lastScrollY) {
+          setScrollDirection('up');
+      }
+      lastScrollY = currentScrollY;
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
@@ -132,7 +142,7 @@ const Navbar = React.memo(() => {
 
   return (
     <>
-    <header className="sticky top-0 w-full z-50 flex flex-col transition-all duration-500 ease-in-out">
+    <header className={`sticky top-0 w-full z-50 flex flex-col transition-transform duration-300 ease-in-out ${scrollDirection === 'down' ? '-translate-y-full' : 'translate-y-0'}`}>
       <nav
         className={`w-full relative z-20 transition-all duration-500 ease-in-out min-h-[56px] md:min-h-[72px]
           ${isScrolled

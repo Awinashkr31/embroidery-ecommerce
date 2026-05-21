@@ -45,10 +45,10 @@ export const PincodeChecker = () => {
     return (
         <div className="bg-white p-4 rounded-[14px] border border-stone-100 shadow-sm max-w-sm w-full space-y-3 font-body-alt">
             <div className="flex justify-between items-center">
-                <h4 className="text-sm font-semibold text-stone-900 flex items-center gap-2">
+                <div className="text-sm font-bold text-stone-900 flex items-center gap-2">
                     <MapPin className="w-4 h-4 text-rose-700" /> 
                     {isEditing ? 'Check Delivery Availability' : `Delivering to ${globalPincode}`}
-                </h4>
+                </div>
                 {!isEditing && globalPincode && (
                     <button 
                         onClick={() => setIsEditing(true)}

@@ -246,7 +246,6 @@ const Settings = () => {
                 console.warn("Compression failed, using original:", cErr);
             }
 
-            const key = cropKey;
             
             let oldUrl = null;
             if (typeof key === 'string') {

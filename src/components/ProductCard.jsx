@@ -90,7 +90,7 @@ export const ProductCard = React.memo(({ product, toggleWishlist, isInWishlist, 
         <div className="h-full flex flex-col">
             {/* Image Card */}
             <div 
-                className="relative aspect-[2/3] md:aspect-[4/5] overflow-hidden bg-stone-100 mb-3 md:mb-5 rounded-[20px] md:rounded-2xl shrink-0 md:group-hover:-translate-y-1 md:group-hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.15)] md:transition-all md:duration-500"
+                className="relative aspect-[3/4] md:aspect-[2/3] overflow-hidden bg-stone-100 mb-3 md:mb-5 rounded-[20px] md:rounded-2xl shrink-0 md:group-hover:-translate-y-1 md:group-hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.15)] md:transition-all md:duration-500"
                 onMouseEnter={() => setIsHovering(true)}
                 onMouseLeave={() => { setIsHovering(false); setCurrentImageIndex(0); }}
                 onTouchStart={handleTouchStart}
@@ -152,7 +152,7 @@ export const ProductCard = React.memo(({ product, toggleWishlist, isInWishlist, 
                 {/* Badges */}
                 <div className="absolute top-2 left-2 md:top-3 md:left-3 flex flex-col gap-1 z-20">
                     {product.inStock && product.discountPercentage > 0 && (
-                        <span className="bg-rose-900 text-white text-[8px] md:text-[10px] font-bold uppercase tracking-widest px-1.5 py-0.5 md:px-2 md:py-1 rounded-sm shadow-sm">
+                        <span className="bg-emerald-600 text-white text-[10px] md:text-[11px] font-bold uppercase tracking-widest px-2 py-1 md:px-2.5 md:py-1 rounded shadow-md">
                             {product.discountPercentage}% OFF
                         </span>
                     )}
@@ -172,9 +172,9 @@ export const ProductCard = React.memo(({ product, toggleWishlist, isInWishlist, 
             </div>
 
             {/* Product Info */}
-            <div className="text-left flex-1 flex flex-col justify-between">
+            <div className="text-left flex-1 flex flex-col justify-between min-h-[5rem]">
                 <div>
-                     <h3 className="font-heading text-sm md:text-lg text-stone-900 group-hover:text-rose-900 transition-colors duration-300 truncate mb-1">
+                     <h3 className="font-heading font-medium text-base md:text-lg text-stone-900 group-hover:text-rose-900 transition-colors duration-300 line-clamp-2 leading-snug mb-1.5 pr-2">
                         {product.name}
                     </h3>
 
