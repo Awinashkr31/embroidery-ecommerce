@@ -25,8 +25,9 @@ export default {
         'warm-beige': '#fdfbf7',
       },
       fontFamily: {
-        heading: ['"Playfair Display"', 'serif'],
-        body: ['Inter', 'sans-serif'],
+        heading: ['"Cormorant Garamond"', '"Playfair Display"', 'serif'],
+        body: ['Outfit', 'sans-serif'],
+        'body-alt': ['Inter', 'sans-serif'],
       },
       animation: {
         marquee: 'marquee 20s linear infinite',

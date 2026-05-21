@@ -43,7 +43,7 @@ export const PincodeChecker = () => {
     }
 
     return (
-        <div className="bg-stone-50 p-4 rounded-xl border border-stone-100 max-w-sm w-full space-y-3">
+        <div className="bg-white p-4 rounded-[14px] border border-stone-100 shadow-sm max-w-sm w-full space-y-3 font-body-alt">
             <div className="flex justify-between items-center">
                 <h4 className="text-sm font-semibold text-stone-900 flex items-center gap-2">
                     <MapPin className="w-4 h-4 text-rose-700" /> 
@@ -84,10 +84,10 @@ export const PincodeChecker = () => {
                 <div className="pt-2 text-sm">
                     {localResult.serviceable ? (
                         <div className="space-y-2">
-                            <div className="flex items-start gap-2 text-emerald-700 bg-emerald-50 p-2.5 rounded-lg border border-emerald-100">
-                                <Truck className="w-4 h-4 mt-0.5 shrink-0" />
+                            <div className="flex items-center gap-3 text-emerald-800 bg-emerald-50/50 p-3 rounded-[12px] border-l-4 border-emerald-500 shadow-[inset_0_0_10px_rgba(16,185,129,0.05)]">
+                                <Truck className="w-4 h-4 shrink-0" />
                                 <div>
-                                    <span className="font-semibold block text-emerald-900">Delivery by {localResult.eddString}</span>
+                                    <span className="font-bold block text-sm">Delivery by {localResult.eddString}</span>
                                 </div>
                             </div>
                             {localResult.codAvailable ? (

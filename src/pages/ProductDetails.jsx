@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion'; // eslint-disable-line no-unused-vars
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useProducts } from '../context/ProductContext';
 import { useCart } from '../context/CartContext';
@@ -8,14 +8,11 @@ import { useToast } from '../context/ToastContext';
 import { supabase } from '../../config/supabase';
 import { Heart, ShoppingBag, ArrowLeft, Truck, Shield, Star, Award, Search, Sparkles, Plus, Minus, ChevronDown, Share2, X, Loader, Calendar, CheckCircle2 } from 'lucide-react';
 import SEO from '../components/SEO';
-import { getEstimatedDeliveryDate } from '../utils/dateUtils';
 import { PincodeChecker } from '../components/PincodeChecker';
-import { usePincode } from '../context/PincodeContext';
 
 const ProductDetails = () => {
     const { id } = useParams();
     const { products, fetchProducts } = useProducts();
-    const { pincodeData } = usePincode();
     
     // Fetch products explicitly since context no longer auto-fetches on mount
     useEffect(() => {
@@ -492,10 +489,10 @@ const ProductDetails = () => {
                                         <button 
                                             key={idx}
                                             onClick={() => setSelectedImage(img)}
-                                            className={`aspect-[2/3] lg:aspect-[4/5] rounded-xl overflow-hidden border-2 transition-all duration-300 ${
+                                            className={`aspect-[2/3] lg:aspect-[4/5] rounded-[18px] overflow-hidden border-2 transition-all duration-300 ${
                                                 (selectedImage || displayImages[0]) === img 
-                                                ? 'border-rose-900 shadow-md ring-2 ring-rose-100' 
-                                                : 'border-transparent opacity-60 hover:opacity-100 hover:border-stone-300'
+                                                ? 'border-stone-900 shadow-sm ring-2 ring-stone-900/10' 
+                                                : 'border-transparent opacity-60 hover:opacity-100 hover:border-stone-200'
                                             }`}
                                         >
                                             <img src={img} alt={`${product.name} - View ${idx + 1}`} className="w-full h-full object-cover object-top" />
@@ -506,7 +503,7 @@ const ProductDetails = () => {
                         )}
 
                         {/* Main Image Area */}
-                        <div className="flex-1 rounded-2xl overflow-hidden relative shadow-sm group bg-stone-50 aspect-[2/3] lg:aspect-[4/5]">
+                        <div className="flex-1 rounded-[24px] overflow-hidden relative shadow-md group bg-white aspect-[2/3] lg:aspect-[4/5]">
                             <div className="hidden lg:block w-full h-full relative overflow-hidden"> 
                                 <AnimatePresence mode="wait">
                                     <motion.img 
@@ -559,12 +556,12 @@ const ProductDetails = () => {
                                 ))}
                             </div>
                             {displayImages && displayImages.length > 1 && (
-                                <div className="lg:hidden absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+                                <div className="lg:hidden absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
                                     {displayImages.map((img, idx) => (
-                                        <div key={idx} className={`rounded-full transition-all ${
+                                        <div key={idx} className={`rounded-full transition-all duration-300 ${
                                             idx === mobileActiveIndex
-                                            ? 'w-4 h-1.5 bg-white shadow-sm'
-                                            : 'w-1.5 h-1.5 bg-white/60'
+                                            ? 'w-6 h-1.5 bg-white shadow-md'
+                                            : 'w-2 h-1.5 bg-white/60 hover:bg-white/80'
                                         }`}></div>
                                     ))}
                                 </div>
@@ -572,16 +569,16 @@ const ProductDetails = () => {
                         </div>
                     </div>
 
-                    {/* Details Section - Clean Typography */}
+                    {/* Details Section - Premium Typography */}
                     <motion.div 
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 0.6, delay: 0.2 }}
-                        className="lg:col-span-7 lg:pt-4 min-w-0"
+                        className="lg:col-span-7 lg:pt-4 min-w-0 font-body-alt"
                     > 
-                        <div className="mb-6 space-y-3">
+                        <div className="mb-8 space-y-4">
                              <div className="flex items-center justify-between">
-                                <span className="inline-flex items-center text-xs font-bold tracking-[0.18em] uppercase text-rose-900 bg-rose-50 border border-rose-100 px-3 py-1.5 rounded-full">
+                                <span className="inline-flex items-center text-[10px] font-bold tracking-[0.2em] uppercase text-stone-500">
                                     {product.category}
                                 </span>
                                 <div className="flex items-center gap-2">
@@ -599,63 +596,61 @@ const ProductDetails = () => {
                                                 addToast('Link copied to clipboard!', 'success');
                                             }
                                         }}
-                                        className="flex items-center gap-1.5 text-stone-400 hover:text-stone-700 transition-colors text-xs font-medium bg-stone-50 px-2 py-1 rounded-md border border-stone-100"
+                                        className="flex items-center gap-1.5 text-stone-400 hover:text-stone-900 transition-colors text-xs font-medium bg-stone-50 hover:bg-stone-100 px-3 py-1.5 rounded-full border border-stone-200/60"
                                     >
-                                        <Share2 className="w-4 h-4" />
+                                        <Share2 className="w-3.5 h-3.5" />
                                         <span className="hidden lg:inline">Share</span>
                                     </button>
                                 </div>
                              </div>
 
-                            <h1 className="text-3xl lg:text-4xl font-heading font-semibold text-stone-900 leading-tight break-words">
+                            <h1 className="text-4xl lg:text-5xl font-heading font-semibold text-stone-900 leading-snug break-words">
                                 {product.name}
                             </h1>
                             
                             {info.shortDescription && (
-                                <p className="text-stone-500 text-base leading-relaxed">{info.shortDescription}</p>
+                                <p className="text-stone-500 text-base leading-relaxed font-light">{info.shortDescription}</p>
                             )}
 
-
-
-                            <div className="flex items-center gap-3 pt-1">
+                            <div className="flex items-center gap-2 pt-2">
                                 <div className="flex items-center gap-0.5">
                                     {[...Array(5)].map((_, i) => (
-                                        <Star key={i} className={`w-4 h-4 ${i < Math.round(averageRating) ? 'fill-amber-400 text-amber-400' : 'text-stone-200'}`} />
+                                        <Star key={i} className={`w-3.5 h-3.5 ${i < Math.round(averageRating) ? 'fill-stone-900 text-stone-900' : 'text-stone-200'}`} />
                                     ))}
                                 </div>
-                                <span className="text-sm font-semibold text-stone-700">{averageRating}</span>
-                                <span className="text-stone-300">·</span>
-                                <a href="#reviews" className="text-sm text-stone-500 hover:text-rose-900 transition-colors">
+                                <span className="text-sm font-medium text-stone-900">{averageRating}</span>
+                                <span className="text-stone-300 px-1">·</span>
+                                <a href="#reviews" className="text-sm text-stone-500 underline underline-offset-4 hover:text-stone-900 transition-colors">
                                     {reviews.length} {reviews.length === 1 ? 'Review' : 'Reviews'}
                                 </a>
                             </div>
                         </div>
 
                         {/* Price Area */}
-                        <div className="mb-8 pb-8 border-b border-stone-100">
-                            <div className="flex items-end gap-4 mb-1.5">
-                                <span className="text-4xl lg:text-5xl font-heading font-semibold text-stone-900 tracking-tight">
-                                    <span className="text-xl text-stone-400 font-sans mr-0.5">₹</span>{currentPrice.toLocaleString()}
-                                </span>
-                                {product.originalPrice && (
-                                    <>
-                                        <span className="text-xl text-stone-400 line-through font-light mb-1">
-                                            ₹{product.originalPrice.toLocaleString()}
+                        <div className="mb-8 pb-8 border-b border-stone-100 font-body-alt">
+                            <div className="flex flex-col gap-1.5 mb-3">
+                                <div className="flex items-center gap-4">
+                                    <span className="text-5xl lg:text-6xl font-heading font-semibold text-stone-900 tracking-tight">
+                                        <span className="text-2xl text-stone-900 font-sans mr-0.5">₹</span>{currentPrice.toLocaleString()}
+                                    </span>
+                                    {product.originalPrice && product.discountPercentage > 0 && (
+                                        <span className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 px-3 py-1 rounded-full uppercase tracking-widest">
+                                            {product.discountPercentage}% OFF
                                         </span>
-                                        {product.discountPercentage > 0 && (
-                                            <span className="mb-1 text-sm font-bold text-white bg-rose-700 px-3 py-1 rounded-full">
-                                                {product.discountPercentage}% OFF
-                                            </span>
-                                        )}
-                                    </>
+                                    )}
+                                </div>
+                                {product.originalPrice && (
+                                    <span className="text-sm text-stone-400 font-medium tracking-wide">
+                                        MRP <span className="line-through">₹{product.originalPrice.toLocaleString()}</span>
+                                    </span>
                                 )}
                             </div>
-                            <p className="text-stone-400 text-xs mb-3">Inclusive of all taxes · Free delivery above ₹{FREE_DELIVERY_THRESHOLD}</p>
+                            <p className="text-stone-400 text-[11px] mb-5 uppercase tracking-wider font-medium">Inclusive of all taxes</p>
                             
                             {/* Urgency Badge */}
                             {isStockAvailable && currentStock <= 5 && (
-                                <div className="inline-flex items-center gap-1.5 bg-rose-50 border border-rose-100 text-rose-700 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest mb-4">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
+                                <div className="inline-flex items-center gap-1.5 bg-orange-50 text-orange-700 px-4 py-2 rounded-full text-[11px] font-bold uppercase tracking-widest mb-4">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
                                     Only {currentStock} left in stock
                                 </div>
                             )}
@@ -667,15 +662,9 @@ const ProductDetails = () => {
                             
                             {/* Social Proof Counters */}
                             {product.id && (
-                                <div className="flex flex-wrap items-center gap-4 text-xs font-medium text-stone-600 mb-6 bg-stone-50/50 p-3 rounded-xl border border-stone-100/50">
-                                    <div className="flex items-center gap-1.5">
-                                        <div className="w-5 h-5 rounded-full bg-orange-100 flex items-center justify-center text-orange-600">🔥</div>
-                                        <span>{(typeof product.id === 'number' ? product.id : product.id.charCodeAt(0)) % 42 + 12} people ordered this month</span>
-                                    </div>
-                                    <div className="flex items-center gap-1.5">
-                                        <div className="w-5 h-5 rounded-full bg-rose-100 flex items-center justify-center text-rose-600"><Heart className="w-3 h-3 fill-rose-600" /></div>
-                                        <span>{(typeof product.id === 'number' ? product.id : product.id.charCodeAt(0)) % 15 + 3} added to wishlist today</span>
-                                    </div>
+                                <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-stone-700 mb-6 bg-stone-50/80 px-4 py-3 rounded-[14px] border border-stone-100/80 w-fit">
+                                    <span className="text-base">🔥</span>
+                                    <span>Popular handmade gift this week</span>
                                 </div>
                             )}
                         </div>
@@ -698,10 +687,10 @@ const ProductDetails = () => {
                                                             setSelectedColor(color);
                                                             setColorError(false);
                                                         }}
-                                                        className={`px-4 py-2 rounded-lg border transition-all duration-200 font-medium ${
+                                                        className={`px-5 py-2.5 rounded-full border text-sm transition-all duration-300 font-medium ${
                                                             isSelected 
-                                                                ? 'bg-stone-900 text-white border-stone-900 shadow-lg' 
-                                                                : 'bg-white text-stone-900 border-stone-200 hover:border-stone-900'
+                                                                ? 'bg-stone-900 text-white border-stone-900 shadow-md ring-4 ring-stone-900/10' 
+                                                                : 'bg-white text-stone-600 border-stone-200 hover:border-stone-400 hover:shadow-sm'
                                                         }`}
                                                     >
                                                         {color}
@@ -770,11 +759,11 @@ const ProductDetails = () => {
                                                             }
                                                         }}
                                                         disabled={!isAvailable}
-                                                        className={`w-12 h-12 md:w-14 md:h-14 rounded-full border transition-all duration-200 flex items-center justify-center font-medium ${
+                                                        className={`w-12 h-12 md:w-14 md:h-14 rounded-full border transition-all duration-300 flex items-center justify-center font-medium ${
                                                             isSelected 
-                                                                ? 'bg-stone-900 text-white border-stone-900 shadow-lg' 
+                                                                ? 'bg-stone-900 text-white border-stone-900 shadow-md ring-4 ring-stone-900/10' 
                                                                 : isAvailable 
-                                                                    ? 'bg-white text-stone-900 border-stone-200 hover:border-stone-900' 
+                                                                    ? 'bg-white text-stone-600 border-stone-200 hover:border-stone-400 hover:shadow-sm' 
                                                                     : 'bg-stone-50 text-stone-300 border-stone-100 cursor-not-allowed relative overflow-hidden'
                                                         }`}
                                                     >
@@ -849,53 +838,66 @@ const ProductDetails = () => {
 
                         {/* Actions (Desktop) */}
                         <div className="hidden lg:flex flex-col gap-3 mb-8">
-                            <div className="flex gap-3">
-                                <motion.button
-                                    whileHover={{ y: -4, scale: 1.02 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    onClick={async () => {
-                                        if (isInCart) {
-                                            navigate('/cart');
-                                            return;
-                                        }
+                            <motion.button
+                                whileHover={{ scale: 1.01 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={async () => {
+                                    if (isInCart) {
+                                        navigate('/cart');
+                                        return;
+                                    }
 
-                                        if (!validateSelection('add')) return;
-                                        
+                                    if (!validateSelection('add')) return;
+                                    
+                                    await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice, variantId: selectedVariant?.id, giftPackaging, giftNote: giftPackaging ? giftNote : '' });
+                                }}
+                                disabled={!isStockAvailable}
+                                className={`w-full h-[52px] rounded-[14px] font-bold uppercase tracking-widest text-sm transition-all duration-300 flex items-center justify-center gap-2 ${
+                                    isStockAvailable
+                                    ? isInCart 
+                                        ? 'bg-emerald-700 text-white hover:bg-emerald-800 shadow-md ring-4 ring-emerald-900/10' 
+                                        : 'bg-stone-900 text-white hover:bg-stone-800 shadow-lg hover:shadow-xl hover:shadow-stone-900/15 ring-4 ring-stone-900/5'
+                                    : 'bg-stone-200 text-stone-400 cursor-not-allowed'
+                                }`}
+                            >
+                                <ShoppingBag className="w-4 h-4" />
+                                {isStockAvailable ? (isInCart ? 'View in Bag' : 'Add to Cart') : 'Sold Out'}
+                            </motion.button>
+                            
+                            <motion.button 
+                                whileHover={{ scale: 1.01 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={async () => {
+                                        if(isStockAvailable) {
+                                        if (!validateSelection('buy')) return;
                                         await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice, variantId: selectedVariant?.id, giftPackaging, giftNote: giftPackaging ? giftNote : '' });
-                                    }}
-                                    disabled={!isStockAvailable}
-                                    className={`flex-1 py-4 px-8 rounded-2xl font-bold uppercase tracking-widest text-sm transition-all duration-200 flex items-center justify-center gap-3 ${
-                                        isStockAvailable
-                                        ? isInCart 
-                                            ? 'bg-emerald-700 text-white hover:bg-emerald-800 shadow-lg shadow-emerald-900/15' 
-                                            : 'bg-stone-900 text-white hover:bg-stone-800 shadow-xl shadow-stone-900/15'
-                                        : 'bg-stone-200 text-stone-400 cursor-not-allowed'
-                                    }`}
-                                >
-                                    <Sparkles className="w-4 h-4" />
-                                    {isStockAvailable ? (isInCart ? 'View in Bag' : '✨ Make It Yours') : 'Sold Out'}
-                                </motion.button>
-                                
-                                <motion.button 
-                                    whileHover={{ y: -4, scale: 1.02 }}
-                                    whileTap={{ scale: 0.98 }}
-                                    onClick={async () => {
-                                            if(isStockAvailable) {
-                                            if (!validateSelection('buy')) return;
-                                            await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice, variantId: selectedVariant?.id, giftPackaging, giftNote: giftPackaging ? giftNote : '' });
-                                            navigate('/cart');
-                                            }
-                                    }}
-                                    disabled={!isStockAvailable}
-                                    className="px-8 py-4 rounded-2xl border-2 border-stone-900 font-bold uppercase tracking-widest text-sm text-stone-900 hover:bg-stone-900 hover:text-white transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed bg-white"
-                                >
-                                    🎁 Buy Now
-                                </motion.button>
-                            </div>
-                            <div className="flex items-center justify-center gap-4 text-[10px] text-stone-400 font-medium uppercase tracking-widest mt-2">
-                                <span className="flex items-center gap-1"><Shield className="w-3 h-3" /> Secure Payments</span>
-                                <span>•</span>
-                                <span>UPI / COD</span>
+                                        navigate('/cart');
+                                        }
+                                }}
+                                disabled={!isStockAvailable}
+                                className="w-full h-[52px] bg-gradient-to-r from-rose-900 to-pink-700 text-white font-bold uppercase tracking-widest text-sm rounded-[14px] hover:shadow-lg hover:shadow-rose-900/20 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            >
+                                Buy At ₹{currentPrice.toLocaleString()}
+                            </motion.button>
+
+                            {/* Trust Badges */}
+                            <div className="grid grid-cols-2 gap-3 pt-4">
+                                <div className="flex items-center gap-2.5 p-3 bg-white rounded-[14px] border border-stone-100 shadow-sm text-stone-600">
+                                    <Award className="w-4 h-4 text-rose-700 shrink-0" />
+                                    <span className="text-[10px] font-bold uppercase tracking-widest">Handmade<br/>in India</span>
+                                </div>
+                                <div className="flex items-center gap-2.5 p-3 bg-white rounded-[14px] border border-stone-100 shadow-sm text-stone-600">
+                                    <Shield className="w-4 h-4 text-emerald-600 shrink-0" />
+                                    <span className="text-[10px] font-bold uppercase tracking-widest">Secure<br/>Payments</span>
+                                </div>
+                                <div className="flex items-center gap-2.5 p-3 bg-white rounded-[14px] border border-stone-100 shadow-sm text-stone-600">
+                                    <Truck className="w-4 h-4 text-blue-600 shrink-0" />
+                                    <span className="text-[10px] font-bold uppercase tracking-widest">Fast<br/>Delivery</span>
+                                </div>
+                                <div className="flex items-center gap-2.5 p-3 bg-white rounded-[14px] border border-stone-100 shadow-sm text-stone-600">
+                                    <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
+                                    <span className="text-[10px] font-bold uppercase tracking-widest">Premium<br/>Quality</span>
+                                </div>
                             </div>
                         </div>
 
@@ -977,7 +979,7 @@ const ProductDetails = () => {
                                     {openSection === 'description' ? <Minus className="w-4 h-4 text-rose-900" /> : <Plus className="w-4 h-4 text-stone-400 group-hover:text-rose-900 transition-colors" />}
                                 </button>
                                 <div className={`overflow-hidden transition-all duration-300 ease-in-out ${openSection === 'description' ? 'max-h-[2000px] opacity-100 mb-6' : 'max-h-0 opacity-0'}`}>
-                                    <p className="text-stone-600 leading-relaxed font-light mb-4 text-sm md:text-base">
+                                    <p className="text-stone-600 leading-[1.8] font-light mb-6 text-sm md:text-base">
                                         {product.description}
                                     </p>
                                     
@@ -985,8 +987,8 @@ const ProductDetails = () => {
                                         <div className="mb-4">
                                             <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
                                                 {info.keyFeatures.map((feat, i) => (
-                                                    <li key={i} className="flex items-start gap-2 text-sm text-stone-700">
-                                                        <span className="w-1 h-1 rounded-full bg-rose-500 mt-2 shrink-0"></span>
+                                                    <li key={i} className="flex items-start gap-3 text-sm text-stone-700 leading-relaxed font-light">
+                                                        <Sparkles className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
                                                         {feat}
                                                     </li>
                                                 ))}
@@ -1149,13 +1151,15 @@ const ProductDetails = () => {
                             </div>
                             
                             {reviews.length === 0 ? (
-                                <div className="text-center py-14 bg-stone-50 rounded-2xl border border-dashed border-stone-200">
-                                    <Star className="w-10 h-10 text-stone-200 mx-auto mb-3" />
-                                    <p className="text-stone-600 font-semibold text-lg">No reviews yet</p>
-                                    <p className="text-stone-400 text-sm mt-1 mb-5">Be the first to share your thoughts.</p>
+                                <div className="text-center py-16 bg-white rounded-[24px] border border-stone-100 shadow-sm font-body-alt">
+                                    <div className="w-12 h-12 bg-rose-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <Star className="w-6 h-6 text-rose-400" />
+                                    </div>
+                                    <p className="text-stone-900 font-heading font-medium text-2xl mb-2">No reviews yet</p>
+                                    <p className="text-stone-500 text-sm font-light mb-6">Be the first to review this handmade product 💖</p>
                                     <button 
                                         onClick={() => setReviewModalOpen(true)}
-                                        className="px-6 py-2.5 bg-stone-900 text-white text-sm font-medium rounded-xl hover:bg-stone-800 transition-colors mx-auto"
+                                        className="px-6 py-3 bg-stone-900 text-white text-sm font-medium rounded-[14px] hover:bg-stone-800 transition-all shadow-sm mx-auto"
                                     >
                                         Write a Review
                                     </button>
@@ -1201,18 +1205,15 @@ const ProductDetails = () => {
 
                 {/* Frequently Bought Together Bundle */}
                 {relatedProducts.length > 0 && (
-                    <div className="border-t border-stone-100 pt-12 lg:pt-16 pb-8">
+                    <div className="border-t border-stone-100 pt-12 lg:pt-16 pb-8 font-body-alt">
                         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 mb-6">
                             <div>
-                                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-rose-50 text-rose-700 text-[10px] font-bold uppercase tracking-wider mb-3">
+                                <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-rose-50 border border-rose-100/50 text-rose-800 text-[10px] font-bold uppercase tracking-widest mb-4">
                                     <Sparkles className="w-3 h-3" />
                                     Bestselling Gift Combo
                                 </div>
-                                <h2 className="text-xl lg:text-2xl font-heading font-semibold text-stone-900 whitespace-nowrap">🎁 Frequently Bought Together</h2>
-                                <p className="text-sm text-stone-500 mt-1">Perfect combination for birthdays, anniversaries, and aesthetic gifting.</p>
-                            </div>
-                            <div className="text-xs font-bold text-amber-700 bg-amber-50 px-3 py-1.5 rounded-lg border border-amber-100 self-start lg:self-auto animate-pulse">
-                                🔥 Only 5 combo sets left!
+                                <h2 className="text-3xl lg:text-4xl font-heading font-medium text-stone-900 mb-2">Complete the look ✨</h2>
+                                <p className="text-sm text-stone-500 font-light">Perfect combination for birthdays, anniversaries, and aesthetic gifting.</p>
                             </div>
                         </div>
 
@@ -1610,16 +1611,13 @@ const ProductDetails = () => {
             )}
 
             {/* Mobile Sticky Action Bar */}
-            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200 p-3 shadow-[0_-4px_15px_rgba(0,0,0,0.08)] lg:hidden z-50 px-4 pb-[calc(1rem+env(safe-area-inset-bottom))]">
-                {/* Micro Delivery Estimate in Sticky Bar */}
-                {pincodeData?.isValid && pincodeData?.city && (
-                    <div className="flex items-center justify-center gap-1.5 mb-2 text-[10px] text-emerald-700 font-medium bg-emerald-50/50 py-1 rounded-md">
-                        <Truck className="w-3 h-3" />
-                        <span>Delivery to {pincodeData.city} by <span className="font-bold">{getEstimatedDeliveryDate()}</span></span>
+            <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-stone-100 p-3 lg:hidden z-50 px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-[0_-8px_20px_-10px_rgba(0,0,0,0.1)]">
+                <div className="flex items-center gap-4">
+                    <div className="flex flex-col flex-shrink-0">
+                        <span className="text-stone-400 text-[10px] uppercase tracking-widest font-bold">Total Price</span>
+                        <span className="text-xl font-heading font-bold text-stone-900 leading-none mt-0.5">₹{currentPrice.toLocaleString()}</span>
                     </div>
-                )}
-                
-                <div className="flex gap-3">
+                    
                     <button
                         onClick={async () => {
                             if (isInCart) {
@@ -1632,30 +1630,16 @@ const ProductDetails = () => {
                             await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice, variantId: selectedVariant?.id, giftPackaging, giftNote: giftPackaging ? giftNote : '' });
                         }}
                         disabled={!isStockAvailable}
-                        className={`flex-1 py-3.5 rounded-xl font-bold uppercase tracking-widest text-[11px] transition-all flex items-center justify-center gap-2 ${
+                        className={`flex-1 h-[52px] rounded-[14px] font-bold uppercase tracking-widest text-[11px] transition-all flex items-center justify-center gap-2 ${
                             isStockAvailable
                             ? isInCart 
-                                ? 'bg-emerald-800 text-white hover:bg-emerald-900 shadow-lg' 
-                                : 'bg-stone-900 text-white hover:bg-stone-800 shadow-xl shadow-stone-900/10'
+                                ? 'bg-emerald-700 text-white hover:bg-emerald-800 shadow-md ring-4 ring-emerald-900/10' 
+                                : 'bg-stone-900 text-white shadow-lg shadow-stone-900/20 active:scale-95'
                             : 'bg-stone-200 text-stone-400 cursor-not-allowed'
                         }`}
                     >
-                        <Sparkles className="w-3.5 h-3.5" />
-                        {isStockAvailable ? (isInCart ? 'View in Bag' : 'Add to Bag') : 'Sold Out'}
-                    </button>
-                    
-                    <button 
-                        onClick={async () => {
-                                if(isStockAvailable) {
-                                if (!validateSelection('buy')) return;
-                                await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice, variantId: selectedVariant?.id, giftPackaging, giftNote: giftPackaging ? giftNote : '' });
-                                navigate('/cart');
-                                }
-                        }}
-                        disabled={!isStockAvailable}
-                        className="flex-1 py-3.5 rounded-xl border-2 border-stone-900 font-bold uppercase tracking-widest text-[11px] text-stone-900 hover:bg-stone-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed bg-white"
-                    >
-                        🎁 Buy Now
+                        <ShoppingBag className="w-3.5 h-3.5" />
+                        {isStockAvailable ? (isInCart ? 'View in Bag' : 'Add to Cart') : 'Sold Out'}
                     </button>
                 </div>
             </div>
