@@ -20912,12 +20912,12 @@ ${suffix}`;
       }
       if (_window().gapi?.iframes?.Iframe) {
         resolve(gapi.iframes.getContext());
-      } else if (!!_window().gapi?.load) {
+      } else if (_window().gapi?.load) {
         loadGapiIframe();
       } else {
         const cbName = _generateCallbackName("iframefcb");
         _window()[cbName] = () => {
-          if (!!gapi.load) {
+          if (gapi.load) {
             loadGapiIframe();
           } else {
             reject(_createError(
@@ -23252,9 +23252,9 @@ ${suffix}`;
   function externalizePayload(internalPayload) {
     const payload = {
       from: internalPayload.from,
-      // eslint-disable-next-line camelcase
+       
       collapseKey: internalPayload.collapse_key,
-      // eslint-disable-next-line camelcase
+       
       messageId: internalPayload.fcmMessageId
     };
     propagateNotificationPayload(payload, internalPayload);
@@ -23268,19 +23268,19 @@ ${suffix}`;
     }
     payload.notification = {};
     const title = messagePayloadInternal.notification.title;
-    if (!!title) {
+    if (title) {
       payload.notification.title = title;
     }
     const body = messagePayloadInternal.notification.body;
-    if (!!body) {
+    if (body) {
       payload.notification.body = body;
     }
     const image = messagePayloadInternal.notification.image;
-    if (!!image) {
+    if (image) {
       payload.notification.image = image;
     }
     const icon = messagePayloadInternal.notification.icon;
-    if (!!icon) {
+    if (icon) {
       payload.notification.icon = icon;
     }
   }
@@ -23296,11 +23296,11 @@ ${suffix}`;
     }
     payload.fcmOptions = {};
     const link = messagePayloadInternal.fcmOptions?.link ?? messagePayloadInternal.notification?.click_action;
-    if (!!link) {
+    if (link) {
       payload.fcmOptions.link = link;
     }
     const analyticsLabel = messagePayloadInternal.fcmOptions?.analytics_label;
-    if (!!analyticsLabel) {
+    if (analyticsLabel) {
       payload.fcmOptions.analyticsLabel = analyticsLabel;
     }
   }
@@ -23420,7 +23420,7 @@ ${suffix}`;
     messaging2.swRegistration = swRegistration;
   }
   async function updateVapidKey(messaging2, vapidKey) {
-    if (!!vapidKey) {
+    if (vapidKey) {
       messaging2.vapidKey = vapidKey;
     } else if (!messaging2.vapidKey) {
       messaging2.vapidKey = DEFAULT_VAPID_KEY;
@@ -23450,12 +23450,12 @@ ${suffix}`;
     const eventType = getEventType(messageType);
     const analytics2 = await messaging2.firebaseDependencies.analyticsProvider.get();
     analytics2.logEvent(eventType, {
-      /* eslint-disable camelcase */
+       
       message_id: data[CONSOLE_CAMPAIGN_ID],
       message_name: data[CONSOLE_CAMPAIGN_NAME],
       message_time: data[CONSOLE_CAMPAIGN_TIME],
       message_device_time: Math.floor(Date.now() / 1e3)
-      /* eslint-enable camelcase */
+       
     });
   }
   function getEventType(messageType) {

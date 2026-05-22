@@ -32,6 +32,7 @@ export default {
       animation: {
         marquee: 'marquee 20s linear infinite',
         'fade-in-up': 'fadeInUp 0.3s ease-out forwards',
+        'shimmer': 'shimmer 3s ease-in-out infinite',
       },
       keyframes: {
         marquee: {
@@ -41,6 +42,10 @@ export default {
         fadeInUp: {
           '0%': { opacity: '0', transform: 'translateY(5px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        shimmer: {
+          '0%': { transform: 'translateX(-150%)' },
+          '50%, 100%': { transform: 'translateX(150%)' },
         },
       },
     },

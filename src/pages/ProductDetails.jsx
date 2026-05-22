@@ -6,7 +6,7 @@ import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useToast } from '../context/ToastContext';
 import { supabase } from '../../config/supabase';
-import { Heart, ShoppingBag, ArrowLeft, Truck, Shield, Star, Award, Search, Sparkles, Plus, Minus, ChevronDown, Share2, X, Loader, Calendar, CheckCircle2, Package } from 'lucide-react';
+import { Heart, ShoppingBag, ArrowLeft, Truck, Shield, Star, Award, Search, Sparkles, Plus, Minus, ChevronDown, Share2, X, Loader, Calendar, CheckCircle2, Package, Gift } from 'lucide-react';
 import SEO from '../components/SEO';
 import { PincodeChecker } from '../components/PincodeChecker';
 
@@ -18,7 +18,7 @@ const ProductDetails = () => {
     useEffect(() => {
         fetchProducts();
     }, [fetchProducts]);
-    const { addToCart, cart, FREE_DELIVERY_THRESHOLD } = useCart();
+    const { addToCart, cart, FREE_DELIVERY_THRESHOLD, isGiftWrapped, setIsGiftWrapped } = useCart();
     const { toggleWishlist, isInWishlist } = useWishlist();
     const { addToast } = useToast();
     const navigate = useNavigate();
@@ -52,10 +52,9 @@ const ProductDetails = () => {
     const [youMayAlsoLikeProducts, setYouMayAlsoLikeProducts] = useState([]);
 
     
-    // High-Conversion States
-    const [giftPackaging, setGiftPackaging] = useState(false);
+    // Gift Packaging State
     const [giftNote, setGiftNote] = useState('');
-    const [showGiftNoteInput, setShowGiftNoteInput] = useState(false);
+    const [isNoteInputOpen, setIsNoteInputOpen] = useState(false);
     
     // Review Modal State
     const [reviewModalOpen, setReviewModalOpen] = useState(false);
@@ -514,95 +513,9 @@ const ProductDetails = () => {
         );
     };
 
-    const renderGiftPackaging = () => {
-        return (
-            <div className="border rounded-xl p-4 transition-all duration-300 bg-[#fff0f3] border-[#ffe4e8] hover:border-[#ffd1da]">
-                <style>{`
-                    @keyframes gift-shake {
-                        0%, 100% { transform: rotate(0deg) scale(1); }
-                        25% { transform: rotate(-10deg) scale(1.1); }
-                        50% { transform: rotate(0deg) scale(1.1); }
-                        75% { transform: rotate(10deg) scale(1.1); }
-                    }
-                    .animate-gift-shake {
-                        animation: gift-shake 2s ease-in-out infinite;
-                        display: inline-block;
-                        transform-origin: bottom center;
-                    }
-                `}</style>
-                <label className="flex items-center gap-3 cursor-pointer group">
-                    <div className="relative flex items-center justify-center">
-                        <input 
-                            type="checkbox" 
-                            className="peer sr-only"
-                            checked={giftPackaging}
-                            onChange={(e) => {
-                                setGiftPackaging(e.target.checked);
-                                if (!e.target.checked) {
-                                    setGiftNote('');
-                                    setShowGiftNoteInput(false);
-                                }
-                            }}
-                        />
-                        <div className="w-5 h-5 rounded border border-stone-300 bg-white peer-checked:bg-emerald-600 peer-checked:border-emerald-600 transition-colors flex items-center justify-center shadow-sm">
-                            <CheckCircle2 className={`w-3.5 h-3.5 text-white transition-transform ${giftPackaging ? 'scale-100' : 'scale-0'}`} />
-                        </div>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                        <div className="text-sm font-bold text-stone-800 mb-0.5">
-                            <span className="mr-1.5 animate-gift-shake">🎁</span>Add Gift Packaging (+₹29)
-                        </div>
-                        <p className="text-[11.5px] text-stone-500 leading-snug">Wrapped beautifully with a handwritten note.</p>
-                    </div>
-                </label>
-                
-                {giftPackaging && !showGiftNoteInput && (
-                    <div className="mt-3 pl-8 animate-in fade-in">
-                        <button 
-                            type="button" 
-                            onClick={(e) => {
-                                e.preventDefault();
-                                setShowGiftNoteInput(true);
-                            }}
-                            className="text-xs font-bold text-rose-700 hover:text-rose-800 underline underline-offset-2 flex items-center gap-1"
-                        >
-                            + Add Note (Optional)
-                        </button>
-                    </div>
-                )}
-
-                {giftPackaging && showGiftNoteInput && (
-                    <div className="mt-4 pt-4 border-t border-rose-200/50 animate-in fade-in slide-in-from-top-2 duration-300">
-                        <div className="flex items-center justify-between mb-1.5">
-                            <label className="block text-xs font-bold text-stone-700">Gift Note (Optional)</label>
-                            <button 
-                                type="button"
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    setShowGiftNoteInput(false);
-                                    setGiftNote('');
-                                }} 
-                                className="text-[10px] text-stone-400 hover:text-stone-600 underline"
-                            >
-                                Cancel
-                            </button>
-                        </div>
-                        <textarea 
-                            value={giftNote}
-                            onChange={(e) => setGiftNote(e.target.value)}
-                            placeholder="E.g., Happy Birthday! Love, Sana"
-                            className="w-full text-sm p-3 rounded-xl border border-rose-200 bg-white focus:ring-2 focus:ring-rose-900/20 focus:border-rose-900 transition-all resize-none h-20 outline-none placeholder:text-stone-400"
-                            maxLength={150}
-                        />
-                        <div className="text-[10px] text-stone-400 text-right mt-1 font-medium">{giftNote.length}/150</div>
-                    </div>
-                )}
-            </div>
-        );
-    };
 
     return (
-        <div className="min-h-screen bg-[#fdfbf7] pt-4 md:pt-8 pb-28 lg:pb-20 font-body selection:bg-rose-100 selection:text-rose-900">
+        <div className="min-h-screen bg-[#fdfbf7] pt-2 md:pt-8 pb-24 lg:pb-20 font-body selection:bg-rose-100 selection:text-rose-900">
             <SEO 
                 title={product.name} 
                 description={info.shortDescription || product.description?.substring(0, 150)} 
@@ -624,7 +537,7 @@ const ProductDetails = () => {
 
 
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 xl:gap-16 mb-16 lg:mb-28">
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-10 xl:gap-16 mb-12 lg:mb-28">
                     {/* Image Section */}
                     <div className="lg:col-span-5 relative h-fit lg:sticky lg:top-28 space-y-4 lg:space-y-0 lg:flex lg:gap-4 xl:max-w-lg">
                         {/* Desktop Thumbnails (Left Side) */}
@@ -711,11 +624,9 @@ const ProductDetails = () => {
                         </div>
 
                         {/* Mobile-only Color Selector and Gift Packaging */}
-                        <div className="block lg:hidden mt-6 space-y-6">
+                        <div className="block lg:hidden mt-4 space-y-4">
                             {renderColorSelector()}
-                            <div className="mb-6">
-                                {renderGiftPackaging()}
-                            </div>
+
                         </div>
                     </div>
 
@@ -727,7 +638,7 @@ const ProductDetails = () => {
                         transition={{ duration: 0.6, delay: 0.2 }}
                         className="lg:col-span-7 lg:pt-4 min-w-0 font-body-alt"
                     > 
-                        <div className="mb-5 space-y-2.5">
+                        <div className="mb-4 space-y-2">
                              <div className="flex items-center justify-between">
                                 <span className="inline-flex items-center text-[10px] font-bold tracking-[0.2em] uppercase text-stone-500">
                                     {product.category}
@@ -778,7 +689,7 @@ const ProductDetails = () => {
                         </div>
 
                         {/* Price Area */}
-                        <div className="mb-5 pb-5 border-b border-stone-100 font-body-alt">
+                        <div className="mb-4 pb-4 border-b border-stone-100 font-body-alt">
                             <div className="flex flex-col gap-1.5 mb-3">
                                 <div className="flex items-center gap-4">
                                     <span className="text-5xl lg:text-6xl font-heading font-semibold text-stone-900 tracking-tight">
@@ -804,7 +715,7 @@ const ProductDetails = () => {
                             </div>
                             
                             {/* Urgency Badge */}
-                            <div className="flex items-center gap-2 text-xs font-bold text-rose-800 bg-rose-50 px-4 py-3 rounded-xl border border-rose-100 w-full mb-8">
+                            <div className="flex items-center gap-2 text-xs font-bold text-rose-800 bg-rose-50 px-4 py-3 rounded-xl border border-rose-100 w-full mb-6">
                                 <span className="text-base animate-pulse">🔥</span>
                                 <span>{product.id ? (product.id.charCodeAt(0) % 15) + 5 : 12} people bought this recently</span>
                             </div>
@@ -813,7 +724,7 @@ const ProductDetails = () => {
                         
                         {/* Selector Section: Color & Size */}
                         {product.clothingInformation && (
-                            <div className="mb-10 space-y-6">
+                            <div className="mb-6 space-y-5">
                                 {/* Desktop-only Color Selector Using availableColors */}
                                 {availableColors && availableColors.length > 0 && !hasOnlyNAColor && (
                                     <div className="hidden lg:block mb-4">
@@ -902,9 +813,76 @@ const ProductDetails = () => {
                             </div>
                         )}
 
-                        {/* Desktop-only Gift Packaging Card */}
-                        <div className="hidden lg:block mb-6">
-                            {renderGiftPackaging()}
+                        {/* Gift Packaging Checkbox */}
+                        <div className="mb-6">
+                            <label className={`relative overflow-hidden block rounded-xl p-4 cursor-pointer transition-all duration-500 shadow-sm ${isGiftWrapped ? 'bg-[#FFF6F8] border border-[#F7D6DF]' : 'bg-[#FFF6F8] border border-[#F7D6DF] hover:bg-rose-50/50 before:absolute before:inset-0 before:-translate-x-full before:animate-shimmer before:bg-gradient-to-r before:from-transparent before:via-white/60 before:to-transparent'}`}>
+                                <div className="flex gap-3 items-start relative z-10">
+                                    <input 
+                                        type="checkbox" 
+                                        checked={isGiftWrapped} 
+                                        onChange={(e) => {
+                                            setIsGiftWrapped(e.target.checked);
+                                            if (!e.target.checked) setGiftNote('');
+                                        }}
+                                        className="mt-0.5 w-4 h-4 text-rose-600 bg-white border-stone-300 rounded focus:ring-rose-500 cursor-pointer" 
+                                    />
+                                    <div className="flex-1">
+                                        <h3 className="text-[14px] font-sans font-bold text-[#1f2937]">
+                                            🎁 Add Gift Packaging <span className="text-[#4b5563]">(+₹29)</span>
+                                        </h3>
+                                        <p className="text-[12px] text-[#6b7280] mt-0.5">
+                                            Wrapped beautifully with a handwritten note.
+                                        </p>
+                                        
+                                        {/* Optional Note Input */}
+                                        <AnimatePresence>
+                                            {isGiftWrapped && !isNoteInputOpen && (
+                                                <motion.button
+                                                    initial={{ opacity: 0, marginTop: 0 }}
+                                                    animate={{ opacity: 1, marginTop: 12 }}
+                                                    exit={{ opacity: 0, marginTop: 0 }}
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        setIsNoteInputOpen(true);
+                                                    }}
+                                                    className="text-xs font-medium text-rose-600 hover:text-rose-700 bg-white border border-rose-200 hover:bg-rose-50 px-3 py-1.5 rounded-md transition-colors flex items-center gap-1 mt-3"
+                                                >
+                                                    <Plus className="w-3.5 h-3.5" />
+                                                    Add note (optional)
+                                                </motion.button>
+                                            )}
+                                            
+                                            {isGiftWrapped && isNoteInputOpen && (
+                                                <motion.div 
+                                                    initial={{ height: 0, opacity: 0, marginTop: 0 }}
+                                                    animate={{ height: 'auto', opacity: 1, marginTop: 12 }}
+                                                    exit={{ height: 0, opacity: 0, marginTop: 0 }}
+                                                    className="overflow-hidden relative"
+                                                >
+                                                    <textarea 
+                                                        value={giftNote}
+                                                        onChange={(e) => setGiftNote(e.target.value)}
+                                                        placeholder="Add your gift note here..."
+                                                        className="w-full text-sm p-3 pr-8 rounded-lg border border-[#F7D6DF] bg-white focus:ring-2 focus:ring-rose-200 focus:border-rose-400 transition-shadow outline-none resize-none placeholder:text-stone-400"
+                                                        rows="2"
+                                                        onClick={(e) => e.preventDefault()} // prevent label toggle when clicking textarea
+                                                    ></textarea>
+                                                    <button 
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            setIsNoteInputOpen(false);
+                                                            setGiftNote('');
+                                                        }}
+                                                        className="absolute top-2 right-2 p-1 text-stone-400 hover:text-stone-600 bg-white rounded-full hover:bg-stone-100 transition-colors"
+                                                    >
+                                                        <X className="w-3.5 h-3.5" />
+                                                    </button>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </div>
+                                </div>
+                            </label>
                         </div>
 
                         {/* Trust strip — desktop only */}
@@ -928,7 +906,7 @@ const ProductDetails = () => {
                         </div>
 
                         {/* Actions (Desktop & Mobile In-flow) */}
-                        <div className="flex flex-col gap-3 mb-8">
+                        <div className="flex flex-col gap-3 mb-6">
                             <motion.button
                                 whileHover={{ scale: 1.01 }}
                                 whileTap={{ scale: 0.98 }}
@@ -940,7 +918,14 @@ const ProductDetails = () => {
 
                                     if (!validateSelection('add')) return;
                                     
-                                    await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice, variantId: selectedVariant?.id, giftPackaging, giftNote: giftPackaging ? giftNote : '' });
+                                    await addToCart({ 
+                                        ...product, 
+                                        selectedSize, 
+                                        selectedColor, 
+                                        price: currentPrice, 
+                                        variantId: selectedVariant?.id,
+                                        giftNote: isGiftWrapped ? giftNote : null
+                                    });
                                 }}
                                 disabled={!isStockAvailable}
                                 className={`hidden lg:flex w-full h-[52px] rounded-[14px] font-bold uppercase tracking-widest text-sm transition-all duration-300 items-center justify-center gap-2 ${
@@ -961,7 +946,14 @@ const ProductDetails = () => {
                                 onClick={async () => {
                                         if(isStockAvailable) {
                                         if (!validateSelection('buy')) return;
-                                        await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice, variantId: selectedVariant?.id, giftPackaging, giftNote: giftPackaging ? giftNote : '' });
+                                        await addToCart({ 
+                                            ...product, 
+                                            selectedSize, 
+                                            selectedColor, 
+                                            price: currentPrice, 
+                                            variantId: selectedVariant?.id,
+                                            giftNote: isGiftWrapped ? giftNote : null 
+                                        });
                                         navigate('/cart');
                                         }
                                 }}
@@ -993,7 +985,7 @@ const ProductDetails = () => {
                         </div>
 
                         {/* Why Handmade Strip */}
-                        <div className="flex items-center gap-3 p-3.5 bg-[#f5f2eb] rounded-xl border border-stone-200/50 mb-8">
+                        <div className="flex items-center gap-3 p-3.5 bg-[#f5f2eb] rounded-xl border border-stone-200/50 mb-6 lg:mb-8">
                             <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm shrink-0 text-base">
                                 🇮🇳
                             </div>
@@ -1007,7 +999,7 @@ const ProductDetails = () => {
                         
                         {/* Perfect For Section */}
                         {(info.perfectFor || !info.perfectFor) && (
-                            <div className="mb-8 block">
+                            <div className="mb-6 lg:mb-8 block">
                                 <h4 className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-3">Perfect For</h4>
                                 <div className="flex flex-wrap gap-2">
                                     {(info.perfectFor ? info.perfectFor.split(',') : ["Birthday Gifts", "Best Friend Gifts", "Room Décor", "Bag Charms", "Car Accessories"]).map((tag, i) => (
@@ -1020,7 +1012,7 @@ const ProductDetails = () => {
                         )}
 
                         {/* Order Timeline */}
-                        <div className="mb-12 block p-5 bg-white rounded-2xl border border-stone-200 shadow-sm">
+                        <div className="mb-8 lg:mb-12 block p-5 bg-white rounded-2xl border border-stone-200 shadow-sm">
                             <h4 className="text-xs font-bold text-stone-900 uppercase tracking-widest mb-4 text-center">Order Journey</h4>
                             <div className="flex items-center justify-between text-center relative max-w-sm mx-auto">
                                 <div className="absolute top-4 left-4 right-4 h-0.5 bg-stone-300 -z-0"></div>
@@ -1045,7 +1037,7 @@ const ProductDetails = () => {
 
                         {/* Customization Available Badge */}
                         {availableColors && availableColors.length > 1 && (
-                            <div className="mb-8 flex items-center justify-between p-4 bg-gradient-to-r from-stone-50 to-rose-50/30 rounded-xl border border-stone-100">
+                            <div className="mb-6 lg:mb-8 flex items-center justify-between p-4 bg-gradient-to-r from-stone-50 to-rose-50/30 rounded-xl border border-stone-100">
                                 <div className="flex items-center gap-3">
                                     <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm text-rose-500">
                                         <Sparkles className="w-4 h-4" />
@@ -1060,7 +1052,7 @@ const ProductDetails = () => {
 
                 {/* Frequently Bought Together Bundle */}
                 {relatedProducts.length > 0 && (
-                            <div className="border-t border-stone-100 pt-8 lg:pt-12 pb-8 font-body-alt">
+                            <div className="border-t border-stone-100 pt-6 lg:pt-12 pb-6 lg:pb-8 font-body-alt">
                                 <div className="flex items-center justify-between mb-5">
                                     <div>
                                         <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-50 border border-rose-100 text-rose-800 text-[10px] font-bold uppercase tracking-widest mb-2">
@@ -1813,28 +1805,28 @@ const ProductDetails = () => {
                             )}
                             {/* Gift Packaging inside Sheet */}
                             <div className="pt-4 border-t border-stone-100">
-                                <label className={`flex items-center gap-3 cursor-pointer group p-3 rounded-xl border transition-colors ${giftPackaging ? 'bg-rose-50/80 border-rose-200' : 'bg-rose-50/40 border-rose-100 hover:border-rose-200'}`}>
-                                    <div className="relative flex items-center justify-center">
+                                <label className={`relative overflow-hidden flex items-center gap-3 cursor-pointer group p-3 rounded-xl border transition-all duration-500 ${isGiftWrapped ? 'bg-rose-50/80 border-rose-200' : 'bg-rose-50/40 border-rose-100 hover:border-rose-200 before:absolute before:inset-0 before:-translate-x-full before:animate-shimmer before:bg-gradient-to-r before:from-transparent before:via-white/60 before:to-transparent'}`}>
+                                    <div className="relative flex items-center justify-center z-10">
                                         <input 
                                             type="checkbox" 
                                             className="peer sr-only"
-                                            checked={giftPackaging}
+                                            checked={isGiftWrapped}
                                             onChange={(e) => {
-                                                setGiftPackaging(e.target.checked);
+                                                setIsGiftWrapped(e.target.checked);
                                                 if (!e.target.checked) setGiftNote('');
                                             }}
                                         />
                                         <div className="w-5 h-5 rounded border border-stone-300 bg-white peer-checked:bg-rose-600 peer-checked:border-rose-600 transition-colors flex items-center justify-center shadow-sm">
-                                            <CheckCircle2 className={`w-3.5 h-3.5 text-white transition-transform ${giftPackaging ? 'scale-100' : 'scale-0'}`} />
+                                            <CheckCircle2 className={`w-3.5 h-3.5 text-white transition-transform ${isGiftWrapped ? 'scale-100' : 'scale-0'}`} />
                                         </div>
                                     </div>
-                                    <div className="flex-1">
-                                        <div className="text-sm font-bold text-stone-800 mb-0.5"><span className="mr-1.5">🎁</span>Add Gift Packaging (+₹29)</div>
+                                    <div className="flex-1 relative z-10">
+                                        <div className="text-sm font-sans font-bold text-stone-800 mb-0.5"><span className="mr-1.5">🎁</span>Add Gift Packaging (+₹29)</div>
                                         <div className="text-[11.5px] text-stone-500">Wrapped beautifully with a handwritten note.</div>
                                     </div>
                                 </label>
                                 
-                                {giftPackaging && (
+                                {isGiftWrapped && (
                                     <div className="mt-3 animate-in fade-in slide-in-from-top-2 duration-300">
                                         <textarea 
                                             value={giftNote}
@@ -1861,9 +1853,9 @@ const ProductDetails = () => {
                                 setIsVariantSheetOpen(false);
                                 
                                 if (pendingAction === 'add') {
-                                    await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice, variantId: selectedVariant?.id, giftPackaging, giftNote: giftPackaging ? giftNote : '' });
+                                    await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice, variantId: selectedVariant?.id });
                                 } else if (pendingAction === 'buy') {
-                                    await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice, variantId: selectedVariant?.id, giftPackaging, giftNote: giftPackaging ? giftNote : '' });
+                                    await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice, variantId: selectedVariant?.id });
                                     navigate('/cart');
                                 }
                             }}
@@ -1892,7 +1884,7 @@ const ProductDetails = () => {
 
                             if (!validateSelection('add')) return;
                             
-                            await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice, variantId: selectedVariant?.id, giftPackaging, giftNote: giftPackaging ? giftNote : '' });
+                            await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice, variantId: selectedVariant?.id });
                         }}
                         disabled={!isStockAvailable}
                         className={`flex-1 h-[52px] rounded-[14px] font-bold uppercase tracking-widest text-[11px] transition-all flex items-center justify-center gap-2 ${

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { ArrowLeft, CreditCard, Truck, MapPin, Plus, CheckCircle, Tag, AlertTriangle, ChevronDown, ChevronUp, X, Sparkles, ShieldCheck, Lock, Loader, ShoppingBag } from 'lucide-react';
+import { CheckCircle, MapPin, Truck, CreditCard, Loader, Plus, AlertTriangle, Tag, X, ShoppingBag, ChevronDown, ChevronUp, Lock, Gift, Smartphone, Smile, ArrowLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '../context/ToastContext';
 import { supabase } from '../config/supabase';
@@ -40,6 +40,8 @@ const Checkout = () => {
     const [couponCode, setCouponCode] = useState('');
     const [couponError, setCouponError] = useState('');
     const [couponLoading, setCouponLoading] = useState(false);
+    const [expandedPayment, setExpandedPayment] = useState('upi'); // 'upi', 'cards', 'gift', 'cod', 'emi'
+    const [selectedUpiApp, setSelectedUpiApp] = useState('paytm');
 
 
 
@@ -66,7 +68,12 @@ const Checkout = () => {
         fullName: '',
         email: currentUser?.email || '',
         phone: '',
+        alternatePhone: '',
         address: '',
+        houseNo: '',
+        area: '',
+        landmark: '',
+        addressType: 'Home',
         city: '',
         state: '',
         zipCode: '',
@@ -91,11 +98,16 @@ const Checkout = () => {
                 setFormData(prev => ({
                     ...prev,
                     fullName: `${addr.firstName} ${addr.lastName}`,
-                    phone: addr.phone,
-                    address: addr.address,
-                    city: addr.city,
-                    state: addr.state,
-                    zipCode: addr.zipCode
+                    phone: addr.phone || '',
+                    alternatePhone: addr.alternatePhone || '',
+                    address: addr.address || '',
+                    houseNo: addr.houseNo || '',
+                    area: addr.area || '',
+                    landmark: addr.landmark || '',
+                    addressType: addr.addressType || 'Home',
+                    city: addr.city || '',
+                    state: addr.state || '',
+                    zipCode: addr.zipCode || ''
                 }));
             }
         } else {
@@ -103,7 +115,12 @@ const Checkout = () => {
                 ...prev,
                 fullName: '',
                 phone: '',
+                alternatePhone: '',
                 address: '',
+                houseNo: '',
+                area: '',
+                landmark: '',
+                addressType: 'Home',
                 city: '',
                 state: '',
                 zipCode: globalPincode || '',
@@ -153,11 +170,16 @@ const Checkout = () => {
                  setFormData(prev => ({
                     ...prev,
                     fullName: `${defaultAddr.firstName} ${defaultAddr.lastName}`,
-                    phone: defaultAddr.phone,
-                    address: defaultAddr.address,
-                    city: defaultAddr.city,
-                    state: defaultAddr.state,
-                    zipCode: defaultAddr.zipCode
+                    phone: defaultAddr.phone || '',
+                    alternatePhone: defaultAddr.alternatePhone || '',
+                    address: defaultAddr.address || '',
+                    houseNo: defaultAddr.houseNo || '',
+                    area: defaultAddr.area || '',
+                    landmark: defaultAddr.landmark || '',
+                    addressType: defaultAddr.addressType || 'Home',
+                    city: defaultAddr.city || '',
+                    state: defaultAddr.state || '',
+                    zipCode: defaultAddr.zipCode || ''
                 }));
             }
             hasInitializedAddressRef.current = true;
@@ -175,42 +197,65 @@ const Checkout = () => {
             zipTimeoutRef.current = setTimeout(async () => {
                 setIsZipLoading(true);
                 try {
-                    // 1. Check Delhivery Serviceability (Priority)
+                    // Try Delhivery Service first, as it's our source of truth
                     const sydneyCheck = await DelhiveryService.checkServiceability(zip);
+                    
+                    if (sydneyCheck.city || sydneyCheck.state) {
+                        setFormData(prev => ({
+                            ...prev,
+                            city: sydneyCheck.city || prev.city,
+                            state: sydneyCheck.state || prev.state
+                        }));
+                    } else {
+                        // Fallback to Postal API if Delhivery didn't return city/state
+                        const response = await fetch(`https://api.postalpincode.in/pincode/${zip}`);
+                        const data = await response.json();
+                        if (data && data[0] && data[0].Status === 'Success') {
+                            setFormData(prev => ({
+                                ...prev,
+                                city: data[0].PostOffice[0].District,
+                                state: data[0].PostOffice[0].State
+                            }));
+                        } else {
+                            addToast('Invalid Pincode', 'error');
+                            setFormData(prev => ({ ...prev, city: '', state: '' }));
+                        }
+                    }
 
                     if (sydneyCheck.serviceable === false) {
                         addToast('We do not deliver to this Pincode.', 'error');
-                        setFormData(prev => ({ ...prev, city: '', state: '' })); // Clear invalid
-                        return;
-                    }
-
-                    // 2. Fetch City/State Details
-                    const response = await fetch(`https://api.postalpincode.in/pincode/${zip}`);
-                    const data = await response.json();
-
-                    if (data && data[0] && data[0].Status === 'Success') {
-                        const { District, State } = data[0].PostOffice[0];
+                    } else if (sydneyCheck.codAvailable === false) {
                         setFormData(prev => {
-                            const updated = {
-                                ...prev,
-                                city: District,
-                                state: State
-                            };
-                            if (sydneyCheck.codAvailable === false && prev.paymentMethod === 'cod') {
+                            if (prev.paymentMethod === 'cod') {
                                 addToast('COD is not available for this location. Please choose Online Payment.', 'info');
-                                updated.paymentMethod = 'online';
+                                return { ...prev, paymentMethod: 'online' };
                             }
-                            return updated;
+                            return prev;
                         });
-                    } else {
-                        addToast('Invalid Pincode', 'error');
                     }
                 } catch (error) {
                     console.error("Error fetching pincode details:", error);
+                    // Absolute Fallback to Postal API
+                    try {
+                        const response = await fetch(`https://api.postalpincode.in/pincode/${zip}`);
+                        const data = await response.json();
+                        if (data && data[0] && data[0].Status === 'Success') {
+                            setFormData(prev => ({
+                                ...prev,
+                                city: data[0].PostOffice[0].District,
+                                state: data[0].PostOffice[0].State
+                            }));
+                        }
+                    } catch (e) {
+                        console.error("Fallback API also failed", e);
+                    }
                 } finally {
                     setIsZipLoading(false);
                 }
             }, 600); // 600ms debounce
+        } else {
+            // Clear city and state if pincode is not 6 digits
+            setFormData(prev => ({ ...prev, city: '', state: '' }));
         }
     };
 
@@ -403,616 +448,313 @@ const Checkout = () => {
 
 
     return (
-        <div className="min-h-screen bg-[#fdfbf7] font-body pb-32 md:pb-24 selection:bg-rose-100 selection:text-rose-900">
-            {/* Header - Glassmorphism */}
-            <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-stone-200/60 shadow-sm">
-                <div className="container-custom py-4 flex items-center justify-between">
-                    <button 
-                        onClick={() => navigate('/cart')}
-                        className="flex items-center gap-2 text-stone-500 hover:text-stone-900 transition-colors group"
-                    >
-                        <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition-transform" />
-                        <span className="font-medium hidden sm:inline">Back to Cart</span>
-                    </button>
-                    
-                    <Link to="/" className="font-heading text-xl md:text-2xl font-bold text-stone-900 tracking-tight">
-                        Embroidery <span className="text-rose-900">By Sana</span>
-                    </Link>
-
-                    <div className="flex items-center gap-2 text-emerald-600 text-[10px] md:text-xs font-bold uppercase tracking-widest">
-                        <Lock className="w-3 h-3 md:w-4 md:h-4" />
-                        <span className="hidden xs:inline">Secure Checkout</span>
+        <div className="min-h-screen bg-[#FAF8F6] font-body pb-32 md:pb-24 selection:bg-rose-100 selection:text-rose-900">
+            {/* Header - Compact */}
+            <div className="sticky top-0 z-40 bg-white shadow-sm border-b border-stone-100">
+                <div className="px-4 py-3 flex items-center justify-between max-w-6xl mx-auto">
+                    <div className="flex items-center gap-3">
+                        <button onClick={() => navigate('/cart')} className="p-1 -ml-1 text-stone-800 hover:text-stone-900 transition-colors inline-block">
+                            <ArrowLeft className="w-5 h-5" />
+                        </button>
+                        <span className="font-bold text-stone-900 text-lg">Checkout</span>
+                    </div>
+                    <div className="text-right">
+                        <div className="text-[10px] text-stone-500 font-bold uppercase tracking-widest mb-0.5">Step 3/3</div>
+                        <div className="flex items-center gap-1 text-xs font-bold text-emerald-600">
+                            Secure Payment <Lock className="w-3 h-3" />
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div className="container-custom pt-6 md:pt-12">
-                <div className="flex flex-col lg:grid lg:grid-cols-12 gap-8 lg:gap-16">
-                    {/* Left Column: Form Details */}
-                    <div className="lg:col-span-7 space-y-8">
-                        <motion.div 
-                            initial={{ opacity: 0, x: -20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            className="space-y-8"
-                        >
-                    
-                    {/* Order Summary - Mobile Collapsible */}
-                    <div className="md:hidden bg-white rounded-xl shadow-sm border border-stone-100 overflow-hidden mb-2">
-                        <div 
-                            onClick={() => setIsSummaryOpen(!isSummaryOpen)}
-                            className="p-4 flex items-center justify-between cursor-pointer bg-stone-50"
-                        >
-                            <div className="flex items-center gap-2">
-                                <span className="font-bold text-stone-700 text-sm">Order Summary</span>
-                                <ChevronDown className={`w-4 h-4 text-stone-500 transition-transform ${isSummaryOpen ? 'rotate-180' : ''}`} />
-                            </div>
-                            <span className="font-bold text-rose-900">₹{finalTotal.toLocaleString()}</span>
-                        </div>
+            <div className="container-custom pt-4 md:pt-8 max-w-lg mx-auto lg:max-w-6xl">
+                <div className="flex flex-col lg:grid lg:grid-cols-12 gap-4 lg:gap-12">
+                    {/* Left Column: Flow */}
+                    <div className="lg:col-span-7 space-y-4">
                         
-                        {isSummaryOpen && (
-                            <div className="p-4 border-t border-stone-100 bg-white animate-in slide-in-from-top-2">
-                                <div className="space-y-4 max-h-60 overflow-y-auto custom-scrollbar pr-1">
-                                    {cart.map((item, idx) => (
-                                        <div key={`${item.id}-${item.selectedSize || 'nosize'}-${item.selectedColor || 'nocolor'}-${idx}`} className="flex gap-3 py-2 border-b border-stone-50 last:border-0">
-                                            <div className="w-12 h-12 rounded bg-stone-100 overflow-hidden shrink-0 border border-stone-200">
-                                                <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                                            </div>
-                                            <div className="flex-1 min-w-0">
-                                                <h4 className="font-bold text-stone-800 text-xs truncate">{item.name}</h4>
-                                                <p className="text-[10px] text-stone-500 mt-0.5">Qty: {item.quantity}</p>
-                                            </div>
-                                            <div className="text-right">
-                                                <p className="font-bold text-stone-900 text-xs">₹{(item.price * item.quantity).toLocaleString()}</p>
-                                            </div>
-                                        </div>
-                                    ))}
+                        {/* 1. Address Section */}
+                        <div className="bg-white rounded-[20px] p-5 shadow-sm border border-stone-100">
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="bg-rose-50 p-1.5 rounded-lg">
+                                    <MapPin className="text-rose-900 w-4 h-4" />
                                 </div>
-                                <div className="space-y-2 pt-3 border-t border-stone-100 mt-3 text-sm">
-                                    <div className="flex justify-between text-stone-500 text-xs">
-                                        <span>Subtotal</span>
-                                        <span>₹{subtotal.toLocaleString()}</span>
-                                    </div>
-                                    {giftWrapTotal > 0 && (
-                                        <div className="flex justify-between text-stone-500 text-xs">
-                                            <span>Gift Packaging</span>
-                                            <span>₹{giftWrapTotal.toLocaleString()}</span>
-                                        </div>
-                                    )}
-                                    <div className="flex justify-between text-stone-500 text-xs">
-                                        <span>Shipping</span>
-                                        <span className={shippingCharge === 0 ? "text-emerald-700 font-bold" : ""}>
-                                            {shippingCharge === 0 ? 'Free' : `₹${shippingCharge}`}
-                                        </span>
-                                    </div>
-                                    {appliedCoupon && (
-                                        <div className="flex justify-between text-emerald-600 text-xs">
-                                            <span>Discount</span>
-                                            <span>-₹{discountAmount.toLocaleString()}</span>
-                                        </div>
-                                    )}
-                                    {codCharge > 0 && (
-                                        <div className="flex justify-between text-amber-700 text-xs">
-                                            <span>COD Charge</span>
-                                            <span>+₹{codCharge.toLocaleString()}</span>
-                                        </div>
-                                    )}
-                                </div>
+                                <h2 className="text-base font-bold text-stone-900">Delivery Address</h2>
                             </div>
-                        )}
-                    </div>
-
-                    {/* Checkout Form */}
-                    <div className="card-premium p-5 md:p-10 order-2 md:order-1">
-                        <h2 className="text-lg md:text-2xl font-heading font-bold text-stone-900 mb-6 flex items-center gap-3">
-                            <div className="bg-rose-50 p-2 rounded-lg">
-                                <Truck className="text-rose-900 w-5 h-5 md:w-6 md:h-6" />
-                            </div>
-                            Shipping Details
-                        </h2>
-
-                        {/* Saved Addresses Selection */}
-                        {currentUser && userAddresses.length > 0 && (
-                            <div className="mb-8">
-                                <h3 className="font-bold text-stone-800 mb-4 flex items-center text-xs md:text-sm uppercase tracking-wider">
-                                    <MapPin className="w-4 h-4 mr-2 text-rose-900" />
-                                    Select Saved Address
-                                </h3>
-                                {/* Horizontal scroll on mobile */}
-                                <div className="flex md:grid md:grid-cols-2 gap-3 overflow-x-auto pb-4 md:pb-0 -mx-5 px-5 md:mx-0 md:px-0 scrollbar-hide snap-x">
+                            
+                            {currentUser && userAddresses.length > 0 ? (
+                                <div className="space-y-3">
                                     {userAddresses.map(addr => (
                                         <div 
                                             key={addr.id}
                                             onClick={() => handleAddressSelect(addr.id)}
-                                            className={`flex-none w-64 md:w-auto p-4 rounded-xl border cursor-pointer transition-all snap-start ${
+                                            className={`p-4 rounded-2xl cursor-pointer transition-all ${
                                                 selectedAddressId === addr.id 
-                                                ? 'border-rose-900 bg-white ring-1 ring-rose-900 shadow-md' 
-                                                : 'border-stone-200 hover:border-rose-300 bg-white'
+                                                ? 'bg-rose-50/50 shadow-sm border border-rose-100' 
+                                                : 'bg-[#FAF8F6] border border-transparent hover:bg-stone-50'
                                             }`}
                                         >
-                                            <div className="font-bold text-stone-900 text-sm mb-1">{addr.firstName}</div>
-                                            <div className="text-xs text-stone-500 truncate">{addr.address}</div>
+                                            <div className="flex justify-between items-start mb-1">
+                                                <div className="font-bold text-stone-900 text-sm flex items-center gap-2">
+                                                    {selectedAddressId === addr.id && <CheckCircle className="w-4 h-4 text-rose-600" />}
+                                                    {addr.firstName}
+                                                </div>
+                                                <span className="text-[10px] bg-white text-stone-600 px-1.5 py-0.5 rounded border border-stone-200 font-bold uppercase">{addr.addressType}</span>
+                                            </div>
+                                            <div className="text-xs text-stone-500 leading-relaxed pr-8">{addr.address}, {addr.city}</div>
                                         </div>
                                     ))}
-                                    <div 
+                                    <button 
                                         onClick={() => handleAddressSelect('new')}
-                                        className={`flex-none w-32 md:w-auto p-4 rounded-xl border-2 border-dashed cursor-pointer transition-all flex flex-col items-center justify-center gap-2 snap-start ${
-                                            selectedAddressId === 'new' 
-                                            ? 'border-rose-900 bg-rose-50/50 text-rose-900' 
-                                            : 'border-stone-200 hover:border-rose-300 text-stone-400 hover:text-rose-900'
-                                        }`}
+                                        className="w-full text-center py-3 text-rose-900 font-bold text-sm hover:bg-rose-50 rounded-xl transition-colors mt-2"
                                     >
-                                        <Plus className="w-5 h-5" />
-                                        <span className="text-xs font-bold uppercase whitespace-nowrap">Add New</span>
-                                    </div>
+                                        + Add Address
+                                    </button>
                                 </div>
-                            </div>
-                        )}
-                        
-                        <form onSubmit={handleSubmit} className="space-y-5 md:space-y-6">
+                            ) : null}
+
+                            {/* New Address Form block (only shown if selectedAddressId === 'new') */}
                             {selectedAddressId === 'new' && (
-                                <div className="space-y-5 animate-in fade-in slide-in-from-top-4 duration-500">
-                                    <div>
-                                        <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Full Name</label>
-                                        <input
-                                            type="text"
-                                            name="fullName"
-                                            required
-                                            value={formData.fullName}
-                                            onChange={handleChange}
-                                            className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:border-rose-900 focus:ring-4 focus:ring-rose-900/10 bg-white/50 focus:bg-white outline-none transition-all font-medium text-stone-900 placeholder:text-stone-300 shadow-sm"
-                                            placeholder="John Doe"
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Email Address</label>
-                                        <input
-                                            type="email"
-                                            name="email"
-                                            required
-                                            value={formData.email}
-                                            onChange={handleChange}
-                                            className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:border-rose-900 focus:ring-4 focus:ring-rose-900/10 bg-white/50 focus:bg-white outline-none transition-all font-medium text-stone-900 placeholder:text-stone-300 shadow-sm"
-                                            placeholder="your@email.com"
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Phone</label>
-                                        <input
-                                            type="tel"
-                                            name="phone"
-                                            required
-                                            value={formData.phone}
-                                            onChange={handleChange}
-                                            className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:border-rose-900 focus:ring-4 focus:ring-rose-900/10 bg-white/50 focus:bg-white outline-none transition-all font-medium text-stone-900 placeholder:text-stone-300 shadow-sm"
-                                            placeholder="10-digit mobile number"
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Address</label>
-                                        <textarea
-                                            name="address"
-                                            required
-                                            rows="3"
-                                            value={formData.address}
-                                            onChange={handleChange}
-                                            className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:border-rose-900 focus:ring-4 focus:ring-rose-900/10 bg-white/50 focus:bg-white outline-none transition-all font-medium text-stone-900 resize-none placeholder:text-stone-300 shadow-sm"
-                                            placeholder="House No, Building, Street Area"
-                                        ></textarea>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-4">
+                                <form className="space-y-4 mt-4 animate-in fade-in slide-in-from-top-4 duration-500">
+                                    <div className="grid grid-cols-2 gap-3">
                                         <div className="col-span-2">
-                                            <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">Pincode</label>
+                                            <input type="text" name="fullName" required value={formData.fullName} onChange={handleChange} className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:border-rose-900 focus:ring-4 focus:ring-rose-900/10 bg-[#FAF8F6] focus:bg-white outline-none transition-all text-sm font-medium text-stone-900 placeholder:text-stone-400" placeholder="Full Name" />
+                                        </div>
+                                        <div className="col-span-2">
+                                            <input type="email" name="email" required value={formData.email} onChange={handleChange} className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:border-rose-900 focus:ring-4 focus:ring-rose-900/10 bg-[#FAF8F6] focus:bg-white outline-none transition-all text-sm font-medium text-stone-900 placeholder:text-stone-400" placeholder="Email Address" />
+                                        </div>
+                                        <div>
+                                            <input type="tel" name="phone" required value={formData.phone} onChange={handleChange} className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:border-rose-900 focus:ring-4 focus:ring-rose-900/10 bg-[#FAF8F6] focus:bg-white outline-none transition-all text-sm font-medium text-stone-900 placeholder:text-stone-400" placeholder="Mobile Number" />
+                                        </div>
+                                        <div>
                                             <div className="relative">
-                                                <input
-                                                    type="text"
-                                                    name="zipCode"
-                                                    required
-                                                    maxLength="6"
-                                                    pattern="[0-9]*"
-                                                    inputMode="numeric"
-                                                    value={formData.zipCode}
-                                                    onChange={handleZipChange}
-                                                    className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:border-rose-900 focus:ring-4 focus:ring-rose-900/10 bg-white/50 focus:bg-white outline-none transition-all font-medium text-stone-900 tracking-wide shadow-sm"
-                                                    placeholder="000000"
-                                                />
-                                                {isZipLoading && (
-                                                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-rose-900"></div>
-                                                    </div>
-                                                )}
+                                                <input type="text" name="zipCode" required maxLength="6" pattern="[0-9]*" inputMode="numeric" value={formData.zipCode} onChange={handleZipChange} className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:border-rose-900 focus:ring-4 focus:ring-rose-900/10 bg-[#FAF8F6] focus:bg-white outline-none transition-all text-sm font-medium text-stone-900 placeholder:text-stone-400" placeholder="Pincode" />
+                                                {isZipLoading && <div className="absolute right-3 top-1/2 -translate-y-1/2"><div className="animate-spin rounded-full h-4 w-4 border-b-2 border-rose-900"></div></div>}
                                             </div>
+                                        </div>
+                                        <div className="col-span-2">
+                                            <textarea name="address" required rows="2" value={formData.address} onChange={handleChange} className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:border-rose-900 focus:ring-4 focus:ring-rose-900/10 bg-[#FAF8F6] focus:bg-white outline-none transition-all text-sm font-medium text-stone-900 resize-none placeholder:text-stone-400" placeholder="House No, Building, Street, Area"></textarea>
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">City</label>
-                                            <input
-                                                type="text"
-                                                name="city"
-                                                required
-                                                readOnly
-                                                value={formData.city}
-                                                className="w-full px-4 py-3 border border-stone-200 rounded-xl bg-stone-50 text-stone-600 outline-none cursor-not-allowed font-medium"
-                                            />
+                                            <input type="text" name="city" required readOnly value={formData.city} className="w-full px-4 py-3 border border-stone-200 rounded-xl bg-stone-100 text-stone-500 outline-none cursor-not-allowed text-sm font-medium" placeholder="City" />
                                         </div>
                                         <div>
-                                            <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-1.5">State</label>
-                                            <input
-                                                type="text"
-                                                name="state"
-                                                required
-                                                readOnly
-                                                value={formData.state}
-                                                className="w-full px-4 py-3 border border-stone-200 rounded-xl bg-stone-50 text-stone-600 outline-none cursor-not-allowed font-medium"
-                                            />
+                                            <input type="text" name="state" required readOnly value={formData.state} className="w-full px-4 py-3 border border-stone-200 rounded-xl bg-stone-100 text-stone-500 outline-none cursor-not-allowed text-sm font-medium" placeholder="State" />
                                         </div>
-                                    </div>
-
-                                    {/* Save Address Checkbox */}
-                                    {currentUser && (
-                                        <div className="flex items-center p-4 bg-stone-50 rounded-lg border border-stone-100">
-                                            <input
-                                                id="save-address"
-                                                type="checkbox"
-                                                checked={shouldSaveAddress}
-                                                onChange={(e) => setShouldSaveAddress(e.target.checked)}
-                                                className="h-5 w-5 text-rose-900 focus:ring-rose-900 border-stone-300 rounded"
-                                            />
-                                            <label htmlFor="save-address" className="ml-3 text-sm font-medium text-stone-700 cursor-pointer select-none">
-                                                Save address for future?
-                                            </label>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-
-                            {/* Payment Method */}
-                            <div className="pt-8 mt-8 border-t border-stone-100">
-                                <h3 className="text-lg md:text-xl font-heading font-bold text-stone-900 mb-6 flex items-center gap-3">
-                                    <div className="bg-rose-50 p-2 rounded-lg">
-                                        <CreditCard className="text-rose-900 w-5 h-5 md:w-6 md:h-6" />
-                                    </div>
-                                    Payment Method
-                                </h3>
-                                <div className="space-y-4">
-                                    {COD_STATUS === 'hidden' ? (
-                                        <div className="bg-emerald-50/30 border-2 border-emerald-100/50 rounded-2xl p-5 md:p-6 flex items-center gap-4 relative overflow-hidden group animate-in fade-in slide-in-from-bottom-4 duration-700">
-                                            <div className="absolute top-0 right-0 p-3 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none">
-                                                <CreditCard className="w-20 h-20 text-emerald-600 rotate-12" />
+                                        
+                                        {currentUser && (
+                                            <div className="col-span-2 flex items-center p-3 bg-stone-50 rounded-lg border border-stone-100">
+                                                <input id="save-address" type="checkbox" checked={shouldSaveAddress} onChange={(e) => setShouldSaveAddress(e.target.checked)} className="h-4 w-4 text-rose-900 focus:ring-rose-900 border-stone-300 rounded" />
+                                                <label htmlFor="save-address" className="ml-2 text-sm font-medium text-stone-700 cursor-pointer select-none">Save address for future?</label>
                                             </div>
-                                            <div className="w-12 h-12 md:w-14 md:h-14 rounded-full bg-white flex items-center justify-center shadow-sm shrink-0 border border-emerald-50 group-hover:scale-110 transition-transform duration-500">
-                                                <CreditCard className="w-6 h-6 md:w-7 md:h-7 text-emerald-600" />
-                                            </div>
-                                            <div className="flex-1">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    <span className="font-bold text-stone-900 md:text-lg">Secure Online Payment</span>
-                                                    <span className="text-[10px] bg-emerald-600 text-white px-2 py-0.5 rounded-full font-bold uppercase tracking-wider animate-pulse">Default</span>
-                                                </div>
-                                                <p className="text-sm text-stone-600 leading-relaxed">
-                                                    Powered by Razorpay. Pay via UPI, Cards, Netbanking, or Wallets.
-                                                </p>
-                                            </div>
-                                            <div className="w-6 h-6 rounded-full bg-emerald-600 flex items-center justify-center shrink-0 shadow-lg shadow-emerald-600/20">
-                                                <CheckCircle className="w-4 h-4 text-white animate-in zoom-in duration-300 delay-300" />
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <div className="grid gap-4">
-                                            {COD_STATUS !== 'hidden' && (
-                                                <label className={`flex items-center p-4 md:p-5 border-2 rounded-xl cursor-pointer transition-all duration-300 relative overflow-hidden group animate-in fade-in slide-in-from-bottom-4 duration-500 ${
-                                                    formData.paymentMethod === 'cod' 
-                                                    ? 'border-rose-900 bg-rose-50/50 ring-4 ring-rose-900/10 shadow-md transform scale-[1.01]' 
-                                                    : 'border-stone-100 hover:border-rose-200 hover:bg-stone-50'
-                                                } ${COD_STATUS === 'coming_soon' ? 'opacity-60 grayscale cursor-not-allowed' : ''}`}>
-                                                    <div className="absolute inset-0 bg-white/50 group-hover:bg-transparent transition-colors"></div>
-                                                    <input
-                                                        type="radio"
-                                                        name="paymentMethod"
-                                                        value="cod"
-                                                        disabled={COD_STATUS === 'coming_soon'}
-                                                        checked={formData.paymentMethod === 'cod'}
-                                                        onChange={handleChange}
-                                                        className="text-rose-900 focus:ring-rose-900 w-5 h-5 relative z-10"
-                                                    />
-                                                    <div className="ml-4 relative z-10">
-                                                        <span className="block font-bold text-stone-900">
-                                                            Cash on Delivery
-                                                            {COD_STATUS === 'coming_soon' && (
-                                                                <span className="ml-2 text-[10px] bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wide">Coming Soon</span>
-                                                            )}
-                                                        </span>
-                                                        <span className="text-xs text-stone-500">
-                                                            {COD_STATUS === 'coming_soon' ? 'Not available yet' : `Pay cash upon delivery${COD_EXTRA_CHARGE > 0 ? ` (+₹${COD_EXTRA_CHARGE} COD charge)` : ''}`}
-                                                        </span>
-                                                    </div>
-                                                    {formData.paymentMethod === 'cod' && (
-                                                        <CheckCircle className="ml-auto w-5 h-5 text-rose-900 relative z-10 animate-in zoom-in duration-300" />
-                                                    )}
-                                                </label>
-                                            )}
-
-                                            <label className={`flex items-center p-4 md:p-5 border-2 rounded-xl cursor-pointer transition-all duration-300 relative overflow-hidden group animate-in fade-in slide-in-from-bottom-4 duration-500 delay-75 ${
-                                                formData.paymentMethod === 'online' 
-                                                ? 'border-emerald-600 bg-emerald-50/50 ring-4 ring-emerald-600/10 shadow-md transform scale-[1.01]' 
-                                                : 'border-stone-100 hover:border-emerald-200 hover:bg-stone-50'
-                                            }`}>
-                                                <div className={`absolute inset-0 transition-colors ${formData.paymentMethod === 'online' ? '' : 'bg-white/50 group-hover:bg-transparent'}`}></div>
-                                                <input
-                                                    type="radio"
-                                                    name="paymentMethod"
-                                                    value="online"
-                                                    checked={formData.paymentMethod === 'online'}
-                                                    onChange={handleChange}
-                                                    className="text-emerald-600 focus:ring-emerald-600 w-5 h-5 relative z-10"
-                                                />
-                                                <div className="ml-4 relative z-10 flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                                                    <div>
-                                                        <span className={`block font-bold ${formData.paymentMethod === 'online' ? 'text-emerald-800' : 'text-stone-900'}`}>Online Payment</span>
-                                                        <span className="text-xs text-stone-500">Fast & Secure • Zero Fees</span>
-                                                    </div>
-                                                    <div className="flex items-center gap-1.5 opacity-80 group-hover:opacity-100 transition-opacity">
-                                                        <span className="px-1.5 py-0.5 bg-white border border-stone-200 rounded flex items-center text-[10px] font-bold text-stone-700 shadow-sm group-hover:border-emerald-200 transition-colors">
-                                                            UPI
-                                                        </span>
-                                                        <span className="px-1.5 py-0.5 bg-white border border-stone-200 rounded flex items-center text-[10px] font-bold text-stone-700 shadow-sm group-hover:border-emerald-200 transition-colors">
-                                                            <CreditCard className="w-3 h-3 mr-1 text-blue-600" /> Cards
-                                                        </span>
-                                                        <span className="px-1.5 py-0.5 bg-white border border-stone-200 rounded flex items-center text-[10px] font-bold text-stone-700 shadow-sm group-hover:border-emerald-200 transition-colors">
-                                                            NetBanking
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                                {formData.paymentMethod === 'online' && (
-                                                    <CheckCircle className="ml-auto w-5 h-5 text-emerald-600 relative z-10 animate-in zoom-in duration-300" />
-                                                )}
-                                            </label>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* Coupon Code Section */}
-                            <div className="pt-6 mt-6 border-t border-stone-100">
-                                <h3 className="text-lg md:text-xl font-heading font-bold text-stone-900 mb-4 flex items-center gap-3">
-                                    <div className="bg-emerald-50 p-2 rounded-lg">
-                                        <Tag className="text-emerald-700 w-5 h-5" />
-                                    </div>
-                                    Have a Coupon?
-                                </h3>
-                                {appliedCoupon ? (
-                                    <div className="flex items-center justify-between p-4 bg-emerald-50 border-2 border-emerald-200 rounded-xl">
-                                        <div className="flex items-center gap-3">
-                                            <Tag className="w-5 h-5 text-emerald-700" />
-                                            <div>
-                                                <p className="font-bold text-emerald-800 text-sm">{appliedCoupon.code}</p>
-                                                <p className="text-xs text-emerald-600">Saving ₹{discountAmount.toLocaleString()}</p>
-                                            </div>
-                                        </div>
-                                        <button
-                                            type="button"
-                                            onClick={handleRemoveCoupon}
-                                            className="p-2 text-stone-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                                        >
-                                            <X className="w-4 h-4" />
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <div>
-                                        <div className="flex gap-2">
-                                            <input
-                                                type="text"
-                                                placeholder="Enter coupon code"
-                                                value={couponCode}
-                                                onChange={(e) => { setCouponCode(e.target.value.toUpperCase()); setCouponError(''); }}
-                                                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleApplyCoupon(); } }}
-                                                className="flex-1 px-4 py-3 border-2 border-stone-200 rounded-xl text-sm font-bold uppercase tracking-wider focus:border-rose-900 focus:ring-0 outline-none bg-stone-50 focus:bg-white transition-all placeholder:text-stone-400 placeholder:font-normal placeholder:normal-case placeholder:tracking-normal"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={handleApplyCoupon}
-                                                disabled={couponLoading || !couponCode.trim()}
-                                                className="px-6 py-3 bg-rose-900 text-white rounded-xl font-bold text-sm hover:bg-rose-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
-                                            >
-                                                {couponLoading ? '...' : 'Apply'}
-                                            </button>
-                                        </div>
-                                        {couponError && (
-                                            <p className="text-red-500 text-xs font-medium mt-2 flex items-center gap-1">
-                                                <AlertTriangle className="w-3 h-3" /> {couponError}
-                                            </p>
                                         )}
                                     </div>
-                                )}
-                            </div>
+                                </form>
+                            )}
+                        </div>
 
-
-                            {/* Submit Button */}
-                            <button
-                                type="submit"
-                                disabled={isSubmitting}
-                                className={`hidden md:block w-full bg-rose-900 text-white py-4 rounded-xl font-bold text-lg uppercase tracking-widest hover:bg-rose-800 transition-all shadow-lg hover:shadow-rose-900/30 transform hover:-translate-y-0.5 mt-4 ${isSubmitting ? 'opacity-75 cursor-not-allowed' : ''}`}
-                            >
-                                {isSubmitting 
-                                    ? 'Processing...' 
-                                    : formData.paymentMethod === 'cod' 
-                                        ? `Pay ₹${finalTotal.toLocaleString()} on Delivery`
-                                        : `Pay Now (₹${finalTotal.toLocaleString()})`
-                                }
-                            </button>
-                        </form>
-                    </div>
-                    </motion.div>
-                    </div>
-
-                    {/* Right Column: Order Summary (Sticky) */}
-                    <div className="lg:col-span-5">
-                        <motion.div 
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            className="lg:sticky lg:top-32 space-y-6"
-                        >
-                            {/* Summary Card */}
-                            <div className="bg-white rounded-3xl p-6 md:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-stone-100 relative overflow-hidden">
-                                <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none">
-                                    <ShoppingBag className="w-32 h-32 text-stone-900" />
-                                </div>
-                                
-                                <h3 className="text-xl font-heading font-bold text-stone-900 mb-6 flex items-center justify-between">
-                                    Order Summary
-                                    <span className="text-xs bg-stone-100 text-stone-500 px-2 py-1 rounded-full font-bold">{cart.length} {cart.length === 1 ? 'Item' : 'Items'}</span>
-                                </h3>
-                            <div className="space-y-4 mb-6 max-h-[calc(100vh-400px)] overflow-y-auto custom-scrollbar pr-2">
-                                {cart.map((item, idx) => (
-                                    <div key={`${item.id}-${item.selectedSize || 'nosize'}-${item.selectedColor || 'nocolor'}-${idx}`} className="flex gap-4 py-3 border-b border-stone-100 last:border-0">
-                                        <div className="w-16 h-16 rounded-lg bg-stone-100 overflow-hidden shrink-0 border border-stone-200">
-                                            <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <h4 className="font-bold text-stone-800 text-sm truncate">{item.name}</h4>
-                                            <div className="flex flex-wrap gap-2 mt-1.5">
-                                                 {(item.selectedSize) && (
-                                                    <span className="text-[10px] font-bold text-stone-500 bg-stone-100 px-1.5 py-0.5 rounded border border-stone-200">
-                                                        {item.selectedSize}
-                                                    </span>
-                                                )}
-                                                {(item.selectedColor && item.selectedColor !== 'NA') && (
-                                                    <span className="flex items-center gap-1 text-[10px] font-bold text-stone-500 bg-stone-100 px-1.5 py-0.5 rounded border border-stone-200">
-                                                        <span className="w-2 h-2 rounded-full border border-stone-300" style={{ backgroundColor: item.selectedColor.toLowerCase() }}></span>
-                                                        {item.selectedColor}
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <p className="text-xs text-stone-500 mt-1">Qty: {item.quantity}</p>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className="font-bold text-stone-900 text-sm">₹{(item.price * item.quantity).toLocaleString()}</p>
-                                            {item.originalPrice && (
-                                                <p className="text-xs text-stone-400 line-through">₹{(item.originalPrice * item.quantity).toLocaleString()}</p>
-                                            )}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                            
-                            {/* Desktop Coupon Input */}
-                            <div className="border-t border-stone-100 pt-4 mb-4">
-                                {appliedCoupon ? (
-                                    <div className="flex items-center justify-between p-3 bg-emerald-50 border border-emerald-200 rounded-xl">
-                                        <div className="flex items-center gap-2">
-                                            <Tag className="w-4 h-4 text-emerald-700" />
-                                            <span className="font-bold text-emerald-800 text-sm">{appliedCoupon.code}</span>
-                                            <span className="text-xs text-emerald-600">(-₹{discountAmount.toLocaleString()})</span>
-                                        </div>
-                                        <button type="button" onClick={handleRemoveCoupon} className="p-1 text-stone-400 hover:text-red-500 rounded transition-colors">
-                                            <X className="w-4 h-4" />
-                                        </button>
-                                    </div>
-                                ) : (
-                                    <div className="flex gap-2">
-                                        <input
-                                            type="text"
-                                            placeholder="Coupon code"
-                                            value={couponCode}
-                                            onChange={(e) => { setCouponCode(e.target.value.toUpperCase()); setCouponError(''); }}
-                                            onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleApplyCoupon(); } }}
-                                            className="flex-1 px-3 py-2 border border-stone-200 rounded-lg text-sm font-bold uppercase tracking-wider focus:border-rose-900 outline-none bg-white transition-all placeholder:text-stone-400 placeholder:font-normal placeholder:normal-case placeholder:tracking-normal"
-                                        />
-                                        <button
-                                            type="button"
-                                            onClick={handleApplyCoupon}
-                                            disabled={couponLoading || !couponCode.trim()}
-                                            className="px-4 py-2 bg-rose-900 text-white rounded-lg font-bold text-sm hover:bg-rose-800 transition-colors disabled:opacity-50"
-                                        >
-                                            Apply
-                                        </button>
-                                    </div>
-                                )}
-                                {couponError && (
-                                    <p className="text-red-500 text-xs font-medium mt-1.5 flex items-center gap-1">
-                                        <AlertTriangle className="w-3 h-3" /> {couponError}
-                                    </p>
-                                )}
-                            </div>
-
-                            <div className="space-y-3 pt-6 border-t border-stone-100 bg-stone-50 -mx-8 -mb-8 p-8 rounded-b-2xl">
-                                <div className="flex justify-between text-stone-600 text-sm">
-                                    <span>Subtotal</span>
-                                    <span className="font-medium">₹{subtotal.toLocaleString()}</span>
-                                </div>
-                                {giftWrapTotal > 0 && (
-                                    <div className="flex justify-between text-stone-600 text-sm">
-                                        <span>Gift Packaging</span>
-                                        <span className="font-medium">₹{giftWrapTotal.toLocaleString()}</span>
-                                    </div>
-                                )}
-                                {appliedCoupon && (
-                                    <div className="flex justify-between text-emerald-600 text-sm">
-                                        <span className="flex items-center font-bold"><Tag className="w-3 h-3 mr-1"/> Discount ({appliedCoupon.code})</span>
-                                        <span className="font-bold">-₹{discountAmount.toLocaleString()}</span>
-                                    </div>
-                                )}
-                                <div className="flex justify-between text-stone-600 text-sm">
-                                    <span>Shipping</span>
-                                    <span className={shippingCharge === 0 ? "text-emerald-700 font-bold" : "font-medium"}>
-                                        {shippingCharge === 0 ? 'Free' : `₹${shippingCharge}`}
-                                    </span>
-                                </div>
-                                {codCharge > 0 && (
-                                    <div className="flex justify-between text-amber-700 text-sm">
-                                        <span>COD Charge</span>
-                                        <span className="font-medium">+₹{codCharge.toLocaleString()}</span>
-                                    </div>
-                                )}
-                                <div className="flex justify-between text-xl font-heading font-bold text-stone-900 pt-4 border-t border-stone-200 mt-2">
-                                    <span>Total Pay</span>
-                                    <span className="text-rose-900">₹{finalTotal.toLocaleString()}</span>
-                                </div>
-                                <div className="text-xs text-stone-400 text-right font-medium">
-                                    (Incl. of all taxes)
-                                </div>
-                                <div className="flex justify-between text-stone-600 text-sm border-t border-stone-200 pt-3 mt-3">
-                                    <span>Estimated Delivery</span>
-                                    <span className="text-stone-900 font-bold">{getEstimatedDeliveryDate()}</span>
+                        {/* 2. Delivery Promise */}
+                        <div className="bg-[#e9faec] rounded-xl p-4 flex items-center justify-between border border-emerald-100 shadow-sm">
+                            <div className="flex items-center gap-3">
+                                <Truck className="w-5 h-5 text-emerald-600" />
+                                <div>
+                                    <div className="font-bold text-emerald-900 text-sm">Delivery by {getEstimatedDeliveryDate()}</div>
+                                    <div className="text-xs text-emerald-700 mt-0.5">Free shipping applied</div>
                                 </div>
                             </div>
                         </div>
-                        </motion.div>
+
+                        {/* 3. Payment Methods */}
+                        <div className="bg-white rounded-[20px] p-5 shadow-sm border border-stone-100">
+                            <h2 className="text-base font-bold text-stone-900 mb-4 flex items-center gap-2">
+                                Payment Method
+                            </h2>
+                            
+                            <div className="space-y-3">
+                                {/* UPI Row */}
+                                <label className={`flex items-center justify-between p-4 rounded-2xl cursor-pointer transition-all border ${formData.paymentMethod === 'online' ? 'border-rose-200 bg-rose-50/30 ring-1 ring-rose-200' : 'border-stone-100 hover:border-stone-200 hover:bg-[#FAF8F6]'}`}>
+                                    <div className="flex items-center gap-3">
+                                        <input type="radio" name="paymentMethod" value="online" checked={formData.paymentMethod === 'online'} onChange={handleChange} className="w-4 h-4 text-rose-600 border-stone-300 focus:ring-rose-600" />
+                                        <div>
+                                            <div className="font-bold text-stone-900 text-sm flex items-center gap-2">
+                                                UPI & Cards
+                                                <span className="bg-amber-100 text-amber-800 text-[9px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">Recommended ⚡</span>
+                                            </div>
+                                            <div className="text-xs text-stone-500 mt-0.5">GPay, PhonePe, Paytm, Visa, RuPay</div>
+                                        </div>
+                                    </div>
+                                </label>
+
+                                {/* COD Row */}
+                                <label className={`flex items-center justify-between p-4 rounded-2xl cursor-pointer transition-all border ${formData.paymentMethod === 'cod' ? 'border-rose-200 bg-rose-50/30 ring-1 ring-rose-200' : 'border-stone-100 hover:border-stone-200 hover:bg-[#FAF8F6]'} ${COD_STATUS === 'hidden' || COD_STATUS === 'coming_soon' ? 'opacity-50 grayscale pointer-events-none' : ''}`}>
+                                    <div className="flex items-center gap-3">
+                                        <input type="radio" name="paymentMethod" value="cod" checked={formData.paymentMethod === 'cod'} onChange={handleChange} className="w-4 h-4 text-rose-600 border-stone-300 focus:ring-rose-600" disabled={COD_STATUS === 'hidden' || COD_STATUS === 'coming_soon'} />
+                                        <div>
+                                            <div className="font-bold text-stone-900 text-sm">
+                                                Cash on Delivery
+                                            </div>
+                                            <div className="text-xs text-stone-500 mt-0.5">Pay cash at doorstep {COD_EXTRA_CHARGE > 0 ? `(+₹${COD_EXTRA_CHARGE})` : ''}</div>
+                                        </div>
+                                    </div>
+                                    {(COD_STATUS === 'hidden' || COD_STATUS === 'coming_soon') && (
+                                        <span className="text-[10px] font-bold text-stone-400 bg-stone-100 px-2 py-1 rounded">Unavailable</span>
+                                    )}
+                                </label>
+                            </div>
+                        </div>
+
+                        {/* 4. Offers & Coupons */}
+                        <div className="space-y-4">
+                            {/* Coupon Accordion */}
+                            <div className="bg-white rounded-xl shadow-sm border border-stone-100 overflow-hidden">
+                                {appliedCoupon ? (
+                                    <div className="flex items-center justify-between p-4 bg-emerald-50/50">
+                                        <div className="flex items-center gap-2">
+                                            <Tag className="w-4 h-4 text-emerald-700" />
+                                            <div>
+                                                <div className="font-bold text-emerald-900 text-sm">{appliedCoupon.code} Applied</div>
+                                                <div className="text-xs text-emerald-600">You saved ₹{discountAmount.toLocaleString()}!</div>
+                                            </div>
+                                        </div>
+                                        <button type="button" onClick={handleRemoveCoupon} className="p-2 text-stone-400 hover:text-red-500 transition-colors">
+                                            <X className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <details className="group">
+                                        <summary className="flex items-center justify-between p-4 cursor-pointer font-bold text-stone-800 text-sm list-none select-none">
+                                            <div className="flex items-center gap-2">
+                                                <Tag className="w-4 h-4 text-stone-400" />
+                                                Apply Coupon
+                                            </div>
+                                            <ChevronDown className="w-4 h-4 text-stone-400 group-open:rotate-180 transition-transform" />
+                                        </summary>
+                                        <div className="p-4 pt-0">
+                                            <div className="flex gap-2">
+                                                <input
+                                                    type="text"
+                                                    placeholder="Enter code"
+                                                    value={couponCode}
+                                                    onChange={(e) => { setCouponCode(e.target.value.toUpperCase()); setCouponError(''); }}
+                                                    className="flex-1 px-4 py-3 border border-stone-200 rounded-xl text-sm font-bold uppercase tracking-wider focus:border-rose-900 focus:ring-2 outline-none bg-[#FAF8F6] focus:bg-white transition-all"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={handleApplyCoupon}
+                                                    disabled={couponLoading || !couponCode.trim()}
+                                                    className="px-6 py-3 bg-stone-900 text-white rounded-xl font-bold text-sm hover:bg-stone-800 disabled:opacity-50"
+                                                >
+                                                    Apply
+                                                </button>
+                                            </div>
+                                            {couponError && <p className="text-red-500 text-xs font-medium mt-2">{couponError}</p>}
+                                        </div>
+                                    </details>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Right Column: Order Summary (Desktop Sticky, Mobile Collapsible) */}
+                    <div className="lg:col-span-5 relative">
+                        <div className="lg:sticky lg:top-24 space-y-4">
+                            {/* Mobile Collapsible Header */}
+                            <details className="lg:hidden bg-white rounded-xl shadow-sm border border-stone-100 group">
+                                <summary className="flex items-center justify-between p-4 cursor-pointer list-none select-none">
+                                    <span className="font-bold text-stone-800 text-sm">Order Summary ({cart.length} items)</span>
+                                    <div className="flex items-center gap-2">
+                                        <span className="font-bold text-stone-900 text-sm">₹{finalTotal.toLocaleString()}</span>
+                                        <ChevronDown className="w-4 h-4 text-stone-400 group-open:rotate-180 transition-transform" />
+                                    </div>
+                                </summary>
+                                <div className="p-4 pt-0 border-t border-stone-100 mt-2">
+                                    {/* Mobile Summary Contents */}
+                                    <div className="space-y-4 max-h-60 overflow-y-auto custom-scrollbar pt-2">
+                                        {cart.map((item, idx) => (
+                                            <div key={idx} className="flex gap-3">
+                                                <div className="w-16 h-16 rounded-lg bg-[#FAF8F6] overflow-hidden shrink-0 border border-stone-100">
+                                                    <img src={item.image} alt={item.name} className="w-full h-full object-cover mix-blend-multiply" />
+                                                </div>
+                                                <div className="flex-1 min-w-0 flex flex-col justify-center">
+                                                    <h4 className="font-bold text-stone-800 text-sm truncate">{item.name}</h4>
+                                                    <p className="text-xs text-stone-500 mt-0.5">Qty: {item.quantity}</p>
+                                                </div>
+                                                <div className="text-right flex flex-col justify-center">
+                                                    <p className="font-bold text-stone-900 text-sm">₹{(item.price * item.quantity).toLocaleString()}</p>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="space-y-2 pt-4 border-t border-stone-100 mt-4 text-sm">
+                                        <div className="flex justify-between text-stone-500"><span>Subtotal</span><span>₹{subtotal.toLocaleString()}</span></div>
+                                        {shippingCharge === 0 && <div className="flex justify-between text-emerald-600"><span>Shipping</span><span>Free</span></div>}
+                                        {appliedCoupon && <div className="flex justify-between text-emerald-600"><span>Discount</span><span>-₹{discountAmount.toLocaleString()}</span></div>}
+                                    </div>
+                                </div>
+                            </details>
+
+                            {/* Desktop Summary Card */}
+                            <div className="hidden lg:block bg-white rounded-[20px] p-6 shadow-sm border border-stone-100">
+                                <h3 className="font-bold text-stone-900 mb-4">Order Summary</h3>
+                                <div className="space-y-4 mb-6">
+                                    {cart.map((item, idx) => (
+                                        <div key={idx} className="flex gap-4">
+                                            <div className="w-16 h-16 rounded-xl bg-[#FAF8F6] overflow-hidden shrink-0 border border-stone-100">
+                                                <img src={item.image} alt={item.name} className="w-full h-full object-cover mix-blend-multiply" />
+                                            </div>
+                                            <div className="flex-1 min-w-0 py-1">
+                                                <h4 className="font-bold text-stone-800 text-sm truncate">{item.name}</h4>
+                                                <p className="text-[11px] text-stone-500 mt-1">Qty: {item.quantity}</p>
+                                            </div>
+                                            <div className="text-right py-1">
+                                                <p className="font-bold text-stone-900 text-sm">₹{(item.price * item.quantity).toLocaleString()}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="space-y-3 pt-4 border-t border-stone-100 text-sm">
+                                    <div className="flex justify-between text-stone-500"><span>Subtotal</span><span>₹{subtotal.toLocaleString()}</span></div>
+                                    {shippingCharge === 0 && <div className="flex justify-between text-emerald-600"><span>Shipping</span><span>Free</span></div>}
+                                    {appliedCoupon && <div className="flex justify-between text-emerald-600"><span>Discount</span><span>-₹{discountAmount.toLocaleString()}</span></div>}
+                                </div>
+                                <div className="flex justify-between text-lg font-bold text-stone-900 pt-4 border-t border-stone-200 mt-4">
+                                    <span>Total Pay</span>
+                                    <span>₹{finalTotal.toLocaleString()}</span>
+                                </div>
+                            </div>
+
+                        </div>
                     </div>
                 </div>
             </div>
 
-            {/* Mobile Sticky Bottom Action Bar */}
-            <AnimatePresence>
-                {!isSubmitting && (
-                    <motion.div 
-                        initial={{ y: 100 }}
-                        animate={{ y: 0 }}
-                        exit={{ y: 100 }}
-                        className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-stone-200 p-4 shadow-[0_-8px_30px_rgb(0,0,0,0.08)] md:hidden z-50 pb-[calc(1rem+env(safe-area-inset-bottom))]"
+            {/* Trust Signals & Sticky Bottom CTA */}
+            <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-stone-200/60 shadow-[0_-10px_40px_rgb(0,0,0,0.06)] pb-[env(safe-area-inset-bottom)]">
+                {/* Trust Row */}
+                <div className="bg-[#FAF8F6] py-2 border-b border-stone-100">
+                    <div className="max-w-4xl mx-auto flex items-center justify-center gap-6 text-[10px] md:text-xs font-bold text-stone-500">
+                        <span className="flex items-center gap-1.5"><Lock className="w-3 h-3" /> 100% Secure</span>
+                        <span className="flex items-center gap-1.5"><Truck className="w-3 h-3" /> Fast Delivery</span>
+                    </div>
+                </div>
+                
+                {/* CTA Row */}
+                <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
+                    <div className="flex-1">
+                        <div className="text-xl font-bold text-stone-900 leading-none mb-1">₹{finalTotal.toLocaleString()}</div>
+                        <div className="text-[10px] text-stone-500 font-medium">Total incl. taxes</div>
+                    </div>
+                    <button
+                        onClick={handleSubmit}
+                        disabled={isSubmitting}
+                        className="flex-[1.5] bg-rose-900 text-white h-[54px] rounded-xl font-bold text-[15px] shadow-lg shadow-rose-900/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
                     >
-                        <div className="flex items-center gap-6">
-                            <div className="flex-1">
-                                <p className="text-[10px] text-stone-500 font-bold uppercase tracking-widest mb-0.5">Payable Amount</p>
-                                <p className="text-2xl font-heading font-bold text-rose-900 leading-none">₹{finalTotal.toLocaleString()}</p>
-                            </div>
-                            <button
-                                onClick={handleSubmit}
-                                disabled={isSubmitting}
-                                className="flex-[1.5] bg-rose-900 text-white py-4 px-6 rounded-2xl font-bold uppercase tracking-widest text-xs shadow-xl shadow-rose-900/20 active:scale-95 transition-all flex items-center justify-center gap-2"
-                            >
-                                {isSubmitting 
-                                    ? <Loader className="w-4 h-4 animate-spin" />
-                                    : formData.paymentMethod === 'cod' 
-                                        ? 'Place Order (COD)'
-                                        : 'Proceed to Pay'
-                                }
-                            </button>
-                        </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                        {isSubmitting 
+                            ? <Loader className="w-5 h-5 animate-spin" />
+                            : `Pay Securely`
+                        }
+                    </button>
+                </div>
+            </div>
         </div>
     );
 };

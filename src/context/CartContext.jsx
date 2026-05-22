@@ -17,6 +17,36 @@ export const CartProvider = ({ children }) => {
   // Loading state for cart
   const [isFetchingCart, setIsFetchingCart] = useState(true);
 
+  // Global Gift Packaging State
+  const [isGiftWrapped, setIsGiftWrapped] = useState(() => {
+    try {
+      return localStorage.getItem('isGiftWrapped') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const [giftNote, setGiftNote] = useState(() => {
+    try {
+      return localStorage.getItem('giftNote') || '';
+    } catch {
+      return '';
+    }
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('isGiftWrapped', isGiftWrapped);
+    } catch {}
+  }, [isGiftWrapped]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('giftNote', giftNote);
+    } catch {}
+  }, [giftNote]);
+
+
   // Initialize cart from local storage for initial render
   const [cart, setCart] = useState(() => {
     try {
@@ -478,7 +508,18 @@ export const CartProvider = ({ children }) => {
         state: userDetails.state,
         zipCode: userDetails.zipCode
       },
-      items: cart,
+      items: isGiftWrapped ? [
+        ...cart,
+        {
+          id: 'gift-packaging',
+          name: 'Premium Gift Packaging',
+          price: giftWrapTotal,
+          quantity: 1,
+          isVirtual: true,
+          giftNote: giftNote,
+          image: 'https://cdn-icons-png.flaticon.com/512/3037/3037150.png'
+        }
+      ] : cart,
       subtotal: subtotal,
       shipping_cost: shippingCharge,
       cod_charge: codCharge,
@@ -690,7 +731,12 @@ export const CartProvider = ({ children }) => {
     firstName: addr.first_name,
     lastName: addr.last_name,
     phone: addr.phone,
+    alternatePhone: addr.alternate_phone,
     address: addr.address,
+    houseNo: addr.house_no,
+    area: addr.area,
+    landmark: addr.landmark,
+    addressType: addr.address_type || 'Home',
     city: addr.city,
     state: addr.state,
     zipCode: addr.zip_code,
@@ -741,7 +787,12 @@ export const CartProvider = ({ children }) => {
           first_name: address.firstName,
           last_name: address.lastName,
           phone: address.phone,
+          alternate_phone: address.alternatePhone,
           address: address.address,
+          house_no: address.houseNo,
+          area: address.area,
+          landmark: address.landmark,
+          address_type: address.addressType,
           city: address.city,
           state: address.state,
           zip_code: address.zipCode
@@ -781,7 +832,10 @@ export const CartProvider = ({ children }) => {
 
   const cartCount = (cart || []).reduce((total, item) => total + (item.quantity || 0), 0);
   const subtotal = (cart || []).reduce((total, item) => total + ((item.price || 0) * (item.quantity || 0)), 0);
-  const giftWrapTotal = (cart || []).reduce((total, item) => total + (item.giftPackaging ? 29 * (item.quantity || 1) : 0), 0);
+  let giftWrapTotal = 0;
+  if (isGiftWrapped) {
+      giftWrapTotal = 29;
+  }
   
   const discountAmount = appliedCoupon ? (() => {
       // 1. Validate General Rules
@@ -845,6 +899,10 @@ export const CartProvider = ({ children }) => {
       placeOrder,
       cartCount,
       cartTotal,
+      isGiftWrapped,
+      setIsGiftWrapped,
+      giftNote,
+      setGiftNote,
       coupons,
       fetchCoupons,
       addCoupon,
