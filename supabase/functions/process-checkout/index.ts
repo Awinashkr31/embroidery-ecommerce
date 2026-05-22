@@ -33,7 +33,7 @@ serve(async (req: Request) => {
     // ============================================================================
     // Helper: Securely Calculate Total Amount
     // ============================================================================
-    const calculateSecureTotals = async (cartItems: any[], couponCode: string | null) => {
+    const calculateSecureTotals = async (cartItems: any[], couponCode: string | null, isGiftWrapped: boolean = false) => {
         let subtotal = 0 
         const productIds = cartItems.map((i: any) => i.id)
         
@@ -93,18 +93,22 @@ serve(async (req: Request) => {
         }
         
         const shipping = subtotal < freeDeliveryThreshold ? deliveryCharge : 0
-        const totalAmount = subtotal - discount + shipping
+        let giftWrapTotal = 0;
+        if (isGiftWrapped) {
+            giftWrapTotal = 29;
+        }
+        const totalAmount = subtotal - discount + shipping + giftWrapTotal
 
-        return { subtotal, discount, shipping, totalAmount }
+        return { subtotal, discount, shipping, giftWrapTotal, totalAmount }
     }
 
     // ============================================================================
     // Action: Validate COD Checkout
     // ============================================================================
     if (action === 'validate-cod') {
-        const { cartItems, couponCode, clientTotal } = requestData
+        const { cartItems, couponCode, clientTotal, isGiftWrapped } = requestData
 
-        const totals = await calculateSecureTotals(cartItems, couponCode)
+        const totals = await calculateSecureTotals(cartItems, couponCode, isGiftWrapped)
 
         // Prevent client-side manipulation. If they send ₹0, and we calculated ₹500, we reject.
         // We allow a small tolerance for floating point rounding diffs if any.
@@ -124,8 +128,8 @@ serve(async (req: Request) => {
     if (action === 'create-order') {
         if (!key_id || !key_secret) throw new Error('Razorpay keys missing.')
 
-        const { cartItems, couponCode } = requestData
-        const totals = await calculateSecureTotals(cartItems, couponCode)
+        const { cartItems, couponCode, isGiftWrapped } = requestData
+        const totals = await calculateSecureTotals(cartItems, couponCode, isGiftWrapped)
 
         const options = {
             amount: Math.round(totals.totalAmount * 100), // convert to paise

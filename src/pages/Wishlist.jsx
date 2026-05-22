@@ -4,6 +4,7 @@ import { useCart } from '../context/CartContext';
 import { Heart, Trash2, ShoppingBag, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
+import { getProductUrl } from '../utils/urlUtils';
 
 const Wishlist = () => {
     const { wishlist, removeFromWishlist } = useWishlist();
@@ -70,7 +71,7 @@ const Wishlist = () => {
                             >
                                 {/* Image Card */}
                                 <div className="relative aspect-[2/3] md:aspect-[4/5] rounded-[20px] md:rounded-3xl overflow-hidden bg-stone-100 mb-4 shrink-0 md:group-hover:-translate-y-2 md:group-hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.15)] transition-all duration-500">
-                                    <Link to={`/product/${product.id}`} className="absolute inset-0 z-0">
+                                    <Link to={getProductUrl(product)} className="absolute inset-0 z-0">
                                         <img
                                             src={displayImage}
                                             alt={product.name}
@@ -114,7 +115,7 @@ const Wishlist = () => {
                                 <div className="flex flex-col gap-1.5 px-1">
                                     <div className="flex items-start justify-between gap-2">
                                         <h3 className="text-sm md:text-base font-semibold text-stone-900 line-clamp-1 group-hover:text-rose-900 transition-colors">
-                                            <Link to={`/product/${product.id}`}>{product.name}</Link>
+                                            <Link to={getProductUrl(product)}>{product.name}</Link>
                                         </h3>
                                     </div>
                                     <div className="flex items-center flex-wrap gap-2">

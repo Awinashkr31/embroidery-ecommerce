@@ -9,6 +9,7 @@ import { Star, Truck, Shield, Award, ChevronLeft, ChevronRight, Quote, ArrowRigh
 import SEO from '../components/SEO';
 import { useSettings } from '../context/SettingsContext';
 import { ProductCard } from '../components/ProductCard';
+import { getProductUrl } from '../utils/urlUtils';
 
 // Scroll reveal hook
 const useInView = () => {
@@ -301,7 +302,7 @@ const Home = () => {
                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
                    {newArrivals.map((product, i) => (
                        <Reveal key={product.id} delay={i * 100}>
-                         <Link to={`/product/${product.id}`} className="group block">
+                         <Link to={getProductUrl(product)} className="group block">
                            <ProductCard 
                                product={product} 
                                toggleWishlist={toggleWishlist} 
@@ -398,7 +399,7 @@ const Home = () => {
                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
                    {bestsellers.map((product, i) => (
                        <Reveal key={product.id} delay={i * 100}>
-                         <Link to={`/product/${product.id}`} className="group block">
+                         <Link to={getProductUrl(product)} className="group block">
                            <ProductCard 
                                product={product} 
                                toggleWishlist={toggleWishlist} 
@@ -478,7 +479,7 @@ const Home = () => {
                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
                    {premiumProducts.map((product, i) => (
                        <Reveal key={product.id} delay={i * 100}>
-                         <Link to={`/product/${product.id}`} className="group block bg-white rounded-2xl p-2 md:p-3 hover:shadow-xl transition-shadow duration-500">
+                         <Link to={getProductUrl(product)} className="group block bg-white rounded-2xl p-2 md:p-3 hover:shadow-xl transition-shadow duration-500">
                              <ProductCard 
                                  product={product} 
                                  toggleWishlist={toggleWishlist} 

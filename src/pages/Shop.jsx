@@ -10,6 +10,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 const slugify = (str) => (str || '').toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
 import { ProductCard as ProductCardWithVariants } from '../components/ProductCard';
+import { getProductUrl } from '../utils/urlUtils';
 
 const Shop = () => {
     const { products, loading: productsLoading, fetchProducts } = useProducts();
@@ -490,7 +491,7 @@ const Shop = () => {
                                     {paginatedProducts.map((product) => (
                                         <div key={product.uniqueId} className="animate-fade-up">
                                             <Link 
-                                                to={`/product/${product.id}${product.preselectedVariant ? `?color=${encodeURIComponent(product.preselectedVariant.color)}` : ''}`}
+                                                to={`${getProductUrl(product)}${product.preselectedVariant ? `?color=${encodeURIComponent(product.preselectedVariant.color)}` : ''}`}
                                                 className="group block"
                                             >
                                                 <ProductCardWithVariants product={product} toggleWishlist={toggleWishlist} isInWishlist={isInWishlist} />

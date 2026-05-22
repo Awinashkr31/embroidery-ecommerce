@@ -8,6 +8,7 @@ import { useWishlist } from '../context/WishlistContext';
 import { useProducts } from '../context/ProductContext';
 import SEO from '../components/SEO';
 import { getEstimatedDeliveryDate } from '../utils/dateUtils';
+import { getProductUrl } from '../utils/urlUtils';
 
 const Cart = () => {
     const { 
@@ -333,12 +334,12 @@ const Cart = () => {
                                 <div className="flex gap-4 overflow-x-auto snap-x scrollbar-hide pb-2 -mx-[14px] px-[14px] md:mx-0 md:px-0">
                                     {relatedProducts.map(prod => (
                                         <div key={prod.id} className="snap-start flex-none w-[140px] md:w-[160px] bg-[#FFFFFF] rounded-[16px] p-2 shadow-[0_2px_12px_rgba(0,0,0,0.04)] group relative transition-all duration-250">
-                                            <Link to={`/product/${prod.id}`}>
+                                            <Link to={getProductUrl(prod)}>
                                                 <div className="aspect-square rounded-xl overflow-hidden bg-stone-50 mb-2.5 relative">
                                                     <img src={prod.images?.[0] || prod.image} alt={prod.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                                                 </div>
                                             </Link>
-                                            <Link to={`/product/${prod.id}`} className="block">
+                                            <Link to={getProductUrl(prod)} className="block">
                                                 <h4 className="text-[13px] font-medium text-stone-800 line-clamp-1 group-hover:text-rose-900 transition-colors leading-tight mb-1">{prod.name}</h4>
                                                 <p className="text-[14px] font-bold text-stone-900">₹{prod.price}</p>
                                             </Link>

@@ -9,9 +9,11 @@ import { supabase } from '../../config/supabase';
 import { Heart, ShoppingBag, ArrowLeft, Truck, Shield, Star, Award, Search, Sparkles, Plus, Minus, ChevronDown, Share2, X, Loader, Calendar, CheckCircle2, Package, Gift } from 'lucide-react';
 import SEO from '../components/SEO';
 import { PincodeChecker } from '../components/PincodeChecker';
+import { extractProductIdFromSlug, getProductUrl } from '../../src/utils/urlUtils';
 
 const ProductDetails = () => {
-    const { id } = useParams();
+    const { slug } = useParams();
+    const id = extractProductIdFromSlug(slug);
     const { products, fetchProducts } = useProducts();
     
     // Fetch products explicitly since context no longer auto-fetches on mount
@@ -406,7 +408,9 @@ const ProductDetails = () => {
             "url": window.location.href,
             "priceCurrency": "INR",
             "price": currentPrice,
-            "availability": isStockAvailable ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"
+            "availability": isStockAvailable ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
+            "itemCondition": "https://schema.org/NewCondition",
+            "priceValidUntil": new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0]
         }
     };
 
@@ -963,6 +967,7 @@ const ProductDetails = () => {
                                 Buy At ₹{currentPrice.toLocaleString()}
                             </motion.button>
 
+
                             {/* Trust Badges */}
                             <div className="grid grid-cols-2 gap-3 pt-4">
                                 <div className="flex items-center gap-2.5 p-3 bg-white rounded-[14px] border border-stone-100 shadow-sm text-stone-600">
@@ -1079,12 +1084,12 @@ const ProductDetails = () => {
                                         
                                         {/* Related Product */}
                                         <div className="shrink-0 flex flex-col gap-2 w-28 snap-start">
-                                            <Link to={`/product/${relatedProducts[0].id}`} className="aspect-[4/5] rounded-xl overflow-hidden shadow-sm border border-stone-200 block hover:border-rose-300 transition-colors bg-white group relative">
+                                            <Link to={getProductUrl(relatedProducts[0])} className="aspect-[4/5] rounded-xl overflow-hidden shadow-sm border border-stone-200 block hover:border-rose-300 transition-colors bg-white group relative">
                                                 <img src={relatedProducts[0].image} alt={relatedProducts[0].name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                                                 <div className="absolute top-2 left-2 bg-white/90 backdrop-blur text-[8px] font-bold px-1.5 py-0.5 rounded shadow-sm text-stone-800">Add-on</div>
                                             </Link>
                                             <div>
-                                                <Link to={`/product/${relatedProducts[0].id}`} className="text-xs font-bold text-stone-900 truncate hover:text-rose-900 transition-colors block">{relatedProducts[0].name}</Link>
+                                                <Link to={getProductUrl(relatedProducts[0])} className="text-xs font-bold text-stone-900 truncate hover:text-rose-900 transition-colors block">{relatedProducts[0].name}</Link>
                                                 <div className="text-[10px] text-stone-500 font-medium">₹{relatedProducts[0].price.toLocaleString()}</div>
                                             </div>
                                         </div>
@@ -1478,7 +1483,7 @@ const ProductDetails = () => {
                                         className="group relative shrink-0 w-[42vw] sm:w-[30vw] lg:w-auto snap-start"
                                     >
                                         <div className="aspect-[2/3] overflow-hidden bg-stone-50 rounded-2xl mb-3 relative">
-                                            <Link to={`/product/${p.id}`}>
+                                            <Link to={getProductUrl(p)}>
                                                 <img 
                                                     src={p.image} 
                                                     alt={p.name} 
@@ -1507,7 +1512,7 @@ const ProductDetails = () => {
                                             </button>
                                         </div>
 
-                                        <Link to={`/product/${p.id}`} className="block space-y-1 px-1">
+                                        <Link to={getProductUrl(p)} className="block space-y-1 px-1">
                                             <h3 className="font-heading font-bold text-sm text-stone-900 truncate group-hover:text-rose-900 transition-colors">
                                                 {p.name}
                                             </h3>
@@ -1559,7 +1564,7 @@ const ProductDetails = () => {
                                         className="group relative w-full"
                                     >
                                         <div className="aspect-[2/3] overflow-hidden bg-stone-50 rounded-2xl mb-3 relative">
-                                            <Link to={`/product/${p.id}`}>
+                                            <Link to={getProductUrl(p)}>
                                                 <img 
                                                     src={p.image} 
                                                     alt={p.name} 
@@ -1588,7 +1593,7 @@ const ProductDetails = () => {
                                             </button>
                                         </div>
 
-                                        <Link to={`/product/${p.id}`} className="block space-y-1 px-1">
+                                        <Link to={getProductUrl(p)} className="block space-y-1 px-1">
                                             <h3 className="font-heading font-bold text-sm text-stone-900 truncate group-hover:text-rose-900 transition-colors">
                                                 {p.name}
                                             </h3>

@@ -12,7 +12,8 @@ import {
   ChevronDown,
   Package,
   MapPin,
-  ArrowLeft
+  ArrowLeft,
+  Sparkles
 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -111,6 +112,7 @@ const Navbar = React.memo(() => {
   const navLinks = [
     { name: 'Home', path: '/' },
     { name: 'Shop', path: '/shop' },
+    { name: 'Gifts', path: '/gifts' },
     { name: 'Custom Design', path: '/custom-design' },
     { name: 'Mehndi', path: '/mehndi-booking' },
     { name: 'Gallery', path: '/gallery' },
@@ -146,8 +148,8 @@ const Navbar = React.memo(() => {
       <nav
         className={`w-full relative z-20 transition-all duration-500 ease-in-out min-h-[56px] md:min-h-[72px]
           ${isScrolled
-            ? 'bg-white border-b border-stone-100 shadow-lg shadow-black/5 py-2 px-2 md:px-12 lg:px-20'
-            : 'bg-white/95 md:bg-white/50 md:backdrop-blur-sm py-3 px-2 md:px-12 lg:px-20'
+            ? 'bg-white/95 backdrop-blur-[12px] border-b border-stone-100 shadow-lg shadow-black/5 py-2 px-2 md:px-12 lg:px-20'
+            : 'bg-white/80 backdrop-blur-[12px] py-3 px-2 md:px-12 lg:px-20'
           }`}
       >
       <div className="container-custom">
@@ -209,21 +211,50 @@ const Navbar = React.memo(() => {
           {/* 3. Center: Desktop Navigation */}
           <div className="hidden lg:flex items-center justify-center space-x-1 xl:space-x-2 shrink-0">
              {navLinks.map((link) => (
-                <Link 
-                  key={link.path}
-                  to={link.path} 
-                  className={`relative text-[10px] xl:text-xs font-bold tracking-widest uppercase transition-all duration-300 px-2 xl:px-4 py-2 rounded-full whitespace-nowrap group ${
-                    isActive(link.path) 
-                      ? 'text-rose-900' 
-                      : 'text-stone-600 hover:text-stone-900 hover:bg-stone-50'
-                  }`}
-                >
-                  {link.name}
-                  {/* Underline indicator for active link */}
-                  <span className={`absolute bottom-0.5 left-1/2 -translate-x-1/2 h-0.5 bg-rose-900 rounded-full transition-all duration-300 ${
-                    isActive(link.path) ? 'w-4' : 'w-0 group-hover:w-3 group-hover:bg-stone-400'
-                  }`} />
-                </Link>
+                <div key={link.path} className="relative group">
+                    <Link 
+                      to={link.path} 
+                      className={`relative block text-[10px] xl:text-xs font-bold tracking-widest uppercase transition-all duration-300 px-2 xl:px-4 py-2 rounded-full whitespace-nowrap ${
+                        isActive(link.path) 
+                          ? 'text-rose-900' 
+                          : 'text-stone-600 hover:text-stone-900 hover:bg-stone-50'
+                      }`}
+                    >
+                      {link.name}
+                      {/* Underline indicator for active link */}
+                      <span className={`absolute bottom-0.5 left-1/2 -translate-x-1/2 h-0.5 bg-rose-900 rounded-full transition-all duration-300 ${
+                        isActive(link.path) ? 'w-4' : 'w-0 group-hover:w-3 group-hover:bg-stone-400'
+                      }`} />
+                    </Link>
+
+                    {/* Mega Menu for Shop */}
+                    {link.name === 'Shop' && (
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 w-[500px] bg-white shadow-2xl rounded-2xl p-6 hidden group-hover:grid grid-cols-3 gap-6 border border-stone-100 opacity-0 group-hover:opacity-100 transition-opacity z-50 mt-1">
+                            <div>
+                                <h4 className="font-heading font-bold text-stone-900 mb-3 text-[11px] tracking-widest uppercase border-b border-stone-100 pb-2">By Category</h4>
+                                <ul className="space-y-2">
+                                    <li><Link to="/shop?category=crochet" className="text-sm text-stone-600 hover:text-[#d6336c] transition-colors">Crochet Bouquets</Link></li>
+                                    <li><Link to="/shop?category=embroidery" className="text-sm text-stone-600 hover:text-[#d6336c] transition-colors">Embroidery Hoops</Link></li>
+                                    <li><Link to="/shop?category=accessories" className="text-sm text-stone-600 hover:text-[#d6336c] transition-colors">Accessories</Link></li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4 className="font-heading font-bold text-stone-900 mb-3 text-[11px] tracking-widest uppercase border-b border-stone-100 pb-2">By Occasion</h4>
+                                <ul className="space-y-2">
+                                    <li><Link to="/gifts#anniversary" className="text-sm text-stone-600 hover:text-[#d6336c] transition-colors">Anniversary</Link></li>
+                                    <li><Link to="/gifts#girlfriend" className="text-sm text-stone-600 hover:text-[#d6336c] transition-colors">For Her</Link></li>
+                                    <li><Link to="/gifts#budget" className="text-sm text-stone-600 hover:text-[#d6336c] transition-colors">Under ₹999</Link></li>
+                                </ul>
+                            </div>
+                            <div className="bg-[#fffaf3] p-4 rounded-xl flex flex-col items-center justify-center text-center">
+                                <Sparkles className="w-5 h-5 text-[#d6336c] mb-2" />
+                                <h4 className="font-heading font-bold text-stone-900 text-sm mb-1">New Arrivals</h4>
+                                <p className="text-[11px] text-stone-500 mb-3">Discover the latest handcrafted creations.</p>
+                                <Link to="/shop" className="text-[10px] font-bold text-white bg-[#d6336c] px-4 py-2 rounded-full uppercase tracking-wider hover:scale-105 transition-transform">Shop Now</Link>
+                            </div>
+                        </div>
+                    )}
+                </div>
               ))}
           </div>
 

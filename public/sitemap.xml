@@ -2,106 +2,147 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://www.embroiderybysana.live/</loc>
+    <changefreq>weekly</changefreq>
     <priority>1.0</priority>
-    <changefreq>daily</changefreq>
   </url>
   <url>
     <loc>https://www.embroiderybysana.live/shop</loc>
-    <priority>0.9</priority>
-    <changefreq>daily</changefreq>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.embroiderybysana.live/categories</loc>
-    <priority>0.8</priority>
+    <loc>https://www.embroiderybysana.live/gifts</loc>
     <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.embroiderybysana.live/about</loc>
-    <priority>0.7</priority>
-    <changefreq>monthly</changefreq>
-  </url>
-  <url>
-    <loc>https://www.embroiderybysana.live/custom-design</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.8</priority>
-    <changefreq>weekly</changefreq>
   </url>
   <url>
-    <loc>https://www.embroiderybysana.live/mehndi-booking</loc>
+    <loc>https://www.embroiderybysana.live/contact</loc>
+    <changefreq>weekly</changefreq>
     <priority>0.8</priority>
-    <changefreq>weekly</changefreq>
-  </url>
-  <!-- Category/Collection URLs -->
-  <url>
-    <loc>https://www.embroiderybysana.live/collections/custom-embroidery-hoops</loc>
-    <priority>0.9</priority>
-    <changefreq>weekly</changefreq>
-  </url>
-  <url>
-    <loc>https://www.embroiderybysana.live/collections/crochet-bouquets</loc>
-    <priority>0.9</priority>
-    <changefreq>weekly</changefreq>
-  </url>
-  <url>
-    <loc>https://www.embroiderybysana.live/collections/handmade-gifts</loc>
-    <priority>0.9</priority>
-    <changefreq>weekly</changefreq>
-  </url>
-  <url>
-    <loc>https://www.embroiderybysana.live/collections/personalized-gifts</loc>
-    <priority>0.9</priority>
-    <changefreq>weekly</changefreq>
-  </url>
-  <url>
-    <loc>https://www.embroiderybysana.live/collections/crochet-accessories</loc>
-    <priority>0.9</priority>
-    <changefreq>weekly</changefreq>
-  </url>
-  <!-- Blog URLs -->
-  <url>
-    <loc>https://www.embroiderybysana.live/blog</loc>
-    <priority>0.8</priority>
-    <changefreq>weekly</changefreq>
-  </url>
-  <url>
-    <loc>https://www.embroiderybysana.live/blog/top-10-handmade-embroidery-gifts</loc>
-    <priority>0.7</priority>
-    <changefreq>monthly</changefreq>
-  </url>
-  <url>
-    <loc>https://www.embroiderybysana.live/blog/why-crochet-bouquets-last-forever</loc>
-    <priority>0.7</priority>
-    <changefreq>monthly</changefreq>
-  </url>
-  <url>
-    <loc>https://www.embroiderybysana.live/blog/aesthetic-crochet-accessories-trend</loc>
-    <priority>0.7</priority>
-    <changefreq>monthly</changefreq>
-  </url>
-  <!-- Other Pages -->
-  <url>
-    <loc>https://www.embroiderybysana.live/new-arrivals</loc>
-    <priority>0.8</priority>
-    <changefreq>daily</changefreq>
   </url>
   <url>
     <loc>https://www.embroiderybysana.live/gallery</loc>
-    <priority>0.6</priority>
     <changefreq>weekly</changefreq>
-  </url>
-  <!-- New Keyword-Optimized Collection URLs -->
-  <url>
-    <loc>https://www.embroiderybysana.live/collections/embroidery-hoops</loc>
-    <priority>0.9</priority>
-    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.embroiderybysana.live/collections/occasion-gifts</loc>
+    <loc>https://www.embroiderybysana.live/product/embroidery-hair-clips-114d23f3-ce3c-4584-8478-327cabeda3b5</loc>
+    <changefreq>daily</changefreq>
     <priority>0.9</priority>
-    <changefreq>weekly</changefreq>
   </url>
   <url>
-    <loc>https://www.embroiderybysana.live/collections/aesthetic-gifts</loc>
+    <loc>https://www.embroiderybysana.live/product/baw-hairclip-12be210d-24a1-4581-8b35-cee50a72d3b8</loc>
+    <changefreq>daily</changefreq>
     <priority>0.9</priority>
-    <changefreq>weekly</changefreq>
+  </url>
+  <url>
+    <loc>https://www.embroiderybysana.live/product/handmade-crochet-bow-keychain-ff17a9aa-593b-40fd-bf33-5a73bc1b150d</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.embroiderybysana.live/product/rose-hair-rubber-band-bef3c939-d65a-40cd-a900-7ccb221155de</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.embroiderybysana.live/product/embroidered-bow-hair-clips-d0544ffc-fb71-4c0c-959d-2d599595622a</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.embroiderybysana.live/product/crochet-wrist-gajra-bracelet-pair-f6439b6e-b495-4d17-95f2-7bcd7d7fdd26</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.embroiderybysana.live/product/embroidered-bow-hair-clip-with-daisy-flowers-555e292a-c3c9-41d8-bcdd-b79a40fb1e26</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.embroiderybysana.live/product/flower-hair-rubber-band-bb664585-423f-41a5-ac58-44af04e2c526</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.embroiderybysana.live/product/crochet-cherry-keychain-6a2006cf-5e8d-45d6-a865-eb758f058383</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.embroiderybysana.live/product/crochet-parandi-c8817e89-bd13-4b44-80d9-e93a7dfb8ce8</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.embroiderybysana.live/product/sunflower-keychain-a3464d61-a5da-4471-93d4-b7615de02e8f</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.embroiderybysana.live/product/crochet-parandi-4fdb8975-eac9-4ecf-bb82-61526f2625a1</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.embroiderybysana.live/product/crochet-gajra-bangles-e6d2aa67-4a7d-4dfb-ad09-ec1fd25f6bc2</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.embroiderybysana.live/product/double-flower-crochet-claw-clip-6b9057bf-fd2f-42da-9118-777c96540241</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.embroiderybysana.live/product/handmade-rose-keychain-cc96f580-8a7a-487d-b8fc-f016c29a4be5</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.embroiderybysana.live/product/handmade-crochet-flower-hair-ties-with-pearl-floral-hair-accessories-for-girls-women-set-of-2-0042901d-4aa2-4c1c-a854-5e8bc2ac272c</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.embroiderybysana.live/product/crochet-flower-claw-hair-clip-26dcf7c3-ae22-410c-9e76-92c416898705</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.embroiderybysana.live/product/single-flower-crochet-claw-hair-clip-80b55433-3b1f-43e2-9f82-dc7bad036a80</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.embroiderybysana.live/product/blossom-pearl-crochet-keychain-6af7ce17-9a06-423b-8e38-c2fba7d16efa</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.embroiderybysana.live/product/crochet-gajra-b93361d2-1709-421e-b98b-443bffd21cfb</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.embroiderybysana.live/product/crochet-rose-bouquet-5a1292b6-9305-4cd1-8aa0-ebe5ca4f7352</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.embroiderybysana.live/product/sweet-bloom-gift-e3d72d96-5ed6-4d47-9be8-a5b6a710fc16</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.embroiderybysana.live/product/gift-hamper-5a495bb8-1088-4f14-8f7b-e53d3e64e19e</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
   </url>
 </urlset>

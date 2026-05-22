@@ -1,11 +1,18 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { Heart } from 'lucide-react';
+import { Heart, ShoppingBag } from 'lucide-react';
 import { getOptimizedImageUrl } from '../utils/imageUtils';
+import { useCart } from '../context/CartContext';
+import { useToast } from '../context/ToastContext';
+import { Link } from 'react-router-dom';
+import { getProductUrl } from '../utils/urlUtils';
 
 export const ProductCard = React.memo(({ product, toggleWishlist, isInWishlist, priority = false }) => {
+    const { addToCart } = useCart();
+    const { addToast } = useToast();
     const [selectedVariant, setSelectedVariant] = useState(product.preselectedVariant || null);
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [isHovering, setIsHovering] = useState(false);
+    const [isAdding, setIsAdding] = useState(false);
     const touchStartX = useRef(0);
     const touchEndX = useRef(0);
     const hoverTimerRef = useRef(null);
@@ -86,11 +93,14 @@ export const ProductCard = React.memo(({ product, toggleWishlist, isInWishlist, 
         displayPrice = Number(selectedVariant.price);
     }
 
+    const productUrl = getProductUrl(product);
+
     return (
-        <div className="h-full flex flex-col">
+        <div className="h-full flex flex-col group min-w-[160px] md:min-w-0 relative">
             {/* Image Card */}
-            <div 
-                className="relative aspect-[3/4] md:aspect-[2/3] overflow-hidden bg-stone-100 mb-3 md:mb-5 rounded-[20px] md:rounded-2xl shrink-0 md:group-hover:-translate-y-1 md:group-hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.15)] md:transition-all md:duration-500"
+            <Link 
+                to={productUrl}
+                className="relative aspect-[1/1.15] md:aspect-[2/3] overflow-hidden bg-[#fffaf3] mb-3 md:mb-5 rounded-[20px] md:rounded-[24px] shrink-0 md:group-hover:-translate-y-1 md:group-hover:shadow-[0_24px_40px_-15px_rgba(214,51,108,0.15)] transition-all duration-500 border border-stone-100/50 block"
                 onMouseEnter={() => setIsHovering(true)}
                 onMouseLeave={() => { setIsHovering(false); setCurrentImageIndex(0); }}
                 onTouchStart={handleTouchStart}
@@ -165,18 +175,50 @@ export const ProductCard = React.memo(({ product, toggleWishlist, isInWishlist, 
                         e.stopPropagation();
                         if (toggleWishlist) toggleWishlist(product);
                     }}
-                    className="absolute top-2 right-2 md:top-4 md:right-4 p-2 bg-white/90 md:p-2.5 rounded-full text-stone-500 hover:text-rose-600 transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100 translate-y-0 md:translate-y-2 md:group-hover:translate-y-0 duration-500 shadow-sm md:hover:scale-110"
+                    className="absolute top-2 right-2 md:top-4 md:right-4 p-2 bg-white/90 md:p-2.5 rounded-full text-stone-500 hover:text-[#d6336c] transition-all opacity-100 md:opacity-0 md:group-hover:opacity-100 translate-y-0 md:translate-y-2 md:group-hover:translate-y-0 duration-500 shadow-sm md:hover:scale-110 z-30"
                 >
-                    <Heart className={`w-4 h-4 md:w-4 md:h-4 ${isInWishlist && isInWishlist(product.id) ? 'fill-rose-600 text-rose-600' : ''}`} />
+                    <Heart className={`w-4 h-4 md:w-4 md:h-4 ${isInWishlist && isInWishlist(product.id) ? 'fill-[#d6336c] text-[#d6336c]' : ''}`} />
                 </button>
-            </div>
+
+                {/* Quick Add Button (Desktop Hover) */}
+                <div className="absolute bottom-4 left-4 right-4 z-30 hidden md:block opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-500">
+                    <button 
+                        onClick={async (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setIsAdding(true);
+                            const itemToAdd = {
+                                ...product,
+                                variantId: selectedVariant?.id,
+                                selectedColor: selectedVariant?.color,
+                                selectedSize: selectedVariant?.size,
+                                price: displayPrice
+                            };
+                            const success = await addToCart(itemToAdd);
+                            if (success) addToast('Added to bag!', 'success');
+                            setIsAdding(false);
+                        }}
+                        disabled={!product.inStock || isAdding}
+                        className="w-full bg-white/95 backdrop-blur text-stone-900 py-3 rounded-xl font-bold text-sm shadow-lg hover:bg-[#d6336c] hover:text-white transition-colors flex items-center justify-center gap-2"
+                    >
+                        {isAdding ? (
+                            <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                        ) : (
+                            <>
+                                <ShoppingBag className="w-4 h-4" />
+                                {product.inStock ? 'Quick Add' : 'Sold Out'}
+                            </>
+                        )}
+                    </button>
+                </div>
+            </Link>
 
             {/* Product Info */}
-            <div className="text-left flex-1 flex flex-col justify-between min-h-[5rem]">
+            <div className="text-left flex-1 flex flex-col justify-between min-h-[4.5rem]">
                 <div>
-                     <h3 className="font-heading font-medium text-base md:text-lg text-stone-900 group-hover:text-rose-900 transition-colors duration-300 line-clamp-2 leading-snug mb-1.5 pr-2">
+                     <Link to={productUrl} className="font-heading font-medium text-[13px] md:text-[16px] leading-[1.4] text-stone-900 group-hover:text-[#d6336c] transition-colors duration-300 line-clamp-2 pr-2">
                         {product.name}
-                    </h3>
+                    </Link>
 
                     {/* Variant Swatches */}
                     {hasVariants && (
@@ -206,8 +248,8 @@ export const ProductCard = React.memo(({ product, toggleWishlist, isInWishlist, 
                     )}
                 </div>
                 
-                <div className="flex flex-wrap items-center gap-1.5 text-xs md:text-sm mt-auto">
-                    <span className="font-medium text-stone-900">₹{displayPrice.toLocaleString()}</span>
+                <div className="flex flex-wrap items-center gap-1.5 text-[13px] md:text-[15px] mt-auto pt-2">
+                    <span className="font-semibold text-stone-900">₹{displayPrice.toLocaleString()}</span>
                     {product.originalPrice && (
                         <>
                             <span className="text-stone-400 line-through text-[10px] md:text-xs">

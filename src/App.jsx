@@ -35,6 +35,7 @@ const NewArrivals = lazy(() => import('./pages/NewArrivals'));
 const Collection = lazy(() => import('./pages/Collection'));
 const Blog = lazy(() => import('./pages/Blog'));
 const BlogPost = lazy(() => import('./pages/BlogPost'));
+const Gifts = lazy(() => import('./pages/Gifts'));
 
 const ProductDetails = lazy(() => import('./pages/ProductDetails'));
 const CustomDesign = lazy(() => import('./pages/CustomDesign'));
@@ -158,13 +159,14 @@ function App() {
                 <Route path="/" element={<Home />} />
                 <Route path="/about" element={<About />} />
                 <Route path="/shop" element={<Shop />} />
+                <Route path="/gifts" element={<Gifts />} />
                 <Route path="/categories" element={<Categories />} />
                 <Route path="/collections/:slug" element={<Collection />} />
                 <Route path="/new-arrivals" element={<NewArrivals />} />
                 <Route path="/blog" element={<Blog />} />
                 <Route path="/blog/:slug" element={<BlogPost />} />
                 <Route path="/about" element={<About />} />
-                <Route path="/product/:id" element={<ProductDetails />} />
+                <Route path="/product/:slug" element={<ProductDetails />} />
                 <Route path="/custom-design" element={<CustomDesign />} />
                 <Route path="/mehndi-booking" element={<MehndiBooking />} />
                 <Route path="/gallery" element={<Gallery />} />

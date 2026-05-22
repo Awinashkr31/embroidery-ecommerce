@@ -2,9 +2,9 @@ import React from 'react';
 import { Helmet } from 'react-helmet-async';
 
 const SEO = ({ title, description, keywords, schema, url, image }) => {
-    const siteTitle = "Handmade Embroidery Gifts & Crochet Accessories India | Embroidery By Sana";
+    const siteTitle = "Embroidery By Sana | Handmade Embroidery & Crochet Gifts";
     const fullTitle = title ? `${title} | Embroidery By Sana` : siteTitle;
-    const metaDescription = description || "Shop handmade embroidery hoops, crochet bouquets, personalized gifts, and aesthetic handmade accessories online in India.";
+    const metaDescription = description || "Handcrafted crochet bouquets & embroidery gifts that last forever. Perfect for anniversaries, birthdays & gifting. Custom orders available across India.";
     const metaKeywords = keywords || "crochet bouquet india, handmade gifts india, personalized handmade gifts, crochet flower bouquet, forever flower bouquet, crochet bouquet for girlfriend, aesthetic handmade gifts, custom handmade gifts, crochet accessories india, cute handmade accessories, personalized bouquet gift, aesthetic crochet bouquet, handmade anniversary gift, custom gift india, handmade flower bouquet";
     const metaUrl = url || "https://www.embroiderybysana.live";
     const metaImage = image || "https://www.embroiderybysana.live/logo.png";

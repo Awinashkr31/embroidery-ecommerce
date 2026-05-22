@@ -4,6 +4,7 @@ import { useWishlist } from '../context/WishlistContext';
 import { ProductCard } from '../components/ProductCard';
 import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
+import { getProductUrl } from '../utils/urlUtils';
 
 const NewArrivals = () => {
   const { products, fetchProducts } = useProducts();
@@ -55,7 +56,7 @@ const NewArrivals = () => {
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
             {newArrivals.map((product) => (
               <div key={product.uniqueId}>
-                <Link to={`/product/${product.id}${product.preselectedVariant ? `?color=${encodeURIComponent(product.preselectedVariant.color)}` : ''}`}>
+                <Link to={`${getProductUrl(product)}${product.preselectedVariant ? `?color=${encodeURIComponent(product.preselectedVariant.color)}` : ''}`}>
                   <ProductCard product={product} toggleWishlist={toggleWishlist} isInWishlist={isInWishlist} />
                 </Link>
               </div>

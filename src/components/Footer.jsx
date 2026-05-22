@@ -6,7 +6,8 @@ import {
   Mail,
   Heart,
   MapPin,
-  ArrowRight
+  ArrowRight,
+  ChevronDown
 } from 'lucide-react';
 
 const Footer = () => {
@@ -18,7 +19,7 @@ const Footer = () => {
       <div className="container-custom py-8 lg:py-10">
         <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-12 gap-x-4 gap-y-8 lg:gap-8">
           {/* 1. Brand Section - Full Width on Mobile */}
-          <div className="col-span-2 lg:col-span-4 space-y-3">
+          <div className="col-span-2 lg:col-span-4 space-y-3 pb-6 lg:pb-0 border-b border-stone-200 lg:border-0">
             <Link to="/" className="inline-block">
                {/* Logo */}
               <picture>
@@ -33,7 +34,7 @@ const Footer = () => {
                 />
               </picture>
             </Link>
-            <p className="text-stone-500 leading-relaxed max-w-sm font-light text-xs lg:text-sm">
+            <p className="text-stone-500 leading-relaxed max-w-sm font-light text-[13px] lg:text-sm">
               Weaving stories into fabric. Handcrafted embroidery and detailed Mehndi designs 
               that bring a touch of heritage and elegance to your special moments.
             </p>
@@ -44,36 +45,81 @@ const Footer = () => {
             </div>
           </div>
 
-          {/* 2. Quick Links - Half Width on Mobile */}
-          <div className="col-span-1 lg:col-span-3 lg:pl-8 space-y-4">
-             <h4 className="font-heading text-sm lg:text-base font-bold text-stone-900 uppercase tracking-widest">Explore</h4>
-             <ul className="space-y-2 text-xs lg:text-sm">
-                <FooterLink to="/shop" label="Shop Collection" />
-                <FooterLink to="/gallery" label="Our Gallery" />
-                <FooterLink to="/mehndi-booking" label="Book Mehndi" />
-                <FooterLink to="/custom-design" label="Custom Orders" />
-             </ul>
-          </div>
+          {/* Mobile Accordions & Desktop Columns Container */}
+          <div className="col-span-2 lg:col-span-8 flex flex-col lg:grid lg:grid-cols-8 gap-0 lg:gap-8 -mt-4 lg:mt-0">
+              {/* 2. Explore Links */}
+              <div className="lg:col-span-3 border-b border-stone-200 lg:border-0 py-4 lg:py-0">
+                  <details className="group lg:hidden" name="footer-accordion">
+                      <summary className="flex items-center justify-between font-heading font-bold text-stone-900 uppercase tracking-widest text-[13px] cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+                          Explore <ChevronDown className="w-4 h-4 group-open:rotate-180 transition-transform text-stone-400" />
+                      </summary>
+                      <ul className="space-y-3 mt-4 text-[13px] pb-2">
+                          <FooterLink to="/gifts" label="Gift Guide" />
+                          <FooterLink to="/shop" label="Shop Collection" />
+                          <FooterLink to="/blog" label="Journal & Blog" />
+                          <FooterLink to="/gallery" label="Our Gallery" />
+                          <FooterLink to="/mehndi-booking" label="Book Mehndi" />
+                          <FooterLink to="/custom-design" label="Custom Orders" />
+                      </ul>
+                  </details>
+                  <div className="hidden lg:block space-y-4">
+                      <h4 className="font-heading text-base font-bold text-stone-900 uppercase tracking-widest">Explore</h4>
+                      <ul className="space-y-3 text-sm">
+                          <FooterLink to="/gifts" label="Gift Guide" />
+                          <FooterLink to="/shop" label="Shop Collection" />
+                          <FooterLink to="/blog" label="Journal & Blog" />
+                          <FooterLink to="/gallery" label="Our Gallery" />
+                          <FooterLink to="/mehndi-booking" label="Book Mehndi" />
+                          <FooterLink to="/custom-design" label="Custom Orders" />
+                      </ul>
+                  </div>
+              </div>
 
-          {/* 3. Help & Info - Half Width on Mobile */}
-          <div className="col-span-1 lg:col-span-2 space-y-4">
-             <h4 className="font-heading text-sm lg:text-base font-bold text-stone-900 uppercase tracking-widest">Help</h4>
-             <ul className="space-y-2 text-xs lg:text-sm">
-                <FooterLink to="/about" label="About" />
-                <FooterLink to="/support" label="Support" />
-                <FooterLink to="/profile" label="Order History" />
-             </ul>
-          </div>
+              {/* 3. Help Links */}
+              <div className="lg:col-span-2 border-b border-stone-200 lg:border-0 py-4 lg:py-0">
+                  <details className="group lg:hidden" name="footer-accordion">
+                      <summary className="flex items-center justify-between font-heading font-bold text-stone-900 uppercase tracking-widest text-[13px] cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+                          Help <ChevronDown className="w-4 h-4 group-open:rotate-180 transition-transform text-stone-400" />
+                      </summary>
+                      <ul className="space-y-3 mt-4 text-[13px] pb-2">
+                          <FooterLink to="/about" label="About" />
+                          <FooterLink to="/support" label="Support" />
+                          <FooterLink to="/profile" label="Order History" />
+                      </ul>
+                  </details>
+                  <div className="hidden lg:block space-y-4">
+                      <h4 className="font-heading text-base font-bold text-stone-900 uppercase tracking-widest">Help</h4>
+                      <ul className="space-y-3 text-sm">
+                          <FooterLink to="/about" label="About" />
+                          <FooterLink to="/support" label="Support" />
+                          <FooterLink to="/profile" label="Order History" />
+                      </ul>
+                  </div>
+              </div>
 
-          {/* 4. Contact / Location - Full Width on Mobile */}
-          <div className="col-span-2 lg:col-span-3 space-y-4">
-            <h4 className="font-heading text-sm lg:text-base font-bold text-stone-900 uppercase tracking-widest">Visit Us</h4>
-            <ul className="space-y-3 text-xs lg:text-sm text-stone-500">
-                <li className="flex items-start gap-2">
-                    <MapPin className="w-4 h-4 lg:w-5 lg:h-5 text-rose-800 shrink-0" />
-                    <span>Based in India,<br/>Shipping Worldwide</span>
-                </li>
-            </ul>
+              {/* 4. Visit Us */}
+              <div className="lg:col-span-3 py-4 lg:py-0">
+                  <details className="group lg:hidden" name="footer-accordion">
+                      <summary className="flex items-center justify-between font-heading font-bold text-stone-900 uppercase tracking-widest text-[13px] cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+                          Visit Us <ChevronDown className="w-4 h-4 group-open:rotate-180 transition-transform text-stone-400" />
+                      </summary>
+                      <ul className="space-y-3 mt-4 text-[13px] text-stone-500 pb-2">
+                          <li className="flex items-start gap-2">
+                              <MapPin className="w-4 h-4 text-[#d6336c] shrink-0 mt-0.5" />
+                              <span>Based in India,<br/>Shipping Worldwide</span>
+                          </li>
+                      </ul>
+                  </details>
+                  <div className="hidden lg:block space-y-4">
+                      <h4 className="font-heading text-base font-bold text-stone-900 uppercase tracking-widest">Visit Us</h4>
+                      <ul className="space-y-3 text-sm text-stone-500">
+                          <li className="flex items-start gap-2">
+                              <MapPin className="w-5 h-5 text-[#d6336c] shrink-0 mt-0.5" />
+                              <span>Based in India,<br/>Shipping Worldwide</span>
+                          </li>
+                      </ul>
+                  </div>
+              </div>
           </div>
         </div>
 

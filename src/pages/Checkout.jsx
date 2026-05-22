@@ -21,7 +21,7 @@ const loadRazorpay = () => {
 };
 
 const Checkout = () => {
-    const { cart, cartLoading, cartTotal, subtotal, giftWrapTotal, shippingCharge, discountAmount, appliedCoupon, applyCoupon, removeCoupon, placeOrder, savedAddresses, saveAddress, COD_EXTRA_CHARGE, COD_STATUS } = useCart();
+    const { cart, cartLoading, cartTotal, subtotal, giftWrapTotal, shippingCharge, discountAmount, appliedCoupon, applyCoupon, removeCoupon, placeOrder, savedAddresses, saveAddress, COD_EXTRA_CHARGE, COD_STATUS, isGiftWrapped } = useCart();
     const { currentUser, loading: authLoading } = useAuth();
     const { addToast } = useToast();
     const { pincode: globalPincode } = usePincode();
@@ -352,7 +352,8 @@ const Checkout = () => {
                             selectedSize: item.selectedSize,
                             selectedColor: item.selectedColor
                         })),
-                        couponCode: appliedCoupon?.code
+                        couponCode: appliedCoupon?.code,
+                        isGiftWrapped: isGiftWrapped
                     }
                 });
 

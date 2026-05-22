@@ -5,6 +5,7 @@ import { useWishlist } from '../context/WishlistContext';
 import { ProductCard } from '../components/ProductCard';
 import SEO from '../components/SEO';
 import { Sparkles, ChevronDown } from 'lucide-react';
+import { getProductUrl } from '../utils/urlUtils';
 
 const slugify = (str) => (str || '').toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
@@ -189,7 +190,7 @@ const Collection = () => {
                             {paginatedProducts.map((product) => (
                                 <div key={product.uniqueId} className="animate-fade-up">
                                     <Link 
-                                        to={`/product/${product.id}${product.preselectedVariant ? `?color=${encodeURIComponent(product.preselectedVariant.color)}` : ''}`}
+                                        to={`${getProductUrl(product)}${product.preselectedVariant ? `?color=${encodeURIComponent(product.preselectedVariant.color)}` : ''}`}
                                         className="group block"
                                     >
                                         <ProductCard product={product} toggleWishlist={toggleWishlist} isInWishlist={isInWishlist} />
