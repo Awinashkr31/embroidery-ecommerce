@@ -410,7 +410,42 @@ const ProductDetails = () => {
             "price": currentPrice,
             "availability": isStockAvailable ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
             "itemCondition": "https://schema.org/NewCondition",
-            "priceValidUntil": new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0]
+            "priceValidUntil": new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0],
+            "hasMerchantReturnPolicy": {
+                "@type": "MerchantReturnPolicy",
+                "applicableCountry": "IN",
+                "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+                "merchantReturnDays": 5,
+                "returnMethod": "https://schema.org/ReturnByMail",
+                "returnFees": "https://schema.org/FreeReturn"
+            },
+            "shippingDetails": {
+                "@type": "OfferShippingDetails",
+                "shippingRate": {
+                    "@type": "MonetaryAmount",
+                    "value": currentPrice >= (FREE_DELIVERY_THRESHOLD || 999) ? 0 : 50,
+                    "currency": "INR"
+                },
+                "shippingDestination": {
+                    "@type": "DefinedRegion",
+                    "addressCountry": "IN"
+                },
+                "deliveryTime": {
+                    "@type": "ShippingDeliveryTime",
+                    "handlingTime": {
+                        "@type": "QuantitativeValue",
+                        "minValue": 1,
+                        "maxValue": 3,
+                        "unitCode": "d"
+                    },
+                    "transitTime": {
+                        "@type": "QuantitativeValue",
+                        "minValue": 3,
+                        "maxValue": 7,
+                        "unitCode": "d"
+                    }
+                }
+            }
         }
     };
 
@@ -1073,7 +1108,7 @@ const ProductDetails = () => {
                                         {/* Current Product */}
                                         <div className="shrink-0 flex flex-col gap-2 w-28 snap-start">
                                             <div className="aspect-[4/5] rounded-xl overflow-hidden shadow-sm border border-stone-200 bg-white relative">
-                                                <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                                                <img src={product.image} alt={product.name} className="w-full h-full object-cover" loading="lazy" decoding="async" />
                                             </div>
                                             <div>
                                                 <div className="text-xs font-bold text-stone-900 truncate">This Item</div>
@@ -1085,7 +1120,7 @@ const ProductDetails = () => {
                                         {/* Related Product */}
                                         <div className="shrink-0 flex flex-col gap-2 w-28 snap-start">
                                             <Link to={getProductUrl(relatedProducts[0])} className="aspect-[4/5] rounded-xl overflow-hidden shadow-sm border border-stone-200 block hover:border-rose-300 transition-colors bg-white group relative">
-                                                <img src={relatedProducts[0].image} alt={relatedProducts[0].name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                                <img src={relatedProducts[0].image} alt={relatedProducts[0].name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" decoding="async" />
                                                 <div className="absolute top-2 left-2 bg-white/90 backdrop-blur text-[8px] font-bold px-1.5 py-0.5 rounded shadow-sm text-stone-800">Add-on</div>
                                             </Link>
                                             <div>

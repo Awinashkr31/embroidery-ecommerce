@@ -16,7 +16,7 @@ const BottomNavigation = () => {
   const cartItemCount = cart.length;
 
   if (
-    ['/checkout', '/mehndi-booking', '/login', '/register', '/forgot-password', '/reset-password'].includes(location.pathname) ||
+    ['/checkout', '/login', '/register', '/forgot-password', '/reset-password'].includes(location.pathname) ||
     location.pathname.startsWith('/product/') ||
     (location.pathname === '/cart' && cart.length > 0)
   ) {

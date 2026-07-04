@@ -26,13 +26,13 @@ export default function ChatWidget() {
     // Only show the chatbot on the Home page ('/')
     const shouldHide = location.pathname !== '/';
 
-    // Check if bottom nav is visible
-    const bottomNavHidden = ['/checkout', '/mehndi-booking'].includes(location.pathname) || location.pathname.startsWith('/product/');
+    // Calculate bottom padding based on mobile bottom nav visibility
+    const bottomNavHidden = ['/checkout'].includes(location.pathname) || location.pathname.startsWith('/product/');
 
     useEffect(() => {
         let storedId = localStorage.getItem('chat_session_id');
         if (!storedId) {
-            storedId = Math.random().toString(36).substring(2, 15);
+            storedId = crypto.randomUUID();
             localStorage.setItem('chat_session_id', storedId);
         }
         setSessionId(storedId);
@@ -146,7 +146,7 @@ export default function ChatWidget() {
         { text: "Find Gift", icon: <Gift className="w-3.5 h-3.5 text-rose-500" /> },
         { text: "Custom Embroidery", icon: <Palette className="w-3.5 h-3.5 text-fuchsia-500" /> },
         { text: "Delivery Check", icon: <Truck className="w-3.5 h-3.5 text-blue-500" /> },
-        { text: "WhatsApp Support", icon: <MessageCircle className="w-3.5 h-3.5 text-emerald-500" />, isLink: true, url: "https://wa.me/1234567890" }
+        { text: "WhatsApp Support", icon: <MessageCircle className="w-3.5 h-3.5 text-emerald-500" />, isLink: true, url: "https://wa.me/917428013214" }
     ];
 
     const renderMessage = (text) => {

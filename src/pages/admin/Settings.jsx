@@ -69,8 +69,8 @@ const Settings = () => {
         home_premium_banner_link: '/shop',
         // About
         about_hero_title: 'About Sana',
-        about_hero_subtitle: 'A passionate artist dedicated to preserving and celebrating the timeless beauty of hand embroidery and mehndi art.',
-        about_story_title: 'My Journey with Thread & Henna',
+        about_hero_subtitle: 'A passionate artist dedicated to preserving and celebrating the timeless beauty of hand embroidery.',
+        about_story_title: 'My Journey with Thread',
         about_story_text: "What started as a childhood fascination with my grandmother's intricate needlework has blossomed into a lifelong passion...",
         about_story_image: '',
         about_signature_image: '',
@@ -81,54 +81,7 @@ const Settings = () => {
         custom_design_banner_image: '',
         custom_design_body_image: '',
 
-        // Mehndi
-        mehndi_title: 'Mehndi Booking',
-        mehndi_subtitle: 'Professional mehndi artistry for your special occasions.',
-        mehndi_feature_image: '',
-        mehndi_packages: JSON.stringify([
-          {
-            id: 1,
-            name: "Bridal Package",
-            price: 5000,
-            features: [
-              "Full hands (front & back) up to elbows",
-              "Feet up to ankles",
-              "Intricate bridal figures",
-              "Premium organic henna",
-              "Dark stain guarantee"
-            ],
-            duration: "4-6 Hours"
-          },
-          {
-            id: 2,
-            name: "Party Guest Package",
-            price: 500,
-            features: [
-              "Per hand (one side)",
-              "Simple arabic/indian designs",
-              "Premium organic henna",
-              "Quick application (15-20 mins)"
-            ],
-            duration: "15-20 Mins"
-          },
-          {
-            id: 3,
-            name: "Engagement Special",
-            price: 2500,
-            features: [
-              "Both hands up to wrists",
-              "Intricate geometric patterns",
-              "Couple initials inclusion",
-              "Premium organic henna"
-            ],
-            duration: "2-3 Hours"
-          }
-        ]),
 
-        // Gallery
-        gallery_title: 'Our Gallery',
-        gallery_subtitle: 'Explore our latest works and handcrafted collections.',
-        gallery_banner_image: ''
     });
 
     const fetchSettings = useCallback(async () => {
@@ -401,8 +354,7 @@ const Settings = () => {
         { id: 'home', label: 'Home Page' },
         { id: 'about', label: 'About Page' },
         { id: 'custom', label: 'Custom Design' },
-        { id: 'mehndi', label: 'Mehndi Booking' },
-        { id: 'gallery', label: 'Gallery Page' },
+
     ];
 
     return (
@@ -1094,97 +1046,7 @@ const Settings = () => {
                     </div>
                 )}
 
-                {/* MEHNDI TAB */}
-                {activeTab === 'mehndi' && (
-                    <div className="space-y-6 animate-in fade-in duration-500">
-                        <div className="bg-white p-6 rounded-xl border-0 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] space-y-6">
-                            <h3 className="font-bold text-lg text-stone-900 flex items-center gap-2">
-                                <LayoutTemplate className="w-5 h-5 text-rose-900" /> Header Section
-                            </h3>
-                             <div className="grid md:grid-cols-2 gap-6">
-                                <div className="space-y-4">
-                                    <EditableInput 
-                                        label="Page Title"
-                                        name="mehndi_title"
-                                        value={settings.mehndi_title}
-                                        onChange={handleChange}
-                                        isEditing={isEditing}
-                                    />
-                                    <EditableTextarea 
-                                        label="Subtitle"
-                                        name="mehndi_subtitle"
-                                        value={settings.mehndi_subtitle}
-                                        onChange={handleChange}
-                                        isEditing={isEditing}
-                                        rows={3}
-                                    />
-                                </div>
-                                <div>
-                                     <ImageUploader 
-                                        label="Feature Image"
-                                        url={settings.mehndi_feature_image} 
-                                        uploading={uploading}
-                                        onUpload={(e) => handleImageUpload(e, 'mehndi_feature_image')}
-                                        onDelete={() => handleImageDelete('mehndi_feature_image')}
-                                        isEditing={isEditing}
-                                    />
-                                </div>
-                            </div>
-                        </div>
 
-                        {/* Package Editor Section */}
-                        <div className="bg-white p-6 rounded-xl border-0 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] space-y-6">
-                            <h3 className="font-bold text-lg text-stone-900 flex items-center gap-2">
-                                <IndianRupee className="w-5 h-5 text-rose-900" /> Package Pricing
-                            </h3>
-                            <PackageEditor 
-                                packagesJSON={settings.mehndi_packages}
-                                onChange={(newJSON) => handleChange({ target: { name: 'mehndi_packages', value: newJSON } })}
-                                isEditing={isEditing}
-                            />
-                        </div>
-                    </div>
-                )}
-
-                {/* GALLERY TAB */}
-                {activeTab === 'gallery' && (
-                    <div className="space-y-6 animate-in fade-in duration-500">
-                         <div className="bg-white p-6 rounded-xl border-0 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] space-y-6">
-                            <h3 className="font-bold text-lg text-stone-900 flex items-center gap-2">
-                                <LayoutTemplate className="w-5 h-5 text-rose-900" /> Header Section
-                            </h3>
-                              <div className="grid md:grid-cols-2 gap-6">
-                                <div className="space-y-4">
-                                    <EditableInput 
-                                        label="Page Title"
-                                        name="gallery_title"
-                                        value={settings.gallery_title}
-                                        onChange={handleChange}
-                                        isEditing={isEditing}
-                                    />
-                                    <EditableTextarea 
-                                        label="Subtitle"
-                                        name="gallery_subtitle"
-                                        value={settings.gallery_subtitle}
-                                        onChange={handleChange}
-                                        isEditing={isEditing}
-                                        rows={3}
-                                    />
-                                </div>
-                                <div>
-                                     <ImageUploader 
-                                        label="Banner Image"
-                                        url={settings.gallery_banner_image} 
-                                        uploading={uploading}
-                                        onUpload={(e) => handleImageUpload(e, 'gallery_banner_image')}
-                                        onDelete={() => handleImageDelete('gallery_banner_image')}
-                                        isEditing={isEditing}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
 
 
             </motion.form>
@@ -1351,184 +1213,3 @@ const ImageUploader = ({ url, uploading, onUpload, onDelete, isEditing, label })
 
 export default Settings;
 
-// Package Editor Component
-// Package Editor Component
-const PackageEditor = ({ packagesJSON, onChange, isEditing }) => {
-    const [localPackages, setLocalPackages] = useState([]);
-    const isInternalChange = React.useRef(false);
-    const [deletePackagePendingId, setDeletePackagePendingId] = useState(null);
-    const { addToast } = useToast();
-
-    useEffect(() => {
-        try {
-            // If the change came from us, skip syncing state to preserve cursor/focus
-            if (isInternalChange.current) {
-                isInternalChange.current = false;
-                return;
-            }
-            const parsed = JSON.parse(packagesJSON || '[]');
-            setLocalPackages(parsed);
-        } catch {
-            setLocalPackages([]);
-        }
-    }, [packagesJSON]);
-
-    const updatePackage = (id, field, value) => {
-        if (!isEditing) return;
-        isInternalChange.current = true;
-        const updated = localPackages.map(pkg => 
-            pkg.id === id ? { ...pkg, [field]: value } : pkg
-        );
-        setLocalPackages(updated);
-        onChange(JSON.stringify(updated));
-    };
-
-    const updateFeatures = (id, featuresText) => {
-        if (!isEditing) return;
-        isInternalChange.current = true;
-        const featuresArray = featuresText.split('\n');
-        
-        const updated = localPackages.map(pkg => 
-            pkg.id === id ? { ...pkg, features: featuresArray } : pkg
-        );
-        setLocalPackages(updated);
-        onChange(JSON.stringify(updated));
-    };
-
-    const addPackage = () => {
-        isInternalChange.current = true;
-        const newId = localPackages.length > 0 ? Math.max(...localPackages.map(p => p.id)) + 1 : 1;
-        const newPackage = {
-            id: newId,
-            name: "New Package",
-            price: 1000,
-            duration: "1 Hour",
-            features: ["Feature 1", "Feature 2"]
-        };
-        const updated = [...localPackages, newPackage];
-        setLocalPackages(updated);
-        onChange(JSON.stringify(updated));
-    };
-
-    const deletePackage = (id) => {
-        if (deletePackagePendingId !== id) {
-            setDeletePackagePendingId(id);
-            addToast('Tap delete again to remove package.', 'error');
-            return;
-        }
-        setDeletePackagePendingId(null);
-        isInternalChange.current = true;
-        const updated = localPackages.filter(p => p.id !== id);
-        setLocalPackages(updated);
-        onChange(JSON.stringify(updated));
-    };
-
-    if (!localPackages || localPackages.length === 0) {
-         return (
-             <div className="text-center p-4">
-                 <p className="text-stone-500 mb-4">No packages defined.</p>
-                 {isEditing && (
-                    <button type="button" onClick={addPackage} className="text-sm font-bold text-rose-900 border border-rose-900 px-4 py-2 rounded-lg hover:bg-rose-50">
-                        + Add First Package
-                    </button>
-                 )}
-             </div>
-         );
-    }
-
-    return (
-        <div className="space-y-6">
-            <div className="grid gap-6">
-                {localPackages.map((pkg) => (
-                    <div key={pkg.id} className="p-4 rounded-xl border border-stone-200 bg-stone-50 relative group">
-                        {isEditing && (
-                            <button 
-                                type="button"
-                                onClick={() => deletePackage(pkg.id)}
-                                className="absolute top-4 right-4 text-red-400 hover:text-red-600 p-1"
-                                title="Delete Package"
-                            >
-                                <Trash2 className="w-4 h-4" />
-                            </button>
-                        )}
-                        
-                        <div className="grid md:grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-xs font-bold text-stone-500 mb-1">Package Name</label>
-                                {isEditing ? (
-                                    <input 
-                                        value={pkg.name}
-                                        onChange={(e) => updatePackage(pkg.id, 'name', e.target.value)}
-                                        className="w-full px-3 py-2 rounded-lg border border-stone-300 text-sm font-bold"
-                                    />
-                                ) : (
-                                    <h4 className="font-bold text-lg text-stone-800">{pkg.name}</h4>
-                                )}
-                            </div>
-                            
-                            <div className="grid grid-cols-2 gap-2">
-                                <div>
-                                    <label className="block text-xs font-bold text-stone-500 mb-1">Price (₹)</label>
-                                    {isEditing ? (
-                                        <input 
-                                            type="text" 
-                                            value={pkg.price}
-                                            onChange={(e) => {
-                                                const val = e.target.value;
-                                                // Allow numeric input but keep as string/number in local state to allow deleting to empty
-                                                if (val === '' || /^\d+$/.test(val)) {
-                                                    updatePackage(pkg.id, 'price', val === '' ? 0 : Number(val));
-                                                }
-                                            }}
-                                            className="w-full px-3 py-2 rounded-lg border border-stone-300 text-sm"
-                                        />
-                                    ) : (
-                                        <p className="text-rose-900 font-bold">₹{pkg.price}</p>
-                                    )}
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold text-stone-500 mb-1">Duration</label>
-                                    {isEditing ? (
-                                        <input 
-                                            value={pkg.duration}
-                                            onChange={(e) => updatePackage(pkg.id, 'duration', e.target.value)}
-                                            className="w-full px-3 py-2 rounded-lg border border-stone-300 text-sm"
-                                        />
-                                    ) : (
-                                        <p className="text-stone-600 text-sm">{pkg.duration}</p>
-                                    )}
-                                </div>
-                            </div>
-
-                            <div className="md:col-span-2">
-                                <label className="block text-xs font-bold text-stone-500 mb-1">Features (One per line)</label>
-                                {isEditing ? (
-                                    <textarea 
-                                        value={pkg.features.join('\n')}
-                                        onChange={(e) => updateFeatures(pkg.id, e.target.value)}
-                                        rows={4}
-                                        className="w-full px-3 py-2 rounded-lg border border-stone-300 text-sm font-mono"
-                                    />
-                                ) : (
-                                    <ul className="list-disc list-inside text-sm text-stone-600 space-y-1">
-                                        {pkg.features.map((f, i) => <li key={i}>{f}</li>)}
-                                    </ul>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                ))}
-            </div>
-
-            {isEditing && (
-                <button 
-                    type="button"
-                    onClick={addPackage}
-                    className="w-full py-3 border-2 border-dashed border-stone-300 rounded-xl text-stone-500 font-bold hover:border-rose-900 hover:text-rose-900 transition-colors flex items-center justify-center gap-2"
-                >
-                    <Plus className="w-4 h-4" /> Add New Package
-                </button>
-            )}
-        </div>
-    );
-};

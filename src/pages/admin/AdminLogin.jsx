@@ -34,13 +34,18 @@ const AdminLogin = () => {
 
       if (error) throw error;
 
-      // SECURITY CHECK: Verify if the user is actually the admin
-      if (data.user?.email !== 'awinashkr31@gmail.com') {
-          // Identify theft/Customer login attempt -> Kick them out
+      // SECURITY CHECK: Verify if the user is in the admin_users table
+      const { data: adminData, error: adminError } = await supabase
+          .from('admin_users')
+          .select('role')
+          .eq('email', data.user.email)
+          .eq('active', true)
+          .single();
+
+      if (adminError || !adminData || adminData.role !== 'admin') {
           await supabase.auth.signOut();
           throw new Error('Unauthorized Access: This area is for Administrators only.');
       }
-      
       
       // Successful login
       navigate('/sadmin/dashboard');

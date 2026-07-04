@@ -79,18 +79,6 @@ export const db = {
     return await supabase.from('custom_requests').update({ status }).eq('id', id)
   },
 
-  // Mehndi Bookings
-  async createMehndiBooking(booking) {
-    return await supabase.from('mehndi_bookings').insert(booking)
-  },
-
-  async getMehndiBookings() {
-    return await supabase.from('mehndi_bookings').select('*').order('date', { ascending: true })
-  },
-
-  async updateBookingStatus(id, status) {
-    return await supabase.from('mehndi_bookings').update({ status }).eq('id', id)
-  },
 
   // Contact Messages
   async createMessage(message) {

@@ -11,6 +11,17 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+function timingSafeEqual(a: string, b: string): boolean {
+    const aView = new TextEncoder().encode(a || "");
+    const bView = new TextEncoder().encode(b || "");
+    if (aView.byteLength !== bView.byteLength) return false;
+    let result = 0;
+    for (let i = 0; i < aView.byteLength; i++) {
+        result |= aView[i] ^ bView[i];
+    }
+    return result === 0;
+}
+
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -22,7 +33,7 @@ serve(async (req: Request) => {
     const secret = Deno.env.get("XPRESSBEES_WEBHOOK_SECRET");
     const incomingToken = req.headers.get("x-xpressbees-token") || new URL(req.url).searchParams.get("secret");
 
-    if (secret && incomingToken !== secret) {
+    if (secret && !timingSafeEqual(incomingToken || "", secret)) {
         return new Response(JSON.stringify({ error: "Unauthorized" }), {
             headers: { ...corsHeaders, "Content-Type": "application/json" },
             status: 401,

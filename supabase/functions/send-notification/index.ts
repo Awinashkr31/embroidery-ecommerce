@@ -16,6 +16,17 @@ serve(async (req: Request) => {
   }
 
   try {
+    // Security Check: Only allow internal services to call this endpoint
+    const internalKey = Deno.env.get("INTERNAL_SERVICE_KEY");
+    const incomingKey = req.headers.get("x-internal-key") || new URL(req.url).searchParams.get("key");
+
+    if (!internalKey || incomingKey !== internalKey) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 401,
+        });
+    }
+
     const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
     const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
     const supabase = createClient(supabaseUrl, supabaseKey);

@@ -36,8 +36,7 @@ const menuItems = [
   { icon: Palette,         label: 'Design Requests', path: '/sadmin/design-requests' },
   { icon: Star,            label: 'Reviews',         path: '/sadmin/reviews' },
   { icon: Mail,            label: 'Support',         path: '/sadmin/messages' },
-  { icon: Calendar,        label: 'Bookings',        path: '/sadmin/bookings' },
-  { icon: ImageIcon,       label: 'Gallery',         path: '/sadmin/gallery' },
+
   { icon: Tag,             label: 'Coupons',         path: '/sadmin/coupons' },
   { icon: Bell,            label: 'Notifications',   path: '/sadmin/notifications' },
   { icon: Settings,        label: 'Settings',        path: '/sadmin/settings' },

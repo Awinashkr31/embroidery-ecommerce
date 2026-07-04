@@ -24,7 +24,7 @@ const DEFAULT_SETTINGS = {
     social_links: {
         instagram: "https://instagram.com/enbroidery",
         facebook: "https://facebook.com/enbroidery",
-        whatsapp: "1234567890"
+        whatsapp: "917428013214"
     },
     about: {
         title: "Our Story",
@@ -49,45 +49,6 @@ const DEFAULT_SETTINGS = {
     razorpay_key_secret: "",
     admin_approval_required: false,
     shipping_delivery_charge: 50,
-    mehndi_packages: [
-        {
-            id: 1,
-            name: "Bridal Package",
-            price: 5000,
-            features: [
-                "Full hands (front & back) up to elbows",
-                "Feet up to ankles",
-                "Intricate bridal figures",
-                "Premium organic henna",
-                "Dark stain guarantee"
-            ],
-            duration: "4-6 Hours"
-        },
-        {
-            id: 2,
-            name: "Party Guest Package",
-            price: 500,
-            features: [
-                "Per hand (one side)",
-                "Simple arabic/indian designs",
-                "Premium organic henna",
-                "Quick application (15-20 mins)"
-            ],
-            duration: "15-20 Mins"
-        },
-        {
-            id: 3,
-            name: "Engagement Special",
-            price: 2500,
-            features: [
-                "Both hands up to wrists",
-                "Intricate geometric patterns",
-                "Couple initials inclusion",
-                "Premium organic henna"
-            ],
-            duration: "2-3 Hours"
-        }
-    ],
     home_hero_image: "https://images.unsplash.com/photo-1620799140408-ed5341cd2431?q=80&w=1920",
     home_slides_data: [
         {
@@ -175,8 +136,7 @@ export const SettingsProvider = ({ children }) => {
             }
 
             const newSettings = data.reduce((acc, curr) => {
-                // Attempt to parse JSON strings for specific keys if they are objects/arrays
-                if (['mehndi_packages', 'hero', 'social_links', 'about', 'categories', 'policies', 'payment_methods', 'home_slides_data'].includes(curr.setting_key)) {
+                if (['hero', 'social_links', 'about', 'categories', 'policies', 'payment_methods', 'home_slides_data'].includes(curr.setting_key)) {
                     try {
                         acc[curr.setting_key] = JSON.parse(curr.setting_value);
                     } catch {

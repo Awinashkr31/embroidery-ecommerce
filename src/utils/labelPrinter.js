@@ -53,7 +53,7 @@ export const generateShippingLabels = async (orders) => {
                         Enbroidery Returns<br>
                         123 Fashion Street, Industrial Area<br>
                         Ludhiana, Punjab - 141001<br>
-                        Ph: +91 9876543210
+                        Ph: +91 7428013214
                     </div>
                 </div>
 

@@ -4,6 +4,7 @@
 // This function needs to be deployed to Supabase: npx supabase functions deploy xpressbees-rate-check
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -16,6 +17,33 @@ serve(async (req: Request) => {
   }
 
   try {
+    // 1. Verify Authorization Header
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: 'Unauthorized: Missing Authorization header' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 401,
+      })
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+    
+    // Create Supabase client with the user's auth token to verify it
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+        global: { headers: { Authorization: authHeader } }
+    })
+    
+    // Verify the user token is valid
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    
+    if (authError || !user) {
+        return new Response(JSON.stringify({ error: 'Unauthorized: Invalid token' }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 401,
+        })
+    }
+
     const { weight, origin_pin, dest_pin, payment_type, amount } = await req.json();
 
     const token = Deno.env.get("XPRESSBEES_TOKEN"); // Set this in Supabase Secrets

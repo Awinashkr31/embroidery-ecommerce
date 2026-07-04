@@ -50,8 +50,7 @@ export const AdminProvider = ({ children }) => {
 
             try {
                 // Fetch potential users from other interactions (bookings, requests, messages)
-                const [mehndiData, customData, msgData] = await Promise.all([
-                    supabase.from('mehndi_bookings').select('email, name, created_at').then(res => res.data || []),
+                const [customData, msgData] = await Promise.all([
                     supabase.from('custom_requests').select('email, name, created_at').then(res => res.data || []),
                     supabase.from('messages').select('email, name, created_at').then(res => res.data || [])
                 ]);
@@ -73,7 +72,6 @@ export const AdminProvider = ({ children }) => {
                     }
                 };
 
-                mehndiData.forEach(processExtraUser);
                 customData.forEach(processExtraUser);
                 msgData.forEach(processExtraUser);
             } catch (err) {

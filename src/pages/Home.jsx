@@ -1,7 +1,6 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useCategories } from '../context/CategoryContext';
-import { useProducts } from '../context/ProductContext';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { getOptimizedImageUrl } from '../utils/imageUtils';
@@ -10,6 +9,7 @@ import SEO from '../components/SEO';
 import { useSettings } from '../context/SettingsContext';
 import { ProductCard } from '../components/ProductCard';
 import { getProductUrl } from '../utils/urlUtils';
+import { supabase } from '../config/supabase';
 
 // Scroll reveal hook
 const useInView = () => {
@@ -48,14 +48,13 @@ const REVIEWS = [
     { id: 1, name: "Priya S.", rating: 5, text: "Mujhe bouquet bahut pasand aaya! Ekdum real flowers jaisa lagta hai. Meri friend ko gift diya toh woh bahut khush hui. Best quality hai!" },
     { id: 2, name: "Meera R.", rating: 5, text: "Hair clips ka design itna cute hai na, sab poochte hain kahan se liya. Thread work ekdum neat hai aur colour bhi bilkul wahi mila jo photo mein tha." },
     { id: 3, name: "Anita K.", rating: 4, text: "Keychain ka embroidery work amazing hai. Delivery thoda late aayi but product dekhke sab bhool gayi. Packaging bhi bahut premium thi." },
-    { id: 4, name: "Riya M.", rating: 5, text: "Gajra liya tha mehndi ke liye — everyone loved it! Itna detailed handwork hai ki log sochte hain asli phool hain. Definitely dubara order karungi." },
+    { id: 4, name: "Riya M.", rating: 5, text: "Gajra liya tha function ke liye — everyone loved it! Itna detailed handwork hai ki log sochte hain asli phool hain. Definitely dubara order karungi." },
     { id: 5, name: "Neha G.", rating: 5, text: "Custom design karwaya tha rakhi ke liye, Sana ne exactly waise hi banaya jaisa maine bola tha. Gift wrapping bhi bahut sundar thi. Highly recommend!" },
     { id: 6, name: "Simran T.", rating: 5, text: "Rubber band set liya beti ke liye, itna soft aur comfortable hai. School mein sab friends ne bhi manga address. Quality ke liye price bilkul sahi hai." },
 ];
 
 const Home = () => {
   const { categories } = useCategories();
-  const { products, fetchProducts } = useProducts();
   const { FREE_DELIVERY_THRESHOLD } = useCart();
   const { settings } = useSettings();
   const { toggleWishlist, isInWishlist } = useWishlist();
@@ -105,34 +104,78 @@ const Home = () => {
     return () => clearInterval(timer);
   }, [homeSlides.length]);
 
+  const [homeProducts, setHomeProducts] = useState([]);
+
   useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
+    let mounted = true;
+    const fetchHomeProducts = async () => {
+        try {
+            const { data } = await supabase
+                .from('products')
+                .select('id, name, price, original_price, images, homepage_tags, stock_quantity, variants, category')
+                .eq('active', true)
+                .order('created_at', { ascending: false })
+                .limit(30);
+                
+            if (data && mounted) {
+                const mappedProducts = data.map(p => {
+                    let parsedImages = p.images;
+                    if (typeof parsedImages === 'string') {
+                        try { parsedImages = JSON.parse(parsedImages); } catch (e) { parsedImages = []; }
+                    }
+                    let parsedVariants = p.variants;
+                    if (typeof parsedVariants === 'string') {
+                        try { parsedVariants = JSON.parse(parsedVariants); } catch (e) { parsedVariants = []; }
+                    }
+                    
+                    return {
+                        ...p,
+                        images: Array.isArray(parsedImages) ? parsedImages : [],
+                        image: (Array.isArray(parsedImages) && parsedImages.length > 0) ? parsedImages[0] : 'https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=500',
+                        inStock: (p.stock_quantity || 0) > 0,
+                        stock: p.stock_quantity,
+                        originalPrice: p.original_price,
+                        discountPercentage: (p.original_price && p.original_price > p.price)
+                            ? Math.round(((p.original_price - p.price) / p.original_price) * 100)
+                            : 0,
+                        variants: Array.isArray(parsedVariants) ? parsedVariants : [],
+                        homepage_tags: Array.isArray(p.homepage_tags) ? p.homepage_tags : []
+                    };
+                });
+                setHomeProducts(mappedProducts);
+            }
+        } catch (error) {
+            console.error("Error fetching homepage products:", error);
+        }
+    };
+    fetchHomeProducts();
+    return () => { mounted = false; };
+  }, []);
 
   const dynamicCategories = useMemo(() => {
     return categories.map(cat => {
         const normalize = (str) => (str || '').toLowerCase().trim();
         const catName = normalize(cat.label);
-        const productForCat = products.find(p => normalize(p.category) === catName && p.image);
+        const productForCat = homeProducts.find(p => normalize(p.category) === catName && p.image);
         return {
             id: cat.id,
             label: cat.label,
             image: productForCat ? productForCat.image : (CATEGORY_IMAGES[catName] || "https://images.unsplash.com/photo-1616627561839-074385245eb6?q=80&w=600")
         };
     });
-  }, [categories, products]);
+  }, [categories, homeProducts]);
 
   const { newArrivals, bestsellers, premiumProducts } = useMemo(() => {
-    const newArr = products.filter(p => p.homepage_tags?.includes('new_arrival'));
-    const best = products.filter(p => p.homepage_tags?.includes('bestseller'));
-    const prem = products.filter(p => p.homepage_tags?.includes('premium'));
+    const newArr = homeProducts.filter(p => p.homepage_tags?.includes('new_arrival'));
+    const best = homeProducts.filter(p => p.homepage_tags?.includes('bestseller'));
+    const prem = homeProducts.filter(p => p.homepage_tags?.includes('premium'));
 
     return {
-      newArrivals: newArr.length > 0 ? newArr.slice(0, 4) : products.slice(0, 4),
-      bestsellers: best.length > 0 ? best.slice(0, 4) : products.slice(4, 8),
-      premiumProducts: prem.length > 0 ? prem.slice(0, 4) : products.slice(0, 4)
+      newArrivals: newArr.length > 0 ? newArr.slice(0, 4) : homeProducts.slice(0, 4),
+      bestsellers: best.length > 0 ? best.slice(0, 4) : homeProducts.slice(4, 8),
+      premiumProducts: prem.length > 0 ? prem.slice(0, 4) : homeProducts.slice(0, 4)
     };
-  }, [products]);
+  }, [homeProducts]);
 
   const scrollReviews = (direction) => {
       if (reviewScrollRef.current) {

@@ -35,7 +35,7 @@ const Footer = () => {
               </picture>
             </Link>
             <p className="text-stone-500 leading-relaxed max-w-sm font-light text-[13px] lg:text-sm">
-              Weaving stories into fabric. Handcrafted embroidery and detailed Mehndi designs 
+              Weaving stories into fabric. Handcrafted embroidery and detailed designs 
               that bring a touch of heritage and elegance to your special moments.
             </p>
             <div className="flex gap-3 pt-2">
@@ -48,7 +48,7 @@ const Footer = () => {
           {/* Mobile Accordions & Desktop Columns Container */}
           <div className="col-span-2 lg:col-span-8 flex flex-col lg:grid lg:grid-cols-8 gap-0 lg:gap-8 -mt-4 lg:mt-0">
               {/* 2. Explore Links */}
-              <div className="lg:col-span-3 border-b border-stone-200 lg:border-0 py-4 lg:py-0">
+              <div className="lg:col-span-2 border-b border-stone-200 lg:border-0 py-4 lg:py-0">
                   <details className="group lg:hidden" name="footer-accordion">
                       <summary className="flex items-center justify-between font-heading font-bold text-stone-900 uppercase tracking-widest text-[13px] cursor-pointer list-none [&::-webkit-details-marker]:hidden">
                           Explore <ChevronDown className="w-4 h-4 group-open:rotate-180 transition-transform text-stone-400" />
@@ -57,8 +57,7 @@ const Footer = () => {
                           <FooterLink to="/gifts" label="Gift Guide" />
                           <FooterLink to="/shop" label="Shop Collection" />
                           <FooterLink to="/blog" label="Journal & Blog" />
-                          <FooterLink to="/gallery" label="Our Gallery" />
-                          <FooterLink to="/mehndi-booking" label="Book Mehndi" />
+
                           <FooterLink to="/custom-design" label="Custom Orders" />
                       </ul>
                   </details>
@@ -68,8 +67,7 @@ const Footer = () => {
                           <FooterLink to="/gifts" label="Gift Guide" />
                           <FooterLink to="/shop" label="Shop Collection" />
                           <FooterLink to="/blog" label="Journal & Blog" />
-                          <FooterLink to="/gallery" label="Our Gallery" />
-                          <FooterLink to="/mehndi-booking" label="Book Mehndi" />
+
                           <FooterLink to="/custom-design" label="Custom Orders" />
                       </ul>
                   </div>
@@ -97,8 +95,32 @@ const Footer = () => {
                   </div>
               </div>
 
-              {/* 4. Visit Us */}
-              <div className="lg:col-span-3 py-4 lg:py-0">
+              {/* 4. Policies */}
+              <div className="lg:col-span-2 border-b border-stone-200 lg:border-0 py-4 lg:py-0">
+                  <details className="group lg:hidden" name="footer-accordion">
+                      <summary className="flex items-center justify-between font-heading font-bold text-stone-900 uppercase tracking-widest text-[13px] cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+                          Policies <ChevronDown className="w-4 h-4 group-open:rotate-180 transition-transform text-stone-400" />
+                      </summary>
+                      <ul className="space-y-3 mt-4 text-[13px] pb-2">
+                          <FooterLink to="/return-policy" label="Returns & Refunds" />
+                          <FooterLink to="/shipping-policy" label="Shipping Policy" />
+                          <FooterLink to="/privacy-policy" label="Privacy Policy" />
+                          <FooterLink to="/terms-of-service" label="Terms of Service" />
+                      </ul>
+                  </details>
+                  <div className="hidden lg:block space-y-4">
+                      <h4 className="font-heading text-base font-bold text-stone-900 uppercase tracking-widest">Policies</h4>
+                      <ul className="space-y-3 text-sm">
+                          <FooterLink to="/return-policy" label="Returns & Refunds" />
+                          <FooterLink to="/shipping-policy" label="Shipping Policy" />
+                          <FooterLink to="/privacy-policy" label="Privacy Policy" />
+                          <FooterLink to="/terms-of-service" label="Terms of Service" />
+                      </ul>
+                  </div>
+              </div>
+
+              {/* 5. Visit Us */}
+              <div className="lg:col-span-2 py-4 lg:py-0">
                   <details className="group lg:hidden" name="footer-accordion">
                       <summary className="flex items-center justify-between font-heading font-bold text-stone-900 uppercase tracking-widest text-[13px] cursor-pointer list-none [&::-webkit-details-marker]:hidden">
                           Visit Us <ChevronDown className="w-4 h-4 group-open:rotate-180 transition-transform text-stone-400" />

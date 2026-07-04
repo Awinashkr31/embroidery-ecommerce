@@ -11,12 +11,34 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+function timingSafeEqual(a: string, b: string): boolean {
+    const aView = new TextEncoder().encode(a || "");
+    const bView = new TextEncoder().encode(b || "");
+    if (aView.byteLength !== bView.byteLength) return false;
+    let result = 0;
+    for (let i = 0; i < aView.byteLength; i++) {
+        result |= aView[i] ^ bView[i];
+    }
+    return result === 0;
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
 
   try {
+    // Security check: Verify webhook signature/secret
+    const secret = Deno.env.get("WEBHOOK_SECRET");
+    const incomingToken = req.headers.get("x-webhook-secret") || new URL(req.url).searchParams.get("secret");
+
+    if (secret && !timingSafeEqual(incomingToken || "", secret)) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 401,
+        });
+    }
+
     const payload = await req.json();
     const { type, table, record, old_record } = payload;
     

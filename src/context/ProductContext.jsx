@@ -30,7 +30,8 @@ export const ProductProvider = ({ children }) => {
                 .from('products')
                 .select('id, name, description, price, original_price, category, images, featured, stock_quantity, fabric, clothing_information, variants, created_at, active, homepage_tags')
                 .eq('active', true)
-                .order('created_at', { ascending: false });
+                .order('created_at', { ascending: false })
+                .limit(500); // Prevents catastrophic memory crash on massive catalogs
 
             if (error) throw error;
 

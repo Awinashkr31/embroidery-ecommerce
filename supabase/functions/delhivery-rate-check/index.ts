@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,11 +13,51 @@ serve(async (req) => {
   }
 
   try {
+    // 1. Verify Authorization Header
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: 'Unauthorized: Missing Authorization header' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 401,
+      })
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+    
+    // Create Supabase client with the user's auth token to verify it
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+        global: { headers: { Authorization: authHeader } }
+    })
+    
+    // Verify the user token is valid
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    
+    if (authError || !user) {
+        return new Response(JSON.stringify({ error: 'Unauthorized: Invalid token' }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 401,
+        })
+    }
+
     const { weight, origin_pin, dest_pin, mode, payment_type, amount } = await req.json()
 
     // Validate inputs
     if (!origin_pin || !dest_pin || !weight) {
       throw new Error('Missing required fields: origin_pin, dest_pin, weight')
+    }
+
+    const pinRegex = /^[0-9]{6}$/;
+    if (!pinRegex.test(origin_pin.toString()) || !pinRegex.test(dest_pin.toString())) {
+       throw new Error('Invalid pincode format. Must be 6 digits.')
+    }
+    
+    if (isNaN(Number(weight)) || Number(weight) <= 0) {
+       throw new Error('Invalid weight')
+    }
+    
+    if (payment_type === 'cod' && (isNaN(Number(amount)) || Number(amount) < 0)) {
+       throw new Error('Invalid COD amount')
     }
 
     const delhiveryToken = Deno.env.get('DELHIVERY_TOKEN')
@@ -48,6 +89,25 @@ serve(async (req) => {
         url.searchParams.append("cod", amount)
     }
 
+    // 1. Check Internal Edge Cache
+    const cacheKeyString = `https://internal.cache/rates?${url.searchParams.toString()}`;
+    const cacheReq = new Request(cacheKeyString, { method: 'GET' });
+    let cache;
+    try {
+        cache = await caches.open('delhivery-rates');
+        const cachedResponse = await cache.match(cacheReq);
+        if (cachedResponse) {
+            console.log(`Cache HIT for ${cacheKeyString}`);
+            const cachedData = await cachedResponse.json();
+            return new Response(JSON.stringify(cachedData), {
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                status: 200,
+            });
+        }
+    } catch (cacheErr) {
+        console.warn("Cache API not available or error:", cacheErr);
+    }
+
     console.log(`Fetching rates from: ${url.toString()}`)
 
     const response = await fetch(url.toString(), {
@@ -62,26 +122,31 @@ serve(async (req) => {
     if (!response.ok) {
       const errorText = await response.text()
       console.error('Delhivery API Error:', errorText)
+      
+      // Negative Caching for invalid pincodes (prevent DoS)
+      if (cache) {
+         const errorResponse = new Response(JSON.stringify({ error: `Delhivery API Error: ${response.statusText}` }), {
+             headers: { 'Cache-Control': 'max-age=300' } // 5 min TTL for errors
+         });
+         cache.put(cacheReq, errorResponse).catch(err => console.error("Cache write error:", err));
+      }
+
       throw new Error(`Delhivery API Error: ${response.statusText}`)
     }
 
     const data = await response.json()
     console.log("Delhivery Response:", JSON.stringify(data))
 
-    // Parse and standardize response for Frontend
-    // Structure: { charges: { freight, fuel_surcharge, cod_charges, gst, total_amount }, ... }
-    
-    if (!data || !data[0] || !data[0].total_amount) {
-         // Sometimes it returns array, sometimes object. Let's handle generic array response if applicable
-    }
-    
-    // API typically returns an array of objects if multiple results, or single object?
-    // Based on user snippet: 
-    // { "success": true, "charges": { ... } }
-    
-    // However, some Delhivery APIs return array `[{ ... }]`. 
-    // Let's assume the user snippet is correct but be defensive.
     const result = Array.isArray(data) ? data[0] : data;
+
+    // 2. Save to Cache
+    if (cache) {
+        // Create a clone with Cache-Control for Deno's internal TTL (1 hour)
+        const cacheResponse = new Response(JSON.stringify(result), {
+            headers: { 'Cache-Control': 'max-age=3600' }
+        });
+        cache.put(cacheReq, cacheResponse).catch(err => console.error("Cache write error:", err));
+    }
 
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },

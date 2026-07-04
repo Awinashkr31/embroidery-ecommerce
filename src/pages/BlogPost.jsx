@@ -160,7 +160,10 @@ const BlogPost = () => {
                         </button>
                     </div>
 
-                    {/* Content */}
+                    {/* SECURITY WARNING: dangerouslySetInnerHTML is currently safe because the content 
+                        is hardcoded in this file. However, when migrating blog posts to Supabase/CMS, 
+                        this becomes a critical stored XSS vector. You must use DOMPurify:
+                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }} */}
                     <article 
                         className="prose prose-stone lg:prose-lg max-w-none prose-headings:font-heading prose-headings:font-bold prose-a:text-rose-900 prose-img:rounded-xl"
                         dangerouslySetInnerHTML={{ __html: post.content }}

@@ -1,10 +1,21 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-// Restrict CORS to production domains in a real app
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-application-name',
+// Restrict CORS to known production domains
+const ALLOWED_ORIGINS = [
+  'https://www.embroiderybysana.live',
+  'https://embroiderybysana.live',
+  'http://localhost:5173', // dev only
+];
+
+function getCorsHeaders(req: Request) {
+  const origin = req.headers.get('Origin') || '';
+  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  return {
+    'Access-Control-Allow-Origin': allowedOrigin,
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-application-name',
+    'Vary': 'Origin',
+  };
 }
 
 function buf2hex(buffer: ArrayBuffer) {
@@ -13,9 +24,20 @@ function buf2hex(buffer: ArrayBuffer) {
     .join('');
 }
 
+function timingSafeEqual(a: string, b: string): boolean {
+    const aView = new TextEncoder().encode(a);
+    const bView = new TextEncoder().encode(b);
+    if (aView.byteLength !== bView.byteLength) return false;
+    let result = 0;
+    for (let i = 0; i < aView.byteLength; i++) {
+        result |= aView[i] ^ bView[i];
+    }
+    return result === 0;
+}
+
 serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response('ok', { headers: getCorsHeaders(req) })
   }
 
   try {
@@ -65,13 +87,35 @@ serve(async (req: Request) => {
             }
         })
 
-        // NOTE: If you add a "coupons" table, query it here to calculate discount securely.
         let discount = 0
         if (couponCode) {
-            // For now, discounts aren't fully integrated backend-side, but this sets up the scaffolding.
-            // Example:
-            // const { data: coupon } = await supabase.from('coupons').select('discount_percentage').eq('code', couponCode).single()
-            // if (coupon) discount = Math.floor(subtotal * (coupon.discount_percentage / 100))
+            const { data: coupon, error: couponError } = await supabase
+                .from('coupons')
+                .select('discount, type, min_order, max_discount, expiry, usage_limit, included_categories')
+                .eq('code', couponCode.toUpperCase().trim())
+                .single();
+
+            if (!couponError && coupon) {
+                // Validate expiry
+                if (coupon.expiry && new Date(coupon.expiry) < new Date()) {
+                    throw new Error('Coupon has expired');
+                }
+                // Validate minimum order
+                if (coupon.min_order && subtotal < Number(coupon.min_order)) {
+                    throw new Error(`Minimum order of ₹${coupon.min_order} required`);
+                }
+                // Calculate discount
+                if (coupon.type === 'percentage') {
+                    discount = Math.round(subtotal * (Number(coupon.discount) / 100));
+                    if (coupon.max_discount) {
+                        discount = Math.min(discount, Number(coupon.max_discount));
+                    }
+                } else {
+                    discount = Number(coupon.discount);
+                }
+            } else {
+                throw new Error('Invalid coupon code');
+            }
         }
         
         const { data: settingsData, error: settingsError } = await supabase
@@ -117,7 +161,7 @@ serve(async (req: Request) => {
         }
 
         return new Response(JSON.stringify({ status: 'valid', totals }), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
             status: 200,
         })
     }
@@ -155,7 +199,7 @@ serve(async (req: Request) => {
         const order = await orderRes.json();
 
         return new Response(JSON.stringify(order), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
             status: 200,
         })
     }
@@ -184,28 +228,28 @@ serve(async (req: Request) => {
         
         const generated_signature = buf2hex(signatureBuffer);
 
-        if (generated_signature === signature) {
+        if (timingSafeEqual(generated_signature, signature)) {
              return new Response(JSON.stringify({ status: 'success' }), {
-                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
                 status: 200,
             })
         } else {
              return new Response(JSON.stringify({ status: 'failure' }), {
-                headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+                headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
                 status: 400,
             })
         }
     }
 
     return new Response(JSON.stringify({ error: 'Invalid action' }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       status: 400,
     })
 
   } catch (error: any) {
     console.error('Edge Function Error:', error)
     return new Response(JSON.stringify({ error: error.message }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       status: 500,
     })
   }

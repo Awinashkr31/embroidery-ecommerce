@@ -114,8 +114,7 @@ const Navbar = React.memo(() => {
     { name: 'Shop', path: '/shop' },
     { name: 'Gifts', path: '/gifts' },
     { name: 'Custom Design', path: '/custom-design' },
-    { name: 'Mehndi', path: '/mehndi-booking' },
-    { name: 'Gallery', path: '/gallery' },
+
     { name: 'About', path: '/about' },
   ];
 
@@ -131,8 +130,7 @@ const Navbar = React.memo(() => {
       if (pathname.startsWith('/profile')) return 'Profile';
       if (pathname.startsWith('/login')) return 'Login';
       if (pathname.startsWith('/custom-design')) return 'Custom Design';
-      if (pathname.startsWith('/mehndi-booking')) return 'Mehndi';
-      if (pathname.startsWith('/gallery')) return 'Gallery';
+
       if (pathname.startsWith('/about')) return 'About';
       if (pathname.startsWith('/support')) return 'Support';
       return 'Enbroidery By Sana';

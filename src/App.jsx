@@ -39,13 +39,15 @@ const Gifts = lazy(() => import('./pages/Gifts'));
 
 const ProductDetails = lazy(() => import('./pages/ProductDetails'));
 const CustomDesign = lazy(() => import('./pages/CustomDesign'));
-const MehndiBooking = lazy(() => import('./pages/MehndiBooking'));
-const Gallery = lazy(() => import('./pages/Gallery'));
 const Contact = lazy(() => import('./pages/Contact'));
 const Cart = lazy(() => import('./pages/Cart'));
 const Checkout = lazy(() => import('./pages/Checkout'));
 const OrderFailed = lazy(() => import('./pages/OrderFailed'));
 const TrackOrder = lazy(() => import('./pages/TrackOrder'));
+const ReturnPolicy = lazy(() => import('./pages/ReturnPolicy'));
+const ShippingPolicy = lazy(() => import('./pages/ShippingPolicy'));
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
+const TermsOfService = lazy(() => import('./pages/TermsOfService'));
 
 // Admin Components
 const AdminLogin = lazy(() => import('./pages/admin/AdminLogin'));
@@ -64,9 +66,7 @@ const AdminUsers = lazy(() => import('./pages/admin/Users'));
 const AdminNotifications = lazy(() => import('./pages/admin/AdminNotifications'));
 const Reviews = lazy(() => import('./pages/admin/Reviews'));
 const AdminDesignRequests = lazy(() => import('./pages/admin/AdminDesignRequests'));
-const AdminBookings = lazy(() => import('./pages/admin/Bookings'));
 const Settings = lazy(() => import('./pages/admin/Settings'));
-const AdminGallery = lazy(() => import('./pages/admin/AdminGallery'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 import ProtectedRoute from './components/admin/ProtectedRoute'
@@ -116,12 +116,12 @@ function App() {
               {/* Admin Routes — wrapped in AdminProvider */}
               <Route element={<AdminProvider><Outlet /></AdminProvider>}>
                 <Route path="/sadmin/login" element={<AdminLogin />} />
-                <Route path="/sadmin/register" element={<AdminRegister />} />
                 <Route path="/sadmin/forgot-password" element={<AdminForgotPassword />} />
                 <Route path="/sadmin/update-password" element={<AdminUpdatePassword />} />
                 
-                {/* Protected Admin Routes */}
+                {/* Protected Admin Routes — registration requires existing admin auth */}
                 <Route element={<ProtectedRoute />}>
+                  <Route path="/sadmin/register" element={<AdminRegister />} />
                   <Route path="/sadmin" element={<AdminLayout />}>
                     <Route index element={<Navigate to="/sadmin/dashboard" replace />} />
                     <Route path="dashboard" element={<Dashboard />} />
@@ -133,9 +133,7 @@ function App() {
                     <Route path="users" element={<AdminUsers />} />
                     <Route path="design-requests" element={<AdminDesignRequests />} />
                     <Route path="notifications" element={<AdminNotifications />} />
-                    <Route path="bookings" element={<AdminBookings />} />
                     <Route path="coupons" element={<AdminCoupons />} />
-                    <Route path="gallery" element={<AdminGallery />} />
                     <Route path="settings" element={<Settings />} />
                   </Route>
                 </Route>
@@ -168,8 +166,6 @@ function App() {
                 <Route path="/about" element={<About />} />
                 <Route path="/product/:slug" element={<ProductDetails />} />
                 <Route path="/custom-design" element={<CustomDesign />} />
-                <Route path="/mehndi-booking" element={<MehndiBooking />} />
-                <Route path="/gallery" element={<Gallery />} />
                 <Route path="/support" element={<Contact />} />
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/checkout" element={<Checkout />} />
@@ -184,6 +180,10 @@ function App() {
                 <Route path="/order-confirmation" element={<OrderConfirmation />} />
                 <Route path="/order/:id" element={<OrderDetails />} />
                 <Route path="/track-order" element={<TrackOrder />} />
+                <Route path="/return-policy" element={<ReturnPolicy />} />
+                <Route path="/shipping-policy" element={<ShippingPolicy />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="/terms-of-service" element={<TermsOfService />} />
                 <Route path="*" element={<NotFound />} />
               </Route>
             </Routes>
