@@ -465,7 +465,7 @@ const Cart = () => {
                             <button
                                 onClick={() => navigate('/checkout')}
                                 disabled={!isOrderDeployable}
-                                className={`hidden lg:flex w-full h-[54px] rounded-[16px] font-[600] text-[15px] tracking-[0.3px] transition-all duration-250 items-center justify-center gap-2 active:scale-[0.98] ${
+                                className={`flex w-full h-[54px] rounded-[16px] font-[600] text-[15px] tracking-[0.3px] transition-all duration-250 items-center justify-center gap-2 active:scale-[0.98] ${
                                     isOrderDeployable 
                                     ? 'bg-rose-900 text-white hover:bg-rose-800 shadow-[0_8px_24px_rgba(177,0,71,0.22)]' 
                                     : 'bg-stone-200 text-stone-400 cursor-not-allowed shadow-none'
