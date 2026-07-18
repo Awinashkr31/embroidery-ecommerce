@@ -2,11 +2,11 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import { Trash2, ArrowRight, Tag, X, Truck, Heart, ShieldCheck, Sparkles, Plus, Minus, ChevronRight, Gift, CheckCircle } from 'lucide-react';
+import SEO from '../components/SEO';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useProducts } from '../context/ProductContext';
-import SEO from '../components/SEO';
 import { getEstimatedDeliveryDate } from '../utils/dateUtils';
 import { getProductUrl } from '../utils/urlUtils';
 
@@ -15,7 +15,6 @@ const Cart = () => {
         cart, 
         cartLoading, 
         removeFromCart, 
-        removeGiftWrap,
         updateQuantity,
         addToCart,
         cartTotal, 
@@ -150,19 +149,21 @@ const Cart = () => {
                                 <div key={`${item.id}-${item.selectedSize || 'nosize'}-${item.selectedColor || 'nocolor'}-${idx}`} className="bg-[#FFFFFF] p-4 rounded-[16px] flex gap-4 items-start relative animate-stagger-fade shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-all duration-250 ease-in-out hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)]" style={{ animationDelay: `${idx * 0.08}s` }}>
                                     
                                     {/* Image */}
-                                    <div className="w-[90px] h-[90px] md:w-[100px] md:h-[100px] rounded-xl overflow-hidden bg-stone-50 shrink-0 shadow-[0_2px_8px_rgba(0,0,0,0.04)]">
+                                    <Link to={getProductUrl(item)} className="w-[90px] h-[90px] md:w-[100px] md:h-[100px] rounded-xl overflow-hidden bg-stone-50 shrink-0 shadow-[0_2px_8px_rgba(0,0,0,0.04)] block hover:opacity-90 transition-opacity">
                                         <img
                                             src={item.variants?.find(v => v.id === item.variantId)?.images?.[0] || item.image}
                                             alt={item.name}
                                             className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                                             onError={(e) => { e.target.onerror = null; e.target.src = '/logo.png'; }}
                                         />
-                                    </div>
+                                    </Link>
                                     
                                     {/* Details */}
                                     <div className="flex-1 min-w-0 pb-1">
                                         <div className="flex justify-between items-start">
-                                            <h3 className="text-[15px] md:text-base font-semibold text-stone-900 leading-tight pr-6 mb-1">{item.name}</h3>
+                                            <Link to={getProductUrl(item)} className="hover:underline">
+                                                <h3 className="text-[15px] md:text-base font-semibold text-stone-900 leading-tight pr-6 mb-1">{item.name}</h3>
+                                            </Link>
                                             
                                             {/* Mobile Remove */}
                                             <button 
@@ -233,21 +234,12 @@ const Cart = () => {
                         </div>
 
                         {/* Global Gift Packaging Upsell */}
-                        <label className={`relative overflow-hidden block rounded-xl p-4 cursor-pointer transition-all duration-500 shadow-sm ${isGiftWrapped ? 'bg-[#FFF6F8] border border-[#F7D6DF]' : 'bg-[#FFF6F8] border border-[#F7D6DF] hover:bg-rose-50/50 before:absolute before:inset-0 before:-translate-x-full before:animate-shimmer before:bg-gradient-to-r before:from-transparent before:via-white/60 before:to-transparent'}`}>
-                            <div className="flex gap-3 items-start relative z-10">
-                                    <input 
-                                        type="checkbox" 
-                                        checked={isGiftWrapped} 
-                                        onChange={(e) => {
-                                            setIsGiftWrapped(e.target.checked);
-                                            if (!e.target.checked) setGiftNote('');
-                                        }}
-                                        className="mt-0.5 w-4 h-4 text-rose-600 bg-white border-stone-300 rounded focus:ring-rose-500 cursor-pointer" 
-                                    />
-                                    <div className="flex-1">
-                                        <h3 className="text-[14px] font-sans font-bold text-[#1f2937]">
-                                            🎁 Add Gift Packaging <span className="text-[#4b5563]">(+₹29)</span>
-                                        </h3>
+                        <div className={`relative overflow-hidden block rounded-xl p-4 transition-all duration-500 shadow-sm ${isGiftWrapped ? 'bg-[#FFF6F8] border border-[#F7D6DF]' : 'bg-[#FFF6F8] border border-[#F7D6DF] hover:bg-rose-50/50 before:absolute before:inset-0 before:-translate-x-full before:animate-shimmer before:bg-gradient-to-r before:from-transparent before:via-white/60 before:to-transparent'}`}>
+                            <div className="flex gap-3 items-start justify-between relative z-10">
+                                <div className="flex-1">
+                                    <h3 className="text-[14px] font-sans font-bold text-[#1f2937]">
+                                        🎁 Gift Packaging <span className="text-[#4b5563]">(+₹29)</span>
+                                    </h3>
                                         <p className="text-[12px] text-[#6b7280] mt-0.5">
                                             Wrapped beautifully with a handwritten note.
                                         </p>
@@ -298,32 +290,26 @@ const Cart = () => {
                                                 </motion.div>
                                             )}
                                         </AnimatePresence>
-                                    </div>
                                 </div>
-                            </label>
+                                <button 
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        setIsGiftWrapped(!isGiftWrapped);
+                                        if (isGiftWrapped) setGiftNote('');
+                                    }}
+                                    className={`shrink-0 px-4 py-1.5 mt-0.5 rounded-lg text-[12px] font-extrabold transition-all border-[1.5px] border-rose-600 ${
+                                        isGiftWrapped 
+                                        ? 'text-rose-600 bg-rose-50 hover:bg-rose-100' 
+                                        : 'bg-rose-600 text-white shadow-sm hover:bg-rose-700 active:scale-95'
+                                    }`}
+                                >
+                                    {isGiftWrapped ? 'REMOVE' : 'ADD +'}
+                                </button>
+                            </div>
+                        </div>
 
-                        {/* 2. Delivery Progress */}
-                        {shippingCharge > 0 || subtotal < FREE_DELIVERY_THRESHOLD ? (
-                            <div className="bg-[#FFFFFF] p-4 rounded-[16px] shadow-[0_2px_12px_rgba(0,0,0,0.04)] transition-all duration-250">
-                                <div className="flex items-center gap-2 text-[14px] font-semibold text-stone-800 mb-3">
-                                    <Truck className="w-4 h-4 text-emerald-500" />
-                                    <span>Add <strong className="text-emerald-700">₹{FREE_DELIVERY_THRESHOLD - subtotal}</strong> more for <strong>FREE Delivery</strong></span>
-                                </div>
-                                <div className="h-[8px] bg-stone-100 rounded-full overflow-hidden shadow-inner">
-                                    <div 
-                                        className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full transition-all duration-700 ease-out relative"
-                                        style={{ width: `${Math.min((subtotal / FREE_DELIVERY_THRESHOLD) * 100, 100)}%` }}
-                                    >
-                                        <div className="absolute inset-0 bg-white/20 w-full h-full animate-[shimmer_2s_infinite]"></div>
-                                    </div>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="bg-emerald-50 border border-emerald-100 p-4 rounded-[16px] flex items-center gap-3 shadow-[0_2px_12px_rgba(0,0,0,0.04)]">
-                                <div className="bg-white p-1.5 rounded-full shadow-sm text-emerald-600"><Truck className="w-4 h-4" /></div>
-                                <span className="text-[14px] font-bold text-emerald-800">Yay! Free Delivery unlocked</span>
-                            </div>
-                        )}
+                        {/* 2. Delivery Progress moved to Order Summary */}
 
                         {/* 3. Horizontal Recommendations */}
                         {relatedProducts.length > 0 && (
@@ -434,6 +420,29 @@ const Cart = () => {
                                 </div>
                             </div>
 
+                            {/* Delivery Progress embedded in Order Summary */}
+                            {shippingCharge > 0 || subtotal < FREE_DELIVERY_THRESHOLD ? (
+                                <div className="bg-stone-50 border border-stone-100 p-3 rounded-xl mb-4 transition-all duration-250">
+                                    <div className="flex items-center gap-2 text-[13px] font-semibold text-stone-800 mb-2.5">
+                                        <Truck className="w-4 h-4 text-emerald-500" />
+                                        <span>Add <strong className="text-emerald-700">₹{FREE_DELIVERY_THRESHOLD - subtotal}</strong> more for <strong>FREE Delivery</strong></span>
+                                    </div>
+                                    <div className="h-[6px] bg-stone-200/60 rounded-full overflow-hidden shadow-inner">
+                                        <div 
+                                            className="h-full bg-gradient-to-r from-emerald-400 to-emerald-500 rounded-full transition-all duration-700 ease-out relative"
+                                            style={{ width: `${Math.min((subtotal / FREE_DELIVERY_THRESHOLD) * 100, 100)}%` }}
+                                        >
+                                            <div className="absolute inset-0 bg-white/20 w-full h-full animate-[shimmer_2s_infinite]"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="bg-emerald-50 border border-emerald-100 p-3 rounded-xl flex items-center gap-3 mb-4 shadow-sm">
+                                    <div className="bg-white p-1.5 rounded-full shadow-sm text-emerald-600"><Truck className="w-3.5 h-3.5" /></div>
+                                    <span className="text-[13px] font-bold text-emerald-800">Yay! Free Delivery unlocked</span>
+                                </div>
+                            )}
+
                             <div className="border-t border-stone-100 pt-5 pb-5">
                                 <div className="flex justify-between items-end">
                                     <div>
@@ -475,29 +484,7 @@ const Cart = () => {
                 </div>
             </div>
 
-            {/* Mobile Sticky Checkout Bar */}
-            <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-stone-200/60 shadow-[0_-10px_40px_rgb(0,0,0,0.06)] pb-[env(safe-area-inset-bottom)] lg:hidden transition-all duration-250">
-                <div className="px-[14px] py-3 flex items-center justify-between gap-3">
-                    <div className="flex-1">
-                        <div className="flex items-center gap-1.5 text-[11px] font-bold text-stone-500 uppercase tracking-widest mb-0.5">
-                            <ShieldCheck className="w-3 h-3 text-emerald-600" /> Secure Checkout
-                        </div>
-                        <div className="text-[20px] font-bold text-stone-900 leading-none mb-0.5 tracking-tight">₹{cartTotal.toLocaleString()}</div>
-                        <div className="text-[13px] text-[#777] font-medium">{cart.length} item{cart.length !== 1 ? 's' : ''} • incl. taxes</div>
-                    </div>
-                    <button
-                        onClick={() => navigate('/checkout')}
-                        disabled={!isOrderDeployable}
-                        className={`h-[48px] px-6 rounded-[16px] font-[600] tracking-[0.3px] text-[14px] transition-all duration-250 flex items-center justify-center gap-2 active:scale-95 ${
-                            isOrderDeployable
-                            ? 'bg-rose-900 text-white shadow-[0_8px_24px_rgba(177,0,71,0.22)]'
-                            : 'bg-stone-200 text-stone-400 cursor-not-allowed shadow-none'
-                        }`}
-                    >
-                        <span>Continue →</span>
-                    </button>
-                </div>
-            </div>
+
 
             {/* Remove / Move to Wishlist Bottom Sheet */}
             {isRemoveSheetOpen && itemToRemove && (

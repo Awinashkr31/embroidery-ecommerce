@@ -4,7 +4,7 @@ import { useCategories } from '../context/CategoryContext';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { getOptimizedImageUrl } from '../utils/imageUtils';
-import { Star, Truck, Shield, Award, ChevronLeft, ChevronRight, Quote, ArrowRight } from 'lucide-react';
+import { Star, Truck, Shield, Award, ChevronLeft, ChevronRight, Quote, ArrowRight, Sparkles } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useSettings } from '../context/SettingsContext';
 import { ProductCard } from '../components/ProductCard';
@@ -53,26 +53,63 @@ const REVIEWS = [
     { id: 6, name: "Simran T.", rating: 5, text: "Rubber band set liya beti ke liye, itna soft aur comfortable hai. School mein sab friends ne bhi manga address. Quality ke liye price bilkul sahi hai." },
 ];
 
+const budgetBazaarItemsRow1 = [
+    { title: "Claw Clips", price: 99, img: "https://images.unsplash.com/photo-1596755389378-c11d66f442b3?w=400" },
+    { title: "Hair Bows", price: 149, img: "https://images.unsplash.com/photo-1627914437433-72210a17406a?w=400" },
+    { title: "Bouquets", price: 199, img: "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=400" },
+    { title: "Rubber Bands", price: 99, img: "https://images.unsplash.com/photo-1601004890684-d8cbf643f5f2?w=400" },
+    { title: "Keychains", price: 149, img: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=400" },
+];
+
+const budgetBazaarItemsRow2 = [
+    { title: "Parandi", price: 249, img: "https://images.unsplash.com/photo-1579782811467-33f7f185efb1?w=400" },
+    { title: "Scrunchies", price: 129, img: "https://images.unsplash.com/photo-1610444383181-e28a529fb6ee?w=400" },
+    { title: "Rings", price: 149, img: "https://images.unsplash.com/photo-1605100804763-247f67b2548e?w=400" },
+    { title: "Earrings", price: 199, img: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=400" },
+    { title: "Bracelets", price: 149, img: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=400" },
+];
+
 const Home = () => {
   const { categories } = useCategories();
   const { FREE_DELIVERY_THRESHOLD } = useCart();
   const { settings } = useSettings();
   const { toggleWishlist, isInWishlist } = useWishlist();
 
-  const homeSlides = Array.isArray(settings.home_slides_data) && settings.home_slides_data.length > 0 
-    ? settings.home_slides_data 
-    : [
-        {
-          desktopImage: 'https://images.unsplash.com/photo-1584285406059-e9eb7b17d740?w=1600',
-          mobileImage: 'https://images.unsplash.com/photo-1584285406059-e9eb7b17d740?w=800',
-          link: '/shop'
-        }
-      ];
+  const homeSlides = [
+    {
+      desktopImage: '/assets/temp_hero_crochet.webp',
+      mobileImage: '/assets/temp_hero_crochet.webp',
+      link: '/shop'
+    },
+    {
+      desktopImage: '/assets/hero_crochet_1.webp',
+      mobileImage: '/assets/hero_crochet_1.webp',
+      link: '/shop'
+    }
+  ];
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
   const reviewScrollRef = useRef(null);
+  const budgetScrollRef = useRef(null);
+
+  // Auto slide Budget Bazaar
+  useEffect(() => {
+      const interval = setInterval(() => {
+          if (budgetScrollRef.current) {
+              const el = budgetScrollRef.current;
+              const scrollAmount = 140; // Approx item width + gap
+              
+              if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 10) {
+                  el.scrollTo({ left: 0, behavior: 'smooth' });
+              } else {
+                  el.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+              }
+          }
+      }, 3000);
+      return () => clearInterval(interval);
+  }, []);
 
   const minSwipeDistance = 50;
   
@@ -165,15 +202,30 @@ const Home = () => {
     });
   }, [categories, homeProducts]);
 
-  const { newArrivals, bestsellers, premiumProducts } = useMemo(() => {
+  const { newArrivals, bestsellers, premiumProducts, budgetGridItems } = useMemo(() => {
     const newArr = homeProducts.filter(p => p.homepage_tags?.includes('new_arrival'));
     const best = homeProducts.filter(p => p.homepage_tags?.includes('bestseller'));
     const prem = homeProducts.filter(p => p.homepage_tags?.includes('premium'));
 
+    // Get actual budget products (e.g. price <= 499)
+    const budgetProducts = homeProducts.filter(p => p.price <= 499);
+    
+    // We want 16 items total to make a scrolling 2-row grid
+    // If not enough products, fallback to any available home products
+    const sourceForBudget = budgetProducts.length >= 3 ? budgetProducts : homeProducts;
+    
+    const budgetGrid = sourceForBudget.slice(0, 16).map(p => ({
+        id: p.id,
+        title: p.name,
+        price: p.price,
+        img: p.image || "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=400"
+    }));
+
     return {
       newArrivals: newArr.length > 0 ? newArr.slice(0, 4) : homeProducts.slice(0, 4),
       bestsellers: best.length > 0 ? best.slice(0, 4) : homeProducts.slice(4, 8),
-      premiumProducts: prem.length > 0 ? prem.slice(0, 4) : homeProducts.slice(0, 4)
+      premiumProducts: prem.length > 0 ? prem.slice(0, 4) : homeProducts.slice(0, 4),
+      budgetGridItems: budgetGrid
     };
   }, [homeProducts]);
 
@@ -209,79 +261,94 @@ const Home = () => {
           schema={orgSchema}
       />
 
-      {/* ================= HERO SLIDER ================= */}
-      {/* Hero uses aspect-ratio for CLS prevention instead of viewport height */}
-      <section 
-        className="relative w-full aspect-[4/5] md:aspect-[16/9] lg:aspect-[21/9] overflow-hidden bg-stone-50"
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
-      >
-          {homeSlides.map((slide, idx) => (
-              <div 
-                  key={idx}
-                  className={`absolute inset-0 transition-all duration-1000 ease-in-out ${idx === currentSlide ? 'opacity-100 scale-100 z-10' : 'opacity-0 scale-105 z-0 pointer-events-none'}`}
-              >
-                  <Link to={slide.link || '/shop'} className="block w-full h-full cursor-pointer">
-                      <picture>
-                          <source media="(min-width: 768px)" srcSet={getOptimizedImageUrl(slide.desktopImage, { width: 1600, quality: 75 })} type="image/webp" />
-                          <img 
-                              src={getOptimizedImageUrl(slide.mobileImage || slide.desktopImage, { width: 600, quality: 70 })} 
-                              alt={`Slide ${idx + 1}`} 
-                              width={800}
-                              height={600}
-                              className="w-full h-full object-cover"
-                              loading={idx === 0 ? "eager" : "lazy"}
-                              decoding={idx === 0 ? "sync" : "async"}
-                              fetchPriority={idx === 0 ? "high" : "auto"}
-                          />
-                      </picture>
-                  </Link>
-              </div>
-          ))}
+        {/* ================= CUSTOM HERO BANNER ================= */}
+        <section 
+            className="relative w-full aspect-[5/3] md:aspect-[21/9] lg:aspect-[24/9] overflow-hidden bg-[#4a0d1d]"
+            onTouchStart={(e) => setTouchStart(e.targetTouches[0].clientX)}
+            onTouchMove={(e) => setTouchEnd(e.targetTouches[0].clientX)}
+            onTouchEnd={onTouchEnd}
+        >
+            {/* Background Image (Covers entire right half behind the slant) */}
+            <div className="absolute right-0 top-0 w-[75%] md:w-[60%] h-full z-0 transition-opacity duration-500">
+                <img 
+                    src={homeSlides[currentSlide]?.desktopImage || "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=800"} 
+                    alt="Handcrafted Gifts" 
+                    className="w-full h-full object-cover animate-fade-in translate-x-[15%] md:translate-x-[10%] scale-[1.1]" 
+                    key={currentSlide}
+                />
+                {/* Optional dark overlay to ensure text/dots readability if image is bright */}
+                <div className="absolute inset-0 bg-black/10"></div>
+            </div>
 
-          {/* Slider Arrows — hidden on mobile (swipe is sufficient), no backdrop-blur */}
-          {homeSlides.length > 1 && (
-            <>
-              <button onClick={() => setCurrentSlide((prev) => (prev - 1 + homeSlides.length) % homeSlides.length)} className="absolute left-3 md:left-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white/30 hover:bg-white/50 text-white hidden md:flex items-center justify-center transition-all hover:scale-110 shadow-lg" aria-label="Previous slide">
-                <ChevronLeft className="w-6 h-6" />
-              </button>
-              <button onClick={() => setCurrentSlide((prev) => (prev + 1) % homeSlides.length)} className="absolute right-3 md:right-6 top-1/2 -translate-y-1/2 z-20 w-12 h-12 rounded-full bg-white/30 hover:bg-white/50 text-white hidden md:flex items-center justify-center transition-all hover:scale-110 shadow-lg" aria-label="Next slide">
-                <ChevronRight className="w-6 h-6" />
-              </button>
-            </>
-          )}
-
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 z-20 pointer-events-auto">
-              {homeSlides.map((_, idx) => (
-                  <button 
-                    key={idx}
-                    onClick={() => setCurrentSlide(idx)}
-                    className={`h-2 transition-all duration-500 rounded-full ${idx === currentSlide ? 'bg-white w-10 shadow-md' : 'bg-white/40 w-3 hover:bg-white/70'}`}
-                  />
-              ))}
-          </div>
-      </section>
+            {/* Left Cream Slant */}
+            <div className="absolute top-0 left-0 h-full w-[60%] md:w-[55%] bg-[#fcf5ef] z-10" style={{ clipPath: 'polygon(0 0, 100% 0, 80% 100%, 0 100%)' }}></div>
+            
+            {/* Content Wrapper */}
+            <div className="absolute inset-0 flex items-center z-20">
+                {/* Left Text */}
+                <div className="w-[60%] md:w-[50%] pl-4 sm:pl-8 md:pl-16 flex flex-col justify-center">
+                    <div className="flex items-start font-bold leading-none">
+                        <span className="text-[3rem] sm:text-[4rem] md:text-[5.5rem] lg:text-[7rem] text-[#6e132b] tracking-tighter">50</span>
+                        <div className="flex flex-col ml-1 md:ml-2 pt-1 md:pt-3">
+                           <span className="text-xl sm:text-2xl md:text-3xl lg:text-4xl text-[#6e132b]">%</span>
+                           <span className="text-xl sm:text-2xl md:text-4xl text-rose-400 mt-0.5 md:mt-1">-</span>
+                        </div>
+                        
+                        <span className="text-[3rem] sm:text-[4rem] md:text-[5.5rem] lg:text-[7rem] text-[#6e132b] tracking-tighter ml-1 md:ml-2">80</span>
+                        <div className="flex flex-col ml-1 md:ml-2 pt-1 md:pt-3">
+                            <span className="text-xl sm:text-2xl md:text-3xl lg:text-4xl text-[#6e132b]">%</span>
+                            <span className="text-xs sm:text-sm md:text-lg lg:text-xl text-[#6e132b] mt-1 md:mt-2 tracking-widest">OFF</span>
+                        </div>
+                    </div>
+                    
+                    <p className="text-[10px] sm:text-xs md:text-base lg:text-lg mt-3 md:mt-6 text-stone-800 font-semibold max-w-[150px] sm:max-w-[180px] md:max-w-[280px] leading-snug">
+                        Unique handcrafted gifts for every occasion
+                    </p>
+                    
+                    <Link to="/shop" className="mt-4 md:mt-8 bg-[#6e132b] text-white px-5 py-1.5 sm:px-6 sm:py-2 md:px-10 md:py-3 rounded-full font-bold text-[10px] sm:text-xs md:text-sm w-max hover:bg-[#4a0d1d] transition-colors shadow-lg flex items-center gap-2">
+                        SHOP NOW <span className="font-black">&gt;</span>
+                    </Link>
+                </div>
+            </div>
+            
+            {/* Carousel Dots */}
+            <div className="absolute bottom-3 md:bottom-6 right-[20%] md:right-[22%] flex gap-2.5 z-20">
+                {homeSlides.map((_, idx) => (
+                    <button
+                        key={idx}
+                        onClick={() => setCurrentSlide(idx)}
+                        className={`w-2 h-2 md:w-2.5 md:h-2.5 rounded-full transition-all duration-300 shadow-sm ${
+                            currentSlide === idx 
+                                ? 'bg-white scale-125' 
+                                : 'bg-white/40 hover:bg-white/70'
+                        }`}
+                        aria-label={`Go to slide ${idx + 1}`}
+                    />
+                ))}
+            </div>
+        </section>
 
       {/* ================= SHOP BY CATEGORY ================= */}
       <section className="py-12 md:py-16 bg-white border-b border-stone-100">
         <div className="container-custom">
             <Reveal>
-              <div className="flex flex-col items-center mb-10">
-                  <h2 className="text-2xl md:text-3xl font-heading font-bold text-stone-900 text-center uppercase tracking-widest">Shop by Category</h2>
-                  <div className="w-16 h-0.5 bg-stone-300 mt-4"></div>
+              <div className="flex items-center justify-between mb-6 md:mb-8 px-2 md:px-0">
+                  <h2 className="text-[22px] md:text-[28px] font-heading font-bold text-[#0f172a] tracking-tight capitalize">Shop by Category</h2>
+                  <Link to="/shop" className="text-[#e11d48] font-semibold text-[13px] md:text-sm flex items-center gap-1 hover:underline transition-colors">
+                      See All <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
+                  </Link>
               </div>
             </Reveal>
             
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 justify-center gap-4 md:gap-6 pb-4 px-2 md:px-0">
-                {dynamicCategories.slice(0, 14).map((category, i) => (
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 justify-center gap-x-4 gap-y-8 md:gap-x-8 md:gap-y-12 pb-4 px-1 md:px-0 max-w-5xl mx-auto">
+                {dynamicCategories.slice(0, 12).map((category, i) => (
                     <Reveal key={category.id} delay={i * 60}>
                       <Link 
                           to={`/shop?category=${encodeURIComponent(category.label)}`}
-                          className="group flex flex-col items-center gap-2"
+                          className="group flex flex-col items-center"
                       >
-                          <div className="w-20 h-20 md:w-28 md:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36 rounded-full overflow-hidden border-2 border-stone-200 group-hover:border-rose-400 transition-all duration-500 p-1 shadow-sm group-hover:shadow-lg group-hover:-translate-y-1">
-                              <div className="w-full h-full rounded-full overflow-hidden">
+                          <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full p-1.5 bg-white shadow-[0_4px_15px_rgba(0,0,0,0.1)] group-hover:shadow-[0_8px_25px_rgba(0,0,0,0.15)] group-hover:-translate-y-1 transition-all duration-500">
+                              <div className="w-full h-full rounded-full overflow-hidden bg-stone-50">
                                   <img 
                                       src={getOptimizedImageUrl(category.image, { width: 200, quality: 70 })} 
                                       alt={category.label} 
@@ -293,138 +360,177 @@ const Home = () => {
                                   />
                               </div>
                           </div>
-                          <span className="font-bold text-[10px] md:text-xs text-center uppercase tracking-widest text-stone-900 group-hover:text-rose-900 transition-colors break-words w-full px-1 mt-1">
+                          <span className="font-bold text-[9px] sm:text-[10px] md:text-xs text-center uppercase tracking-[0.15em] text-stone-800 group-hover:text-[#6e132b] transition-colors break-words w-full px-1 mt-3 md:mt-4">
                               {category.label}
                           </span>
                       </Link>
                     </Reveal>
                 ))}
             </div>
-
-            <Reveal delay={200}>
-              <div className="mt-8 text-center">
-                  <Link to="/shop" className="group inline-flex items-center gap-2 px-10 py-3 border-2 border-stone-900 text-stone-900 font-bold text-xs tracking-widest uppercase hover:bg-stone-900 hover:text-white transition-all duration-300">
-                      View All Ranges
-                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                  </Link>
-              </div>
-            </Reveal>
         </div>
       </section>
 
-      {/* ================= SECONDARY PROMO BANNER ================= */}
-      {settings.home_promo_banner_image && (
-          <section className="w-full bg-stone-50">
-              <Link to={settings.home_promo_banner_link || "/shop"} className="block w-full">
-                  <picture className="block w-full">
-                      <source media="(min-width: 768px)" srcSet={getOptimizedImageUrl(settings.home_promo_banner_image, { width: 1400, quality: 75 })} />
-                      <img 
-                          src={getOptimizedImageUrl(settings.home_promo_banner_image_mobile || settings.home_promo_banner_image, { width: 600, quality: 70 })} 
-                          alt="Promo Banner" 
-                          width={800}
-                          height={400}
-                          className="w-full h-auto md:h-[40vh] md:object-cover"
-                          loading="lazy"
-                          decoding="async"
-                      />
-                  </picture>
-              </Link>
-          </section>
-      )}
+        {/* ================= HORIZONTAL PROMO CARDS ================= */}
+        <section className="w-full bg-white py-6 md:py-8 overflow-hidden">
+            <div className="container-custom flex overflow-x-auto gap-4 md:gap-6 snap-x snap-mandatory no-scrollbar pb-2" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                
+                {/* Promo Card 1 - Red */}
+                <div className="min-w-[320px] md:min-w-[420px] bg-[#e11d48] rounded-[24px] shrink-0 snap-center flex overflow-hidden relative shadow-md h-[160px] md:h-[200px]">
+                    <div className="w-1/2 p-5 md:p-8 flex flex-col justify-center z-10 relative">
+                        <h3 className="text-white font-heading font-bold text-2xl md:text-3xl uppercase leading-tight mb-1" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.1)' }}>Crochet<br/>Bouquet</h3>
+                        <p className="text-white/95 font-bold text-[9px] md:text-[10px] uppercase tracking-widest mb-3 md:mb-5 mt-1">Forever Flowers</p>
+                        <Link to="/shop?category=bouquets" className="bg-white text-[#e11d48] font-bold text-[11px] md:text-xs px-5 py-2 rounded-full w-max shadow-sm hover:scale-105 transition-transform">
+                            Explore
+                        </Link>
+                    </div>
+                    <div className="w-[60%] h-full absolute right-0 top-0">
+                        <div className="absolute inset-0 bg-gradient-to-r from-[#e11d48] via-[#e11d48]/50 to-transparent w-16 z-10"></div>
+                        <img src="/promo-images/promo_bouquet_1784372081052.webp" alt="Crochet Bouquet" className="w-full h-full object-cover" />
+                    </div>
+                </div>
+
+                {/* Promo Card 2 - Teal */}
+                <div className="min-w-[320px] md:min-w-[420px] bg-[#0d9488] rounded-[24px] shrink-0 snap-center flex overflow-hidden relative shadow-md h-[160px] md:h-[200px]">
+                    <div className="w-1/2 p-5 md:p-8 flex flex-col justify-center z-10 relative">
+                        <h3 className="text-white font-heading font-bold text-2xl md:text-3xl uppercase leading-tight mb-1" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.1)' }}>Flower<br/>Pots</h3>
+                        <p className="text-white/95 font-bold text-[9px] md:text-[10px] uppercase tracking-widest mb-3 md:mb-5 mt-1">Vibrant Decor</p>
+                        <Link to="/shop?category=flower-pots" className="bg-white text-[#0d9488] font-bold text-[11px] md:text-xs px-5 py-2 rounded-full w-max shadow-sm hover:scale-105 transition-transform">
+                            Explore
+                        </Link>
+                    </div>
+                    <div className="w-[60%] h-full absolute right-0 top-0">
+                        <div className="absolute inset-0 bg-gradient-to-r from-[#0d9488] via-[#0d9488]/50 to-transparent w-16 z-10"></div>
+                        <img src="/promo-images/promo_flowerpot_1784372090942.webp" alt="Flower Pots" className="w-full h-full object-cover" />
+                    </div>
+                </div>
+
+                {/* Promo Card 3 - Indigo */}
+                <div className="min-w-[320px] md:min-w-[420px] bg-[#4f46e5] rounded-[24px] shrink-0 snap-center flex overflow-hidden relative shadow-md h-[160px] md:h-[200px]">
+                    <div className="w-1/2 p-5 md:p-8 flex flex-col justify-center z-10 relative">
+                        <h3 className="text-white font-heading font-bold text-2xl md:text-3xl uppercase leading-tight mb-1" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.1)' }}>Hair<br/>Clips</h3>
+                        <p className="text-white/95 font-bold text-[9px] md:text-[10px] uppercase tracking-widest mb-3 md:mb-5 mt-1">Cute Accessories</p>
+                        <Link to="/shop?category=hair-accessories" className="bg-white text-[#4f46e5] font-bold text-[11px] md:text-xs px-5 py-2 rounded-full w-max shadow-sm hover:scale-105 transition-transform">
+                            Explore
+                        </Link>
+                    </div>
+                    <div className="w-[60%] h-full absolute right-0 top-0">
+                        <div className="absolute inset-0 bg-gradient-to-r from-[#4f46e5] via-[#4f46e5]/50 to-transparent w-16 z-10"></div>
+                        <img src="/promo-images/promo_hairclips_1784372110625.webp" alt="Hair Clips" className="w-full h-full object-cover" />
+                    </div>
+                </div>
+
+                {/* Promo Card 4 - Amber */}
+                <div className="min-w-[320px] md:min-w-[420px] bg-[#d97706] rounded-[24px] shrink-0 snap-center flex overflow-hidden relative shadow-md h-[160px] md:h-[200px]">
+                    <div className="w-1/2 p-5 md:p-8 flex flex-col justify-center z-10 relative">
+                        <h3 className="text-white font-heading font-bold text-2xl md:text-3xl uppercase leading-tight mb-1" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.1)' }}>
+                            Cute<br/>
+                            <span className="text-lg md:text-2xl">Keychains</span>
+                        </h3>
+                        <p className="text-white/95 font-bold text-[9px] md:text-[10px] uppercase tracking-widest mb-3 md:mb-5 mt-1">Carry Everywhere</p>
+                        <Link to="/shop?category=keychains" className="bg-white text-[#d97706] font-bold text-[11px] md:text-xs px-5 py-2 rounded-full w-max shadow-sm hover:scale-105 transition-transform">
+                            Explore
+                        </Link>
+                    </div>
+                    <div className="w-[60%] h-full absolute right-0 top-0">
+                        <div className="absolute inset-0 bg-gradient-to-r from-[#d97706] via-[#d97706]/50 to-transparent w-16 z-10"></div>
+                        <img src="/promo-images/promo_keychain_1784372100478.webp" alt="Cute Keychains" className="w-full h-full object-cover" />
+                    </div>
+                </div>
+
+            </div>
+        </section>
 
       {/* ================= NEW ARRIVALS ================= */}
-      <section className="py-12 md:py-16 bg-stone-50">
+      <section className="py-10 md:py-16 bg-[#ede9f6]">
           <div className="container-custom">
                <Reveal>
-                 <div className="flex flex-col items-center mb-10">
-                      <h2 className="text-2xl md:text-3xl font-heading font-bold text-blue-900 uppercase tracking-widest text-center">New Arrivals</h2>
-                      <div className="w-24 h-1 bg-blue-900 mt-4"></div>
+                 <div className="flex items-center justify-between mb-6 md:mb-8 px-2 md:px-0">
+                      <h2 className="text-[22px] md:text-[28px] font-heading font-bold text-[#0f172a] tracking-tight capitalize">Just Landed</h2>
+                      <Link to="/category/new-arrivals" className="text-[#e11d48] font-semibold text-[13px] md:text-sm flex items-center gap-1 hover:underline transition-colors">
+                          See All <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
+                      </Link>
                  </div>
                </Reveal>
 
-               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
+               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
                    {newArrivals.map((product, i) => (
                        <Reveal key={product.id} delay={i * 100}>
-                         <Link to={getProductUrl(product)} className="group block">
+                         <div className="group block">
                            <ProductCard 
                                product={product} 
                                toggleWishlist={toggleWishlist} 
                                isInWishlist={isInWishlist} 
                            />
-                         </Link>
+                         </div>
                        </Reveal>
                    ))}
                </div>
-               
-               <Reveal delay={200}>
-                 <div className="mt-10 text-center">
-                      <Link to="/shop" className="group inline-flex items-center gap-2 px-10 py-3 bg-blue-900 text-white font-bold text-sm tracking-widest uppercase hover:bg-blue-800 transition-all hover:shadow-lg hover:-translate-y-0.5">
-                          View All <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                      </Link>
-                  </div>
-               </Reveal>
           </div>
       </section>
 
-      {/* ================= PREMIUM COLLECTIONS (Masonry) ================= */}
-      <section className="py-12 md:py-16 bg-white">
-          <div className="container-custom">
-              <div className="flex flex-col items-center mb-10">
-                    <h2 className="text-2xl md:text-3xl font-heading font-bold text-blue-900 uppercase tracking-widest text-center">Premium Collections</h2>
-                    <div className="w-24 h-1 bg-yellow-400 mt-4"></div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 max-w-4xl mx-auto">
-                  {/* Left Tall Image */}
-                  <Link to={settings.home_masonry_1_link || "/shop"} className="relative aspect-square md:aspect-[3/4] overflow-hidden group rounded-md shadow-sm block">
-                      <picture>
-                          <source media="(min-width: 768px)" srcSet={getOptimizedImageUrl(settings.home_masonry_1_image, { width: 600, quality: 75 })} />
-                          <img 
-                              src={getOptimizedImageUrl(settings.home_masonry_1_image_mobile || settings.home_masonry_1_image, { width: 500, quality: 70 })} 
-                              alt={settings.home_masonry_1_text} 
-                              width={600}
-                              height={800}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                              loading="lazy"
-                              decoding="async"
-                          />
-                      </picture>
-
-                  </Link>
-                  
-                  {/* Right Stacked Images */}
-                  <div className="grid grid-rows-2 gap-4 md:gap-6">
-                      <Link to={settings.home_masonry_2_link || "/shop"} className="relative w-full h-full min-h-[250px] overflow-hidden group rounded-md shadow-sm block">
-                          <picture>
-                              <source media="(min-width: 768px)" srcSet={getOptimizedImageUrl(settings.home_masonry_2_image, { width: 600, quality: 75 })} />
-                              <img 
-                                  src={getOptimizedImageUrl(settings.home_masonry_2_image_mobile || settings.home_masonry_2_image, { width: 500, quality: 70 })} 
-                                  alt={settings.home_masonry_2_text} 
-                                  width={600}
-                                  height={400}
-                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                                  loading="lazy"
-                                  decoding="async"
-                              />
-                          </picture>
-
+      {/* ================= PRICE STORE ================= */}
+      <section className="py-8 md:py-12 bg-white">
+          <div className="container-custom max-w-sm md:max-w-md mx-auto">
+              <div className="bg-[#fffcf5] p-3 md:p-4 rounded-[20px] border-2 border-[#fef3c7] shadow-sm relative">
+                  <div className="grid grid-cols-2 gap-2.5 md:gap-3">
+                      {/* Block 1 */}
+                      <Link to="/shop?maxPrice=99" className="bg-[#e11d48] rounded-[16px] p-4 flex flex-col items-center justify-center text-center aspect-[5/4] shadow-inner transform transition-transform hover:scale-[1.02]">
+                          <span className="text-white font-bold text-[10px] md:text-xs tracking-widest uppercase mb-0.5">Under</span>
+                          <span className="text-yellow-400 font-heading font-bold text-3xl md:text-4xl leading-none">₹99</span>
                       </Link>
-                      <Link to={settings.home_masonry_3_link || "/shop"} className="relative w-full h-full min-h-[250px] overflow-hidden group rounded-md shadow-sm block">
-                          <picture>
-                              <source media="(min-width: 768px)" srcSet={getOptimizedImageUrl(settings.home_masonry_3_image, { width: 600, quality: 75 })} />
-                              <img 
-                                  src={getOptimizedImageUrl(settings.home_masonry_3_image_mobile || settings.home_masonry_3_image, { width: 500, quality: 70 })} 
-                                  alt={settings.home_masonry_3_text} 
-                                  width={600}
-                                  height={400}
-                                  className="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-700"
-                                  loading="lazy"
-                                  decoding="async"
-                              />
-                          </picture>
-
+                      {/* Block 2 */}
+                      <Link to="/shop?sale=true" className="bg-[#e11d48] rounded-[16px] p-4 flex flex-col items-center justify-center text-center aspect-[5/4] shadow-inner transform transition-transform hover:scale-[1.02]">
+                          <span className="text-white font-bold text-[10px] md:text-xs tracking-widest uppercase mb-0.5">Flat</span>
+                          <span className="text-yellow-400 font-heading font-bold text-3xl md:text-4xl leading-none">80<span className="text-xl md:text-2xl">%</span></span>
+                          <span className="text-white font-bold text-[9px] md:text-[10px] tracking-widest uppercase mt-0.5">Off</span>
+                      </Link>
+                      {/* Block 3 */}
+                      <Link to="/shop?maxPrice=199" className="bg-[#e11d48] rounded-[16px] p-4 flex flex-col items-center justify-center text-center aspect-[5/4] shadow-inner transform transition-transform hover:scale-[1.02]">
+                          <span className="text-white font-bold text-[10px] md:text-xs tracking-widest uppercase mb-0.5">Under</span>
+                          <span className="text-yellow-400 font-heading font-bold text-3xl md:text-4xl leading-none">₹199</span>
+                      </Link>
+                      {/* Block 4 */}
+                      <Link to="/shop?maxPrice=499" className="bg-[#e11d48] rounded-[16px] p-4 flex flex-col items-center justify-center text-center aspect-[5/4] shadow-inner transform transition-transform hover:scale-[1.02]">
+                          <span className="text-white font-bold text-[10px] md:text-xs tracking-widest uppercase mb-0.5">Under</span>
+                          <span className="text-yellow-400 font-heading font-bold text-3xl md:text-4xl leading-none">₹499</span>
                       </Link>
                   </div>
+                  
+                  {/* Center Badge */}
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+                      <div className="bg-[#0ea5e9] border-[3px] border-white rounded-[10px] px-3.5 md:px-4 py-1.5 md:py-2 shadow-md transform -rotate-2">
+                          <span className="block text-white font-heading font-black text-[13px] md:text-sm leading-[1.1] text-center tracking-wide" style={{ textShadow: '1px 1px 0 rgba(0,0,0,0.2)' }}>PRICE<br/>STORE</span>
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </section>
+
+      {/* ================= BUDGET BAZAAR ================= */}
+      <section className="w-full bg-[#fde047] py-8 md:py-12">
+          <div className="container-custom">
+              {/* Title Banner */}
+              <div className="flex justify-center mb-6 md:mb-8">
+                  <div className="relative inline-block bg-[#064e3b] px-8 md:px-12 py-1.5 md:py-2 pr-6 shadow-md" style={{ clipPath: 'polygon(16px 0, 100% 0, 100% 100%, 16px 100%, 0 50%)' }}>
+                      <div className="absolute left-[7px] top-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full"></div>
+                      <h2 className="text-white font-bold text-xl md:text-2xl tracking-widest text-center ml-2 pt-0.5 uppercase">
+                          BUDGET BAZAAR
+                      </h2>
+                  </div>
+              </div>
+
+                {/* Grid */}
+                <div ref={budgetScrollRef} className="grid grid-rows-2 grid-flow-col auto-cols-[125px] md:auto-cols-[150px] gap-2.5 md:gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4 px-4 md:px-2 max-w-5xl mx-auto">
+                    {budgetGridItems.map((item, idx) => (
+                        <Link key={idx} to={item.id ? `/product/${item.id}` : "/shop"} className="snap-start relative aspect-[3/4] rounded-[16px] overflow-hidden group shadow-sm block">
+                          <img src={item.img} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end p-2.5 md:p-3">
+                              <span className="text-white/90 font-medium text-[9px] md:text-[10px] leading-tight drop-shadow-md">Under</span>
+                              <span className="text-white font-bold text-lg md:text-xl leading-none mb-0.5 drop-shadow-md">₹{item.price || item.defaultPrice}</span>
+                              <span className="text-white font-bold text-[10px] md:text-xs truncate drop-shadow-md">{item.title}</span>
+                          </div>
+                      </Link>
+                  ))}
               </div>
           </div>
       </section>
@@ -433,9 +539,11 @@ const Home = () => {
       <section className="py-12 md:py-16 bg-stone-50">
           <div className="container-custom">
                <Reveal>
-                 <div className="flex flex-col items-center mb-10">
-                      <h2 className="text-2xl md:text-3xl font-heading font-bold text-blue-900 uppercase tracking-widest text-center">Bestsellers</h2>
-                      <div className="w-24 h-1 bg-blue-900 mt-4"></div>
+                   <div className="flex items-center justify-between mb-6 md:mb-8 px-2 md:px-0">
+                       <h2 className="text-[22px] md:text-[28px] font-heading font-bold text-[#0f172a] tracking-tight">Bestsellers</h2>
+                       <Link to="/shop" className="text-[#e11d48] font-semibold text-[13px] md:text-sm flex items-center gap-1 hover:underline transition-colors">
+                          See All <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
+                      </Link>
                  </div>
                </Reveal>
 
@@ -453,13 +561,6 @@ const Home = () => {
                    ))}
                </div>
                
-               <Reveal delay={200}>
-                 <div className="mt-10 text-center">
-                      <Link to="/shop" className="group inline-flex items-center gap-2 px-10 py-3 bg-blue-900 text-white font-bold text-sm tracking-widest uppercase hover:bg-blue-800 transition-all hover:shadow-lg hover:-translate-y-0.5">
-                          View All <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                      </Link>
-                  </div>
-               </Reveal>
           </div>
       </section>
 
@@ -489,7 +590,7 @@ const Home = () => {
       )}
 
       {/* ================= PREMIUM COLLECTION ================= */}
-      <section className="py-12 md:py-16 bg-stone-900 text-white">
+      <section className="py-12 md:py-16 bg-white">
           <div className="container-custom">
                {/* Premium Banner */}
                {settings.home_premium_banner_image && (
@@ -514,9 +615,11 @@ const Home = () => {
                    </div>
                )}
 
-               <div className="flex flex-col items-center mb-10">
-                    <h2 className="text-2xl md:text-3xl font-heading font-bold text-white uppercase tracking-widest text-center">Premium Embroidery</h2>
-                    <div className="w-24 h-1 bg-yellow-500 mt-4"></div>
+               <div className="flex items-center justify-between mb-6 md:mb-8 px-2 md:px-0">
+                    <h2 className="text-[22px] md:text-[28px] font-heading font-bold text-[#0f172a] tracking-tight">Premium Embroidery</h2>
+                    <Link to="/shop" className="text-[#e11d48] font-semibold text-[13px] md:text-sm flex items-center gap-1 hover:underline transition-colors">
+                        See All <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
+                    </Link>
                </div>
 
                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">

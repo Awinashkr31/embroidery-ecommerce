@@ -169,22 +169,22 @@ const Navbar = React.memo(() => {
                 <>
                     <button
                         type="button"
-                        className="p-1.5 -ml-1.5 text-stone-800 hover:text-rose-900 transition-colors rounded-full lg:hidden"
+                        className="p-1.5 -ml-1.5 text-stone-800 hover:text-rose-900 transition-colors rounded-full lg:hidden z-10"
                         onClick={() => setIsMobileMenuOpen(true)}
                         aria-label="Open menu"
                     >
                         <Menu className="w-6 h-6" />
                     </button>
-                    <Link to="/" className="flex flex-col group lg:hidden" aria-label="Home">
+                    <Link to="/" className="absolute left-1/2 -translate-x-1/2 flex flex-col group lg:hidden z-0" aria-label="Home">
                         <picture>
                           <source srcSet="/logo.avif" type="image/avif" />
                           <source srcSet="/logo.webp" type="image/webp" />
-                          <img src="/logo.png" alt="Enbroidery By Sana" className="h-10 w-auto object-contain" width={100} height={40} />
+                          <img src="/logo.png" alt="Enbroidery By Sana" className="h-12 w-auto object-contain mt-1" width={100} height={40} />
                         </picture>
                     </Link>
                 </>
             ) : (
-                <div className="flex items-center gap-1 lg:hidden">
+                <div className="flex items-center gap-1 lg:hidden z-10">
                     <button
                         type="button"
                         className="p-2 -ml-2 text-stone-800 hover:text-rose-900 active:scale-90 transition-all rounded-full hover:bg-stone-100"
@@ -193,11 +193,11 @@ const Navbar = React.memo(() => {
                     >
                         <ArrowLeft className="w-5 h-5" strokeWidth={2.5} />
                     </button>
-                    <Link to="/" className="flex shrink-0">
+                    <Link to="/" className="absolute left-1/2 -translate-x-1/2 flex shrink-0 z-0">
                         <picture>
                           <source srcSet="/logo.avif" type="image/avif" />
                           <source srcSet="/logo.webp" type="image/webp" />
-                          <img src="/logo.png" alt="Enbroidery By Sana" className="h-9 w-auto object-contain" width={90} height={36} />
+                          <img src="/logo.png" alt="Enbroidery By Sana" className="h-10 w-auto object-contain mt-1" width={90} height={36} />
                         </picture>
                     </Link>
                 </div>

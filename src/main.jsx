@@ -5,6 +5,10 @@ import { HelmetProvider } from 'react-helmet-async'
 import './index.css'
 import App from './App.jsx'
 import ErrorBoundary from './components/ErrorBoundary'
+import { setupGlobalErrorHandlers } from './utils/crashLogger'
+
+// 🔍 Setup global crash monitoring (catches errors that ErrorBoundary misses)
+setupGlobalErrorHandlers()
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -15,4 +19,3 @@ createRoot(document.getElementById('root')).render(
     </HelmetProvider>
   </StrictMode>,
 )
-

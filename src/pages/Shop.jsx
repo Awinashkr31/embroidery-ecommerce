@@ -43,6 +43,7 @@ const Shop = () => {
     const [sortBy, setSortBy] = useState('featured');
     const [priceRange, setPriceRange] = useState('all');
     const [inStockOnly, setInStockOnly] = useState(false);
+    const [isSaleOnly, setIsSaleOnly] = useState(false);
     const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
     
     const [currentPage, setCurrentPage] = useState(1);
@@ -64,11 +65,21 @@ const Shop = () => {
         if (categoryParam && categoryParam !== 'all') {
             setSelectedCategories([categoryParam]);
         }
+
+        const maxPriceParam = searchParams.get('maxPrice');
+        if (maxPriceParam) {
+            setPriceRange(`under-${maxPriceParam}`);
+        }
+
+        const saleParam = searchParams.get('sale');
+        if (saleParam === 'true') {
+            setIsSaleOnly(true);
+        }
     }, [searchParams]);
 
     useEffect(() => {
         setCurrentPage(1);
-    }, [selectedCategories, sortBy, priceRange, inStockOnly]);
+    }, [selectedCategories, sortBy, priceRange, inStockOnly, isSaleOnly]);
 
     useEffect(() => {
         if (isMobileFiltersOpen) {
@@ -122,12 +133,15 @@ const Shop = () => {
             // Price Range Filter
             if (priceRange !== 'all') {
                 if (priceRange === 'under-99' && product.price >= 99) return false;
-                if (priceRange === '99-199' && (product.price < 99 || product.price > 199)) return false;
+                if (priceRange === 'under-199' && product.price >= 199) return false;
+                if (priceRange === 'under-299' && product.price >= 299) return false;
+                if (priceRange === 'under-499' && product.price >= 499) return false;
                 if (priceRange === 'above-199' && product.price <= 199) return false;
             }
 
-            // Availability Filter
+            // Availability & Sale Filters
             if (inStockOnly && !product.inStock) return false;
+            if (isSaleOnly && (!product.originalPrice || product.price >= product.originalPrice)) return false;
 
             return true;
         }).sort((a, b) => {
@@ -142,7 +156,7 @@ const Shop = () => {
                     return (a.featured === b.featured) ? 0 : a.featured ? -1 : 1;
             }
         });
-    }, [products, selectedCategories, contextCategories, priceRange, inStockOnly, sortBy]);
+    }, [products, selectedCategories, contextCategories, priceRange, inStockOnly, isSaleOnly, sortBy]);
 
 
     const totalPages = Math.ceil(allFilteredProducts.length / ITEMS_PER_PAGE);
@@ -161,7 +175,9 @@ const Shop = () => {
     const priceRanges = [
         { id: 'all', label: 'All Prices' },
         { id: 'under-99', label: 'Under ₹99' },
-        { id: '99-199', label: '₹99 - ₹199' },
+        { id: 'under-199', label: 'Under ₹199' },
+        { id: 'under-299', label: 'Under ₹299' },
+        { id: 'under-499', label: 'Under ₹499' },
         { id: 'above-199', label: 'Above ₹199' },
     ];
 
@@ -304,23 +320,43 @@ const Shop = () => {
                                 {/* Availability */}
                                 <div>
                                     <h3 className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-4">Availability</h3>
-                                    <label className="flex items-center justify-between p-4 rounded-xl border border-stone-100 cursor-pointer group hover:border-stone-200 transition-colors bg-stone-50/50">
-                                        <div className="flex flex-col">
-                                            <span className={`text-sm font-medium transition-colors ${inStockOnly ? 'text-stone-900' : 'text-stone-600 group-hover:text-stone-800'}`}>
-                                                In Stock Only
-                                            </span>
-                                            <span className="text-[10px] text-stone-400 mt-0.5">Show only items ready to ship</span>
-                                        </div>
-                                        <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 ${inStockOnly ? 'bg-rose-900' : 'bg-stone-200'}`}>
-                                            <input 
-                                                type="checkbox" 
-                                                checked={inStockOnly}
-                                                onChange={(e) => setInStockOnly(e.target.checked)}
-                                                className="absolute w-full h-full opacity-0 cursor-pointer"
-                                            />
-                                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${inStockOnly ? 'translate-x-6' : 'translate-x-1'}`} />
-                                        </div>
-                                    </label>
+                                    <div className="flex flex-col gap-3">
+                                        <label className="flex items-center justify-between p-4 rounded-xl border border-stone-100 cursor-pointer group hover:border-stone-200 transition-colors bg-stone-50/50">
+                                            <div className="flex flex-col">
+                                                <span className={`text-sm font-medium transition-colors ${inStockOnly ? 'text-stone-900' : 'text-stone-600 group-hover:text-stone-800'}`}>
+                                                    In Stock Only
+                                                </span>
+                                                <span className="text-[10px] text-stone-400 mt-0.5">Show only items ready to ship</span>
+                                            </div>
+                                            <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 ${inStockOnly ? 'bg-rose-900' : 'bg-stone-200'}`}>
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={inStockOnly}
+                                                    onChange={(e) => setInStockOnly(e.target.checked)}
+                                                    className="absolute w-full h-full opacity-0 cursor-pointer"
+                                                />
+                                                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${inStockOnly ? 'translate-x-6' : 'translate-x-1'}`} />
+                                            </div>
+                                        </label>
+                                        
+                                        <label className="flex items-center justify-between p-4 rounded-xl border border-stone-100 cursor-pointer group hover:border-stone-200 transition-colors bg-stone-50/50">
+                                            <div className="flex flex-col">
+                                                <span className={`text-sm font-medium transition-colors ${isSaleOnly ? 'text-stone-900' : 'text-stone-600 group-hover:text-stone-800'}`}>
+                                                    Sale Items
+                                                </span>
+                                                <span className="text-[10px] text-stone-400 mt-0.5">Show discounted items</span>
+                                            </div>
+                                            <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 ${isSaleOnly ? 'bg-rose-900' : 'bg-stone-200'}`}>
+                                                <input 
+                                                    type="checkbox" 
+                                                    checked={isSaleOnly}
+                                                    onChange={(e) => setIsSaleOnly(e.target.checked)}
+                                                    className="absolute w-full h-full opacity-0 cursor-pointer"
+                                                />
+                                                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${isSaleOnly ? 'translate-x-6' : 'translate-x-1'}`} />
+                                            </div>
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
                             
@@ -331,6 +367,7 @@ const Shop = () => {
                                         setSelectedCategories([]);
                                         setPriceRange('all');
                                         setInStockOnly(false);
+                                        setIsSaleOnly(false);
                                     }}
                                     className="flex-1 py-3 px-4 rounded-xl border border-stone-200 text-stone-600 font-semibold text-sm hover:bg-stone-50 active:bg-stone-100 transition-colors"
                                 >
@@ -400,17 +437,31 @@ const Shop = () => {
                         {/* Availability */}
                         <div>
                             <h3 className="font-heading font-bold text-stone-900 mb-4 text-base uppercase tracking-wider">Availability</h3>
-                            <label className="flex items-center gap-3 cursor-pointer group">
-                                <input 
-                                    type="checkbox" 
-                                    checked={inStockOnly}
-                                    onChange={(e) => setInStockOnly(e.target.checked)}
-                                    className="w-4 h-4 rounded border-stone-300 text-rose-900 focus:ring-rose-900 cursor-pointer"
-                                />
-                                <span className={`text-sm transition-colors ${inStockOnly ? 'text-stone-900 font-medium' : 'text-stone-500 group-hover:text-stone-800'}`}>
-                                    In Stock Only
-                                </span>
-                            </label>
+                            <div className="flex flex-col gap-3">
+                                <label className="flex items-center gap-3 cursor-pointer group">
+                                    <input 
+                                        type="checkbox" 
+                                        checked={inStockOnly}
+                                        onChange={(e) => setInStockOnly(e.target.checked)}
+                                        className="w-4 h-4 rounded border-stone-300 text-rose-900 focus:ring-rose-900 cursor-pointer"
+                                    />
+                                    <span className={`text-sm transition-colors ${inStockOnly ? 'text-stone-900 font-medium' : 'text-stone-500 group-hover:text-stone-800'}`}>
+                                        In Stock Only
+                                    </span>
+                                </label>
+                                
+                                <label className="flex items-center gap-3 cursor-pointer group">
+                                    <input 
+                                        type="checkbox" 
+                                        checked={isSaleOnly}
+                                        onChange={(e) => setIsSaleOnly(e.target.checked)}
+                                        className="w-4 h-4 rounded border-stone-300 text-rose-900 focus:ring-rose-900 cursor-pointer"
+                                    />
+                                    <span className={`text-sm transition-colors ${isSaleOnly ? 'text-stone-900 font-medium' : 'text-stone-500 group-hover:text-stone-800'}`}>
+                                        Sale Items
+                                    </span>
+                                </label>
+                            </div>
                         </div>
                     </aside>
 
@@ -438,9 +489,9 @@ const Shop = () => {
                                 >
                                     <SlidersHorizontal className="w-4 h-4" />
                                     <span>Filters</span>
-                                    {(selectedCategories.length > 0 || priceRange !== 'all' || inStockOnly) && (
+                                    {(selectedCategories.length > 0 || priceRange !== 'all' || inStockOnly || isSaleOnly) && (
                                         <span className="bg-rose-900 text-white text-[9px] font-bold w-4 h-4 flex items-center justify-center rounded-full">
-                                            {(selectedCategories.length > 0 ? 1 : 0) + (priceRange !== 'all' ? 1 : 0) + (inStockOnly ? 1 : 0)}
+                                            {(selectedCategories.length > 0 ? 1 : 0) + (priceRange !== 'all' ? 1 : 0) + (inStockOnly ? 1 : 0) + (isSaleOnly ? 1 : 0)}
                                         </span>
                                     )}
                                 </button>
@@ -479,7 +530,7 @@ const Shop = () => {
                                 <Sparkles className="w-8 h-8 text-stone-300 mx-auto mb-4" />
                                 <h3 className="text-2xl font-heading text-stone-900 mb-2">No results found</h3>
                                 <button 
-                                    onClick={() => {setSelectedCategories([]); setPriceRange('all'); setInStockOnly(false);}}
+                                    onClick={() => {setSelectedCategories([]); setPriceRange('all'); setInStockOnly(false); setIsSaleOnly(false);}}
                                     className="text-rose-900 underline underline-offset-4 hover:text-rose-700 text-sm font-medium"
                                 >
                                     Reset collection

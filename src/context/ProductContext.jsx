@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useRef, useCallback } from 'react';
+import { createContext, useContext, useState, useRef, useCallback } from 'react';
 import { supabase } from '../../config/supabase';
 import { deleteImage } from '../utils/uploadUtils';
 

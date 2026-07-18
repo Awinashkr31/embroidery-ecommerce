@@ -1,11 +1,11 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase } from '../config/supabase';
 
 const SettingsContext = createContext();
 
 const SETTINGS_CACHE_MS = 10 * 60 * 1000; // 10 minutes
 
-// eslint-disable-next-line react-refresh/only-export-components
+ 
 export const useSettings = () => useContext(SettingsContext);
 
 // Default structure matching exactly your JSON
@@ -101,6 +101,15 @@ const DEFAULT_SETTINGS = {
 
     custom_design_banner_image: "",
     custom_design_body_image: "",
+
+    home_reviews: [
+        { id: 1, name: "Priya S.", rating: 5, text: "Mujhe bouquet bahut pasand aaya! Ekdum real flowers jaisa lagta hai. Meri friend ko gift diya toh woh bahut khush hui. Best quality hai!", photo: "" },
+        { id: 2, name: "Meera R.", rating: 5, text: "Hair clips ka design itna cute hai na, sab poochte hain kahan se liya. Thread work ekdum neat hai aur colour bhi bilkul wahi mila jo photo mein tha.", photo: "" },
+        { id: 3, name: "Anita K.", rating: 4, text: "Keychain ka embroidery work amazing hai. Delivery thoda late aayi but product dekhke sab bhool gayi. Packaging bhi bahut premium thi.", photo: "" },
+        { id: 4, name: "Riya M.", rating: 5, text: "Gajra liya tha function ke liye — everyone loved it! Itna detailed handwork hai ki log sochte hain asli phool hain. Definitely dubara order karungi.", photo: "" },
+        { id: 5, name: "Neha G.", rating: 5, text: "Custom design karwaya tha rakhi ke liye, Sana ne exactly waise hi banaya jaisa maine bola tha. Gift wrapping bhi bahut sundar thi. Highly recommend!", photo: "" },
+        { id: 6, name: "Simran T.", rating: 5, text: "Rubber band set liya beti ke liye, itna soft aur comfortable hai. School mein sab friends ne bhi manga address. Quality ke liye price bilkul sahi hai.", photo: "" },
+    ],
     shipping_min_order_value: 200,
     shipping_free_delivery_threshold: 499,
 };

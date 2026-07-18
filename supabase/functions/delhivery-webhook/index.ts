@@ -154,7 +154,29 @@ serve(async (req: Request) => {
     });
 
   } catch (error: any) {
-    console.error("Webhook Error:", error);
+    // 🔍 Structured error logging
+    console.error(JSON.stringify({
+      function: 'delhivery-webhook',
+      error: error.message,
+      stack: error.stack,
+      timestamp: new Date().toISOString()
+    }));
+
+    // Log to crash_logs table
+    try {
+      const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
+      const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+      const sbLog = createClient(supabaseUrl, supabaseKey);
+      await sbLog.from('crash_logs').insert({
+        error_message: error.message,
+        error_stack: error.stack,
+        source: 'edge-function',
+        function_name: 'delhivery-webhook',
+        url: req.url,
+        request_method: req.method
+      });
+    } catch (_) { /* Silent */ }
+
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 400,

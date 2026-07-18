@@ -1,9 +1,9 @@
 import React from 'react';
-import { useWishlist } from '../context/WishlistContext';
-import { useCart } from '../context/CartContext';
-import { Heart, Trash2, ShoppingBag, ArrowRight } from 'lucide-react';
+import { Heart, ArrowRight, Trash2, ShoppingBag } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
+import { useWishlist } from '../context/WishlistContext';
+import { useCart } from '../context/CartContext';
 import { getProductUrl } from '../utils/urlUtils';
 
 const Wishlist = () => {

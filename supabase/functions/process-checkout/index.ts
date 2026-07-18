@@ -247,7 +247,33 @@ serve(async (req: Request) => {
     })
 
   } catch (error: any) {
-    console.error('Edge Function Error:', error)
+    // 🔍 Structured error logging for Supabase Edge Function Logs
+    console.error(JSON.stringify({
+      function: 'process-checkout',
+      error: error.message,
+      stack: error.stack,
+      timestamp: new Date().toISOString(),
+      url: req.url,
+      method: req.method
+    }));
+
+    // Also log to crash_logs table for dashboard visibility
+    try {
+      const supabaseForLog = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      );
+      await supabaseForLog.from('crash_logs').insert({
+        error_message: error.message,
+        error_stack: error.stack,
+        source: 'edge-function',
+        function_name: 'process-checkout',
+        url: req.url,
+        request_method: req.method,
+        extra_context: { action: 'unknown' }
+      });
+    } catch (_) { /* Don't let logging crash the error handler */ }
+
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...getCorsHeaders(req), 'Content-Type': 'application/json' },
       status: 500,

@@ -31,6 +31,7 @@ export default {
       },
       animation: {
         marquee: 'marquee 20s linear infinite',
+        'marquee-right': 'marquee-right 25s linear infinite',
         'fade-in-up': 'fadeInUp 0.3s ease-out forwards',
         'shimmer': 'shimmer 3s ease-in-out infinite',
       },
@@ -38,6 +39,10 @@ export default {
         marquee: {
           '0%': { transform: 'translateX(0%)' },
           '100%': { transform: 'translateX(-50%)' },
+        },
+        'marquee-right': {
+          '0%': { transform: 'translateX(-50%)' },
+          '100%': { transform: 'translateX(0%)' },
         },
         fadeInUp: {
           '0%': { opacity: '0', transform: 'translateY(5px)' },

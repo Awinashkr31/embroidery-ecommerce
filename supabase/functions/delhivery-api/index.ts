@@ -96,7 +96,31 @@ serve(async (req) => {
     })
 
   } catch (error) {
-    console.error(`Edge Function Error:`, error);
+    // 🔍 Structured error logging
+    console.error(JSON.stringify({
+      function: 'delhivery-api',
+      error: error.message,
+      stack: error.stack,
+      timestamp: new Date().toISOString()
+    }));
+
+    // Log to crash_logs table
+    try {
+      const { createClient } = await import("https://esm.sh/@supabase/supabase-js@2");
+      const sbLog = createClient(
+        Deno.env.get('SUPABASE_URL') ?? '',
+        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+      );
+      await sbLog.from('crash_logs').insert({
+        error_message: error.message,
+        error_stack: error.stack,
+        source: 'edge-function',
+        function_name: 'delhivery-api',
+        url: req.url,
+        request_method: req.method
+      });
+    } catch (_) { /* Silent */ }
+
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 400,

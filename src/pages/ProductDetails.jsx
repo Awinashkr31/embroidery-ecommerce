@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion'; // eslint-disable-line no-unused-vars
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useProducts } from '../context/ProductContext';
@@ -6,7 +6,7 @@ import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useToast } from '../context/ToastContext';
 import { supabase } from '../../config/supabase';
-import { Heart, ShoppingBag, ArrowLeft, Truck, Shield, Star, Award, Search, Sparkles, Plus, Minus, ChevronDown, Share2, X, Loader, Calendar, CheckCircle2, Package, Gift } from 'lucide-react';
+import { Heart, ShoppingBag, ArrowLeft, Truck, Shield, Star, Award, Search, Sparkles, Plus, Minus, ChevronDown, Share2, X, Loader, Calendar, CheckCircle2, Package, Gift, ShoppingCart } from 'lucide-react';
 import SEO from '../components/SEO';
 import { PincodeChecker } from '../components/PincodeChecker';
 import { extractProductIdFromSlug, getProductUrl } from '../../src/utils/urlUtils';
@@ -20,7 +20,7 @@ const ProductDetails = () => {
     useEffect(() => {
         fetchProducts();
     }, [fetchProducts]);
-    const { addToCart, cart, FREE_DELIVERY_THRESHOLD, isGiftWrapped, setIsGiftWrapped } = useCart();
+    const { addToCart, updateQuantity, removeFromCart, cart, FREE_DELIVERY_THRESHOLD, isGiftWrapped, setIsGiftWrapped, cartCount } = useCart();
     const { toggleWishlist, isInWishlist } = useWishlist();
     const { addToast } = useToast();
     const navigate = useNavigate();
@@ -139,13 +139,18 @@ const ProductDetails = () => {
     }, [selectedColor, selectedVariant]);
 
 
-    // Check if item is in cart (reactive to size selection for clothing)
-    const isInCart = product && cart.some(item => 
-        item.id === product.id && 
-        (product.clothingInformation 
-            ? (item.selectedSize === selectedSize && item.selectedColor === selectedColor) 
-            : true)
-    );
+    // Find the exact item in cart
+    const cartItem = useMemo(() => {
+        if (!product || !cart) return null;
+        return cart.find(item => 
+            item.id === product.id && 
+            (product.clothingInformation 
+                ? (item.selectedSize === selectedSize && item.selectedColor === selectedColor) 
+                : true)
+        );
+    }, [cart, product, selectedSize, selectedColor]);
+
+    const isInCart = !!cartItem;
 
     // Helpers for Clothing Info
     const info = product?.clothingInformation || {};
@@ -172,12 +177,12 @@ const ProductDetails = () => {
         }
         if (hasOnlyNAColor) {
             setSelectedColor('NA');
-        } else if (!selectedColor && availableColors.length > 0) {
-            // Auto-select the first available color by default
+        } else if (!selectedColor && availableColors.length === 1) {
+            // Auto-select the first available color by default if it's the only one
             setSelectedColor(availableColors[0]);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [product?.id, shouldAutoSelectSize, singleSizeKey, hasOnlyNAColor]);
+    }, [product?.id, shouldAutoSelectSize, singleSizeKey, hasOnlyNAColor, availableColors.length]);
 
     useEffect(() => {
         window.scrollTo(0, 0);
@@ -511,7 +516,7 @@ const ProductDetails = () => {
     }
 
     const renderColorSelector = () => {
-        if (!product.clothingInformation || !availableColors || availableColors.length === 0 || hasOnlyNAColor) return null;
+        if (!product.clothingInformation || !availableColors || availableColors.length <= 1 || hasOnlyNAColor) return null;
         return (
             <div className="space-y-4" id="color-selector">
                 <div className="flex items-center gap-1.5">
@@ -729,24 +734,24 @@ const ProductDetails = () => {
 
                         {/* Price Area */}
                         <div className="mb-4 pb-4 border-b border-stone-100 font-body-alt">
-                            <div className="flex flex-col gap-1.5 mb-3">
-                                <div className="flex items-center gap-4">
-                                    <span className="text-5xl lg:text-6xl font-heading font-semibold text-stone-900 tracking-tight">
-                                        <span className="text-2xl text-stone-900 font-sans mr-0.5">₹</span>{currentPrice.toLocaleString()}
+                            <div className="flex flex-col gap-1.5 mb-2">
+                                <div className="flex items-center gap-2.5 bg-emerald-800 text-white px-3 py-1.5 rounded shadow-[0_2px_4px_rgba(6,78,59,0.3)] w-fit">
+                                    <span className="text-3xl lg:text-4xl font-heading font-semibold tracking-tight">
+                                        <span className="text-lg lg:text-xl font-sans mr-0.5">₹</span>{currentPrice.toLocaleString('en-IN')}
                                     </span>
-                                    {product.originalPrice && product.discountPercentage > 0 && (
-                                        <span className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-100 px-3 py-1 rounded-full uppercase tracking-widest">
-                                            {product.discountPercentage}% OFF
+                                    {product.originalPrice && product.originalPrice > currentPrice && (
+                                        <span className="text-[13px] lg:text-sm font-medium text-emerald-100 line-through mt-1">
+                                            ₹{product.originalPrice.toLocaleString('en-IN')}
                                         </span>
                                     )}
                                 </div>
-                                {product.originalPrice && (
-                                    <span className="text-sm text-stone-400 font-medium tracking-wide">
-                                        MRP <span className="line-through">₹{product.originalPrice.toLocaleString()}</span>
-                                    </span>
+                                {product.originalPrice && product.originalPrice > currentPrice && (
+                                    <div className="text-sm font-bold text-emerald-700 ml-1">
+                                        Save ₹{(product.originalPrice - currentPrice).toLocaleString('en-IN')}
+                                    </div>
                                 )}
                             </div>
-                            <p className="text-stone-400 text-[11px] mb-5 uppercase tracking-wider font-medium">Inclusive of all taxes</p>
+                            <p className="text-stone-400 text-[11px] mb-5 uppercase tracking-wider font-medium ml-1">Inclusive of all taxes</p>
                             
                             {/* Mobile-optimized Delivery Box */}
                             <div className="mb-4 w-full">
@@ -852,77 +857,7 @@ const ProductDetails = () => {
                             </div>
                         )}
 
-                        {/* Gift Packaging Checkbox */}
-                        <div className="mb-6">
-                            <label className={`relative overflow-hidden block rounded-xl p-4 cursor-pointer transition-all duration-500 shadow-sm ${isGiftWrapped ? 'bg-[#FFF6F8] border border-[#F7D6DF]' : 'bg-[#FFF6F8] border border-[#F7D6DF] hover:bg-rose-50/50 before:absolute before:inset-0 before:-translate-x-full before:animate-shimmer before:bg-gradient-to-r before:from-transparent before:via-white/60 before:to-transparent'}`}>
-                                <div className="flex gap-3 items-start relative z-10">
-                                    <input 
-                                        type="checkbox" 
-                                        checked={isGiftWrapped} 
-                                        onChange={(e) => {
-                                            setIsGiftWrapped(e.target.checked);
-                                            if (!e.target.checked) setGiftNote('');
-                                        }}
-                                        className="mt-0.5 w-4 h-4 text-rose-600 bg-white border-stone-300 rounded focus:ring-rose-500 cursor-pointer" 
-                                    />
-                                    <div className="flex-1">
-                                        <h3 className="text-[14px] font-sans font-bold text-[#1f2937]">
-                                            🎁 Add Gift Packaging <span className="text-[#4b5563]">(+₹29)</span>
-                                        </h3>
-                                        <p className="text-[12px] text-[#6b7280] mt-0.5">
-                                            Wrapped beautifully with a handwritten note.
-                                        </p>
-                                        
-                                        {/* Optional Note Input */}
-                                        <AnimatePresence>
-                                            {isGiftWrapped && !isNoteInputOpen && (
-                                                <motion.button
-                                                    initial={{ opacity: 0, marginTop: 0 }}
-                                                    animate={{ opacity: 1, marginTop: 12 }}
-                                                    exit={{ opacity: 0, marginTop: 0 }}
-                                                    onClick={(e) => {
-                                                        e.preventDefault();
-                                                        setIsNoteInputOpen(true);
-                                                    }}
-                                                    className="text-xs font-medium text-rose-600 hover:text-rose-700 bg-white border border-rose-200 hover:bg-rose-50 px-3 py-1.5 rounded-md transition-colors flex items-center gap-1 mt-3"
-                                                >
-                                                    <Plus className="w-3.5 h-3.5" />
-                                                    Add note (optional)
-                                                </motion.button>
-                                            )}
-                                            
-                                            {isGiftWrapped && isNoteInputOpen && (
-                                                <motion.div 
-                                                    initial={{ height: 0, opacity: 0, marginTop: 0 }}
-                                                    animate={{ height: 'auto', opacity: 1, marginTop: 12 }}
-                                                    exit={{ height: 0, opacity: 0, marginTop: 0 }}
-                                                    className="overflow-hidden relative"
-                                                >
-                                                    <textarea 
-                                                        value={giftNote}
-                                                        onChange={(e) => setGiftNote(e.target.value)}
-                                                        placeholder="Add your gift note here..."
-                                                        className="w-full text-sm p-3 pr-8 rounded-lg border border-[#F7D6DF] bg-white focus:ring-2 focus:ring-rose-200 focus:border-rose-400 transition-shadow outline-none resize-none placeholder:text-stone-400"
-                                                        rows="2"
-                                                        onClick={(e) => e.preventDefault()} // prevent label toggle when clicking textarea
-                                                    ></textarea>
-                                                    <button 
-                                                        onClick={(e) => {
-                                                            e.preventDefault();
-                                                            setIsNoteInputOpen(false);
-                                                            setGiftNote('');
-                                                        }}
-                                                        className="absolute top-2 right-2 p-1 text-stone-400 hover:text-stone-600 bg-white rounded-full hover:bg-stone-100 transition-colors"
-                                                    >
-                                                        <X className="w-3.5 h-3.5" />
-                                                    </button>
-                                                </motion.div>
-                                            )}
-                                        </AnimatePresence>
-                                    </div>
-                                </div>
-                            </label>
-                        </div>
+
 
                         {/* Trust strip — desktop only */}
                         <div className="hidden lg:grid grid-cols-4 gap-2 mb-6 p-4 bg-stone-50 rounded-2xl border border-stone-100">
@@ -1843,41 +1778,7 @@ const ProductDetails = () => {
                                     </div>
                                 </div>
                             )}
-                            {/* Gift Packaging inside Sheet */}
-                            <div className="pt-4 border-t border-stone-100">
-                                <label className={`relative overflow-hidden flex items-center gap-3 cursor-pointer group p-3 rounded-xl border transition-all duration-500 ${isGiftWrapped ? 'bg-rose-50/80 border-rose-200' : 'bg-rose-50/40 border-rose-100 hover:border-rose-200 before:absolute before:inset-0 before:-translate-x-full before:animate-shimmer before:bg-gradient-to-r before:from-transparent before:via-white/60 before:to-transparent'}`}>
-                                    <div className="relative flex items-center justify-center z-10">
-                                        <input 
-                                            type="checkbox" 
-                                            className="peer sr-only"
-                                            checked={isGiftWrapped}
-                                            onChange={(e) => {
-                                                setIsGiftWrapped(e.target.checked);
-                                                if (!e.target.checked) setGiftNote('');
-                                            }}
-                                        />
-                                        <div className="w-5 h-5 rounded border border-stone-300 bg-white peer-checked:bg-rose-600 peer-checked:border-rose-600 transition-colors flex items-center justify-center shadow-sm">
-                                            <CheckCircle2 className={`w-3.5 h-3.5 text-white transition-transform ${isGiftWrapped ? 'scale-100' : 'scale-0'}`} />
-                                        </div>
-                                    </div>
-                                    <div className="flex-1 relative z-10">
-                                        <div className="text-sm font-sans font-bold text-stone-800 mb-0.5"><span className="mr-1.5">🎁</span>Add Gift Packaging (+₹29)</div>
-                                        <div className="text-[11.5px] text-stone-500">Wrapped beautifully with a handwritten note.</div>
-                                    </div>
-                                </label>
-                                
-                                {isGiftWrapped && (
-                                    <div className="mt-3 animate-in fade-in slide-in-from-top-2 duration-300">
-                                        <textarea 
-                                            value={giftNote}
-                                            onChange={(e) => setGiftNote(e.target.value)}
-                                            placeholder="Gift Note (Optional)"
-                                            className="w-full text-sm p-3 rounded-xl border border-rose-200 bg-white focus:ring-2 focus:ring-rose-900/20 focus:border-rose-900 transition-all resize-none h-16 outline-none placeholder:text-stone-400"
-                                            maxLength={150}
-                                        />
-                                    </div>
-                                )}
-                            </div>
+
                         </div>
 
                         <button
@@ -1909,35 +1810,64 @@ const ProductDetails = () => {
 
             {/* Mobile Sticky Action Bar */}
             <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-stone-100 p-3 lg:hidden z-50 px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-[0_-8px_20px_-10px_rgba(0,0,0,0.1)]">
-                <div className="flex items-center gap-4">
-                    <div className="flex flex-col flex-shrink-0">
-                        <span className="text-stone-400 text-[10px] uppercase tracking-widest font-bold">Total Price</span>
-                        <span className="text-xl font-heading font-bold text-stone-900 leading-none mt-0.5">₹{currentPrice.toLocaleString()}</span>
-                    </div>
-                    
-                    <button
-                        onClick={async () => {
-                            if (isInCart) {
-                                navigate('/cart');
-                                return;
-                            }
-
-                            if (!validateSelection('add')) return;
-                            
-                            await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice, variantId: selectedVariant?.id });
-                        }}
-                        disabled={!isStockAvailable}
-                        className={`flex-1 h-[52px] rounded-[14px] font-bold uppercase tracking-widest text-[11px] transition-all flex items-center justify-center gap-2 ${
-                            isStockAvailable
-                            ? isInCart 
-                                ? 'bg-emerald-700 text-white hover:bg-emerald-800 shadow-md ring-4 ring-emerald-900/10' 
-                                : 'bg-stone-900 text-white shadow-lg shadow-stone-900/20 active:scale-95'
-                            : 'bg-stone-200 text-stone-400 cursor-not-allowed'
-                        }`}
+                <div className="flex items-center gap-3">
+                    <Link 
+                        to="/cart" 
+                        className={`relative flex-shrink-0 flex items-center justify-center rounded-[12px] border border-stone-200 bg-white shadow-sm transition-all h-[52px] ${isInCart ? 'px-4' : 'w-[52px]'}`}
                     >
-                        <ShoppingBag className="w-3.5 h-3.5" />
-                        {isStockAvailable ? (isInCart ? 'Go to Cart' : 'Add to Cart') : 'Sold Out'}
-                    </button>
+                        <ShoppingCart className="w-5 h-5 text-stone-900 stroke-[2.5]" />
+                        {isInCart && (
+                            <span className="ml-2 font-bold text-sm text-[#1a365d] whitespace-nowrap">View Cart</span>
+                        )}
+                        {cartCount > 0 && (
+                            <span className={`absolute -top-1.5 -right-1.5 bg-[#e11d48] text-white text-[10px] font-bold w-[22px] h-[22px] rounded-full flex items-center justify-center shadow-sm`}>
+                                {cartCount}
+                            </span>
+                        )}
+                    </Link>
+                    
+                    {isInCart ? (
+                        <div className="flex-1 h-[52px] bg-[#e11d48] rounded-[12px] flex items-center justify-between px-2 shadow-md">
+                            <button 
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    if (cartItem.quantity > 1) {
+                                        updateQuantity(cartItem.cartItemId, cartItem.quantity - 1);
+                                    } else {
+                                        removeFromCart(cartItem.cartItemId);
+                                    }
+                                }}
+                                className="w-10 h-10 flex items-center justify-center text-white/90 hover:text-white transition-colors active:scale-95"
+                            >
+                                <Minus className="w-5 h-5" />
+                            </button>
+                            <span className="font-bold text-white text-base">{cartItem.quantity}</span>
+                            <button 
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    updateQuantity(cartItem.cartItemId, cartItem.quantity + 1);
+                                }}
+                                className="w-10 h-10 flex items-center justify-center text-white/90 hover:text-white transition-colors active:scale-95"
+                            >
+                                <Plus className="w-5 h-5" />
+                            </button>
+                        </div>
+                    ) : (
+                        <button
+                            onClick={async () => {
+                                if (!validateSelection('add')) return;
+                                await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice, variantId: selectedVariant?.id });
+                            }}
+                            disabled={!isStockAvailable}
+                            className={`flex-1 h-[52px] rounded-[12px] font-bold text-[15px] transition-all flex items-center justify-center gap-2 ${
+                                isStockAvailable
+                                ? 'bg-[#e11d48] text-white shadow-md active:scale-[0.98]'
+                                : 'bg-stone-200 text-stone-400 cursor-not-allowed'
+                            }`}
+                        >
+                            {isStockAvailable ? 'Add to Cart' : 'Sold Out'}
+                        </button>
+                    )}
                 </div>
             </div>
         </div>
