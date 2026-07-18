@@ -257,18 +257,16 @@ const Navbar = React.memo(() => {
           </div>
 
           {/* 4. Right: Icons & Actions */}
-          <div className="flex items-center justify-end space-x-2 lg:space-x-4 lg:flex-1 shrink-0">
-
-            {/* Global Pincode Header - Desktop/Tablet */}
-            <div className="hidden sm:block border-r border-stone-200 pr-4 mr-2">
-                <GlobalPincodeHeader />
+          <div className="flex items-center gap-0 sm:gap-2">
+            <div className="hidden lg:block w-[400px] xl:w-[500px] mr-6">
+              <GlobalPincodeHeader />
             </div>
 
             {/* Mobile Search Icon */}
             <button 
                 id="mobile-search-button"
                 onClick={() => setIsSearchOpen(!isSearchOpen)} 
-                className="p-2 text-stone-600 hover:text-rose-900 transition-colors rounded-full hover:bg-stone-100 lg:hidden animate-fade-in" 
+                className="p-1.5 md:p-2 text-stone-600 hover:text-rose-900 transition-colors rounded-full hover:bg-stone-100 lg:hidden animate-fade-in" 
                 aria-label="Search"
             >
                 {isSearchOpen ? <X className="w-5 h-5" /> : <Search className="w-5 h-5" />}
@@ -283,14 +281,14 @@ const Navbar = React.memo(() => {
                         openLoginSheet();
                     }
                 }}
-                className="p-2 text-stone-600 hover:text-rose-900 transition-colors rounded-full hover:bg-stone-100" 
+                className="p-1.5 md:p-2 text-stone-600 hover:text-rose-900 transition-colors rounded-full hover:bg-stone-100" 
                 aria-label="Wishlist"
             >
                <Heart className="w-5 h-5" />
             </Link>
             
             {/* Cart */}
-            <Link to="/cart" className="relative p-2 text-stone-600 hover:text-rose-900 transition-colors rounded-full hover:bg-stone-100 group" aria-label="Cart">
+            <Link to="/cart" className="relative p-1.5 md:p-2 text-stone-600 hover:text-rose-900 transition-colors rounded-full hover:bg-stone-100 group" aria-label="Cart">
               <ShoppingBag className={`w-5 h-5 group-hover:scale-110 transition-transform ${cartCount > 0 ? 'animate-cart-bounce' : ''}`} key={cartCount} />
               {cartCount > 0 && (
                 <span className="absolute top-1 right-0.5 bg-rose-900 text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center shadow-lg border-2 border-white animate-badge-pop" key={`badge-${cartCount}`}>

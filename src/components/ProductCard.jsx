@@ -257,7 +257,7 @@ export const ProductCard = React.memo(({ product, toggleWishlist, isInWishlist, 
                             setIsAdding(false);
                         }}
                         disabled={!product.inStock || isAdding}
-                        className="absolute -bottom-3 right-1.5 md:-bottom-4 md:right-2 bg-white text-[#e11d48] font-extrabold text-[13px] md:text-[15px] px-4 md:px-6 rounded-[8px] md:rounded-[10px] border-2 border-[#e11d48] shadow-sm z-30 hover:bg-rose-50 transition-colors tracking-wider disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[75px] md:min-w-[95px] h-[28px] md:h-[34px]"
+                        className="absolute -bottom-3 right-1.5 md:-bottom-4 md:right-2 bg-white text-[#e11d48] font-extrabold text-[14px] md:text-[16px] px-4 md:px-6 rounded-[8px] md:rounded-[10px] border-2 border-[#e11d48] shadow-sm z-30 hover:bg-rose-50 transition-colors tracking-wider disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[75px] md:min-w-[95px] h-[34px] md:h-[40px]"
                     >
                         {isAdding ? (
                             <div className="w-4 h-4 md:w-5 md:h-5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
@@ -298,7 +298,7 @@ export const ProductCard = React.memo(({ product, toggleWishlist, isInWishlist, 
                 )}
 
                 {/* Product Name */}
-                <Link to={productUrl} className="font-body text-[11px] md:text-[13px] leading-tight md:leading-[1.3] text-stone-800 hover:text-[#e11d48] transition-colors line-clamp-2 pr-1">
+                <Link to={productUrl} className="font-body font-bold text-[13px] md:text-[15px] leading-tight md:leading-[1.3] text-stone-900 hover:text-[#e11d48] transition-colors line-clamp-2 pr-1">
                     {product.name}
                 </Link>
 

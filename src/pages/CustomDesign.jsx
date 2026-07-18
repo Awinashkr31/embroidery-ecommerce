@@ -210,42 +210,14 @@ const CustomDesign = () => {
              </div>
              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                  {[
-                    "https://images.unsplash.com/photo-1584346045657-36e78eb265db?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
-                    "https://images.unsplash.com/photo-1627918501256-42d4a5dbfdf4?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
-                    "https://images.unsplash.com/photo-1605380536761-0cb1df7902d2?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
-                    "https://images.unsplash.com/photo-1594498653385-d5172c532c00?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80"
+                    "/custom-images/custom_bouquet.webp",
+                    "/custom-images/custom_hoop.webp",
+                    "/custom-images/custom_hairclips.webp",
+                    "/custom-images/custom_keychains.webp"
                  ].map((src, i) => (
                     <div key={i} className="aspect-square bg-stone-100 rounded-[2rem] overflow-hidden group border border-stone-100 shadow-sm hover:shadow-xl transition-all">
                         <img src={src} alt="Custom Work" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                     </div>
-                 ))}
-             </div>
-         </div>
-      </div>
-
-      {/* ─── Testimonials ─── */}
-      <div className="py-16 md:py-24 bg-[#fdfbf7] border-b border-stone-100 mb-16">
-         <div className="container-custom px-5">
-             <div className="text-center mb-12">
-                 <h2 className="text-3xl md:text-4xl font-heading font-bold text-stone-900 mb-4">Client Stories</h2>
-             </div>
-             <div className="grid md:grid-cols-3 gap-6">
-                 {[
-                     {name: "Sneha P.", text: "I requested a custom embroidered denim jacket for my sister's wedding. Sana's team took my rough sketch and turned it into an absolute masterpiece!"},
-                     {name: "Rahul M.", text: "Unbelievable attention to detail. The custom hoop art with my parents' portrait was the perfect anniversary gift. They were in tears."},
-                     {name: "Ananya T.", text: "The process was so smooth. They communicated at every step, sent me design mockups, and the final piece was stunning. Pure art."}
-                 ].map((t, i) => (
-                     <div key={i} className="bg-white p-8 rounded-[2rem] shadow-sm border border-stone-100 hover:-translate-y-2 hover:shadow-xl transition-all duration-300">
-                         <div className="flex text-amber-400 mb-4">
-                             <Star className="w-4 h-4 fill-current"/>
-                             <Star className="w-4 h-4 fill-current"/>
-                             <Star className="w-4 h-4 fill-current"/>
-                             <Star className="w-4 h-4 fill-current"/>
-                             <Star className="w-4 h-4 fill-current"/>
-                         </div>
-                         <p className="text-stone-600 mb-6 italic leading-relaxed">"{t.text}"</p>
-                         <p className="font-bold text-stone-900 font-heading">{t.name}</p>
-                     </div>
                  ))}
              </div>
          </div>
@@ -431,6 +403,34 @@ const CustomDesign = () => {
           </div>
         )}
 
+      </div>
+
+      {/* ─── Testimonials ─── */}
+      <div className="py-16 md:py-24 bg-[#fdfbf7] border-b border-stone-100 mb-16">
+         <div className="container-custom px-5">
+             <div className="text-center mb-12">
+                 <h2 className="text-3xl md:text-4xl font-heading font-bold text-stone-900 mb-4">Client Stories</h2>
+             </div>
+             <div className="grid md:grid-cols-3 gap-6">
+                 {[
+                     {name: "Sneha P.", text: "I requested a custom embroidered denim jacket for my sister's wedding. Sana's team took my rough sketch and turned it into an absolute masterpiece!"},
+                     {name: "Rahul M.", text: "Unbelievable attention to detail. The custom hoop art with my parents' portrait was the perfect anniversary gift. They were in tears."},
+                     {name: "Ananya T.", text: "The process was so smooth. They communicated at every step, sent me design mockups, and the final piece was stunning. Pure art."}
+                 ].map((t, i) => (
+                     <div key={i} className="bg-white p-8 rounded-[2rem] shadow-sm border border-stone-100 hover:-translate-y-2 hover:shadow-xl transition-all duration-300">
+                         <div className="flex text-amber-400 mb-4">
+                             <Star className="w-4 h-4 fill-current"/>
+                             <Star className="w-4 h-4 fill-current"/>
+                             <Star className="w-4 h-4 fill-current"/>
+                             <Star className="w-4 h-4 fill-current"/>
+                             <Star className="w-4 h-4 fill-current"/>
+                         </div>
+                         <p className="text-stone-600 mb-6 italic leading-relaxed">"{t.text}"</p>
+                         <p className="font-bold text-stone-900 font-heading">{t.name}</p>
+                     </div>
+                 ))}
+             </div>
+         </div>
       </div>
 
       {/* ─── Mobile Sticky CTA ─── */}
