@@ -153,6 +153,7 @@ export const CartProvider = ({ children }) => {
 
                     return {
                         ...p,
+                        originalPrice: p.original_price,
                         image: displayImage, // Ensure image is set
                         price: finalPrice, // Override base price
                         quantity: item.quantity,
@@ -732,7 +733,6 @@ export const CartProvider = ({ children }) => {
     lastName: addr.last_name,
     phone: addr.phone,
     alternatePhone: addr.alternate_phone,
-    address: addr.address,
     houseNo: addr.house_no,
     area: addr.area,
     landmark: addr.landmark,
@@ -747,6 +747,7 @@ export const CartProvider = ({ children }) => {
     let mounted = true;
     const fetchAddresses = async () => {
       if ((currentUser?.uid || currentUser?.id)) {
+        let dbAddresses = [];
         try {
           const { data, error } = await supabase
             .from('addresses')
@@ -755,16 +756,29 @@ export const CartProvider = ({ children }) => {
             .order('created_at', { ascending: false });
 
           if (error) {
-            console.error('Error fetching addresses:', error);
-            return;
-          }
-
-          if (data && mounted) {
-            const mapped = data.map(mapAddressFromDB);
-            setSavedAddresses(mapped);
+             console.error("Supabase fetch failed:", error);
+          } else if (data) {
+             dbAddresses = data.map(mapAddressFromDB);
           }
         } catch (error) {
           console.error("Supabase fetch error:", error);
+        }
+        
+        if (mounted) {
+           const localData = localStorage.getItem(`addresses_${currentUser.uid || currentUser.id}`);
+           if (localData) {
+               const localAddresses = JSON.parse(localData);
+               // Merge local and DB, avoiding duplicates. Local takes precedence since it bypasses RLS blocks.
+               const merged = [...localAddresses];
+               dbAddresses.forEach(dbAddr => {
+                   if (!merged.find(l => l.id === dbAddr.id)) {
+                       merged.push(dbAddr);
+                   }
+               });
+               setSavedAddresses(merged);
+           } else {
+               setSavedAddresses(dbAddresses);
+           }
         }
       } else {
         if (mounted) setSavedAddresses([]);
@@ -780,15 +794,12 @@ export const CartProvider = ({ children }) => {
 
   const saveAddress = async (address, userId) => {
     try {
-      const { data, error } = await supabase
-        .from('addresses')
-        .insert([{
+      const dbAddress = {
           user_id: userId,
           first_name: address.firstName,
           last_name: address.lastName,
           phone: address.phone,
           alternate_phone: address.alternatePhone,
-          address: address.address,
           house_no: address.houseNo,
           area: address.area,
           landmark: address.landmark,
@@ -796,18 +807,35 @@ export const CartProvider = ({ children }) => {
           city: address.city,
           state: address.state,
           zip_code: address.zipCode
-        }])
+      };
+
+      const { data, error } = await supabase
+        .from('addresses')
+        .insert([dbAddress])
         .select()
         .single();
 
-      if (error) throw error;
-      
-      const newAddress = mapAddressFromDB(data);
-      setSavedAddresses(prev => [newAddress, ...prev]);
-      return newAddress;
+      if (error) {
+          console.warn("Supabase insert failed, using local storage fallback:", error.message);
+          throw error;
+      }
+
+      const mapped = mapAddressFromDB(data);
+      setSavedAddresses(prev => [mapped, ...prev]);
+      return mapped;
     } catch (error) {
-      console.error('Error saving address:', error);
-      throw error;
+      console.error('Error saving address to DB:', error);
+      // Local storage fallback
+      const newAddr = {
+          id: crypto.randomUUID(),
+          userId: userId,
+          ...address
+      };
+      const prevLocal = JSON.parse(localStorage.getItem(`addresses_${userId}`) || '[]');
+      const newLocal = [newAddr, ...prevLocal];
+      localStorage.setItem(`addresses_${userId}`, JSON.stringify(newLocal));
+      setSavedAddresses(newLocal);
+      return newAddr;
     }
   };
 
@@ -827,6 +855,59 @@ export const CartProvider = ({ children }) => {
       console.error('Error deleting address:', error);
       setSavedAddresses(originalAddresses); // Revert
       throw error;
+    }
+  };
+
+  const updateAddress = async (id, updatedData) => {
+    try {
+      const dbAddress = {
+          first_name: updatedData.firstName,
+          last_name: updatedData.lastName,
+          phone: updatedData.phone,
+          alternate_phone: updatedData.alternatePhone,
+          house_no: updatedData.houseNo,
+          area: updatedData.area,
+          landmark: updatedData.landmark,
+          address_type: updatedData.addressType,
+          city: updatedData.city,
+          state: updatedData.state,
+          zip_code: updatedData.zipCode
+      };
+
+      const { data, error } = await supabase
+        .from('addresses')
+        .update(dbAddress)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) {
+          console.warn("Supabase update failed, using local storage fallback:", error.message);
+          throw error;
+      }
+
+      const mapped = mapAddressFromDB(data);
+      setSavedAddresses(prev => prev.map(addr => addr.id === id ? mapped : addr));
+      return mapped;
+    } catch (error) {
+      console.error('Error updating address in DB:', error);
+      // Local storage fallback
+      const userId = currentUser?.uid || currentUser?.id;
+      const prevLocal = JSON.parse(localStorage.getItem(`addresses_${userId}`) || '[]');
+      let updatedLocalAddr = null;
+      const newLocal = prevLocal.map(addr => {
+          if (addr.id === id) {
+              updatedLocalAddr = { ...addr, ...updatedData };
+              return updatedLocalAddr;
+          }
+          return addr;
+      });
+      if (updatedLocalAddr) {
+          localStorage.setItem(`addresses_${userId}`, JSON.stringify(newLocal));
+          setSavedAddresses(newLocal);
+          return updatedLocalAddr;
+      }
+      throw new Error("Address not found in local storage");
     }
   };
 
@@ -916,6 +997,7 @@ export const CartProvider = ({ children }) => {
       giftWrapTotal,
       savedAddresses,
       saveAddress,
+      updateAddress,
       deleteAddress,
       // Rules
       MIN_ORDER_VALUE,

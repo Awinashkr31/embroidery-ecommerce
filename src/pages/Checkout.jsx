@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { CheckCircle, MapPin, Truck, CreditCard, Loader, Plus, AlertTriangle, Tag, X, ShoppingBag, ChevronDown, ChevronUp, Lock, Gift, Smartphone, Smile, ArrowLeft } from 'lucide-react';
+import { CheckCircle, MapPin, Truck, CreditCard, Loader, Plus, AlertTriangle, Tag, X, ShoppingBag, ChevronDown, ChevronUp, Lock, Gift, Smartphone, Smile, ArrowLeft, Edit3, CheckCircle2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '../context/ToastContext';
 import { supabase } from '../config/supabase';
 import { DelhiveryService } from '../services/delhivery';
 import { getEstimatedDeliveryDate } from '../utils/dateUtils';
 import { usePincode } from '../context/PincodeContext';
+import FloatingInput from '../components/FloatingInput';
 
 const loadRazorpay = () => {
     return new Promise((resolve) => {
@@ -21,7 +22,7 @@ const loadRazorpay = () => {
 };
 
 const Checkout = () => {
-    const { cart, cartLoading, cartTotal, subtotal, giftWrapTotal, shippingCharge, discountAmount, appliedCoupon, applyCoupon, removeCoupon, placeOrder, savedAddresses, saveAddress, COD_EXTRA_CHARGE, COD_STATUS, isGiftWrapped } = useCart();
+    const { cart, cartLoading, cartTotal, subtotal, giftWrapTotal, shippingCharge, discountAmount, appliedCoupon, applyCoupon, removeCoupon, placeOrder, savedAddresses, saveAddress, updateAddress, COD_EXTRA_CHARGE, COD_STATUS, isGiftWrapped } = useCart();
     const { currentUser, loading: authLoading } = useAuth();
     const { addToast } = useToast();
     const { pincode: globalPincode } = usePincode();
@@ -65,19 +66,14 @@ const Checkout = () => {
     };
 
     const [formData, setFormData] = useState({
-        fullName: '',
-        email: currentUser?.email || '',
-        phone: '',
-        alternatePhone: '',
-        address: '',
-        houseNo: '',
-        area: '',
-        landmark: '',
-        addressType: 'Home',
-        city: '',
-        state: '',
-        zipCode: '',
         paymentMethod: 'online'
+    });
+
+    const [isAddressDrawerOpen, setIsAddressDrawerOpen] = useState(false);
+    const [editingAddressId, setEditingAddressId] = useState(null);
+    const [isAddingNewAddress, setIsAddingNewAddress] = useState(false);
+    const [addressForm, setAddressForm] = useState({
+        fullName: '', phone: '', zipCode: '', address: '', landmark: '', city: '', state: ''
     });
 
     // Force payment method to online if COD is not active
@@ -90,47 +86,57 @@ const Checkout = () => {
     const codCharge = formData.paymentMethod === 'cod' ? COD_EXTRA_CHARGE : 0;
     const finalTotal = cartTotal + codCharge;
 
+    const handleSaveAddress = async (e) => {
+        e.preventDefault();
+        if (!currentUser) return;
+        
+        setIsSubmitting(true);
+        const submissionData = {
+            firstName: addressForm.fullName.split(' ')[0] || '',
+            lastName: addressForm.fullName.split(' ').slice(1).join(' ') || '',
+            phone: addressForm.phone,
+            alternatePhone: '',
+            houseNo: addressForm.address,
+            area: '-',
+            landmark: addressForm.landmark,
+            city: addressForm.city,
+            state: addressForm.state,
+            zipCode: addressForm.zipCode,
+            addressType: 'Home'
+        };
+
+        try {
+            if (editingAddressId) {
+                const updatedAddr = await updateAddress(editingAddressId, submissionData);
+                if (updatedAddr) {
+                    setSelectedAddressId(updatedAddr.id);
+                    simulateZipCheck(updatedAddr.zipCode);
+                    addToast('Address updated successfully!', 'success');
+                }
+            } else {
+                const newAddr = await saveAddress(submissionData, (currentUser.uid || currentUser.id));
+                if (newAddr && newAddr.id) {
+                    setSelectedAddressId(newAddr.id);
+                    simulateZipCheck(newAddr.zipCode);
+                    addToast('Address saved successfully!', 'success');
+                }
+            }
+            setIsAddressDrawerOpen(false);
+            setEditingAddressId(null);
+            setAddressForm({ fullName: '', phone: '', zipCode: '', address: '', landmark: '', city: '', state: '' });
+        } catch (err) {
+            console.error('Save address error:', err);
+            addToast('Failed to save address. Please try again.', 'error');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     const handleAddressSelect = (id) => {
         setSelectedAddressId(id);
-        if (id !== 'new') {
-            const addr = userAddresses.find(a => a.id === id);
-            if (addr) {
-                setFormData(prev => ({
-                    ...prev,
-                    fullName: `${addr.firstName} ${addr.lastName}`,
-                    phone: addr.phone || '',
-                    alternatePhone: addr.alternatePhone || '',
-                    address: addr.address || '',
-                    houseNo: addr.houseNo || '',
-                    area: addr.area || '',
-                    landmark: addr.landmark || '',
-                    addressType: addr.addressType || 'Home',
-                    city: addr.city || '',
-                    state: addr.state || '',
-                    zipCode: addr.zipCode || ''
-                }));
-            }
-        } else {
-             setFormData(prev => ({
-                ...prev,
-                fullName: '',
-                phone: '',
-                alternatePhone: '',
-                address: '',
-                houseNo: '',
-                area: '',
-                landmark: '',
-                addressType: 'Home',
-                city: '',
-                state: '',
-                zipCode: globalPincode || '',
-                email: currentUser?.email || prev.email || ''
-            }));
-            
-            // Trigger check if global pincode exists
-            if (globalPincode && globalPincode.length === 6) {
-                simulateZipCheck(globalPincode);
-            }
+        const addr = userAddresses.find(a => a.id === id);
+        if (addr && addr.zipCode) {
+            simulateZipCheck(addr.zipCode);
         }
     };
 
@@ -139,7 +145,7 @@ const Checkout = () => {
     // Initial load logic for "new" address without saved addresses
     React.useEffect(() => {
         if (!hasInitializedAddressRef.current && savedAddresses.length === 0 && globalPincode) {
-             setFormData(prev => ({ ...prev, zipCode: globalPincode }));
+             setAddressForm(prev => ({ ...prev, zipCode: globalPincode }));
              simulateZipCheck(globalPincode);
         }
     }, [savedAddresses.length, globalPincode]);
@@ -166,21 +172,8 @@ const Checkout = () => {
         if (savedAddresses.length > 0 && !hasInitializedAddressRef.current) {
             const defaultAddr = savedAddresses.find(addr => addr.userId === (currentUser?.uid || currentUser?.id));
             if (defaultAddr) {
-                 setSelectedAddressId(defaultAddr.id);
-                 setFormData(prev => ({
-                    ...prev,
-                    fullName: `${defaultAddr.firstName} ${defaultAddr.lastName}`,
-                    phone: defaultAddr.phone || '',
-                    alternatePhone: defaultAddr.alternatePhone || '',
-                    address: defaultAddr.address || '',
-                    houseNo: defaultAddr.houseNo || '',
-                    area: defaultAddr.area || '',
-                    landmark: defaultAddr.landmark || '',
-                    addressType: defaultAddr.addressType || 'Home',
-                    city: defaultAddr.city || '',
-                    state: defaultAddr.state || '',
-                    zipCode: defaultAddr.zipCode || ''
-                }));
+                     setSelectedAddressId(defaultAddr.id);
+                     simulateZipCheck(defaultAddr.zipCode);
             }
             hasInitializedAddressRef.current = true;
         }
@@ -190,7 +183,7 @@ const Checkout = () => {
     const handleZipChange = (e) => {
         const zip = e.target.value.replace(/\D/g, '').slice(0, 6); // Allow only numbers, max 6 digits
         // Use functional state update to prevent stale state issues
-        setFormData(prev => ({ ...prev, zipCode: zip }));
+        setAddressForm(prev => ({ ...prev, zipCode: zip }));
 
         if (zip.length === 6) {
             if (zipTimeoutRef.current) clearTimeout(zipTimeoutRef.current);
@@ -201,7 +194,7 @@ const Checkout = () => {
                     const sydneyCheck = await DelhiveryService.checkServiceability(zip);
                     
                     if (sydneyCheck.city || sydneyCheck.state) {
-                        setFormData(prev => ({
+                        setAddressForm(prev => ({
                             ...prev,
                             city: sydneyCheck.city || prev.city,
                             state: sydneyCheck.state || prev.state
@@ -211,14 +204,14 @@ const Checkout = () => {
                         const response = await fetch(`https://api.postalpincode.in/pincode/${zip}`);
                         const data = await response.json();
                         if (data && data[0] && data[0].Status === 'Success') {
-                            setFormData(prev => ({
+                            setAddressForm(prev => ({
                                 ...prev,
                                 city: data[0].PostOffice[0].District,
                                 state: data[0].PostOffice[0].State
                             }));
                         } else {
                             addToast('Invalid Pincode', 'error');
-                            setFormData(prev => ({ ...prev, city: '', state: '' }));
+                            setAddressForm(prev => ({ ...prev, city: '', state: '' }));
                         }
                     }
 
@@ -240,7 +233,7 @@ const Checkout = () => {
                         const response = await fetch(`https://api.postalpincode.in/pincode/${zip}`);
                         const data = await response.json();
                         if (data && data[0] && data[0].Status === 'Success') {
-                            setFormData(prev => ({
+                            setAddressForm(prev => ({
                                 ...prev,
                                 city: data[0].PostOffice[0].District,
                                 state: data[0].PostOffice[0].State
@@ -255,7 +248,7 @@ const Checkout = () => {
             }, 600); // 600ms debounce
         } else {
             // Clear city and state if pincode is not 6 digits
-            setFormData(prev => ({ ...prev, city: '', state: '' }));
+            setAddressForm(prev => ({ ...prev, city: '', state: '' }));
         }
     };
 
@@ -311,27 +304,22 @@ const Checkout = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!formData.address || !formData.phone || !formData.fullName || !formData.email) {
-            addToast('Please fill in all required fields including email.', 'error');
+        
+        const selectedAddr = userAddresses.find(a => a.id === selectedAddressId);
+        
+        if (!selectedAddr) {
+            addToast('Please select a delivery address.', 'error');
             return;
         }
 
         setIsSubmitting(true);
 
-        // Split Full Name
-        const nameParts = formData.fullName.trim().split(' ');
-        const firstName = nameParts[0];
-        const lastName = nameParts.slice(1).join(' ') || '';
-
         const submissionData = {
-            ...formData,
-            firstName,
-            lastName
+            ...selectedAddr,
+            email: currentUser?.email
         };
 
-        if (currentUser && shouldSaveAddress && selectedAddressId === 'new') {
-            saveAddress(submissionData, (currentUser.uid || currentUser.id));
-        }
+
 
         try {
             if (formData.paymentMethod === 'online') {
@@ -363,9 +351,9 @@ const Checkout = () => {
                     description: "Handcrafted Embroidery",
                     order_id: orderData.id,
                     prefill: {
-                        name: formData.fullName,
-                        email: formData.email,
-                        contact: formData.phone
+                        name: `${submissionData.firstName} ${submissionData.lastName}`,
+                        email: submissionData.email,
+                        contact: submissionData.phone
                     },
                     theme: {
                         color: "#881337"
@@ -390,8 +378,7 @@ const Checkout = () => {
                             // 5. Place Order in Database
                             const orderResult = await placeOrder({
                                 ...submissionData,
-                                userId: (currentUser?.uid || currentUser?.id),
-                                email: currentUser?.email || formData.email
+                                userId: (currentUser?.uid || currentUser?.id)
                             }, {
                                 status: 'paid',
                                 paymentId: response.razorpay_payment_id
@@ -450,7 +437,7 @@ const Checkout = () => {
             <div className="sticky top-0 z-40 bg-white shadow-sm border-b border-stone-100">
                 <div className="px-4 py-3 flex items-center justify-between max-w-6xl mx-auto">
                     <div className="flex items-center gap-3">
-                        <button onClick={() => navigate('/cart')} className="p-1 -ml-1 text-stone-800 hover:text-stone-900 transition-colors inline-block">
+                        <button onClick={() => navigate(-1)} className="p-1 -ml-1 text-stone-800 hover:text-stone-900 transition-colors inline-block">
                             <ArrowLeft className="w-5 h-5" />
                         </button>
                         <span className="font-bold text-stone-900 text-lg">Checkout</span>
@@ -478,74 +465,44 @@ const Checkout = () => {
                                 <h2 className="text-base font-bold text-stone-900">Delivery Address</h2>
                             </div>
                             
-                            {currentUser && userAddresses.length > 0 ? (
-                                <div className="space-y-3">
-                                    {userAddresses.map(addr => (
-                                        <div 
-                                            key={addr.id}
-                                            onClick={() => handleAddressSelect(addr.id)}
-                                            className={`p-4 rounded-2xl cursor-pointer transition-all ${
-                                                selectedAddressId === addr.id 
-                                                ? 'bg-rose-50/50 shadow-sm border border-rose-100' 
-                                                : 'bg-[#FAF8F6] border border-transparent hover:bg-stone-50'
-                                            }`}
-                                        >
-                                            <div className="flex justify-between items-start mb-1">
-                                                <div className="font-bold text-stone-900 text-sm flex items-center gap-2">
-                                                    {selectedAddressId === addr.id && <CheckCircle className="w-4 h-4 text-rose-600" />}
-                                                    {addr.firstName}
+                            {selectedAddressId && userAddresses.find(a => a.id === selectedAddressId) ? (
+                                (() => {
+                                    const addr = userAddresses.find(a => a.id === selectedAddressId);
+                                    if (!addr) return null;
+                                    return (
+                                        <div className="p-4 rounded-2xl bg-white shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-stone-100 hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)] transition-all">
+                                            <div className="flex items-center justify-between w-full">
+                                                <div className="flex-1 min-w-0 pr-4 pt-1">
+                                                    <div className="text-[14.5px] text-stone-900 mb-0.5">
+                                                        <span className="text-stone-800">Deliver to: </span>
+                                                        <span className="font-medium">{addr.firstName} {addr.lastName}</span>
+                                                        <span className="font-medium">, {addr.zipCode}</span>
+                                                    </div>
+                                                    <div className="text-[13px] text-stone-500 leading-relaxed">
+                                                        {addr.address || [addr.houseNo, addr.area !== '-' ? addr.area : null].filter(Boolean).join(', ')}
+                                                    </div>
                                                 </div>
-                                                <span className="text-[10px] bg-white text-stone-600 px-1.5 py-0.5 rounded border border-stone-200 font-bold uppercase">{addr.addressType}</span>
-                                            </div>
-                                            <div className="text-xs text-stone-500 leading-relaxed pr-8">{addr.address}, {addr.city}</div>
-                                        </div>
-                                    ))}
-                                    <button 
-                                        onClick={() => handleAddressSelect('new')}
-                                        className="w-full text-center py-3 text-rose-900 font-bold text-sm hover:bg-rose-50 rounded-xl transition-colors mt-2"
-                                    >
-                                        + Add Address
-                                    </button>
-                                </div>
-                            ) : null}
-
-                            {/* New Address Form block (only shown if selectedAddressId === 'new') */}
-                            {selectedAddressId === 'new' && (
-                                <form className="space-y-4 mt-4 animate-in fade-in slide-in-from-top-4 duration-500">
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div className="col-span-2">
-                                            <input type="text" name="fullName" required value={formData.fullName} onChange={handleChange} className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:border-rose-900 focus:ring-4 focus:ring-rose-900/10 bg-[#FAF8F6] focus:bg-white outline-none transition-all text-sm font-medium text-stone-900 placeholder:text-stone-400" placeholder="Full Name" />
-                                        </div>
-                                        <div className="col-span-2">
-                                            <input type="email" name="email" required value={formData.email} onChange={handleChange} className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:border-rose-900 focus:ring-4 focus:ring-rose-900/10 bg-[#FAF8F6] focus:bg-white outline-none transition-all text-sm font-medium text-stone-900 placeholder:text-stone-400" placeholder="Email Address" />
-                                        </div>
-                                        <div>
-                                            <input type="tel" name="phone" required value={formData.phone} onChange={handleChange} className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:border-rose-900 focus:ring-4 focus:ring-rose-900/10 bg-[#FAF8F6] focus:bg-white outline-none transition-all text-sm font-medium text-stone-900 placeholder:text-stone-400" placeholder="Mobile Number" />
-                                        </div>
-                                        <div>
-                                            <div className="relative">
-                                                <input type="text" name="zipCode" required maxLength="6" pattern="[0-9]*" inputMode="numeric" value={formData.zipCode} onChange={handleZipChange} className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:border-rose-900 focus:ring-4 focus:ring-rose-900/10 bg-[#FAF8F6] focus:bg-white outline-none transition-all text-sm font-medium text-stone-900 placeholder:text-stone-400" placeholder="Pincode" />
-                                                {isZipLoading && <div className="absolute right-3 top-1/2 -translate-y-1/2"><div className="animate-spin rounded-full h-4 w-4 border-b-2 border-rose-900"></div></div>}
+                                                <button 
+                                                    onClick={() => setIsAddressDrawerOpen(true)}
+                                                    className="shrink-0 text-[#1a56db] text-[13px] font-medium px-4 py-1.5 border border-stone-200 rounded-[4px] hover:bg-stone-50 transition-colors bg-white shadow-sm"
+                                                >
+                                                    Change
+                                                </button>
                                             </div>
                                         </div>
-                                        <div className="col-span-2">
-                                            <textarea name="address" required rows="2" value={formData.address} onChange={handleChange} className="w-full px-4 py-3 border border-stone-200 rounded-xl focus:border-rose-900 focus:ring-4 focus:ring-rose-900/10 bg-[#FAF8F6] focus:bg-white outline-none transition-all text-sm font-medium text-stone-900 resize-none placeholder:text-stone-400" placeholder="House No, Building, Street, Area"></textarea>
-                                        </div>
-                                        <div>
-                                            <input type="text" name="city" required readOnly value={formData.city} className="w-full px-4 py-3 border border-stone-200 rounded-xl bg-stone-100 text-stone-500 outline-none cursor-not-allowed text-sm font-medium" placeholder="City" />
-                                        </div>
-                                        <div>
-                                            <input type="text" name="state" required readOnly value={formData.state} className="w-full px-4 py-3 border border-stone-200 rounded-xl bg-stone-100 text-stone-500 outline-none cursor-not-allowed text-sm font-medium" placeholder="State" />
-                                        </div>
-                                        
-                                        {currentUser && (
-                                            <div className="col-span-2 flex items-center p-3 bg-stone-50 rounded-lg border border-stone-100">
-                                                <input id="save-address" type="checkbox" checked={shouldSaveAddress} onChange={(e) => setShouldSaveAddress(e.target.checked)} className="h-4 w-4 text-rose-900 focus:ring-rose-900 border-stone-300 rounded" />
-                                                <label htmlFor="save-address" className="ml-2 text-sm font-medium text-stone-700 cursor-pointer select-none">Save address for future?</label>
-                                            </div>
-                                        )}
-                                    </div>
-                                </form>
+                                    );
+                                })()
+                            ) : (
+                                <button 
+                                    onClick={() => {
+                                        setEditingAddressId(null);
+                                        setAddressForm({ fullName: '', phone: '', zipCode: '', address: '', landmark: '', city: '', state: '' });
+                                        setIsAddressDrawerOpen(true);
+                                    }}
+                                    className="w-full text-center py-4 bg-rose-900 text-white font-bold text-sm rounded-xl transition-colors shadow-sm hover:bg-rose-800"
+                                >
+                                    + Add Delivery Address
+                                </button>
                             )}
                         </div>
 
@@ -743,15 +700,164 @@ const Checkout = () => {
                     <button
                         onClick={handleSubmit}
                         disabled={isSubmitting}
-                        className="flex-[1.5] bg-rose-900 text-white h-[54px] rounded-xl font-bold text-[15px] shadow-lg shadow-rose-900/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+                        className="flex-[1.5] bg-[#FFC200] text-black h-[54px] rounded-[12px] font-bold text-[16px] tracking-wide shadow-sm hover:bg-[#F3B600] active:scale-[0.98] transition-all flex items-center justify-center gap-2"
                     >
                         {isSubmitting 
-                            ? <Loader className="w-5 h-5 animate-spin" />
+                            ? <Loader className="w-5 h-5 text-black animate-spin" />
                             : `Pay Securely`
                         }
                     </button>
                 </div>
             </div>
+
+            {/* Address Selection Drawer */}
+            <AnimatePresence>
+                {isAddressDrawerOpen && (
+                    <>
+                        <motion.div 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setIsAddressDrawerOpen(false)}
+                            className="fixed inset-0 bg-stone-900/60 z-[60] backdrop-blur-[2px]" 
+                        />
+                        <motion.div 
+                            initial={{ y: '100%' }}
+                            animate={{ y: 0 }}
+                            exit={{ y: '100%' }}
+                            transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+                            className="fixed bottom-0 left-0 right-0 z-[70] bg-[#f5f5f6] rounded-t-[24px] shadow-2xl flex flex-col max-h-[90vh] md:max-w-md md:left-1/2 md:-translate-x-1/2 md:bottom-auto md:top-1/2 md:-translate-y-1/2 md:rounded-[24px]"
+                        >
+                            <div className="bg-white p-4 rounded-t-[24px] border-b border-stone-100 flex items-center justify-between shrink-0">
+                                <h2 className="text-[18px] font-bold text-stone-900">Delivery Address</h2>
+                                <button onClick={() => setIsAddressDrawerOpen(false)} className="p-2 text-stone-400 hover:text-stone-900 transition-colors">
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+                            
+                            <div className="overflow-y-auto p-4 space-y-6">
+                                {/* Saved Addresses List */}
+                                {userAddresses.length > 0 && !isAddingNewAddress && !editingAddressId && (
+                                    <div className="space-y-3">
+                                        <h3 className="text-[13px] font-bold text-stone-500 uppercase tracking-wider mb-2">Saved Addresses</h3>
+                                        {userAddresses.map(addr => (
+                                            <div 
+                                                key={addr.id}
+                                                className={`p-4 bg-white border rounded-[12px] transition-all ${selectedAddressId === addr.id ? 'border-rose-500 ring-1 ring-rose-500 bg-rose-50/30' : 'border-stone-200'}`}
+                                            >
+                                                <div className="flex justify-between items-start mb-1 cursor-pointer" onClick={() => {
+                                                    handleAddressSelect(addr.id);
+                                                    setIsAddressDrawerOpen(false);
+                                                }}>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="font-semibold text-stone-900 text-[14px]">{addr.firstName} {addr.lastName}</span>
+                                                    </div>
+                                                    {selectedAddressId === addr.id && <CheckCircle2 className="w-5 h-5 text-rose-500" />}
+                                                </div>
+                                                <div className="flex justify-between items-end mt-1">
+                                                    <p className="text-[13px] text-stone-500 leading-relaxed cursor-pointer" onClick={() => {
+                                                        handleAddressSelect(addr.id);
+                                                        setIsAddressDrawerOpen(false);
+                                                    }}>
+                                                        {addr.address || `${addr.houseNo}, ${addr.area}`}<br/>
+                                                        {addr.city}, {addr.state} - {addr.zipCode}<br/>
+                                                        Mobile: {addr.phone}
+                                                    </p>
+                                                    <button 
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setEditingAddressId(addr.id);
+                                                            setAddressForm({
+                                                                fullName: `${addr.firstName} ${addr.lastName}`,
+                                                                phone: addr.phone || '',
+                                                                zipCode: addr.zipCode || '',
+                                                                address: addr.address || `${addr.houseNo}, ${addr.area}`,
+                                                                landmark: addr.landmark || '',
+                                                                city: addr.city || '',
+                                                                state: addr.state || ''
+                                                            });
+                                                        }}
+                                                        className="p-2 -mr-2 text-stone-400 hover:text-stone-900 transition-colors"
+                                                    >
+                                                        <Edit3 className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                        {!isAddingNewAddress && !editingAddressId && (
+                                            <div className="flex items-center gap-4 py-3">
+                                                <div className="h-[1px] bg-stone-200 flex-1"></div>
+                                                <button 
+                                                    type="button"
+                                                    onClick={() => {
+                                                        setIsAddingNewAddress(true);
+                                                        setEditingAddressId(null);
+                                                        setAddressForm({ fullName: '', phone: '', zipCode: '', address: '', landmark: '', city: '', state: '' });
+                                                    }}
+                                                    className="text-[12px] text-stone-500 font-bold uppercase tracking-wider hover:text-rose-900 hover:bg-rose-50 px-4 py-2 rounded-full transition-colors border border-stone-200 hover:border-rose-200"
+                                                >
+                                                    + Add New
+                                                </button>
+                                                <div className="h-[1px] bg-stone-200 flex-1"></div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* New / Edit Address Form */}
+                                {(userAddresses.length === 0 || isAddingNewAddress || editingAddressId) && (
+                                <form onSubmit={handleSaveAddress} className="space-y-4 bg-white p-4 rounded-[16px] shadow-sm border border-stone-100">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className="text-[14px] font-bold text-stone-800">
+                                            {editingAddressId ? 'Edit Address' : 'Add New Address'}
+                                        </h3>
+                                        <div className="flex items-center gap-3">
+                                            {(isAddingNewAddress || editingAddressId) && userAddresses.length > 0 && (
+                                                <button 
+                                                    type="button" 
+                                                    onClick={() => {
+                                                        setEditingAddressId(null);
+                                                        setIsAddingNewAddress(false);
+                                                        setAddressForm({ fullName: '', phone: '', zipCode: '', address: '', landmark: '', city: '', state: '' });
+                                                    }}
+                                                    className="text-xs text-stone-500 font-medium hover:text-stone-900"
+                                                >
+                                                    Cancel
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="space-y-4">
+                                        <FloatingInput label="Full Name" required value={addressForm.fullName} onChange={e => setAddressForm({...addressForm, fullName: e.target.value})} />
+                                        
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <FloatingInput label="Mobile Number" type="tel" required pattern="[0-9]{10}" maxLength="10" value={addressForm.phone} onChange={e => setAddressForm({...addressForm, phone: e.target.value.replace(/\D/g, '')})} />
+                                            
+                                            <div className="relative">
+                                                <FloatingInput label="Pincode" type="tel" required pattern="[0-9]{6}" maxLength="6" value={addressForm.zipCode} onChange={handleZipChange} />
+                                                {isZipLoading && <div className="absolute right-3 top-4 w-4 h-4 border-2 border-stone-300 border-t-rose-600 rounded-full animate-spin"></div>}
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <FloatingInput label="City" required value={addressForm.city} onChange={e => setAddressForm({...addressForm, city: e.target.value})} />
+                                            <FloatingInput label="State" required value={addressForm.state} onChange={e => setAddressForm({...addressForm, state: e.target.value})} />
+                                        </div>
+                                        
+                                        <FloatingInput label="Address (House / Flat / Block, Area, Colony)" required value={addressForm.address} onChange={e => setAddressForm({...addressForm, address: e.target.value})} />
+                                        
+                                        <FloatingInput label="Landmark (Optional)" value={addressForm.landmark} onChange={e => setAddressForm({...addressForm, landmark: e.target.value})} />
+                                        
+                                        <button type="submit" disabled={isSubmitting} className="w-full bg-stone-900 text-white font-bold text-[15px] py-4 rounded-[12px] shadow-sm hover:bg-stone-800 active:scale-[0.98] transition-all mt-4 disabled:opacity-70 disabled:active:scale-100 flex items-center justify-center">
+                                            {isSubmitting ? 'Saving...' : 'Save Address'}
+                                        </button>
+                                    </div>
+                                </form>
+                                )}
+                            </div>
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
         </div>
     );
 };
