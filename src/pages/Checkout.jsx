@@ -341,23 +341,18 @@ const Checkout = () => {
                     throw new Error('Razorpay SDK failed to load. Please check your internet connection.');
                 }
 
-                // 2. Create Order via Supabase Edge Function (Secure)
-                const { data: orderData, error: orderError } = await supabase.functions.invoke('process-checkout', {
-                    body: { 
-                        action: 'create-order',
-                        cartItems: cart.map(item => ({ 
-                            id: item.id, 
-                            quantity: item.quantity,
-                            variantId: item.variantId,
-                            selectedSize: item.selectedSize,
-                            selectedColor: item.selectedColor
-                        })),
-                        couponCode: appliedCoupon?.code,
-                        isGiftWrapped: isGiftWrapped
-                    }
+                // 2. Create Order via Vercel Serverless Function
+                const createOrderRes = await fetch('/api/create-order', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount: Math.max(100, Math.round(finalTotal * 100)), currency: 'INR' })
                 });
-
-                if (orderError) throw orderError;
+                
+                if (!createOrderRes.ok) {
+                    const errText = await createOrderRes.text();
+                    throw new Error(errText || 'Failed to create order');
+                }
+                const orderData = await createOrderRes.json();
 
                 // 3. Initialize Razorpay Options
                 const options = {
@@ -378,16 +373,17 @@ const Checkout = () => {
                     handler: async function (response) {
                         try {
                             // 4. Verify Payment Signature
-                            const { data: verifyData, error: verifyError } = await supabase.functions.invoke('process-checkout', {
-                                body: { 
-                                    action: 'verify-signature',
-                                    paymentId: response.razorpay_payment_id,
-                                    orderId: response.razorpay_order_id,
-                                    signature: response.razorpay_signature
-                                }
+                            const verifyRes = await fetch('/api/verify-payment', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    razorpay_payment_id: response.razorpay_payment_id,
+                                    razorpay_order_id: response.razorpay_order_id,
+                                    razorpay_signature: response.razorpay_signature
+                                })
                             });
 
-                            if (verifyError || verifyData?.status !== 'success') {
+                            if (!verifyRes.ok) {
                                 throw new Error('Payment verification failed');
                             }
 

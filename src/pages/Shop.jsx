@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { getOptimizedImageUrl } from '../utils/imageUtils';
 import { Package, Heart, Search, ChevronDown, Sparkles, ChevronLeft, ChevronRight, SlidersHorizontal } from 'lucide-react';
 import { useProducts } from '../context/ProductContext';
@@ -33,11 +33,14 @@ const Shop = () => {
             setSelectedCategories([]);
             return;
         }
+        // At a time select one circle: replace the array instead of appending
         setSelectedCategories(prev => {
+            // If already selected, deselect it (acts as toggle)
             if (prev.includes(catId)) {
-                return prev.filter(id => id !== catId);
+                return [];
             }
-            return [...prev, catId];
+            // Otherwise, select ONLY the new category
+            return [catId];
         });
     };
     const [sortBy, setSortBy] = useState('featured');
@@ -50,6 +53,7 @@ const Shop = () => {
     const ITEMS_PER_PAGE = 12;
 
     const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
 
     useEffect(() => {
         const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -116,20 +120,17 @@ const Shop = () => {
             }
         });
 
-        return flattened.filter(product => {
-            // Category Filter — build a set of all slug variations for selected categories
-            if (selectedCategories.length > 0) {
-                const selectedSlugs = new Set();
-                selectedCategories.forEach(catId => {
-                    selectedSlugs.add(slugify(catId));
-                    // Also add the label slug in case product.category stores the label
-                    const catObj = contextCategories.find(c => c.id === catId);
-                    if (catObj) selectedSlugs.add(slugify(catObj.label));
-                });
-                const productSlug = slugify(product.category);
-                if (!selectedSlugs.has(productSlug)) return false;
-            }
+        // Pre-calculate selected category slugs
+        const selectedSlugs = new Set();
+        if (selectedCategories.length > 0) {
+            selectedCategories.forEach(catId => {
+                selectedSlugs.add(slugify(catId));
+                const catObj = contextCategories.find(c => c.id === catId);
+                if (catObj) selectedSlugs.add(slugify(catObj.label));
+            });
+        }
 
+        return flattened.filter(product => {
             // Price Range Filter
             if (priceRange !== 'all') {
                 if (priceRange === 'under-99' && product.price >= 99) return false;
@@ -145,6 +146,19 @@ const Shop = () => {
 
             return true;
         }).sort((a, b) => {
+            const aIsSelected = selectedCategories.length > 0 && selectedSlugs.has(slugify(a.category));
+            const bIsSelected = selectedCategories.length > 0 && selectedSlugs.has(slugify(b.category));
+
+            // If one is in the selected category and the other is not, the selected one comes first
+            if (aIsSelected && !bIsSelected) return -1;
+            if (!aIsSelected && bIsSelected) return 1;
+
+            // If neither is in the selected category (but there is a selected category), sort them randomly
+            if (selectedCategories.length > 0 && !aIsSelected && !bIsSelected) {
+                return a.randomOrder - b.randomOrder;
+            }
+
+            // Otherwise (both selected, or no category selected), sort according to sortBy
             switch (sortBy) {
                 case 'price-low': return a.price - b.price;
                 case 'price-high': return b.price - a.price;
@@ -167,6 +181,33 @@ const Shop = () => {
             currentPage * ITEMS_PER_PAGE
         );
 
+    const loaderRef = useRef(null);
+
+    const handleObserver = useCallback((entries) => {
+        const target = entries[0];
+        if (target.isIntersecting) {
+            setCurrentPage((prev) => {
+                if (prev < totalPages) return prev + 1;
+                return prev;
+            });
+        }
+    }, [totalPages]);
+
+    useEffect(() => {
+        if (!isMobile) return;
+        const option = {
+            root: null,
+            rootMargin: "200px", // Trigger slightly before reaching the bottom
+            threshold: 0
+        };
+        const observer = new IntersectionObserver(handleObserver, option);
+        if (loaderRef.current) observer.observe(loaderRef.current);
+        
+        return () => {
+            if (loaderRef.current) observer.unobserve(loaderRef.current);
+        };
+    }, [handleObserver, isMobile]);
+
     const categories = [
         { id: 'all', label: 'All Creations' },
         ...contextCategories
@@ -183,7 +224,7 @@ const Shop = () => {
 
     return (
         <div className="bg-[#fdfbf7] min-h-screen pb-32 font-body selection:bg-rose-100 selection:text-rose-900">
-            <div className="container-custom pb-20 pt-20 md:pt-32">
+            <div className="container-custom pb-20 pt-4 md:pt-8">
 
                 {/* Mobile Category Circles */}
                 <div className="lg:hidden mb-4 overflow-x-auto no-scrollbar py-2 -mx-4 px-4">
@@ -551,16 +592,10 @@ const Shop = () => {
                                     ))}
                                 </div>
 
-                                {/* Load More (Mobile) */}
+                                {/* Infinite Scroll Loader (Mobile) */}
                                 {isMobile && currentPage < totalPages && (
-                                    <div className="flex justify-center mt-8 mb-12">
-                                        <button 
-                                            onClick={() => setCurrentPage(prev => prev + 1)}
-                                            className="w-full max-w-xs py-3 rounded-xl bg-rose-900 text-white font-bold shadow-lg shadow-rose-900/20 active:scale-95 transition-all flex items-center justify-center gap-2 hover:bg-rose-800"
-                                        >
-                                            View More Products
-                                            <ChevronDown className="w-4 h-4" />
-                                        </button>
+                                    <div ref={loaderRef} className="flex justify-center mt-8 mb-12 py-4">
+                                        <div className="w-8 h-8 border-4 border-rose-900/20 border-t-rose-900 rounded-full animate-spin"></div>
                                     </div>
                                 )}
 

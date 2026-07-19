@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
-import { Trash2, ArrowRight, Tag, X, Truck, Heart, ShieldCheck, Sparkles, Plus, Minus, ChevronRight, Gift, CheckCircle } from 'lucide-react';
+import { Trash2, ArrowRight, ArrowLeft, Tag, X, Truck, Heart, ShieldCheck, Sparkles, Plus, Minus, ChevronRight, Gift, CheckCircle, Info, MapPin, Edit3, Shield, CheckCircle2 } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useProducts } from '../context/ProductContext';
+import { useToast } from '../context/ToastContext';
 import { getEstimatedDeliveryDate } from '../utils/dateUtils';
 import { getProductUrl } from '../utils/urlUtils';
 
@@ -31,16 +32,94 @@ const Cart = () => {
         isGiftWrapped,
         setIsGiftWrapped,
         giftNote,
-        setGiftNote
+        setGiftNote,
+        savedAddresses,
+        saveAddress,
+        cartCount
     } = useCart();
     const { products } = useProducts();
     const { currentUser } = useAuth();
     const { addToWishlist } = useWishlist();
+    const { addToast } = useToast();
     const navigate = useNavigate();
+    const [isSubmitting, setIsSubmitting] = useState(false);
     const [couponCode, setCouponCode] = useState('');
     const [couponError, setCouponError] = useState('');
     const [isCouponOpen, setIsCouponOpen] = useState(false);
     const [isNoteInputOpen, setIsNoteInputOpen] = useState(false);
+
+    // Address State
+    const userAddresses = savedAddresses?.filter(addr => addr.userId === (currentUser?.uid || currentUser?.id)) || [];
+    const [selectedAddressId, setSelectedAddressId] = useState(null);
+    const [isAddressDrawerOpen, setIsAddressDrawerOpen] = useState(false);
+    const [isZipLoading, setIsZipLoading] = useState(false);
+    const [addressForm, setAddressForm] = useState({
+        fullName: '', phone: '', zipCode: '', houseNo: '', area: '', landmark: '', city: '', state: '', addressType: 'Home'
+    });
+
+    React.useEffect(() => {
+        if (!selectedAddressId && userAddresses.length > 0) {
+            setSelectedAddressId(userAddresses[0].id);
+        }
+    }, [userAddresses, selectedAddressId]);
+
+    const handleZipChange = async (e) => {
+        const val = e.target.value.replace(/\D/g, '').slice(0, 6);
+        setAddressForm(prev => ({ ...prev, zipCode: val }));
+        if (val.length === 6) {
+            setIsZipLoading(true);
+            try {
+                const res = await fetch(`https://api.postalpincode.in/pincode/${val}`);
+                const data = await res.json();
+                if (data[0].Status === 'Success') {
+                    const postOffice = data[0].PostOffice[0];
+                    setAddressForm(prev => ({ ...prev, city: postOffice.District, state: postOffice.State }));
+                }
+            } catch (err) {
+                console.error('Pincode fetch error:', err);
+            }
+            setIsZipLoading(false);
+        }
+    };
+
+    const handleSaveAddress = async (e) => {
+        e.preventDefault();
+        if (!currentUser) {
+            navigate('/login');
+            return;
+        }
+        
+        setIsSubmitting(true);
+        const submissionData = {
+            firstName: addressForm.fullName.split(' ')[0] || '',
+            lastName: addressForm.fullName.split(' ').slice(1).join(' ') || '',
+            phone: addressForm.phone,
+            alternatePhone: '',
+            address: `${addressForm.houseNo}, ${addressForm.area}`,
+            houseNo: addressForm.houseNo,
+            area: addressForm.area,
+            landmark: addressForm.landmark,
+            city: addressForm.city,
+            state: addressForm.state,
+            zipCode: addressForm.zipCode,
+            addressType: addressForm.addressType
+        };
+
+        try {
+            const newAddr = await saveAddress(submissionData, (currentUser.uid || currentUser.id));
+            if (newAddr && newAddr.id) {
+                setSelectedAddressId(newAddr.id);
+                setIsAddressDrawerOpen(false);
+                setAddressForm({ fullName: '', phone: '', zipCode: '', houseNo: '', area: '', landmark: '', city: '', state: '', addressType: 'Home' });
+                addToast('Address saved successfully!', 'success');
+            }
+        } catch (err) {
+            console.error('Save address error:', err);
+            addToast('Failed to save address. Please try again.', 'error');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     const cartCategories = [...new Set(cart.map(item => item.category))];
     const relatedProducts = products?.filter(p => 
@@ -102,14 +181,15 @@ const Cart = () => {
 
     if (cart.length === 0) {
         return (
-            <div className="min-h-[60vh] flex flex-col items-center justify-center bg-[#F8F5F2] font-body p-4">
+            <div className="min-h-[70vh] flex flex-col items-center justify-center bg-[#F8F5F2] font-body p-4">
                 <SEO title="Shopping Cart" description="Your shopping cart is empty." />
-                <div className="bg-rose-50 p-8 rounded-full mb-6 animate-in zoom-in-50 duration-500">
-                    <Trash2 className="w-12 h-12 text-rose-900" />
+                <div className="bg-white p-6 rounded-full mb-6 shadow-sm border border-stone-100 animate-in zoom-in-50 duration-500">
+                    <img src="/empty-cart.svg" alt="Empty Cart" className="w-24 h-24 opacity-80" onError={(e) => { e.target.style.display='none'; e.target.nextSibling.style.display='block'; }} />
+                    <Trash2 className="w-12 h-12 text-stone-300 hidden" />
                 </div>
-                <h1 className="text-[28px] font-heading font-semibold text-stone-900 mb-4">Your cart is empty</h1>
-                <p className="text-[14px] text-stone-500 mb-8 max-w-md text-center">Looks like you haven't added anything yet. Explore our collection to find something unique.</p>
-                <Link to="/shop" className="btn-primary px-8 py-3 rounded-2xl text-[14px] font-semibold">
+                <h1 className="text-[24px] font-bold text-stone-900 mb-2">Your cart is empty</h1>
+                <p className="text-[14px] text-stone-500 mb-8 max-w-sm text-center">Looks like you haven't added anything yet. Explore our collection to find something unique.</p>
+                <Link to="/shop" className="bg-stone-900 text-white hover:bg-stone-800 transition-colors px-10 py-3.5 rounded-[12px] text-[15px] font-bold shadow-sm">
                     Start Shopping
                 </Link>
             </div>
@@ -117,12 +197,21 @@ const Cart = () => {
     }
 
     return (
-        <div className="bg-[#F8F5F2] min-h-screen font-body pt-6 md:pt-12 pb-[140px] md:pb-24 transition-all duration-250 ease-in-out">
+        <div className="bg-[#F8F5F2] min-h-screen font-body pb-[140px] md:pb-24 transition-all duration-250 ease-in-out">
             <SEO title="Shopping Cart" description="Review your selected items and proceed to checkout." />
-            <div className="max-w-6xl mx-auto px-[14px] md:px-8">
+            
+            {/* Mobile Nav Header */}
+            <div className="lg:hidden flex items-center gap-3 bg-white px-4 py-3.5 shadow-sm mb-4 sticky top-0 z-50 border-b border-stone-100">
+                <button onClick={() => navigate(-1)} className="text-stone-800 active:scale-95 transition-transform p-1 -ml-1">
+                    <ArrowLeft className="w-5 h-5" strokeWidth={1.5} />
+                </button>
+                <span className="text-[#1350a8] text-[16px] font-medium tracking-tight">My Cart</span>
+            </div>
+
+            <div className="max-w-6xl mx-auto px-[14px] md:px-8 pt-2 md:pt-12">
                 
-                {/* Header Cleanup */}
-                <h1 className="text-[28px] font-heading font-semibold text-stone-900 mb-5 tracking-tight">Shopping Cart</h1>
+                {/* Desktop Header */}
+                <h1 className="hidden lg:block text-[28px] font-heading font-semibold text-stone-900 mb-5 tracking-tight">Shopping Cart</h1>
 
                 {!isOrderDeployable && (
                     <div className="bg-red-50 border border-red-100 rounded-[16px] p-4 mb-4 flex items-start gap-3 animate-in fade-in slide-in-from-top-2">
@@ -143,6 +232,46 @@ const Cart = () => {
                     {/* LEFT COLUMN: Cart Items & Flow */}
                     <div className="lg:w-2/3 space-y-4">
                         
+                        {/* 0. Delivery Address */}
+                        <div className="bg-white rounded-[16px] p-4 lg:p-5 shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-stone-100 mb-4 transition-all duration-250 hover:shadow-[0_4px_16px_rgba(0,0,0,0.06)]">
+                            <div className="flex items-start gap-3">
+                                <div className="bg-stone-50 p-2 rounded-full text-stone-600">
+                                    <MapPin className="w-5 h-5" />
+                                </div>
+                                <div className="flex-1">
+                                    {selectedAddressId ? (
+                                        <>
+                                            <div className="flex justify-between items-start mb-1">
+                                                <h3 className="font-semibold text-stone-900 text-[15px]">
+                                                    Deliver to: {userAddresses.find(a => a.id === selectedAddressId)?.firstName} {userAddresses.find(a => a.id === selectedAddressId)?.lastName}, {userAddresses.find(a => a.id === selectedAddressId)?.zipCode}
+                                                </h3>
+                                                <button 
+                                                    onClick={() => setIsAddressDrawerOpen(true)}
+                                                    className="text-[#1350a8] text-[13px] font-bold uppercase tracking-wide px-2 py-1 hover:bg-blue-50 rounded transition-colors"
+                                                >
+                                                    Change
+                                                </button>
+                                            </div>
+                                            <div className="text-[13px] text-stone-500 leading-relaxed max-w-sm">
+                                                {userAddresses.find(a => a.id === selectedAddressId)?.houseNo}, {userAddresses.find(a => a.id === selectedAddressId)?.area}<br/>
+                                                {userAddresses.find(a => a.id === selectedAddressId)?.city}, {userAddresses.find(a => a.id === selectedAddressId)?.state}
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <div className="flex flex-row items-center justify-between">
+                                            <h3 className="font-bold text-stone-900 text-[18px]">Delivery Address</h3>
+                                            <button 
+                                                onClick={() => setIsAddressDrawerOpen(true)}
+                                                className="bg-white border border-stone-200 text-rose-600 font-semibold px-4 py-1.5 rounded-lg text-[13px] shadow-sm hover:border-rose-300 transition-colors"
+                                            >
+                                                + Add Address
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
                         {/* 1. Cart Items */}
                         <div className="space-y-4">
                             {cart.map((item, idx) => (
@@ -390,34 +519,45 @@ const Cart = () => {
                     {/* RIGHT COLUMN: Order Summary (Desktop Sticky) */}
                     <div className="lg:w-1/3">
                         <div className="bg-[#FFFFFF] rounded-[24px] p-6 lg:sticky lg:top-28 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-stone-50 transition-all duration-250">
-                            <h2 className="text-[22px] font-heading font-semibold text-stone-900 mb-5">Order Summary</h2>
+                            <h2 className="text-[16px] font-bold text-stone-500 uppercase tracking-wider mb-5 border-b border-stone-100 pb-3">Price Details</h2>
                             
-                            <div className="space-y-3 mb-5 text-[14px]">
-                                <div className="flex justify-between text-[#777]">
-                                    <span>Subtotal</span>
-                                    <span className="text-stone-900 font-medium">₹{subtotal.toLocaleString()}</span>
+                            <div className="space-y-4 mb-5 text-[15px]">
+                                <div className="flex justify-between text-stone-600">
+                                    <span>Price ({cartCount} items)</span>
+                                    <span className="font-medium text-stone-900">₹{(subtotal + discountAmount).toLocaleString()}</span>
                                 </div>
-                                {giftWrapTotal > 0 && (
-                                    <div className="flex justify-between items-start text-[#777]">
-                                        <div>
-                                            <span className="block text-stone-900 font-medium">Gift Packaging</span>
-                                            <span className="text-[12px] text-rose-700/80">Premium Wrap</span>
-                                        </div>
-                                        <span className="text-stone-900 font-medium mt-0.5">₹{giftWrapTotal.toLocaleString()}</span>
+                                {discountAmount > 0 && (
+                                    <div className="flex justify-between text-emerald-600">
+                                        <span>Discount</span>
+                                        <span className="font-medium">-₹{discountAmount.toLocaleString()}</span>
                                     </div>
                                 )}
-                                {appliedCoupon && (
-                                    <div className="flex justify-between text-emerald-600 font-medium">
-                                        <span>Discount ({appliedCoupon.code})</span>
-                                        <span>-₹{discountAmount.toLocaleString()}</span>
-                                    </div>
-                                )}
-                                <div className="flex justify-between text-[#777]">
-                                    <span>Shipping</span>
-                                    <span className={shippingCharge === 0 ? "text-emerald-600 font-bold" : "text-stone-900 font-medium"}>
-                                        {shippingCharge === 0 ? 'Free' : `₹${shippingCharge}`}
+                                <div className="flex justify-between text-stone-600">
+                                    <span>Platform Fee</span>
+                                    <span className="font-medium flex items-center gap-2">
+                                        <span className="text-stone-400 line-through text-[13px]">₹29</span>
+                                        <span className="text-emerald-600">FREE</span>
                                     </span>
                                 </div>
+                                <div className="flex justify-between text-stone-600">
+                                    <span>Delivery Charges</span>
+                                    <span className="font-medium flex items-center gap-2">
+                                        {shippingCharge === 0 ? (
+                                            <>
+                                                <span className="text-stone-400 line-through text-[13px]">₹80</span>
+                                                <span className="text-emerald-600">FREE</span>
+                                            </>
+                                        ) : (
+                                            <span className="text-stone-900">₹{shippingCharge}</span>
+                                        )}
+                                    </span>
+                                </div>
+                                {giftWrapTotal > 0 && (
+                                    <div className="flex justify-between text-stone-600">
+                                        <span>Gift Packaging</span>
+                                        <span className="font-medium text-stone-900">₹{giftWrapTotal}</span>
+                                    </div>
+                                )}
                             </div>
 
                             {/* Delivery Progress embedded in Order Summary */}
@@ -443,45 +583,91 @@ const Cart = () => {
                                 </div>
                             )}
 
-                            <div className="border-t border-stone-100 pt-5 pb-5">
-                                <div className="flex justify-between items-end">
-                                    <div>
-                                        <div className="text-[16px] font-semibold text-stone-900">Total</div>
-                                        <div className="text-[13px] text-[#777] mt-0.5">Incl. of all taxes</div>
-                                    </div>
-                                    <div className="text-[32px] font-bold text-rose-900 leading-none tracking-tight">
+                            <div className="border-t border-b border-dashed border-stone-200 py-4 mb-4">
+                                <div className="flex justify-between items-center">
+                                    <div className="text-[18px] font-bold text-stone-900">Total Amount</div>
+                                    <div className="text-[20px] font-bold text-stone-900 tracking-tight">
                                         ₹{cartTotal.toLocaleString()}
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="bg-[#e9faec] rounded-[12px] p-4 mb-6 flex items-center justify-between text-[14px] shadow-sm">
-                                <span className="font-semibold text-emerald-900 flex items-center gap-2">
-                                    <span className="bg-white p-1.5 rounded-full"><Truck className="w-3.5 h-3.5 text-emerald-600"/></span> Delivery by
-                                </span>
-                                <span className="font-bold text-emerald-800">{getEstimatedDeliveryDate()}</span>
-                            </div>
+                            {discountAmount > 0 && (
+                                <div className="bg-emerald-50 text-emerald-700 font-semibold px-4 py-3 rounded-[8px] text-[14px] flex items-center justify-center gap-2 mb-6">
+                                    You will save ₹{discountAmount.toLocaleString()} on this order
+                                </div>
+                            )}
 
                             <button
-                                onClick={() => navigate('/checkout')}
+                                onClick={() => navigate('/checkout', { state: { selectedAddressId } })}
                                 disabled={!isOrderDeployable}
-                                className={`flex w-full h-[54px] rounded-[16px] font-[600] text-[15px] tracking-[0.3px] transition-all duration-250 items-center justify-center gap-2 active:scale-[0.98] ${
+                                className={`hidden lg:flex w-full h-[54px] rounded-[12px] font-bold text-[16px] tracking-wide transition-all duration-250 items-center justify-center gap-2 active:scale-[0.98] ${
                                     isOrderDeployable 
-                                    ? 'bg-rose-900 text-white hover:bg-rose-800 shadow-[0_8px_24px_rgba(177,0,71,0.22)]' 
-                                    : 'bg-stone-200 text-stone-400 cursor-not-allowed shadow-none'
+                                    ? 'bg-[#FFC200] text-black hover:bg-[#F3B600] shadow-sm' 
+                                    : 'bg-stone-200 text-stone-400 cursor-not-allowed'
                                 }`}
                             >
-                                <span>{isOrderDeployable ? 'Proceed to Checkout →' : `Add items worth ₹${MIN_ORDER_VALUE - subtotal} more`}</span>
+                                {isOrderDeployable ? 'PLACE ORDER' : `Add items worth ₹${MIN_ORDER_VALUE - subtotal} more`}
                             </button>
                             
                             {!currentUser && (
-                                <p className="text-center text-[13px] text-[#777] mt-4">
+                                <p className="text-center text-[13px] text-[#777] mt-4 hidden lg:block">
                                     Checkout as Guest or <Link to="/login" className="text-rose-900 font-medium hover:underline">Log In</Link>
                                 </p>
                             )}
+
+                            {/* Trust Indicators */}
+                            <div className="mt-8 flex justify-between items-start border-t border-stone-100 pt-6">
+                                <div className="flex flex-col items-center justify-center gap-2 flex-1 px-2 text-center">
+                                    <div className="w-10 h-10 rounded-full bg-stone-100 flex items-center justify-center text-stone-600 mb-1">
+                                        <Shield className="w-5 h-5" />
+                                    </div>
+                                    <span className="text-[12px] font-medium text-stone-500 leading-tight">Secure Payments</span>
+                                </div>
+                                <div className="w-px h-12 bg-stone-100 mt-2"></div>
+                                <div className="flex flex-col items-center justify-center gap-2 flex-1 px-2 text-center">
+                                    <div className="w-10 h-10 rounded-full bg-stone-100 flex items-center justify-center text-stone-600 mb-1">
+                                        <Truck className="w-5 h-5" />
+                                    </div>
+                                    <span className="text-[12px] font-medium text-stone-500 leading-tight">Fast Delivery</span>
+                                </div>
+                                <div className="w-px h-12 bg-stone-100 mt-2"></div>
+                                <div className="flex flex-col items-center justify-center gap-2 flex-1 px-2 text-center">
+                                    <div className="w-10 h-10 rounded-full bg-stone-100 flex items-center justify-center text-stone-600 mb-1">
+                                        <CheckCircle2 className="w-5 h-5" />
+                                    </div>
+                                    <span className="text-[12px] font-medium text-stone-500 leading-tight">100% Authentic</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
+            </div>
+
+            {/* Mobile Sticky Checkout Bar */}
+            <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-stone-200 px-4 py-3 lg:hidden z-40 flex items-center justify-between shadow-[0_-4px_12px_rgba(0,0,0,0.04)] pb-[calc(env(safe-area-inset-bottom)+12px)]">
+                <div className="flex flex-col justify-center">
+                    {discountAmount > 0 && (
+                        <div className="text-[12px] text-stone-500 line-through leading-none mb-0.5">
+                            ₹{(subtotal + giftWrapTotal + shippingCharge).toLocaleString()}
+                        </div>
+                    )}
+                    <div className="flex items-center gap-1.5">
+                        <span className="text-[20px] font-bold text-stone-900 leading-none">₹{cartTotal.toLocaleString()}</span>
+                        <Info className="w-4 h-4 text-stone-400 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} />
+                    </div>
+                </div>
+                <button
+                    onClick={() => navigate('/checkout', { state: { selectedAddressId } })}
+                    disabled={!isOrderDeployable}
+                    className={`h-[44px] px-10 rounded-[4px] font-bold text-[15px] tracking-wide transition-all duration-250 shadow-sm ${
+                        isOrderDeployable 
+                        ? 'bg-[#FFC200] text-black hover:bg-[#F3B600] active:scale-95' 
+                        : 'bg-stone-200 text-stone-400 cursor-not-allowed'
+                    }`}
+                >
+                    {isOrderDeployable ? 'PLACE ORDER' : 'ADD ITEMS'}
+                </button>
             </div>
 
 
@@ -517,6 +703,117 @@ const Cart = () => {
                 </>
             )}
             
+            {/* Address Form Drawer / Modal */}
+            <AnimatePresence>
+                {isAddressDrawerOpen && (
+                    <>
+                        <motion.div 
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setIsAddressDrawerOpen(false)}
+                            className="fixed inset-0 bg-stone-900/60 z-[60] backdrop-blur-[2px]" 
+                        />
+                        <motion.div 
+                            initial={{ y: '100%' }}
+                            animate={{ y: 0 }}
+                            exit={{ y: '100%' }}
+                            transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+                            className="fixed bottom-0 left-0 right-0 z-[70] bg-[#f5f5f6] rounded-t-[24px] shadow-2xl flex flex-col max-h-[90vh] md:max-w-md md:left-1/2 md:-translate-x-1/2 md:bottom-auto md:top-1/2 md:-translate-y-1/2 md:rounded-[24px]"
+                        >
+                            <div className="bg-white p-4 rounded-t-[24px] border-b border-stone-100 flex items-center justify-between shrink-0">
+                                <h2 className="text-[18px] font-bold text-stone-900">Delivery Address</h2>
+                                <button onClick={() => setIsAddressDrawerOpen(false)} className="p-2 text-stone-400 hover:text-stone-900 transition-colors">
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+                            
+                            <div className="overflow-y-auto p-4 space-y-6">
+                                {/* Saved Addresses List */}
+                                {userAddresses.length > 0 && (
+                                    <div className="space-y-3">
+                                        <h3 className="text-[13px] font-bold text-stone-500 uppercase tracking-wider mb-2">Saved Addresses</h3>
+                                        {userAddresses.map(addr => (
+                                            <div 
+                                                key={addr.id}
+                                                onClick={() => {
+                                                    setSelectedAddressId(addr.id);
+                                                    setIsAddressDrawerOpen(false);
+                                                }}
+                                                className={`p-4 bg-white border rounded-[12px] cursor-pointer transition-all ${selectedAddressId === addr.id ? 'border-rose-500 ring-1 ring-rose-500 bg-rose-50/30' : 'border-stone-200 hover:border-stone-300'}`}
+                                            >
+                                                <div className="flex justify-between items-start mb-1">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="font-semibold text-stone-900 text-[14px]">{addr.firstName} {addr.lastName}</span>
+                                                        <span className="text-[10px] bg-stone-100 text-stone-600 px-1.5 py-0.5 rounded border border-stone-200 font-bold uppercase">{addr.addressType}</span>
+                                                    </div>
+                                                    {selectedAddressId === addr.id && <CheckCircle2 className="w-5 h-5 text-rose-500" />}
+                                                </div>
+                                                <p className="text-[13px] text-stone-500 mt-1 leading-relaxed">
+                                                    {addr.houseNo}, {addr.area}<br/>
+                                                    {addr.city}, {addr.state} - {addr.zipCode}<br/>
+                                                    Mobile: {addr.phone}
+                                                </p>
+                                            </div>
+                                        ))}
+                                        <div className="flex items-center gap-4 py-3">
+                                            <div className="h-[1px] bg-stone-200 flex-1"></div>
+                                            <span className="text-[12px] text-stone-400 font-medium uppercase tracking-wider">Or Add New</span>
+                                            <div className="h-[1px] bg-stone-200 flex-1"></div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* New Address Form */}
+                                <form onSubmit={handleSaveAddress} className="space-y-4 bg-white p-4 rounded-[16px] shadow-sm border border-stone-100">
+                                    <h3 className="text-[14px] font-bold text-stone-800 mb-2">Add New Address</h3>
+                                    <div className="space-y-4">
+                                        <div>
+                                            <input type="text" required placeholder="Full Name *" className="w-full px-4 py-3 bg-[#F8F5F2] border border-stone-100 rounded-[12px] focus:border-rose-900 outline-none text-[14px] transition-all" value={addressForm.fullName} onChange={e => setAddressForm({...addressForm, fullName: e.target.value})} />
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <input type="tel" required placeholder="Mobile Number *" pattern="[0-9]{10}" maxLength="10" className="w-full px-4 py-3 bg-[#F8F5F2] border border-stone-100 rounded-[12px] focus:border-rose-900 outline-none text-[14px] transition-all" value={addressForm.phone} onChange={e => setAddressForm({...addressForm, phone: e.target.value.replace(/\D/g, '')})} />
+                                            <div className="relative">
+                                                <input type="tel" required placeholder="Pincode *" pattern="[0-9]{6}" maxLength="6" className="w-full px-4 py-3 bg-[#F8F5F2] border border-stone-100 rounded-[12px] focus:border-rose-900 outline-none text-[14px] transition-all" value={addressForm.zipCode} onChange={handleZipChange} />
+                                                {isZipLoading && <div className="absolute right-3 top-3.5 w-4 h-4 border-2 border-stone-300 border-t-rose-600 rounded-full animate-spin"></div>}
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <input type="text" required placeholder="City *" className="w-full px-4 py-3 bg-[#F8F5F2] border border-stone-100 rounded-[12px] focus:border-rose-900 outline-none text-[14px] transition-all" value={addressForm.city} onChange={e => setAddressForm({...addressForm, city: e.target.value})} />
+                                            <input type="text" required placeholder="State *" className="w-full px-4 py-3 bg-[#F8F5F2] border border-stone-100 rounded-[12px] focus:border-rose-900 outline-none text-[14px] transition-all" value={addressForm.state} onChange={e => setAddressForm({...addressForm, state: e.target.value})} />
+                                        </div>
+                                        <div>
+                                            <input type="text" required placeholder="House / Flat / Apartment *" className="w-full px-4 py-3 bg-[#F8F5F2] border border-stone-100 rounded-[12px] focus:border-rose-900 outline-none text-[14px] transition-all" value={addressForm.houseNo} onChange={e => setAddressForm({...addressForm, houseNo: e.target.value})} />
+                                        </div>
+                                        <div>
+                                            <input type="text" required placeholder="Road Name, Area, Colony *" className="w-full px-4 py-3 bg-[#F8F5F2] border border-stone-100 rounded-[12px] focus:border-rose-900 outline-none text-[14px] transition-all" value={addressForm.area} onChange={e => setAddressForm({...addressForm, area: e.target.value})} />
+                                        </div>
+                                        <div>
+                                            <input type="text" placeholder="Landmark (Optional)" className="w-full px-4 py-3 bg-[#F8F5F2] border border-stone-100 rounded-[12px] focus:border-rose-900 outline-none text-[14px] transition-all" value={addressForm.landmark} onChange={e => setAddressForm({...addressForm, landmark: e.target.value})} />
+                                        </div>
+                                        
+                                        <div>
+                                            <label className="text-[12px] text-stone-500 font-medium mb-2 block">Address Type</label>
+                                            <div className="flex gap-3">
+                                                {['Home', 'Office'].map(type => (
+                                                    <label key={type} className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border cursor-pointer transition-all ${addressForm.addressType === type ? 'border-rose-600 bg-rose-50 text-rose-700 font-semibold' : 'border-stone-200 text-stone-600 hover:bg-stone-50'}`}>
+                                                        <input type="radio" name="addressType" value={type} className="hidden" checked={addressForm.addressType === type} onChange={e => setAddressForm({...addressForm, addressType: e.target.value})} />
+                                                        {type}
+                                                    </label>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <button type="submit" disabled={isSubmitting} className="w-full bg-stone-900 text-white font-bold text-[15px] py-4 rounded-[12px] shadow-sm hover:bg-stone-800 active:scale-[0.98] transition-all mt-4 disabled:opacity-70 disabled:active:scale-100 flex items-center justify-center">
+                                            {isSubmitting ? 'Saving...' : 'Save Address'}
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
+
         </div>
     );
 };

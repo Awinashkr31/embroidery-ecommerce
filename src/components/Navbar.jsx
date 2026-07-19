@@ -142,7 +142,7 @@ const Navbar = React.memo(() => {
 
   return (
     <>
-    <header className={`sticky top-0 w-full z-50 flex flex-col transition-transform duration-300 ease-in-out ${scrollDirection === 'down' ? '-translate-y-full' : 'translate-y-0'}`}>
+    <header className={`sticky top-0 w-full z-50 flex flex-col transition-transform duration-300 ease-in-out ${scrollDirection === 'down' ? '-translate-y-full' : 'translate-y-0'} ${location.pathname === '/cart' ? 'hidden lg:flex' : ''}`}>
       <nav
         className={`w-full relative z-20 transition-all duration-500 ease-in-out min-h-[56px] md:min-h-[72px]
           ${isScrolled

@@ -21,6 +21,7 @@
     "googleapis": "^173.0.0",
     "html2pdf.js": "^0.14.0",
     "lucide-react": "^0.561.0",
+    "razorpay": "^2.9.8",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-easy-crop": "^5.5.6",

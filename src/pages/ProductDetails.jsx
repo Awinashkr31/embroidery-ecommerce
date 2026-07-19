@@ -1832,9 +1832,9 @@ const ProductDetails = () => {
                                 onClick={(e) => {
                                     e.preventDefault();
                                     if (cartItem.quantity > 1) {
-                                        updateQuantity(cartItem.cartItemId, cartItem.quantity - 1);
+                                        updateQuantity(cartItem.id, cartItem.quantity - 1, cartItem.selectedSize, cartItem.selectedColor, cartItem.variantId);
                                     } else {
-                                        removeFromCart(cartItem.cartItemId);
+                                        removeFromCart(cartItem.id, cartItem.selectedSize, cartItem.selectedColor, cartItem.variantId);
                                     }
                                 }}
                                 className="w-10 h-10 flex items-center justify-center text-white/90 hover:text-white transition-colors active:scale-95"
@@ -1845,7 +1845,7 @@ const ProductDetails = () => {
                             <button 
                                 onClick={(e) => {
                                     e.preventDefault();
-                                    updateQuantity(cartItem.cartItemId, cartItem.quantity + 1);
+                                    updateQuantity(cartItem.id, cartItem.quantity + 1, cartItem.selectedSize, cartItem.selectedColor, cartItem.variantId);
                                 }}
                                 className="w-10 h-10 flex items-center justify-center text-white/90 hover:text-white transition-colors active:scale-95"
                             >
