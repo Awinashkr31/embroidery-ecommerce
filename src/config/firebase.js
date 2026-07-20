@@ -21,7 +21,13 @@ export const googleProvider = new GoogleAuthProvider();
 export let analytics = null;
 isSupported().then((supported) => {
   if (supported) {
-    analytics = getAnalytics(app);
+    // Defer initialization to prevent blocking main thread (fixes TBT/LCP issues)
+    const initAnalytics = () => { analytics = getAnalytics(app); };
+    if (window.requestIdleCallback) {
+      window.requestIdleCallback(initAnalytics);
+    } else {
+      setTimeout(initAnalytics, 5000);
+    }
   }
 });
 
