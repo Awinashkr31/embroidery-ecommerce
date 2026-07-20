@@ -13,36 +13,30 @@ export const slugify = (str) => {
 
 /**
  * Generates an SEO-friendly URL slug for a product.
- * Format: slugified-product-name-id
+ * Format: purely human readable (no UUID)
  * @param {Object} product 
  * @returns {string}
  */
 export const getProductUrl = (product) => {
-    if (!product || !product.id) return '#';
-    const nameSlug = slugify(product.name);
-    return `/product/${nameSlug}-${product.id}`;
+    if (!product) return '#';
+    const slug = product.clothing_information?.slug || slugify(product.name);
+    return `/product/${slug}`;
 };
 
 /**
- * Extracts the product ID from an SEO-friendly URL slug.
+ * Legacy UUID extraction - kept for backwards compatibility if a user visits an old URL
  * @param {string} slug 
  * @returns {string|null}
  */
 export const extractProductIdFromSlug = (slug) => {
     if (!slug) return null;
-    
-    // If it's a numeric ID (old format)
-    if (!isNaN(slug)) return slug;
-    
-    // Check if it ends with a UUID (Supabase/Firebase IDs)
-    const uuidMatch = slug.match(/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i);
-    if (uuidMatch) {
-        return uuidMatch[1];
-    }
-    
-    // Fallback for non-UUID string IDs
     const parts = slug.split('-');
-    const id = parts[parts.length - 1];
-    
-    return id || slug; // fallback to slug if extraction fails
+    if (parts.length > 1) {
+        const potentialId = parts.slice(-5).join('-');
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        if (uuidRegex.test(potentialId)) {
+            return potentialId;
+        }
+    }
+    return null;
 };

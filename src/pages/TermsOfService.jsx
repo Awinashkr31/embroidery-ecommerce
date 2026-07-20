@@ -6,7 +6,7 @@ const TermsOfService = () => {
     <div className="min-h-screen bg-[#fdfbf7] pt-24 pb-20 font-body">
       <SEO 
         title="Terms of Service" 
-        description="Read our Terms of Service to understand the rules and guidelines for using Embroidery By Sana." 
+        description="Read our Terms of Service to understand the rules and guidelines for using Crochet Wali." 
       />
       <div className="container-custom max-w-4xl mx-auto">
         <h1 className="text-4xl font-heading font-bold text-stone-900 mb-8 text-center">Terms of Service</h1>
@@ -15,7 +15,7 @@ const TermsOfService = () => {
           <p>Last updated: {new Date().toLocaleDateString()}</p>
           
           <h2 className="text-xl font-heading font-semibold text-stone-900 mt-8 mb-4">1. Introduction</h2>
-          <p>Welcome to Embroidery By Sana. By accessing or using our website, you agree to be bound by these Terms of Service. If you do not agree to all the terms and conditions of this agreement, then you may not access the website or use any services.</p>
+          <p>Welcome to Crochet Wali. By accessing or using our website, you agree to be bound by these Terms of Service. If you do not agree to all the terms and conditions of this agreement, then you may not access the website or use any services.</p>
           
           <h2 className="text-xl font-heading font-semibold text-stone-900 mt-8 mb-4">2. Products and Services</h2>
           <p>Certain products or services may be available exclusively online through the website. These products or services may have limited quantities and are subject to replacement only according to our Return Policy (No returns are permitted; only 5-day replacements for damaged goods with a mandatory unboxing video).</p>

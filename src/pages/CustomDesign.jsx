@@ -147,10 +147,10 @@ const CustomDesign = () => {
     "@context": "https://schema.org",
     "@type": "Service",
     "name": "Bespoke Custom Embroidery & Crochet",
-    "description": "Request custom handmade gifts, personalized embroidery portrait hoops, and bespoke crochet designs from Embroidery By Sana.",
+    "description": "Request custom handmade gifts, personalized embroidery portrait hoops, and bespoke crochet designs from Crochet Wali.",
     "provider": {
         "@type": "Organization",
-        "name": "Embroidery By Sana"
+        "name": "Crochet Wali"
     },
     "serviceType": "Handmade Gifts & Embroidery"
   };
@@ -159,7 +159,7 @@ const CustomDesign = () => {
     <div className="bg-[#fdfbf7] min-h-screen font-body pb-24 lg:pb-20">
       <SEO 
         title="Custom Design Request - Handmade Gifts" 
-        description="Request custom handmade gifts, personalized embroidery portrait hoops, and bespoke crochet designs from Embroidery By Sana."
+        description="Request custom handmade gifts, personalized embroidery portrait hoops, and bespoke crochet designs from Crochet Wali."
         schema={serviceSchema}
       />
       {/* Hero — improved */}

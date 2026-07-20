@@ -44,7 +44,7 @@ const Contact = () => {
   const localBusinessSchema = {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
-    "name": "Embroidery By Sana",
+    "name": "Crochet Wali",
     "image": "https://www.embroiderybysana.live/hero-gift.png",
     "@id": "https://www.embroiderybysana.live",
     "url": "https://www.embroiderybysana.live/support",
@@ -82,7 +82,7 @@ const Contact = () => {
     <div className="bg-[#fdfbf7] min-h-screen font-body pt-20 md:pt-28 pb-28 md:pb-20">
       <SEO 
         title="Contact Us | Customer Support"
-        description="Get in touch with Embroidery By Sana. Visit our studio in Hauz Khas Village, New Delhi or contact us for custom handmade embroidery and crochet gifts."
+        description="Get in touch with Crochet Wali. Visit our studio in Hauz Khas Village, New Delhi or contact us for custom Handmade Crochet Gifts and crochet gifts."
         schema={localBusinessSchema}
       />
       <div className="container-custom">
@@ -146,7 +146,7 @@ const Contact = () => {
                       allowFullScreen="" 
                       loading="lazy" 
                       referrerPolicy="no-referrer-when-downgrade"
-                      title="Google Maps Location for Embroidery By Sana"
+                      title="Google Maps Location for Crochet Wali"
                     ></iframe>
                   </div>
                 </div>
@@ -157,10 +157,10 @@ const Contact = () => {
                <div className="absolute bottom-0 right-0 w-32 h-32 bg-rose-900 rounded-full blur-2xl translate-y-1/3 translate-x-1/3 opacity-40"></div>
               <h3 className="text-2xl font-heading font-bold mb-6">Connect on Social</h3>
               <div className="flex space-x-4">
-                <a href="https://www.instagram.com/embroiderybysana" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Instagram" className="p-4 bg-white/10 rounded-2xl hover:bg-white/20 transition-all hover:-translate-y-1 backdrop-blur-sm">
+                <a href="https://www.instagram.com/Crochet Wali" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Instagram" className="p-4 bg-white/10 rounded-2xl hover:bg-white/20 transition-all hover:-translate-y-1 backdrop-blur-sm">
                   <Instagram className="w-6 h-6" />
                 </a>
-                <a href="https://www.pinterest.com/embroiderybysana" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Pinterest" className="p-4 bg-white/10 rounded-2xl hover:bg-white/20 transition-all hover:-translate-y-1 backdrop-blur-sm flex items-center justify-center font-bold text-lg leading-none">
+                <a href="https://www.pinterest.com/Crochet Wali" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Pinterest" className="p-4 bg-white/10 rounded-2xl hover:bg-white/20 transition-all hover:-translate-y-1 backdrop-blur-sm flex items-center justify-center font-bold text-lg leading-none">
                   P
                 </a>
                 <a href="https://wa.me/917428013214" target="_blank" rel="noopener noreferrer" aria-label="Message us on WhatsApp" className="p-4 bg-white/10 rounded-2xl hover:bg-white/20 transition-all hover:-translate-y-1 backdrop-blur-sm">

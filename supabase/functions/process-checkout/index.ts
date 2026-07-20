@@ -3,8 +3,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 // Restrict CORS to known production domains
 const ALLOWED_ORIGINS = [
-  'https://www.embroiderybysana.live',
-  'https://embroiderybysana.live',
+  'https://www.Crochet Wali.live',
+  'https://Crochet Wali.live',
   'http://localhost:5173', // dev only
 ];
 

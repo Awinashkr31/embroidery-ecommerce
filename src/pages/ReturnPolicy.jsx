@@ -6,7 +6,7 @@ const ReturnPolicy = () => {
     <div className="min-h-screen bg-[#fdfbf7] pt-24 pb-20 font-body">
       <SEO 
         title="Return & Refund Policy" 
-        description="Learn about our return, refund, and exchange policies at Embroidery By Sana." 
+        description="Learn about our return, refund, and exchange policies at Crochet Wali." 
       />
       <div className="container-custom max-w-4xl mx-auto">
         <h1 className="text-4xl font-heading font-bold text-stone-900 mb-8 text-center">Return & Refund Policy</h1>

@@ -66,7 +66,7 @@ const Gifts = () => {
     return (
         <div className="bg-[#fdfbf7] min-h-screen font-body selection:bg-rose-100 selection:text-[#d6336c]">
             <SEO 
-                title="Unique Handmade Gifts for Girlfriend, Anniversary & Birthdays | Embroidery By Sana"
+                title="Unique Handmade Gifts for Girlfriend, Anniversary & Birthdays | Crochet Wali"
                 description="Shop unique, handmade crochet bouquets & personalized embroidery gifts in India. The perfect romantic gift for your girlfriend, wife, or best friend."
                 url="https://www.embroiderybysana.live/gifts"
             />

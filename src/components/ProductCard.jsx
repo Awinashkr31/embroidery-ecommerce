@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Heart, ShoppingBag, Minus, Plus } from 'lucide-react';
 import { getOptimizedImageUrl } from '../utils/imageUtils';
 import { useCart } from '../context/CartContext';
@@ -72,13 +72,13 @@ export const ProductCard = React.memo(({ product, toggleWishlist, isInWishlist, 
     }, [isHovering, hasMultipleImages, allImages.length]);
 
     // Touch handlers for mobile swipe
-    const handleTouchStart = (e) => {
+    const handleTouchStart = useCallback((e) => {
         touchStartX.current = e.touches[0].clientX;
-    };
-    const handleTouchMove = (e) => {
+    }, []);
+    const handleTouchMove = useCallback((e) => {
         touchEndX.current = e.touches[0].clientX;
-    };
-    const handleTouchEnd = () => {
+    }, []);
+    const handleTouchEnd = useCallback(() => {
         if (!hasMultipleImages) return;
         const diff = touchStartX.current - touchEndX.current;
         if (Math.abs(diff) > 40) {
@@ -90,13 +90,20 @@ export const ProductCard = React.memo(({ product, toggleWishlist, isInWishlist, 
                 setCurrentImageIndex(prev => (prev - 1 + allImages.length) % allImages.length);
             }
         }
-    };
+    }, [hasMultipleImages, allImages.length]);
 
     // Determine current display price
-    let displayPrice = product.price;
-    if (selectedVariant && selectedVariant.price) {
-        displayPrice = Number(selectedVariant.price);
-    }
+    const displayPrice = useMemo(() => {
+        if (selectedVariant && selectedVariant.price) {
+            return Number(selectedVariant.price);
+        }
+        return Number(product.price);
+    }, [selectedVariant, product.price]);
+
+    const discountAmount = useMemo(() => {
+        if (!product.originalPrice || product.originalPrice <= displayPrice) return 0;
+        return product.originalPrice - displayPrice;
+    }, [product.originalPrice, displayPrice]);
 
     const productUrl = getProductUrl(product);
 
@@ -132,7 +139,7 @@ export const ProductCard = React.memo(({ product, toggleWishlist, isInWishlist, 
                         <img
                             key={idx}
                             src={getOptimizedImageUrl(img, { width: 500, quality: 75 })}
-                            alt={`${product.name} ${idx + 1}`}
+                            alt={`${product.name} - Handmade Crochet Gift India - View ${idx + 1}`}
                             width={500}
                             height={500}
                             loading={priority && idx === 0 ? 'eager' : 'lazy'}
@@ -212,7 +219,7 @@ export const ProductCard = React.memo(({ product, toggleWishlist, isInWishlist, 
 
                 {/* ADD Button or Quantity Toggle (Overlapping) */}
                 {cartItem ? (
-                    <div className="absolute -bottom-3 right-1.5 md:-bottom-4 md:right-2 bg-white text-[#e11d48] font-extrabold rounded-[8px] md:rounded-[10px] border-2 border-[#e11d48] shadow-sm z-30 flex items-center justify-between min-w-[75px] md:min-w-[95px] h-[28px] md:h-[34px] overflow-hidden">
+                    <div className="absolute -bottom-3 right-1.5 md:-bottom-3 md:right-1.5 bg-white text-[#e11d48] font-extrabold rounded-[8px] md:rounded-[8px] border-2 border-[#e11d48] shadow-sm z-30 flex items-center justify-between min-w-[75px] md:min-w-[80px] h-[30px] md:h-[32px] overflow-hidden">
                         <button 
                             onClick={(e) => {
                                 e.preventDefault(); e.stopPropagation();
@@ -257,7 +264,7 @@ export const ProductCard = React.memo(({ product, toggleWishlist, isInWishlist, 
                             setIsAdding(false);
                         }}
                         disabled={!product.inStock || isAdding}
-                        className="absolute -bottom-3 right-1.5 md:-bottom-4 md:right-2 bg-white text-[#e11d48] font-extrabold text-[14px] md:text-[16px] px-4 md:px-6 rounded-[8px] md:rounded-[10px] border-2 border-[#e11d48] shadow-sm z-30 hover:bg-rose-50 transition-colors tracking-wider disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[75px] md:min-w-[95px] h-[34px] md:h-[40px]"
+                        className="absolute -bottom-3 right-1.5 md:-bottom-3 md:right-1.5 bg-white text-[#e11d48] font-extrabold text-[13px] md:text-[14px] px-3 md:px-4 rounded-[8px] md:rounded-[8px] border-2 border-[#e11d48] shadow-sm z-30 hover:bg-rose-50 transition-colors tracking-wider disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[75px] md:min-w-[80px] h-[30px] md:h-[32px]"
                     >
                         {isAdding ? (
                             <div className="w-4 h-4 md:w-5 md:h-5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
@@ -272,11 +279,11 @@ export const ProductCard = React.memo(({ product, toggleWishlist, isInWishlist, 
             <div className="flex flex-col px-0.5 flex-1 mt-1 md:mt-2">
                 {/* Price Box */}
                 <div className="flex items-center gap-2">
-                    <div className="bg-[#2a873b] text-white font-black text-[18px] md:text-[22px] px-2.5 md:px-3 py-0.5 md:py-1 rounded-[6px] shadow-[0_3px_0_#186326] leading-tight tracking-tight">
+                    <div className="bg-[#2a873b] text-white font-black text-[18px] md:text-[18px] px-2.5 md:px-3 py-0.5 md:py-1 rounded-[6px] shadow-[0_3px_0_#186326] leading-tight tracking-tight">
                         ₹{displayPrice.toLocaleString('en-IN')}
                     </div>
                     {product.originalPrice && product.originalPrice > displayPrice && (
-                        <span className="text-[14px] md:text-[16px] font-medium text-slate-500 line-through decoration-slate-400">
+                        <span className="text-[14px] md:text-[14px] font-medium text-slate-500 line-through decoration-slate-400">
                             ₹{product.originalPrice.toLocaleString('en-IN')}
                         </span>
                     )}
@@ -286,7 +293,7 @@ export const ProductCard = React.memo(({ product, toggleWishlist, isInWishlist, 
                 {product.originalPrice && product.originalPrice > displayPrice && (
                     <div className="flex items-center gap-1.5 w-full mt-2 md:mt-2.5 mb-1.5 md:mb-2">
                         <span className="text-[10px] md:text-[12px] font-bold text-[#2a873b] whitespace-nowrap">
-                            ₹{(product.originalPrice - displayPrice).toLocaleString('en-IN')} OFF
+                            ₹{discountAmount.toLocaleString('en-IN')} OFF
                         </span>
                         <div className="flex-1 border-b border-dashed border-stone-300/80 mb-0.5"></div>
                     </div>

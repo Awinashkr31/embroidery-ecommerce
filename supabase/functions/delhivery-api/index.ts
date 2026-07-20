@@ -1,8 +1,8 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 
 const ALLOWED_ORIGINS = [
-  'https://www.embroiderybysana.live',
-  'https://embroiderybysana.live',
+  'https://www.Crochet Wali.live',
+  'https://Crochet Wali.live',
   'http://localhost:5173',
 ];
 

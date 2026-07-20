@@ -131,12 +131,10 @@ const AdminLayout = () => {
         {/* Logo area */}
         <div className="h-16 flex items-center gap-3 px-5 border-b border-white/10 shrink-0">
           <picture>
-            <source srcSet="/logo.avif" type="image/avif" />
-            <source srcSet="/logo.webp" type="image/webp" />
-            <img src="/logo.png" alt="Enbroidery" className="h-9 w-auto object-contain brightness-0 invert opacity-90" width={90} height={36} />
+            <img src="/logo.png" alt="Crochet Wali" className="h-9 w-auto object-contain brightness-0 invert opacity-90" width={90} height={36} />
           </picture>
           <div className="flex flex-col leading-tight">
-            <span className="text-white font-heading font-bold text-sm tracking-wide">Enbroidery</span>
+            <span className="text-white font-heading font-bold text-sm tracking-wide">Crochet Wali</span>
             <span className="text-rose-400 text-[10px] font-bold uppercase tracking-widest">Admin</span>
           </div>
           {/* Close on mobile */}

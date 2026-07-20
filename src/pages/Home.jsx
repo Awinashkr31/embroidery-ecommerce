@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect, useRef } from 'react';
+import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useCategories } from '../context/CategoryContext';
 import { useCart } from '../context/CartContext';
@@ -94,33 +94,45 @@ const Home = () => {
   const reviewScrollRef = useRef(null);
   const budgetScrollRef = useRef(null);
 
-  // Auto slide Budget Bazaar
+  // Auto slide Budget Bazaar only when visible
   useEffect(() => {
-      const interval = setInterval(() => {
-          if (budgetScrollRef.current) {
-              const el = budgetScrollRef.current;
-              const scrollAmount = 140; // Approx item width + gap
-              
-              if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 10) {
-                  el.scrollTo({ left: 0, behavior: 'smooth' });
-              } else {
-                  el.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-              }
+      let interval;
+      const el = budgetScrollRef.current;
+      if (!el) return;
+
+      const observer = new IntersectionObserver(([entry]) => {
+          if (entry.isIntersecting) {
+              interval = setInterval(() => {
+                  const scrollAmount = 140; // Approx item width + gap
+                  if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 10) {
+                      el.scrollTo({ left: 0, behavior: 'smooth' });
+                  } else {
+                      el.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+                  }
+              }, 3000);
+          } else {
+              if (interval) clearInterval(interval);
           }
-      }, 3000);
-      return () => clearInterval(interval);
+      }, { threshold: 0.1 });
+      
+      observer.observe(el);
+
+      return () => {
+          if (interval) clearInterval(interval);
+          observer.disconnect();
+      };
   }, []);
 
   const minSwipeDistance = 50;
   
-  const onTouchStart = (e) => {
+  const onTouchStart = useCallback((e) => {
     setTouchEnd(null);
     setTouchStart(e.targetTouches[0].clientX);
-  };
+  }, []);
   
-  const onTouchMove = (e) => setTouchEnd(e.targetTouches[0].clientX);
+  const onTouchMove = useCallback((e) => setTouchEnd(e.targetTouches[0].clientX), []);
   
-  const onTouchEnd = () => {
+  const onTouchEnd = useCallback(() => {
     if (!touchStart || !touchEnd) return;
     const distance = touchStart - touchEnd;
     if (distance > minSwipeDistance) {
@@ -129,7 +141,7 @@ const Home = () => {
     if (distance < -minSwipeDistance) {
        setCurrentSlide((prev) => (prev - 1 + homeSlides.length) % homeSlides.length);
     }
-  };
+  }, [touchStart, touchEnd, homeSlides.length]);
 
   // Autoplay only on desktop (mobile gets static hero for faster LCP)
   useEffect(() => {
@@ -195,7 +207,7 @@ const Home = () => {
         return {
             id: cat.id,
             label: cat.label,
-            image: `/category-images/${cleanName}.webp`
+            image: cat.image || CATEGORY_IMAGES[cat.label.toLowerCase()] || `/category-images/${cleanName}.webp`
         };
     });
   }, [categories]);
@@ -220,14 +232,14 @@ const Home = () => {
     }));
 
     return {
-      newArrivals: newArr.length > 0 ? newArr.slice(0, 4) : homeProducts.slice(0, 4),
-      bestsellers: best.length > 0 ? best.slice(0, 4) : homeProducts.slice(4, 8),
-      premiumProducts: prem.length > 0 ? prem.slice(0, 4) : homeProducts.slice(0, 4),
+      newArrivals: newArr.length > 0 ? newArr.slice(0, 7) : homeProducts.slice(0, 7),
+      bestsellers: best.length > 0 ? best.slice(0, 7) : homeProducts.slice(7, 14),
+      premiumProducts: prem.length > 0 ? prem.slice(0, 7) : homeProducts.slice(14, 21),
       budgetGridItems: budgetGrid
     };
   }, [homeProducts]);
 
-  const scrollReviews = (direction) => {
+  const scrollReviews = useCallback((direction) => {
       if (reviewScrollRef.current) {
           const scrollAmount = 300;
           reviewScrollRef.current.scrollBy({
@@ -235,40 +247,9 @@ const Home = () => {
               behavior: 'smooth'
           });
       }
-  };
+  }, []);
 
-  const orgSchema = {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    "name": "Embroidery By Sana",
-    "url": "https://www.embroiderybysana.live",
-    "logo": "https://www.embroiderybysana.live/logo.png",
-    "description": "Embroidery By Sana is an Indian handmade embroidery and crochet brand specializing in personalized handmade gifts, aesthetic crochet bouquets, forever flower bouquets, and cute handmade accessories.",
-    "foundingLocation": {
-      "@type": "Place",
-      "name": "India"
-    },
-    "sameAs": [
-        "https://www.instagram.com/embroiderybysana",
-        "https://www.pinterest.com/embroiderybysana"
-    ],
-    "contactPoint": {
-        "@type": "ContactPoint",
-        "email": "support@embroiderybysana.live",
-        "contactType": "customer support"
-    }
-  };
 
-  const websiteSchema = {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "url": "https://www.embroiderybysana.live",
-    "potentialAction": {
-        "@type": "SearchAction",
-        "target": "https://www.embroiderybysana.live/shop?search={search_term_string}",
-        "query-input": "required name=search_term_string"
-    }
-  };
   const faqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -311,9 +292,8 @@ const Home = () => {
   return (
     <div className="font-body bg-white selection:bg-rose-900 selection:text-white">
       <SEO 
-          title="Handmade Embroidery & Crochet Bouquet India | Personalized Gifts" 
-          description="Shop handmade crochet bouquets, forever flower bouquets, personalized embroidery hoops, aesthetic handmade gifts, and cute crochet accessories online in India. Custom handmade gifts for birthdays, anniversaries & more." 
-          schema={[orgSchema, websiteSchema, faqSchema]}
+        title="Crochet Wali | Handmade Crochet Flowers, Gajra, Hair Clips & Gifts India"
+        schema={[faqSchema]}
       >
           <link rel="preload" as="image" href={homeSlides[currentSlide]?.desktopImage || "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=800"} />
       </SEO>
@@ -332,7 +312,9 @@ const Home = () => {
                     alt="Handcrafted Gifts" 
                     className="w-full h-full object-cover animate-fade-in translate-x-[15%] md:translate-x-[10%] scale-[1.1]" 
                     key={currentSlide}
-                    decoding="async"
+                    decoding="sync"
+                    loading="eager"
+                    fetchpriority="high"
                 />
                 {/* Optional dark overlay to ensure text/dots readability if image is bright */}
                 <div className="absolute inset-0 bg-black/10"></div>
@@ -400,21 +382,22 @@ const Home = () => {
             
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 justify-center gap-x-4 gap-y-8 md:gap-x-8 md:gap-y-12 pb-4 px-1 md:px-0 max-w-5xl mx-auto">
                 {dynamicCategories.slice(0, 12).map((category, i) => (
-                    <Reveal key={category.id} delay={i * 60}>
+                    <Reveal key={category.id}>
                       <Link 
                           to={`/shop?category=${encodeURIComponent(category.label)}`}
                           className="group flex flex-col items-center"
                       >
-                          <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full p-1.5 bg-white shadow-[0_4px_15px_rgba(0,0,0,0.1)] group-hover:shadow-[0_8px_25px_rgba(0,0,0,0.15)] group-hover:-translate-y-1 transition-all duration-500">
+                          <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-full p-1.5 bg-white shadow-[0_4px_15px_rgba(0,0,0,0.1)] group-hover:shadow-[0_8px_25px_rgba(0,0,0,0.15)] group-hover:-translate-y-1 transition-all duration-300">
                               <div className="w-full h-full rounded-full overflow-hidden bg-stone-50">
                                   <img 
                                       src={getOptimizedImageUrl(category.image, { width: 200, quality: 70 })} 
                                       alt={category.label} 
                                       width={160}
                                       height={160}
-                                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
-                                      loading="lazy"
+                                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+                                      loading="eager"
                                       decoding="async"
+                                      onError={(e) => { e.target.onerror = null; e.target.src = "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=200"; }}
                                   />
                               </div>
                           </div>
@@ -510,9 +493,9 @@ const Home = () => {
                  </div>
                </Reveal>
 
-               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+               <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 4xl:grid-cols-7 gap-4 md:gap-6 xl:gap-8 3xl:gap-10">
                    {newArrivals.map((product, i) => (
-                       <Reveal key={product.id} delay={i * 100}>
+                       <Reveal key={product.id} delay={i * 100} className={i < 4 ? "" : i === 4 ? "hidden xl:block" : i === 5 ? "hidden 2xl:block" : "hidden 4xl:block"}>
                          <div className="group block">
                            <ProductCard 
                                product={product} 
@@ -581,7 +564,7 @@ const Home = () => {
                 <div ref={budgetScrollRef} className="grid grid-rows-2 grid-flow-col auto-cols-[125px] md:auto-cols-[150px] gap-2.5 md:gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4 px-4 md:px-2 max-w-5xl mx-auto">
                     {budgetGridItems.map((item, idx) => (
                         <Link key={idx} to={item.id ? `/product/${item.id}` : "/shop"} className="snap-start relative aspect-[3/4] rounded-[16px] overflow-hidden group shadow-sm block">
-                          <img src={item.img} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                          <img src={item.img} alt={item.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end p-2.5 md:p-3">
                               <span className="text-white/90 font-medium text-[9px] md:text-[10px] leading-tight drop-shadow-md">Under</span>
                               <span className="text-white font-bold text-lg md:text-xl leading-none mb-0.5 drop-shadow-md">₹{item.price || item.defaultPrice}</span>
@@ -605,9 +588,9 @@ const Home = () => {
                  </div>
                </Reveal>
 
-               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
+               <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 4xl:grid-cols-7 gap-4 md:gap-8 xl:gap-10 3xl:gap-12">
                    {bestsellers.map((product, i) => (
-                       <Reveal key={product.id} delay={i * 100}>
+                       <Reveal key={product.id} delay={i * 100} className={i < 4 ? "" : i === 4 ? "hidden xl:block" : i === 5 ? "hidden 2xl:block" : "hidden 4xl:block"}>
                          <Link to={getProductUrl(product)} className="group block">
                            <ProductCard 
                                product={product} 
@@ -680,9 +663,9 @@ const Home = () => {
                     </Link>
                </div>
 
-               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
+               <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 4xl:grid-cols-7 gap-4 md:gap-8 xl:gap-10 3xl:gap-12">
                    {premiumProducts.map((product, i) => (
-                       <Reveal key={product.id} delay={i * 100}>
+                       <Reveal key={product.id} delay={i * 100} className={i < 4 ? "" : i === 4 ? "hidden xl:block" : i === 5 ? "hidden 2xl:block" : "hidden 4xl:block"}>
                          <Link to={getProductUrl(product)} className="group block bg-white rounded-2xl p-2 md:p-3 hover:shadow-xl transition-shadow duration-500">
                              <ProductCard 
                                  product={product} 

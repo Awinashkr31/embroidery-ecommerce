@@ -1,4 +1,8 @@
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /profile
+Disallow: /checkout
+Disallow: /api/
 
-Sitemap: https://embroiderybysana.live/sitemap.xml
+Sitemap: https://www.embroiderybysana.live/sitemap.xml

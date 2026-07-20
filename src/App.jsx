@@ -34,7 +34,7 @@ const Categories = lazy(() => import('./pages/Categories'));
 const NewArrivals = lazy(() => import('./pages/NewArrivals'));
 const Collection = lazy(() => import('./pages/Collection'));
 const Blog = lazy(() => import('./pages/Blog'));
-const BlogPost = lazy(() => import('./pages/BlogPost'));
+const BlogPost = lazy(() => import('./pages/Blog/BlogPost'));
 const Gifts = lazy(() => import('./pages/Gifts'));
 
 const ProductDetails = lazy(() => import('./pages/ProductDetails'));

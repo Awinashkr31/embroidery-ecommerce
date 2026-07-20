@@ -1,4 +1,4 @@
-# Hand Embroidery by Sana
+# Crochet Wali
 
 > A premium, beautifully designed e-commerce platform dedicated to handcrafted embroidery hoop art and professional mehndi services.
 
@@ -6,7 +6,7 @@
 
 ## 📖 Overview
 
-**Hand Embroidery by Sana** is a sophisticated full-stack web application designed to offer an editorial-grade shopping experience. The platform features an integrated shop for physical goods alongside booking systems for highly customized local services (like Bridal Mehndi and Custom Embroidery Designs). 
+**Crochet Wali** is a sophisticated full-stack web application designed to offer an editorial-grade shopping experience. The platform features an integrated shop for physical goods alongside booking systems for highly customized local services (like Bridal Mehndi and Custom Embroidery Designs). 
 
 It is powered by a modern **React (Vite)** frontend with state-of-the-art **Tailwind CSS v4** styling, incorporating trending UI aesthetics such as glassmorphism, dynamic micro-animations, and premium typography (*Playfair Display* & *Outfit*).
 
@@ -99,4 +99,4 @@ src/
 - `npm run preview`: Previews the production build locally.
 
 ---
-*Crafted with precision for Hand Embroidery by Sana.*
+*Crafted with precision for Crochet Wali.*

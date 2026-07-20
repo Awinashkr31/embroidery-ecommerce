@@ -13,7 +13,7 @@ const Wishlist = () => {
     if (wishlist.length === 0) {
         return (
             <div className="min-h-[70vh] flex flex-col items-center justify-center bg-[#fdfbf7] font-body p-4">
-                <SEO title="My Wishlist" description="Your saved items from Enbroidery." />
+                <SEO title="My Wishlist" description="Your saved items from Crochet Wali." />
                 <div className="relative mb-8">
                     <div className="absolute inset-0 bg-rose-200 rounded-full blur-xl opacity-50 animate-pulse"></div>
                     <div className="relative bg-white/80 backdrop-blur-md p-8 border border-white rounded-[2rem] shadow-xl">
@@ -32,7 +32,7 @@ const Wishlist = () => {
 
     return (
         <div className="bg-[#fdfbf7] min-h-screen font-body pt-6 md:pt-12 pb-28 lg:pb-24">
-            <SEO title="My Wishlist" description="Your saved items from Enbroidery." />
+            <SEO title="My Wishlist" description="Your saved items from Crochet Wali." />
             <div className="container-custom">
                 {/* Header Section */}
                 <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-stone-200 pb-6 md:pb-8 mb-8 md:mb-12 gap-4">

@@ -1,4 +1,4 @@
-import Razorpay from 'razorpay';
+﻿import Razorpay from 'razorpay';
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
@@ -22,7 +22,7 @@ export default async function handler(req, res) {
         const { amount, currency = 'INR', receipt = `receipt_${Date.now()}` } = req.body;
 
         if (!amount || amount < 100) {
-            return res.status(400).json({ error: 'Amount must be at least 100 paise (₹1)' });
+            return res.status(400).json({ error: 'Amount must be at least 100 paise (â‚¹1)' });
         }
 
         const razorpay = new Razorpay({

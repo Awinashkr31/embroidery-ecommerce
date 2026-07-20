@@ -134,7 +134,7 @@ const Navbar = React.memo(() => {
 
       if (pathname.startsWith('/about')) return 'About';
       if (pathname.startsWith('/support')) return 'Support';
-      return 'Enbroidery By Sana';
+      return 'Crochet Wali By Sana';
   };
 
   if (location.pathname === '/checkout') {
@@ -167,9 +167,7 @@ const Navbar = React.memo(() => {
             {/* Desktop Logo (Always visible on lg) */}
             <Link to="/" className="hidden lg:flex flex-col group" aria-label="Home">
                 <picture>
-                  <source srcSet="/logo.avif" type="image/avif" />
-                  <source srcSet="/logo.webp" type="image/webp" />
-                  <img src="/logo.png" alt="Enbroidery By Sana" className="h-14 w-auto object-contain" width={140} height={56} />
+                  <img src="/logo.png" alt="Crochet Wali" className="h-16 lg:h-20 w-auto object-contain drop-shadow-sm hover:drop-shadow-md transition-all hover:scale-105" width={180} height={80} />
                 </picture>
             </Link>
 
@@ -188,9 +186,7 @@ const Navbar = React.memo(() => {
                     </button>
                     <Link to="/" className="absolute left-1/2 -translate-x-1/2 flex flex-col group lg:hidden z-0" aria-label="Home">
                         <picture>
-                          <source srcSet="/logo.avif" type="image/avif" />
-                          <source srcSet="/logo.webp" type="image/webp" />
-                          <img src="/logo.png" alt="Enbroidery By Sana" className="h-12 w-auto object-contain mt-1" width={100} height={40} />
+                          <img src="/logo.png" alt="Crochet Wali" className="h-14 w-auto object-contain mt-1 drop-shadow-sm" width={120} height={56} />
                         </picture>
                     </Link>
                 </>
@@ -206,9 +202,7 @@ const Navbar = React.memo(() => {
                     </button>
                     <Link to="/" className="absolute left-1/2 -translate-x-1/2 flex shrink-0 z-0">
                         <picture>
-                          <source srcSet="/logo.avif" type="image/avif" />
-                          <source srcSet="/logo.webp" type="image/webp" />
-                          <img src="/logo.png" alt="Enbroidery By Sana" className="h-10 w-auto object-contain mt-1" width={90} height={36} />
+                          <img src="/logo.png" alt="Crochet Wali" className="h-12 w-auto object-contain mt-1 drop-shadow-sm" width={100} height={48} />
                         </picture>
                     </Link>
                 </div>
@@ -414,9 +408,7 @@ const Navbar = React.memo(() => {
                 <div className="flex items-center justify-between mb-10">
                     <Link to="/" className="flex flex-col" onClick={() => setIsMobileMenuOpen(false)}>
                         <picture>
-                          <source srcSet="/logo.avif" type="image/avif" />
-                          <source srcSet="/logo.webp" type="image/webp" />
-                          <img src="/logo.png" alt="Enbroidery By Sana" className="h-16 w-auto object-contain" width={160} height={64} />
+                          <img src="/logo.png" alt="Crochet Wali" className="h-16 w-auto object-contain" width={160} height={64} />
                         </picture>
                     </Link>
                     <button onClick={() => setIsMobileMenuOpen(false)} className="p-2 text-stone-500 hover:text-rose-900 rounded-full hover:bg-stone-100">

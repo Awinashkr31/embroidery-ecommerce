@@ -47,31 +47,41 @@ const Categories = () => {
     return [allCreations, ...fetchedCategories];
   }, [categories, products]);
 
-  const itemListSchema = {
-      "@context": "https://schema.org",
-      "@type": "ItemList",
-      "itemListElement": dynamicCategories.map((cat, index) => ({
-          "@type": "ListItem",
-          "position": index + 1,
-          "url": cat.id === 'all' ? 'https://www.embroiderybysana.live/shop' : `https://www.embroiderybysana.live/shop?category=${encodeURIComponent(cat.label)}`
-      }))
-  };
+  const pageSchema = [
+      {
+          "@context": "https://schema.org",
+          "@type": "CollectionPage",
+          "name": "All Categories | Crochet Wali",
+          "description": "Browse all categories of Handmade Crochet Gifts, Gajra, Hair Clips, and Custom Bouquets by Crochet Wali.",
+          "url": "https://www.embroiderybysana.live/categories"
+      },
+      {
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          "itemListElement": dynamicCategories.map((cat, index) => ({
+              "@type": "ListItem",
+              "position": index + 1,
+              "url": cat.id === 'all' ? 'https://www.embroiderybysana.live/shop' : `https://www.embroiderybysana.live/shop?category=${encodeURIComponent(cat.label)}`
+          }))
+      }
+  ];
 
   return (
     <div className="bg-white min-h-screen pb-24 font-body selection:bg-stone-900 selection:text-white pt-20">
       <SEO 
-        title="Categories" 
-        description="Explore all categories of Sana's Hand Embroidery." 
-        schema={itemListSchema}
+        title="Categories | Crochet Wali" 
+        description="Explore all categories of Crochet Wali's Handmade Crochet and Embroidery gifts." 
+        schema={pageSchema}
       />
 
       <div className="container-custom">
           <div className="mb-6 pb-4 border-b border-stone-100 flex flex-col items-start justify-between">
               <h1 className="text-2xl font-heading font-bold text-stone-900 uppercase tracking-widest mb-2">Categories</h1>
-              <p className="text-stone-600 text-sm max-w-3xl leading-relaxed">Browse through our beautifully curated collections of handmade embroidery and crochet gifts. From elegant personalized hoops for weddings to cute custom accessories and forever flower bouquets, find the perfect category for your gifting needs.</p>
+              <p className="text-stone-600 text-sm max-w-3xl leading-relaxed">Browse through our beautifully curated collections of Handmade Crochet Gifts and crochet gifts. From elegant personalized hoops for weddings to cute custom accessories and forever flower bouquets, find the perfect category for your gifting needs.</p>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
+          <h2 className="sr-only">Handmade Gift Collections by Crochet Wali</h2>
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 4xl:grid-cols-7 xl:gap-6 3xl:gap-8">
               {dynamicCategories.map((category) => (
                   <Link 
                       key={category.id}

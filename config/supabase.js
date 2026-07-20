@@ -1,4 +1,4 @@
-// Supabase Configuration
+﻿// Supabase Configuration
 import { createClient } from '@supabase/supabase-js'
 
 // Supabase configuration - Replace with your actual values

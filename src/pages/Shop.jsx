@@ -223,15 +223,24 @@ const Shop = () => {
         { id: 'above-199', label: 'Above ₹199' },
     ];
 
-    const itemListSchema = {
-        "@context": "https://schema.org",
-        "@type": "ItemList",
-        "itemListElement": allFilteredProducts.map((product, index) => ({
-            "@type": "ListItem",
-            "position": index + 1,
-            "url": `https://www.embroiderybysana.live/product/${product.id}`
-        }))
-    };
+    const pageSchema = [
+        {
+            "@context": "https://schema.org",
+            "@type": "CollectionPage",
+            "name": selectedCategories.length > 0 ? `${selectedCategories.map(c => c.charAt(0).toUpperCase() + c.slice(1)).join(', ')} | Crochet Wali` : "Shop All Handmade Crochet Gifts | Crochet Wali",
+            "description": "Browse our complete catalog of Handmade Crochet Gifts, customized embroidery hoops, and aesthetic accessories. Find the perfect customized handmade gift in India.",
+            "url": "https://www.embroiderybysana.live/shop"
+        },
+        {
+            "@context": "https://schema.org",
+            "@type": "ItemList",
+            "itemListElement": allFilteredProducts.map((product, index) => ({
+                "@type": "ListItem",
+                "position": index + 1,
+                "url": `https://www.embroiderybysana.live/product/${product.id}`
+            }))
+        }
+    ];
 
     const getPaginationUrl = (pageNumber) => {
         const params = new URLSearchParams(searchParams);
@@ -250,14 +259,17 @@ const Shop = () => {
     return (
         <div className="bg-[#fdfbf7] min-h-screen pb-32 font-body selection:bg-rose-100 selection:text-rose-900">
             <SEO 
-                title="Handmade Embroidery & Crochet Collection"
-                description="Explore our complete collection of personalized handmade gifts, aesthetic crochet bouquets, and custom embroidery portrait hoops."
-                schema={itemListSchema}
+                title={selectedCategories.length > 0 ? `${selectedCategories.map(c => c.charAt(0).toUpperCase() + c.slice(1)).join(', ')} | Crochet Wali` : "Shop All Handmade Crochet Gifts | Crochet Wali"} 
+                description="Browse our complete catalog of Handmade Crochet Gifts, customized embroidery hoops, and aesthetic accessories. Find the perfect customized handmade gift in India."
+                schema={pageSchema} 
             >
                 {prevUrl && <link rel="prev" href={prevUrl} />}
                 {nextUrl && <link rel="next" href={nextUrl} />}
             </SEO>
             <div className="container-custom pb-20 pt-4 md:pt-8">
+                
+                {/* AEO Semantic Heading for AI context */}
+                <h1 className="sr-only">Handmade Crochet Gifts & Crochet Collection</h1>
 
                 {/* Mobile Category Circles */}
                 <div className="lg:hidden mb-4 overflow-x-auto no-scrollbar py-2 -mx-4 px-4">
@@ -543,7 +555,7 @@ const Shop = () => {
                     <div className="flex-1 w-full relative min-w-0">
                         {/* Desktop Header */}
                         <div className="hidden md:block mb-8">
-                            <h1 className="font-heading text-3xl lg:text-4xl font-bold text-stone-900 mb-2">Handmade Embroidery & Crochet Collection</h1>
+                            <h1 className="font-heading text-3xl lg:text-4xl font-bold text-stone-900 mb-2">Handmade Crochet Gifts & Crochet Collection</h1>
                             <p className="text-stone-500 text-sm lg:text-base mb-2">Discover hand-crafted embroidery pieces tailored for you.</p>
                             <p className="text-stone-600 text-sm max-w-3xl leading-relaxed">Explore our extensive range of personalized handmade gifts, from intricate embroidery hoops to eternal crochet flower bouquets. Every piece is meticulously crafted with love, making them perfect for anniversaries, birthdays, or as unique aesthetic additions to your home.</p>
                         </div>
@@ -591,7 +603,7 @@ const Shop = () => {
                         </div>
 
                         {productsLoading ? (
-                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8 md:gap-x-8 md:gap-y-14">
+                            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 4xl:grid-cols-7 gap-x-4 gap-y-8 md:gap-x-8 md:gap-y-14 xl:gap-x-10 xl:gap-y-16 3xl:gap-x-12 3xl:gap-y-20">
                                 {[...Array(8)].map((_, i) => (
                                     <div key={i} className="animate-pulse">
                                         <div className="aspect-[2/3] md:aspect-[4/5] bg-stone-200 rounded-2xl mb-4" />
@@ -613,7 +625,7 @@ const Shop = () => {
                             </div>
                         ) : (
                             <>
-                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8 md:gap-x-8 md:gap-y-14 animate-fade-in">
+                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 4xl:grid-cols-7 gap-x-4 gap-y-8 md:gap-x-8 md:gap-y-14 xl:gap-x-10 xl:gap-y-16 3xl:gap-x-12 3xl:gap-y-20 animate-fade-in">
                                     {paginatedProducts.map((product) => (
                                         <div key={product.uniqueId} className="animate-fade-up">
                                             <Link 

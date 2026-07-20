@@ -35,7 +35,7 @@ const ShippingPolicy = () => {
           <p>You will receive a Shipment Confirmation email once your order has shipped containing your tracking number(s). The tracking number will be active within 24 hours.</p>
 
           <h2 className="text-xl font-heading font-semibold text-stone-900 mt-8 mb-4">5. Damages</h2>
-          <p>Embroidery By Sana is not liable for any products damaged or lost during shipping. However, if you received your order damaged, please contact us within 48 hours of delivery with photographic evidence, and we will do our best to assist you in filing a claim with the shipment carrier.</p>
+          <p>Crochet Wali is not liable for any products damaged or lost during shipping. However, if you received your order damaged, please contact us within 48 hours of delivery with photographic evidence, and we will do our best to assist you in filing a claim with the shipment carrier.</p>
         </div>
       </div>
     </div>

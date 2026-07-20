@@ -2,12 +2,14 @@ import React from 'react';
 import { Helmet } from 'react-helmet-async';
 
 const SEO = ({ title, description, keywords, schema, url, image, children }) => {
-    const siteTitle = "Handmade Embroidery & Custom Crochet Gifts | Embroidery By Sana";
-    const fullTitle = title ? `${title} | Embroidery By Sana` : siteTitle;
-    const metaDescription = description || "Shop handcrafted crochet bouquets & personalized embroidery gifts that last forever. Perfect for anniversaries & birthdays. Order now across India!";
-    const metaKeywords = keywords || "crochet bouquet india, handmade gifts india, personalized handmade gifts, crochet flower bouquet, forever flower bouquet, crochet bouquet for girlfriend, aesthetic handmade gifts, custom handmade gifts, crochet accessories india, cute handmade accessories, personalized bouquet gift, aesthetic crochet bouquet, handmade anniversary gift, custom gift india, handmade flower bouquet";
-    const metaUrl = url || "https://embroiderybysana.live";
-    const metaImage = image || "https://embroiderybysana.live/hero-gift.png";
+    const siteTitle = "Crochet Wali | Handmade Crochet Flowers, Gajra, Hair Clips & Gifts India";
+    const fullTitle = title 
+        ? (title.includes('Crochet Wali') ? title : `${title} | Crochet Wali`) 
+        : siteTitle;
+    const metaDescription = description || "Shop Crochet Wali for handmade crochet bouquets, gajra, flower pots, parandi, keychains, hair clips & personalized gift boxes. Aesthetic handmade gifts, made to order across India.";
+    const metaKeywords = keywords || "crochet wali, crochet flower bouquet, handmade gajra, crochet flower pot, crochet parandi, crochet keychain, crochet hair clips, embroidery hair clips, handmade gift box india, crochet claw clip, crochet bow, aesthetic handmade gifts india, custom crochet gifts, forever flower bouquet india";
+    const metaUrl = url || "https://www.embroiderybysana.live";
+    const metaImage = image || "https://www.embroiderybysana.live/hero-gift.png";
 
     return (
         <Helmet>

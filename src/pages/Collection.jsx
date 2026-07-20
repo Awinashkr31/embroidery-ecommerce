@@ -41,10 +41,10 @@ const COLLECTION_SEO_CONTENT = {
         text: 'Add a touch of handmade elegance to your everyday style with our crochet accessories india. Handcrafted with precision, our collection features beautifully designed crochet hair accessories, aesthetic crochet decor, and delicate fashion items. Crochet fashion is making a massive comeback, and our products blend traditional craftsmanship with cute aesthetic gifts. Whether you are dressing up for a casual day out or looking for a unique accessory to complete your outfit, our cute handmade accessories are the perfect choice. Made with premium yarns and intricate patterns, they are durable, stylish, and eco-friendly.',
     },
     'embroidery-hoops': {
-        title: 'Handmade Embroidery Hoops India | Custom Embroidery Gifts',
-        description: 'Shop handmade embroidery hoops, personalized embroidery hoops, floral embroidery hoops, and embroidery hoop art. Custom embroidery gifts and embroidery room decor in India.',
-        h1: 'Handmade Embroidery Hoops',
-        text: 'Discover the finest handmade embroidery hoops in India. Our custom embroidery hoop collection features personalized embroidery hoops with names, dates, and floral patterns. Each embroidery hoop gift is a piece of aesthetic embroidery art — perfect as embroidery room decor, embroidery wall decor, or an embroidery handmade gift. We offer floral embroidery hoops, embroidery name hoops, and embroidery decorative hoops for every occasion. Whether you need an embroidery anniversary gift, embroidery birthday gift, or embroidery wedding gift, our embroidery hoop art is handcrafted with premium quality threads and embroidery personalized decor that will impress.',
+        title: 'Handmade Crochet Gifts Hoops India | Custom Embroidery Gifts',
+        description: 'Shop Handmade Crochet Gifts hoops, personalized embroidery hoops, floral embroidery hoops, and embroidery hoop art. Custom embroidery gifts and embroidery room decor in India.',
+        h1: 'Handmade Crochet Gifts Hoops',
+        text: 'Discover the finest Handmade Crochet Gifts hoops in India. Our custom embroidery hoop collection features personalized embroidery hoops with names, dates, and floral patterns. Each embroidery hoop gift is a piece of aesthetic embroidery art — perfect as embroidery room decor, embroidery wall decor, or an embroidery handmade gift. We offer floral embroidery hoops, embroidery name hoops, and embroidery decorative hoops for every occasion. Whether you need an embroidery anniversary gift, embroidery birthday gift, or embroidery wedding gift, our embroidery hoop art is handcrafted with premium quality threads and embroidery personalized decor that will impress.',
     },
     'occasion-gifts': {
         title: 'Handmade Gifts for Every Occasion India | Anniversary, Birthday & Wedding',
@@ -73,7 +73,7 @@ const Collection = () => {
     }, [fetchProducts, slug]);
 
     const collectionData = COLLECTION_SEO_CONTENT[slug] || {
-        title: `${slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')} | Embroidery By Sana`,
+        title: `${slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')} | Crochet Wali`,
         description: `Explore our beautiful collection of ${slug.replace('-', ' ')}. Handmade in India with love.`,
         h1: slug.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
         text: `Welcome to our ${slug.replace('-', ' ')} collection. We offer a wide range of premium handmade products tailored just for you. Explore our collection and find the perfect piece that resonates with your aesthetic.`
@@ -148,12 +148,22 @@ const Collection = () => {
         "url": `https://www.embroiderybysana.live/collections/${slug}`
     };
 
+    const itemListSchema = {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        "itemListElement": allFilteredProducts.map((p, index) => ({
+            "@type": "ListItem",
+            "position": index + 1,
+            "url": `https://www.embroiderybysana.live${getProductUrl(p)}`
+        }))
+    };
+
     return (
         <div className="bg-[#fdfbf7] min-h-screen pb-24 font-body selection:bg-rose-100 selection:text-rose-900">
             <SEO 
                 title={collectionData.title} 
                 description={collectionData.description} 
-                schema={[breadcrumbSchema, collectionSchema]}
+                schema={[breadcrumbSchema, collectionSchema, itemListSchema]}
                 url={`https://www.embroiderybysana.live/collections/${slug}`}
             />
             
@@ -167,7 +177,7 @@ const Collection = () => {
 
                 {/* Product Grid */}
                 {loading ? (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8 md:gap-x-8 md:gap-y-14">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 4xl:grid-cols-7 gap-x-4 gap-y-8 md:gap-x-8 md:gap-y-14 xl:gap-x-10 xl:gap-y-16 3xl:gap-x-12 3xl:gap-y-20">
                         {[...Array(8)].map((_, i) => (
                             <div key={i} className="animate-pulse">
                                 <div className="aspect-[2/3] md:aspect-[4/5] bg-stone-200 rounded-2xl mb-4" />
@@ -186,7 +196,7 @@ const Collection = () => {
                     </div>
                 ) : (
                     <>
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-4 gap-y-8 md:gap-x-8 md:gap-y-14 animate-fade-in">
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 4xl:grid-cols-7 gap-x-4 gap-y-8 md:gap-x-8 md:gap-y-14 xl:gap-x-10 xl:gap-y-16 3xl:gap-x-12 3xl:gap-y-20 animate-fade-in">
                             {paginatedProducts.map((product) => (
                                 <div key={product.uniqueId} className="animate-fade-up">
                                     <Link 

@@ -17,13 +17,13 @@ const DEFAULT_SETTINGS = {
         buttonLink: "/shop",
         backgroundImage: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1920&q=80"
     },
-    site_name: "Enbroidery",
-    contact_email: "support@enbroidery.com",
+    site_name: "Crochet Wali",
+    contact_email: "support@Crochet Wali.com",
     contact_phone: "7428013214",
     address: "Ashok Nagar, Delhi, Delhi",
     social_links: {
-        instagram: "https://instagram.com/enbroidery",
-        facebook: "https://facebook.com/enbroidery",
+        instagram: "https://instagram.com/Crochet Wali",
+        facebook: "https://facebook.com/Crochet Wali",
         whatsapp: "917428013214"
     },
     about: {

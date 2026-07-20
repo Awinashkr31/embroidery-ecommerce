@@ -42,7 +42,7 @@ const LoginSignup = () => {
 
   return (
     <>
-      <SEO title="Login · Enbroidery" description="Sign in to your Enbroidery account." />
+      <SEO title="Login · Crochet Wali" description="Sign in to your Crochet Wali account." />
 
       {/* ════════════════════════════════════════
           MOBILE layout  (hidden on lg+)
@@ -80,9 +80,7 @@ const LoginSignup = () => {
           <div className="flex justify-center mb-6">
             <Link to="/">
               <picture>
-                <source srcSet="/logo.avif" type="image/avif" />
-                <source srcSet="/logo.webp" type="image/webp" />
-                <img src="/logo.png" alt="Enbroidery" className="h-14 w-auto object-contain" width={140} height={56} />
+                <img src="/logo.png" alt="Crochet Wali" className="h-14 w-auto object-contain" width={140} height={56} />
               </picture>
             </Link>
           </div>
@@ -162,9 +160,7 @@ const LoginSignup = () => {
 
           <Link to="/">
             <picture>
-              <source srcSet="/logo.avif" type="image/avif" />
-              <source srcSet="/logo.webp" type="image/webp" />
-              <img src="/logo.png" alt="Enbroidery" className="h-12 w-auto object-contain brightness-0 invert" width={120} height={48} />
+              <img src="/logo.png" alt="Crochet Wali" className="h-12 w-auto object-contain brightness-0 invert" width={120} height={48} />
             </picture>
           </Link>
 

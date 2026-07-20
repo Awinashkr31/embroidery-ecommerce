@@ -9,7 +9,7 @@ import { supabase } from '../../config/supabase';
 import { Heart, ShoppingBag, ArrowLeft, Truck, Shield, Star, Award, Search, Sparkles, Plus, Minus, ChevronDown, Share2, X, Loader, Calendar, CheckCircle2, Package, Gift, ShoppingCart } from 'lucide-react';
 import SEO from '../components/SEO';
 import { PincodeChecker } from '../components/PincodeChecker';
-import { extractProductIdFromSlug, getProductUrl } from '../../src/utils/urlUtils';
+import { extractProductIdFromSlug, getProductUrl, slugify } from '../../src/utils/urlUtils';
 
 const ProductDetails = () => {
     const { slug } = useParams();
@@ -187,7 +187,17 @@ const ProductDetails = () => {
     useEffect(() => {
         window.scrollTo(0, 0);
         if (products.length > 0) {
-            const found = products.find(p => p.id === parseInt(id) || p.id === id);
+            let found = null;
+            if (id) {
+                found = products.find(p => p.id === parseInt(id) || p.id === id);
+            }
+            if (!found && slug) {
+                found = products.find(p => 
+                    (p.clothing_information?.slug === slug) || 
+                    (slugify(p.name) === slug) ||
+                    (p.id === slug) // fallback in case the URL just passed an ID directly
+                );
+            }
             setProduct(found);
             setLoading(false);
             if (found) {
@@ -198,7 +208,7 @@ const ProductDetails = () => {
                  document.title = found.clothingInformation?.metaTitle || found.name + " | Enbroidery";
             }
         }
-    }, [id, products]);
+    }, [id, slug, products]);
 
     const fetchReviews = async (productId) => {
         try {
@@ -402,12 +412,15 @@ const ProductDetails = () => {
         "@type": "Product",
         "name": product.name,
         "image": product.image,
-        "description": info.shortDescription || product.description,
-        "sku": product.id,
+        "description": info.longDescription || info.shortDescription || product.description,
+        "sku": String(product.id),
+        "mpn": String(product.id),
         "brand": {
             "@type": "Brand",
-            "name": "Embroidery By Sana"
+            "name": "Crochet Wali"
         },
+        "category": product.category,
+        "material": "Premium Yarn",
         "offers": {
             "@type": "Offer",
             "url": window.location.href,
@@ -500,6 +513,39 @@ const ProductDetails = () => {
     };
 
     const pageSchema = [productSchema, breadcrumbSchema];
+
+    // Build FAQ Schema based on product
+    const faqSchema = {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {
+                "@type": "Question",
+                "name": `What is the material of ${product.name}?`,
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": `This ${product.category?.toLowerCase() || 'item'} is handmade using premium, durable materials by Crochet Wali.`
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "How long does shipping take for this item?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Standard delivery takes approximately 4-7 days depending on your location in India. Custom handmade pieces may require an extra 1-3 days for crafting."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Is there a return policy?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Yes! We offer a 5-day return window from the date of delivery. If the item arrives damaged, we will replace it free of charge."
+                }
+            }
+        ]
+    };
+    pageSchema.push(faqSchema);
     if (info.faqs && info.faqs.length > 0) {
         pageSchema.push({
             "@context": "https://schema.org",
@@ -1187,7 +1233,7 @@ const ProductDetails = () => {
                                 </button>
                                 <div className={`overflow-hidden transition-all duration-300 ease-in-out ${openSection === 'description' ? 'max-h-[2000px] opacity-100 mb-6' : 'max-h-0 opacity-0'}`}>
                                     <div className="text-stone-600 leading-[1.8] font-light mb-6 text-sm md:text-base space-y-3">
-                                        {product.description.split('\n').map((line, i) => {
+                                        {(info.long_description || product.description).split('\n').map((line, i) => {
                                             const trimmed = line.trim();
                                             if (trimmed.startsWith('-') || trimmed.startsWith('•')) {
                                                 return (
@@ -1251,6 +1297,39 @@ const ProductDetails = () => {
                                             )}
                                         </div>
                                     )}
+                                </div>
+                            </div>
+
+                            {/* FAQ Block */}
+                            <div className="border-b border-stone-200" itemScope itemType="https://schema.org/FAQPage">
+                                <button 
+                                    onClick={() => toggleSection('faq')}
+                                    className="w-full py-6 flex items-center justify-between text-left group"
+                                >
+                                    <span className="font-heading font-medium text-lg text-stone-900">Frequently Asked Questions</span>
+                                    {openSection === 'faq' ? <Minus className="w-4 h-4 text-rose-900" /> : <Plus className="w-4 h-4 text-stone-400 group-hover:text-rose-900 transition-colors" />}
+                                </button>
+                                <div className={`overflow-hidden transition-all duration-300 ease-in-out ${openSection === 'faq' ? 'max-h-[2000px] opacity-100 mb-6' : 'max-h-0 opacity-0'}`}>
+                                    <div className="space-y-4">
+                                        <div itemScope itemProp="mainEntity" itemType="https://schema.org/Question">
+                                            <h4 itemProp="name" className="font-heading font-medium text-stone-900 text-sm">How long will my order take to arrive?</h4>
+                                            <div itemScope itemProp="acceptedAnswer" itemType="https://schema.org/Answer">
+                                                <p itemProp="text" className="text-stone-600 text-sm mt-1">Since all items are handcrafted and made-to-order, please allow 1-3 days for processing. Standard shipping across India takes an additional 3-7 business days.</p>
+                                            </div>
+                                        </div>
+                                        <div itemScope itemProp="mainEntity" itemType="https://schema.org/Question">
+                                            <h4 itemProp="name" className="font-heading font-medium text-stone-900 text-sm">Can I request custom colors?</h4>
+                                            <div itemScope itemProp="acceptedAnswer" itemType="https://schema.org/Answer">
+                                                <p itemProp="text" className="text-stone-600 text-sm mt-1">Yes! Many of our crochet accessories can be customized. Feel free to contact us via WhatsApp or Email after placing your order to discuss color modifications.</p>
+                                            </div>
+                                        </div>
+                                        <div itemScope itemProp="mainEntity" itemType="https://schema.org/Question">
+                                            <h4 itemProp="name" className="font-heading font-medium text-stone-900 text-sm">How do I care for my crochet items?</h4>
+                                            <div itemScope itemProp="acceptedAnswer" itemType="https://schema.org/Answer">
+                                                <p itemProp="text" className="text-stone-600 text-sm mt-1">For optimal longevity, hand wash gently in cold water with mild detergent and lay flat to dry. Do not wring or machine wash, as this may distort the shape of the yarn.</p>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
@@ -1461,7 +1540,7 @@ const ProductDetails = () => {
                                     }
                                 }
                             }}
-                            className="flex overflow-x-auto snap-x hide-scrollbar gap-4 px-4 lg:px-0 lg:grid lg:grid-cols-4 lg:gap-6 pb-6"
+                            className="flex overflow-x-auto snap-x hide-scrollbar gap-4 px-4 lg:px-0 lg:grid lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 4xl:grid-cols-7 lg:gap-6 xl:gap-8 3xl:gap-10 pb-6"
                         >
                             {relatedProducts.map(p => {
                                 const discount = p.originalPrice ? Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100) : 0;
@@ -1542,7 +1621,7 @@ const ProductDetails = () => {
                                     transition: { staggerChildren: 0.1 }
                                 }
                             }}
-                            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 px-4 lg:px-0 lg:gap-6 pb-6"
+                            className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 4xl:grid-cols-7 gap-4 px-4 lg:px-0 lg:gap-6 xl:gap-8 3xl:gap-10 pb-6"
                         >
                             {youMayAlsoLikeProducts.map(p => {
                                 const discount = p.originalPrice ? Math.round(((p.originalPrice - p.price) / p.originalPrice) * 100) : 0;

@@ -20,7 +20,7 @@ export const generateShippingLabels = async (orders) => {
                 
                 <!-- Header -->
                 <div style="text-align: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 10px;">
-                    <h1 style="margin: 0; font-size: 24px; font-weight: bold; text-transform: uppercase;">ENBROIDERY</h1>
+                    <h1 style="margin: 0; font-size: 24px; font-weight: bold; text-transform: uppercase;">Crochet Wali</h1>
                     <p style="margin: 5px 0 0; font-size: 12px;">Standard Shipping Label</p>
                 </div>
 
@@ -50,7 +50,7 @@ export const generateShippingLabels = async (orders) => {
                 <div style="border-top: 1px solid #000; padding-top: 10px; margin-bottom: 15px;">
                     <strong style="font-size: 10px; text-transform: uppercase;">Return Address:</strong>
                     <div style="font-size: 10px; margin-top: 3px;">
-                        Enbroidery Returns<br>
+                        Crochet Wali Returns<br>
                         123 Fashion Street, Industrial Area<br>
                         Ludhiana, Punjab - 141001<br>
                         Ph: +91 7428013214

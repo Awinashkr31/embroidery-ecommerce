@@ -87,7 +87,7 @@ const TrackOrder = () => {
 
     return (
         <div className="min-h-[70vh] bg-[#fdfbf7] font-body pt-8 md:pt-16 pb-20">
-            <SEO title="Track Your Order" description="Track the real-time status of your Embroidery by Sana order." />
+            <SEO title="Track Your Order" description="Track the real-time status of your Crochet Wali order." />
             
             <div className="container-custom max-w-4xl mx-auto">
                 <div className="text-center mb-10">

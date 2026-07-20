@@ -2,6 +2,11 @@
 
 @import "tailwindcss";
 
+@theme {
+  --breakpoint-3xl: 1728px;
+  --breakpoint-4xl: 1920px;
+  --breakpoint-5xl: 2560px;
+}
 @layer base {
   :root {
     /* Primary Paradigm: Elegant & Earthy */
@@ -244,7 +249,7 @@
   }
 
   .container-custom {
-    @apply w-full max-w-[1920px] mx-auto px-4 lg:px-8;
+    @apply w-full max-w-[1800px] mx-auto px-4 lg:px-8 xl:px-10 2xl:px-12 3xl:px-16;
   }
 
   .heading-serif {

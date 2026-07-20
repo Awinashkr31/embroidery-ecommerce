@@ -347,7 +347,7 @@ const Checkout = () => {
                     key: import.meta.env.VITE_RAZORPAY_KEY_ID,
                     amount: orderData.amount,
                     currency: orderData.currency,
-                    name: "Enbroidery",
+                    name: "Crochet Wali",
                     description: "Handcrafted Embroidery",
                     order_id: orderData.id,
                     prefill: {

@@ -1,4 +1,4 @@
-import fs from 'fs';
+﻿import fs from 'fs';
 import path from 'path';
 
 export default async function handler(req, res) {
@@ -44,9 +44,9 @@ export default async function handler(req, res) {
         let host = req.headers['x-forwarded-host'] || req.headers.host || process.env.VERCEL_URL;
         
         // Security: Prevent SSRF by validating the host
-        const ALLOWED_HOSTS = ['www.embroiderybysana.live', 'embroiderybysana.live', 'localhost:5173', process.env.VERCEL_URL];
+        const ALLOWED_HOSTS = ['www.Crochet Wali.live', 'Crochet Wali.live', 'localhost:5173', process.env.VERCEL_URL];
         if (!ALLOWED_HOSTS.includes(host)) {
-            host = 'www.embroiderybysana.live'; // Fallback to production safe host
+            host = 'www.Crochet Wali.live'; // Fallback to production safe host
         }
 
         try {
@@ -71,10 +71,10 @@ export default async function handler(req, res) {
         }
 
         if (product && html) {
-            const title = `${product.name} | Embroidery By Sana`;
+            const title = `${product.name} | Crochet Wali`;
             const description = product.description ? product.description.substring(0, 160).replace(/"/g, '&quot;') : "Handmade Embroidery & Crochet Gifts";
             
-            let imageUrl = 'https://www.embroiderybysana.live/hero-gift.png';
+            let imageUrl = 'https://www.Crochet Wali.live/hero-gift.png';
             if (product.images) {
                 let parsedImages = product.images;
                 if (typeof parsedImages === 'string') {
@@ -85,7 +85,7 @@ export default async function handler(req, res) {
                 }
             }
 
-            const productUrl = `https://www.embroiderybysana.live/product/${slug}`;
+            const productUrl = `https://www.Crochet Wali.live/product/${slug}`;
 
             // Replace standard tags
             html = html.replace(/<title>.*?<\/title>/i, `<title>${title}</title>`);

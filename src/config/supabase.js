@@ -14,7 +14,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     schema: 'public'
   },
   global: {
-    headers: { 'x-application-name': 'enbroidery' }
+    headers: { 'x-application-name': 'Crochet Wali' }
   },
   realtime: {
     params: {
