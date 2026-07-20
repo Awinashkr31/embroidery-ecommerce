@@ -223,14 +223,84 @@ export const CartProvider = ({ children }) => {
     if (currentUser) {
         fetchRemoteCart();
     } else {
-        // Load local cart if no user
-        try {
-            const localCart = localStorage.getItem('cart');
-            if (localCart) setCart(JSON.parse(localCart));
-        } catch (e) {
-            console.error(e);
-        }
-        setIsFetchingCart(false);
+        // Fetch fresh product details for guest cart to ensure prices are updated
+        const fetchGuestCart = async () => {
+            try {
+                const localCartStr = localStorage.getItem('cart');
+                if (!localCartStr) {
+                    setIsFetchingCart(false);
+                    return;
+                }
+                const localCart = JSON.parse(localCartStr);
+                if (!Array.isArray(localCart) || localCart.length === 0) {
+                    setIsFetchingCart(false);
+                    return;
+                }
+
+                const productIds = localCart.map(item => item.id);
+                if (productIds.length === 0) {
+                    setIsFetchingCart(false);
+                    return;
+                }
+
+                const { data, error } = await supabase
+                    .from('products')
+                    .select('id, name, price, original_price, images, stock_quantity, variants, clothing_information, category')
+                    .in('id', productIds)
+                    .eq('active', true);
+
+                if (error) throw error;
+
+                const freshCart = localCart.map(item => {
+                    const p = data.find(prod => prod.id === item.id);
+                    if (!p) return null; // product inactive or deleted
+
+                    let finalPrice = p.price;
+                    let displayImage = p.images && p.images.length > 0 ? p.images[0] : p.image;
+
+                    if (item.variantId && p.variants && Array.isArray(p.variants)) {
+                         const variant = p.variants.find(v => v.id === item.variantId);
+                         if (variant) {
+                             if (variant.price) finalPrice = Number(variant.price);
+                             if (variant.images && variant.images.length > 0) displayImage = variant.images[0];
+                         }
+                    } 
+                    else if (p.clothing_information?.variantStock && item.selectedSize && item.selectedColor) {
+                        const key = `${item.selectedColor}-${item.selectedSize}`;
+                        const variant = p.clothing_information.variantStock[key];
+                        if (variant && variant.price) {
+                            finalPrice = Number(variant.price);
+                        }
+                    }
+
+                    return {
+                        ...item,
+                        ...p,
+                        image: displayImage,
+                        price: finalPrice,
+                        originalPrice: p.original_price,
+                        id: item.id,
+                        quantity: item.quantity,
+                        selectedSize: item.selectedSize,
+                        selectedColor: item.selectedColor,
+                        variantId: item.variantId,
+                        giftPackaging: item.giftPackaging,
+                        giftNote: item.giftNote,
+                    };
+                }).filter(Boolean);
+
+                if (mounted) setCart(freshCart);
+            } catch (e) {
+                console.error("Error refreshing guest cart:", e);
+                try {
+                    const localCart = localStorage.getItem('cart');
+                    if (localCart && mounted) setCart(JSON.parse(localCart));
+                } catch (err) {}
+            } finally {
+                if (mounted) setIsFetchingCart(false);
+            }
+        };
+        fetchGuestCart();
     }
 
     return () => { 

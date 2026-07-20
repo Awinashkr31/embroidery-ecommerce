@@ -140,6 +140,7 @@ export const ProductCard = React.memo(({ product, toggleWishlist, isInWishlist, 
                             key={idx}
                             src={getOptimizedImageUrl(img, { width: 500, quality: 75 })}
                             alt={`${product.name} - Handmade Crochet Gift India - View ${idx + 1}`}
+                            title={`${product.name} - Buy Handmade Crochet Gifts`}
                             width={500}
                             height={500}
                             loading={priority && idx === 0 ? 'eager' : 'lazy'}

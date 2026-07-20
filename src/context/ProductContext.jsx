@@ -4,7 +4,7 @@ import { deleteImage } from '../utils/uploadUtils';
 
 const ProductContext = createContext();
 
-const CACHE_DURATION_MS = 5 * 60 * 1000; // 5 minutes
+const CACHE_DURATION_MS = 0; // Fetch fresh data on navigation
 
 export const useProducts = () => useContext(ProductContext);
 

@@ -14,7 +14,11 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     schema: 'public'
   },
   global: {
-    headers: { 'x-application-name': 'Crochet Wali' }
+    headers: { 'x-application-name': 'Crochet Wali' },
+    fetch: (...args) => {
+      // Force no-store to prevent browser heuristic caching of GET requests
+      return fetch(args[0], { ...args[1], cache: 'no-store' });
+    }
   },
   realtime: {
     params: {

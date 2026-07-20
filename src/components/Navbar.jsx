@@ -167,7 +167,7 @@ const Navbar = React.memo(() => {
             {/* Desktop Logo (Always visible on lg) */}
             <Link to="/" className="hidden lg:flex flex-col group" aria-label="Home">
                 <picture>
-                  <img src="/logo.png" alt="Crochet Wali" className="h-16 lg:h-20 w-auto object-contain drop-shadow-sm hover:drop-shadow-md transition-all hover:scale-105" width={180} height={80} />
+                  <img src="/logo.png" alt="Crochet Wali" className="h-16 lg:h-20 w-auto object-contain drop-shadow-sm hover:drop-shadow-md transition-all hover:scale-105" width={180} height={80} fetchpriority="high" loading="eager" />
                 </picture>
             </Link>
 
@@ -186,7 +186,7 @@ const Navbar = React.memo(() => {
                     </button>
                     <Link to="/" className="absolute left-1/2 -translate-x-1/2 flex flex-col group lg:hidden z-0" aria-label="Home">
                         <picture>
-                          <img src="/logo.png" alt="Crochet Wali" className="h-14 w-auto object-contain mt-1 drop-shadow-sm" width={120} height={56} />
+                          <img src="/logo.png" alt="Crochet Wali" className="h-14 w-auto object-contain mt-1 drop-shadow-sm" width={120} height={56} fetchpriority="high" loading="eager" />
                         </picture>
                     </Link>
                 </>
@@ -202,7 +202,7 @@ const Navbar = React.memo(() => {
                     </button>
                     <Link to="/" className="absolute left-1/2 -translate-x-1/2 flex shrink-0 z-0">
                         <picture>
-                          <img src="/logo.png" alt="Crochet Wali" className="h-12 w-auto object-contain mt-1 drop-shadow-sm" width={100} height={48} />
+                          <img src="/logo.png" alt="Crochet Wali" className="h-12 w-auto object-contain mt-1 drop-shadow-sm" width={100} height={48} fetchpriority="high" loading="eager" />
                         </picture>
                     </Link>
                 </div>

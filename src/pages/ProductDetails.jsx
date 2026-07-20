@@ -1333,6 +1333,45 @@ const ProductDetails = () => {
                                 </div>
                             </div>
 
+                            {/* Care Instructions */}
+                            <div className="border-b border-stone-200">
+                                <button 
+                                    onClick={() => toggleSection('care')}
+                                    className="w-full py-6 flex items-center justify-between text-left group"
+                                >
+                                    <span className="font-heading font-medium text-lg text-stone-900">Care Instructions</span>
+                                    {openSection === 'care' ? <Minus className="w-4 h-4 text-rose-900" /> : <Plus className="w-4 h-4 text-stone-400 group-hover:text-rose-900 transition-colors" />}
+                                </button>
+                                <div className={`overflow-hidden transition-all duration-300 ease-in-out ${openSection === 'care' ? 'max-h-[1000px] opacity-100 mb-6' : 'max-h-0 opacity-0'}`}>
+                                    <ul className="space-y-3 text-sm text-stone-600">
+                                        <li className="flex items-start gap-3"><span className="w-1.5 h-1.5 rounded-full bg-stone-300 mt-2 flex-shrink-0"></span> Gently hand wash in cold water with mild detergent.</li>
+                                        <li className="flex items-start gap-3"><span className="w-1.5 h-1.5 rounded-full bg-stone-300 mt-2 flex-shrink-0"></span> Do not wring or twist. Press gently to remove excess water.</li>
+                                        <li className="flex items-start gap-3"><span className="w-1.5 h-1.5 rounded-full bg-stone-300 mt-2 flex-shrink-0"></span> Lay flat to air dry to maintain the original shape.</li>
+                                        <li className="flex items-start gap-3"><span className="w-1.5 h-1.5 rounded-full bg-stone-300 mt-2 flex-shrink-0"></span> Keep away from direct harsh sunlight for prolonged periods to prevent fading.</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            {/* Gift Ideas */}
+                            <div className="border-b border-stone-200">
+                                <button 
+                                    onClick={() => toggleSection('gift')}
+                                    className="w-full py-6 flex items-center justify-between text-left group"
+                                >
+                                    <span className="font-heading font-medium text-lg text-stone-900">Gifting Ideas</span>
+                                    {openSection === 'gift' ? <Minus className="w-4 h-4 text-rose-900" /> : <Plus className="w-4 h-4 text-stone-400 group-hover:text-rose-900 transition-colors" />}
+                                </button>
+                                <div className={`overflow-hidden transition-all duration-300 ease-in-out ${openSection === 'gift' ? 'max-h-[1000px] opacity-100 mb-6' : 'max-h-0 opacity-0'}`}>
+                                    <p className="text-sm text-stone-600 mb-3">This handmade item makes a perfect, thoughtful gift for:</p>
+                                    <ul className="space-y-2 text-sm text-stone-600">
+                                        <li className="flex items-center gap-2"><Gift className="w-4 h-4 text-rose-400" /> Anniversaries & Valentine's Day</li>
+                                        <li className="flex items-center gap-2"><Gift className="w-4 h-4 text-rose-400" /> Birthdays for friends or partners</li>
+                                        <li className="flex items-center gap-2"><Gift className="w-4 h-4 text-rose-400" /> Wedding return gifts</li>
+                                        <li className="flex items-center gap-2"><Gift className="w-4 h-4 text-rose-400" /> Housewarming presents</li>
+                                    </ul>
+                                </div>
+                            </div>
+
                             {/* Details & Specifications */}
                             {product.specifications && (
                                 <div className="border-b border-stone-200">

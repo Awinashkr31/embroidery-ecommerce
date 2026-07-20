@@ -25,7 +25,7 @@ const DEFAULT_CATEGORIES = [
 ];
 
 export const CategoryProvider = ({ children }) => {
-    const [categories, setCategories] = useState([]);
+    const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
     const [loading, setLoading] = useState(true);
     const { addToast } = useToast();
 

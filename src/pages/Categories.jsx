@@ -112,6 +112,25 @@ const Categories = () => {
                   </Link>
               ))}
           </div>
+
+          {/* SEO / AEO FAQ Section */}
+          <div className="mt-24 max-w-4xl mx-auto">
+              <h2 className="text-2xl md:text-3xl font-heading font-bold text-stone-900 mb-8 text-center">Frequently Asked Questions About Our Categories</h2>
+              <div className="space-y-6">
+                  <div className="bg-stone-50 p-6 rounded-xl border border-stone-100">
+                      <h3 className="font-bold text-lg text-stone-900 mb-2">What types of handmade gifts do you offer?</h3>
+                      <p className="text-stone-600">We offer a wide variety of handcrafted categories including Crochet Flower Bouquets, traditional Gajras, Hair Clips, Amigurumi Keychains, and personalized Hoop Art. Every item is crafted with premium yarn to ensure it lasts forever.</p>
+                  </div>
+                  <div className="bg-stone-50 p-6 rounded-xl border border-stone-100">
+                      <h3 className="font-bold text-lg text-stone-900 mb-2">Can I order custom designs within these categories?</h3>
+                      <p className="text-stone-600">Absolutely. While our categories showcase our most popular and trending designs, we specialize in custom orders. If you see a bouquet or keychain style you like but want it in a different color or size, simply contact us for a customized gift.</p>
+                  </div>
+                  <div className="bg-stone-50 p-6 rounded-xl border border-stone-100">
+                      <h3 className="font-bold text-lg text-stone-900 mb-2">How do I choose the right category for my gift?</h3>
+                      <p className="text-stone-600">If you're gifting for an anniversary or Valentine's Day, our 'Bouquets' category is ideal. For small, cute tokens of appreciation, explore our 'Keychains'. For traditional Indian aesthetics, our 'Hair Accessories & Gajra' category is the best choice.</p>
+                  </div>
+              </div>
+          </div>
       </div>
     </div>
   );

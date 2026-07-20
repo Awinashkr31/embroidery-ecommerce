@@ -297,6 +297,7 @@ const Home = () => {
       >
           <link rel="preload" as="image" href={homeSlides[currentSlide]?.desktopImage || "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=800"} />
       </SEO>
+      <h1 className="sr-only">Crochet Wali – Handmade Crochet Gifts Made with Love</h1>
 
         {/* ================= CUSTOM HERO BANNER ================= */}
         <section 

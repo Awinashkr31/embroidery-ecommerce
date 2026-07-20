@@ -1,6 +1,6 @@
 User-agent: *
 Allow: /
-Disallow: /admin
+Disallow: /sadmin
 Disallow: /profile
 Disallow: /checkout
 Disallow: /api/

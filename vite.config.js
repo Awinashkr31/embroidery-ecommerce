@@ -4,6 +4,7 @@ import { fileURLToPath } from 'url'
 import path, { dirname } from 'path'
 import { VitePWA } from 'vite-plugin-pwa'
 import viteCompression from 'vite-plugin-compression';
+import Sitemap from 'vite-plugin-sitemap';
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
 
@@ -85,7 +86,26 @@ export default defineConfig({
     react(),
     viteCompression({ algorithm: 'brotliCompress' }),
     viteCompression({ algorithm: 'gzip' }),
-    localApiPlugin()
+    localApiPlugin(),
+    Sitemap({
+      hostname: 'https://www.embroiderybysana.live',
+      dynamicRoutes: [
+        '/shop',
+        '/gifts',
+        '/categories',
+        '/crochet-wali', // New Landing Page
+        // Dynamic products and categories will be indexed dynamically by Google 
+        // since we'll generate canonicals, but we'll add static main pages here.
+        '/about',
+        '/custom-design',
+        '/support',
+        '/return-policy',
+        '/shipping-policy',
+        '/privacy-policy',
+        '/terms-of-service',
+        '/blog'
+      ]
+    })
     /* VitePWA({
       strategies: 'injectManifest',
       srcDir: 'src',

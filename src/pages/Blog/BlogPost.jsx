@@ -30,6 +30,29 @@ const BlogPost = () => {
                 keywords={post.keywords}
                 image={post.image}
                 url={window.location.href}
+                schema={[{
+                    "@context": "https://schema.org",
+                    "@type": "Article",
+                    "headline": post.title,
+                    "image": [
+                        `https://www.embroiderybysana.live${post.image}`
+                    ],
+                    "datePublished": post.date,
+                    "dateModified": post.date,
+                    "author": [{
+                        "@type": "Person",
+                        "name": "Crochet Wali",
+                        "url": "https://www.embroiderybysana.live/about"
+                    }],
+                    "publisher": {
+                        "@type": "Organization",
+                        "name": "Crochet Wali",
+                        "logo": {
+                            "@type": "ImageObject",
+                            "url": "https://www.embroiderybysana.live/logo.png"
+                        }
+                    }
+                }]}
             />
 
             <article className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">

@@ -35,7 +35,11 @@ const PrivacyPolicy = () => {
           <p>When you place an order through the Site, we will maintain your Order Information for our records unless and until you ask us to delete this information.</p>
 
           <h2 className="text-xl font-heading font-semibold text-stone-900 mt-8 mb-4">5. Contact Us</h2>
-          <p>For more information about our privacy practices, if you have questions, or if you would like to make a complaint, please contact us by e-mail at <strong>hello@sanaembroidery.com</strong>.</p>
+          <p>For more information about our privacy practices, if you have questions, or if you would like to make a complaint, please contact us by e-mail at <strong>support@embroiderybysana.live</strong> or by mail using the details provided below:</p>
+          <ul className="list-disc pl-5 mt-2 space-y-1">
+            <li><strong>Crochet Wali</strong></li>
+            <li>New Delhi, India</li>
+          </ul>
         </div>
       </div>
     </div>

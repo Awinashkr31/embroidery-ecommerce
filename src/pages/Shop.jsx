@@ -691,6 +691,25 @@ const Shop = () => {
                     </div>
                 </div>
             </div>
+
+            {/* SEO / AEO FAQ Section */}
+            <div className="mt-16 pb-24 max-w-4xl mx-auto px-4">
+                <h2 className="text-2xl md:text-3xl font-heading font-bold text-stone-900 mb-8 text-center">Shop Handmade Crochet Gifts - FAQ</h2>
+                <div className="space-y-6">
+                    <div className="bg-stone-50 p-6 rounded-xl border border-stone-100">
+                        <h3 className="font-bold text-lg text-stone-900 mb-2">Are all products listed here handmade?</h3>
+                        <p className="text-stone-600">Yes, every single product listed on our shop is meticulously handcrafted by skilled artisans. We specialize in crochet and embroidery, ensuring high quality and a personal touch in every order.</p>
+                    </div>
+                    <div className="bg-stone-50 p-6 rounded-xl border border-stone-100">
+                        <h3 className="font-bold text-lg text-stone-900 mb-2">How long does shipping take for crochet gifts?</h3>
+                        <p className="text-stone-600">Because our products are made-to-order to guarantee perfection, please allow 2-4 days for crafting. Standard shipping across India usually takes an additional 4-7 business days.</p>
+                    </div>
+                    <div className="bg-stone-50 p-6 rounded-xl border border-stone-100">
+                        <h3 className="font-bold text-lg text-stone-900 mb-2">Do you take bulk orders for wedding return gifts?</h3>
+                        <p className="text-stone-600">Yes, we take bulk orders for weddings, baby showers, and corporate events. Our crochet keychains and mini flower bouquets are very popular as return gifts. Please contact us via the Custom Design page for bulk pricing.</p>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 };
