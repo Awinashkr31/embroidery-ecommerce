@@ -396,7 +396,7 @@ const Home = () => {
                                       width={160}
                                       height={160}
                                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
-                                      loading="eager"
+                                      loading={i < 4 ? "eager" : "lazy"}
                                       decoding="async"
                                       onError={(e) => { e.target.onerror = null; e.target.src = "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=200"; }}
                                   />

@@ -142,11 +142,11 @@
           gtag('config', '%VITE_FIREBASE_MEASUREMENT_ID%');
         };
       }
-      // Trigger on first interaction or after 4s timeout (whichever comes first)
+      // Trigger on first interaction or after 8s timeout (whichever comes first)
       window.addEventListener('scroll', loadAnalytics, { once: true, passive: true });
       document.addEventListener('click', loadAnalytics, { once: true });
       document.addEventListener('touchstart', loadAnalytics, { once: true, passive: true });
-      setTimeout(loadAnalytics, 4000);
+      setTimeout(loadAnalytics, 8000);
     })();
   </script>
 </body>
