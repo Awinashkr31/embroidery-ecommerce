@@ -191,16 +191,14 @@ const Home = () => {
 
   const dynamicCategories = useMemo(() => {
     return categories.map(cat => {
-        const normalize = (str) => (str || '').toLowerCase().trim();
-        const catName = normalize(cat.label);
-        const productForCat = homeProducts.find(p => normalize(p.category) === catName && p.image);
+        const cleanName = cat.label.toLowerCase().trim().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
         return {
             id: cat.id,
             label: cat.label,
-            image: productForCat ? productForCat.image : (CATEGORY_IMAGES[catName] || "https://images.unsplash.com/photo-1616627561839-074385245eb6?q=80&w=600")
+            image: `/category-images/${cleanName}.webp`
         };
     });
-  }, [categories, homeProducts]);
+  }, [categories]);
 
   const { newArrivals, bestsellers, premiumProducts, budgetGridItems } = useMemo(() => {
     const newArr = homeProducts.filter(p => p.homepage_tags?.includes('new_arrival'));
@@ -249,17 +247,76 @@ const Home = () => {
     "foundingLocation": {
       "@type": "Place",
       "name": "India"
+    },
+    "sameAs": [
+        "https://www.instagram.com/embroiderybysana",
+        "https://www.pinterest.com/embroiderybysana"
+    ],
+    "contactPoint": {
+        "@type": "ContactPoint",
+        "email": "support@embroiderybysana.live",
+        "contactType": "customer support"
     }
+  };
+
+  const websiteSchema = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "url": "https://www.embroiderybysana.live",
+    "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://www.embroiderybysana.live/shop?search={search_term_string}",
+        "query-input": "required name=search_term_string"
+    }
+  };
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Are the crochet bouquets actually handmade?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes! Every single crochet bouquet and embroidery piece is 100% handmade with love by Sana using premium, durable yarn that lasts forever."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Do you deliver across India?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": `Absolutely. We offer secure, pan-India delivery. We also provide Free Shipping on all orders above ₹${FREE_DELIVERY_THRESHOLD || 999}.`
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I request a custom design?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes, we love custom orders! You can visit our Custom Design page to request personalized embroidery hoops or bespoke crochet flowers."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How long does delivery take?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Standard delivery takes approximately 4-7 days depending on your location in India. Custom handmade items may require additional crafting time."
+        }
+      }
+    ]
   };
 
   return (
     <div className="font-body bg-white selection:bg-rose-900 selection:text-white">
-      <h1 className="sr-only">Handmade Embroidery Gifts, Crochet Bouquets & Aesthetic Personalized Gifts India | Embroidery By Sana</h1>
       <SEO 
           title="Handmade Embroidery & Crochet Bouquet India | Personalized Gifts" 
           description="Shop handmade crochet bouquets, forever flower bouquets, personalized embroidery hoops, aesthetic handmade gifts, and cute crochet accessories online in India. Custom handmade gifts for birthdays, anniversaries & more." 
-          schema={orgSchema}
-      />
+          schema={[orgSchema, websiteSchema, faqSchema]}
+      >
+          <link rel="preload" as="image" href={homeSlides[currentSlide]?.desktopImage || "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=800"} />
+      </SEO>
 
         {/* ================= CUSTOM HERO BANNER ================= */}
         <section 
@@ -275,6 +332,7 @@ const Home = () => {
                     alt="Handcrafted Gifts" 
                     className="w-full h-full object-cover animate-fade-in translate-x-[15%] md:translate-x-[10%] scale-[1.1]" 
                     key={currentSlide}
+                    decoding="async"
                 />
                 {/* Optional dark overlay to ensure text/dots readability if image is bright */}
                 <div className="absolute inset-0 bg-black/10"></div>
@@ -380,12 +438,12 @@ const Home = () => {
                         <h3 className="text-white font-heading font-bold text-2xl md:text-3xl uppercase leading-tight mb-1" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.1)' }}>Crochet<br/>Bouquet</h3>
                         <p className="text-white/95 font-bold text-[9px] md:text-[10px] uppercase tracking-widest mb-3 md:mb-5 mt-1">Forever Flowers</p>
                         <Link to="/shop?category=bouquets" className="bg-white text-[#e11d48] font-bold text-[11px] md:text-xs px-5 py-2 rounded-full w-max shadow-sm hover:scale-105 transition-transform">
-                            Explore
+                            Shop Bouquets
                         </Link>
                     </div>
                     <div className="w-[60%] h-full absolute right-0 top-0">
                         <div className="absolute inset-0 bg-gradient-to-r from-[#e11d48] via-[#e11d48]/50 to-transparent w-16 z-10"></div>
-                        <img src="/promo-images/promo_bouquet_1784372081052.webp" alt="Crochet Bouquet" className="w-full h-full object-cover" />
+                        <img src="/promo-images/promo_bouquet_1784372081052.webp" alt="Crochet Bouquet" className="w-full h-full object-cover" width="600" height="400" loading="lazy" decoding="async" />
                     </div>
                 </div>
 
@@ -395,12 +453,12 @@ const Home = () => {
                         <h3 className="text-white font-heading font-bold text-2xl md:text-3xl uppercase leading-tight mb-1" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.1)' }}>Flower<br/>Pots</h3>
                         <p className="text-white/95 font-bold text-[9px] md:text-[10px] uppercase tracking-widest mb-3 md:mb-5 mt-1">Vibrant Decor</p>
                         <Link to="/shop?category=flower-pots" className="bg-white text-[#0d9488] font-bold text-[11px] md:text-xs px-5 py-2 rounded-full w-max shadow-sm hover:scale-105 transition-transform">
-                            Explore
+                            Shop Flower Pots
                         </Link>
                     </div>
                     <div className="w-[60%] h-full absolute right-0 top-0">
                         <div className="absolute inset-0 bg-gradient-to-r from-[#0d9488] via-[#0d9488]/50 to-transparent w-16 z-10"></div>
-                        <img src="/promo-images/promo_flowerpot_1784372090942.webp" alt="Flower Pots" className="w-full h-full object-cover" />
+                        <img src="/promo-images/promo_flowerpot_1784372090942.webp" alt="Flower Pots" className="w-full h-full object-cover" width="600" height="400" loading="lazy" decoding="async" />
                     </div>
                 </div>
 
@@ -410,12 +468,12 @@ const Home = () => {
                         <h3 className="text-white font-heading font-bold text-2xl md:text-3xl uppercase leading-tight mb-1" style={{ textShadow: '1px 1px 2px rgba(0,0,0,0.1)' }}>Hair<br/>Clips</h3>
                         <p className="text-white/95 font-bold text-[9px] md:text-[10px] uppercase tracking-widest mb-3 md:mb-5 mt-1">Cute Accessories</p>
                         <Link to="/shop?category=hair-accessories" className="bg-white text-[#4f46e5] font-bold text-[11px] md:text-xs px-5 py-2 rounded-full w-max shadow-sm hover:scale-105 transition-transform">
-                            Explore
+                            Shop Hair Clips
                         </Link>
                     </div>
                     <div className="w-[60%] h-full absolute right-0 top-0">
                         <div className="absolute inset-0 bg-gradient-to-r from-[#4f46e5] via-[#4f46e5]/50 to-transparent w-16 z-10"></div>
-                        <img src="/promo-images/promo_hairclips_1784372110625.webp" alt="Hair Clips" className="w-full h-full object-cover" />
+                        <img src="/promo-images/promo_hairclips_1784372110625.webp" alt="Hair Clips" className="w-full h-full object-cover" width="600" height="400" loading="lazy" decoding="async" />
                     </div>
                 </div>
 
@@ -428,12 +486,12 @@ const Home = () => {
                         </h3>
                         <p className="text-white/95 font-bold text-[9px] md:text-[10px] uppercase tracking-widest mb-3 md:mb-5 mt-1">Carry Everywhere</p>
                         <Link to="/shop?category=keychains" className="bg-white text-[#d97706] font-bold text-[11px] md:text-xs px-5 py-2 rounded-full w-max shadow-sm hover:scale-105 transition-transform">
-                            Explore
+                            Shop Keychains
                         </Link>
                     </div>
                     <div className="w-[60%] h-full absolute right-0 top-0">
                         <div className="absolute inset-0 bg-gradient-to-r from-[#d97706] via-[#d97706]/50 to-transparent w-16 z-10"></div>
-                        <img src="/promo-images/promo_keychain_1784372100478.webp" alt="Cute Keychains" className="w-full h-full object-cover" />
+                        <img src="/promo-images/promo_keychain_1784372100478.webp" alt="Cute Keychains" className="w-full h-full object-cover" width="600" height="400" loading="lazy" decoding="async" />
                     </div>
                 </div>
 
@@ -694,6 +752,24 @@ const Home = () => {
                        ))}
                    </div>
                </div>
+          </div>
+      </section>
+
+      {/* ================= FAQ SECTION FOR AI / GEO ================= */}
+      <section className="py-16 md:py-24 bg-[#fdfbf7]">
+          <div className="container-custom max-w-4xl">
+              <div className="text-center mb-12">
+                  <span className="text-rose-700 font-bold tracking-widest uppercase text-sm mb-3 block">Got Questions?</span>
+                  <h2 className="text-3xl md:text-5xl font-heading font-semibold text-black">Frequently Asked Questions</h2>
+              </div>
+              <div className="space-y-6">
+                  {faqSchema.mainEntity.map((faq, index) => (
+                      <div key={index} className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-stone-100">
+                          <h3 className="text-lg md:text-xl font-bold text-stone-900 mb-3">{faq.name}</h3>
+                          <p className="text-stone-600 leading-relaxed">{faq.acceptedAnswer.text}</p>
+                      </div>
+                  ))}
+              </div>
           </div>
       </section>
 

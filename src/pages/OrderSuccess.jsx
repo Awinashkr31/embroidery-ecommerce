@@ -52,7 +52,7 @@ const OrderSuccess = () => {
                 <div className="w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mb-4">
                     <Loader className="w-8 h-8 text-amber-600" />
                 </div>
-                <h1 className="text-xl font-bold text-stone-900 mb-2">Order Processing</h1>
+                <h2 className="text-xl font-bold text-stone-900 mb-2">Order Processing</h2>
                 <p className="text-stone-600 mb-6 max-w-md">
                     We've received your request, but are waiting for the order details to sync.
                     <br/>If this persists, please check your profile for the latest status.
@@ -80,7 +80,7 @@ const OrderSuccess = () => {
          return (
             <div className="min-h-screen flex flex-col items-center justify-center bg-[#fdfbf7] p-4">
                 <div className="text-center">
-                    <h1 className="text-2xl font-bold text-stone-900 mb-2">Order Confirmed!</h1>
+                    <h2 className="text-2xl font-bold text-stone-900 mb-2">Order Confirmed!</h2>
                     <p className="text-stone-600 mb-6">Your order ID is <span className="font-mono font-bold">{orderId}</span>.</p>
                     <p className="text-sm text-stone-500 mb-8">We couldn't load the details right now, but your order has been placed successfully.</p>
                     <Link to="/profile" className="px-6 py-3 bg-stone-900 text-white rounded-xl font-bold uppercase tracking-wider text-sm hover:bg-stone-800 transition">View My Orders</Link>

@@ -227,7 +227,7 @@ const Cart = () => {
                     <img src="/empty-cart.svg" alt="Empty Cart" className="w-24 h-24 opacity-80" onError={(e) => { e.target.style.display='none'; e.target.nextSibling.style.display='block'; }} />
                     <Trash2 className="w-12 h-12 text-stone-300 hidden" />
                 </div>
-                <h1 className="text-[24px] font-bold text-stone-900 mb-2">Your cart is empty</h1>
+                <h2 className="text-[24px] font-bold text-stone-900 mb-2">Your cart is empty</h2>
                 <p className="text-[14px] text-stone-500 mb-8 max-w-sm text-center">Looks like you haven't added anything yet. Explore our collection to find something unique.</p>
                 <Link to="/shop" className="bg-stone-900 text-white hover:bg-stone-800 transition-colors px-10 py-3.5 rounded-[12px] text-[15px] font-bold shadow-sm">
                     Start Shopping

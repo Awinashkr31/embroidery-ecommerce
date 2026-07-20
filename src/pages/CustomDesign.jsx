@@ -5,6 +5,7 @@ import { useToast } from '../context/ToastContext';
 import { fetchSetting } from '../utils/settingsUtils';
 import { useAuth } from '../context/AuthContext';
 import { uploadImage } from '../utils/uploadUtils';
+import SEO from '../components/SEO';
 
 const CustomDesign = () => {
   const { addToast } = useToast();
@@ -142,8 +143,25 @@ const CustomDesign = () => {
     { icon: Star, title: 'Delivered', desc: 'Your unique piece, delivered' },
   ];
 
+  const serviceSchema = {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": "Bespoke Custom Embroidery & Crochet",
+    "description": "Request custom handmade gifts, personalized embroidery portrait hoops, and bespoke crochet designs from Embroidery By Sana.",
+    "provider": {
+        "@type": "Organization",
+        "name": "Embroidery By Sana"
+    },
+    "serviceType": "Handmade Gifts & Embroidery"
+  };
+
   return (
     <div className="bg-[#fdfbf7] min-h-screen font-body pb-24 lg:pb-20">
+      <SEO 
+        title="Custom Design Request - Handmade Gifts" 
+        description="Request custom handmade gifts, personalized embroidery portrait hoops, and bespoke crochet designs from Embroidery By Sana."
+        schema={serviceSchema}
+      />
       {/* Hero — improved */}
       <div className="relative w-full h-[60vh] min-h-[500px] overflow-hidden flex items-center justify-center">
         {/* Background */}

@@ -1,4 +1,17 @@
 {
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.embroiderybysana.live"
+        }
+      ],
+      "destination": "https://embroiderybysana.live/$1",
+      "permanent": true
+    }
+  ],
   "headers": [
     {
       "source": "/(.*)",

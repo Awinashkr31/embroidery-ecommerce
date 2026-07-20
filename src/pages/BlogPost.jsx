@@ -58,11 +58,27 @@ const BlogPost = () => {
     const { slug } = useParams();
     const { addToast } = useToast();
     const [post, setPost] = useState(null);
+    const [toc, setToc] = useState([]);
+    const [contentHtml, setContentHtml] = useState('');
 
     useEffect(() => {
         window.scrollTo(0, 0);
         if (blogPosts[slug]) {
-            setPost(blogPosts[slug]);
+            const rawPost = blogPosts[slug];
+            setPost(rawPost);
+
+            const tempToc = [];
+            let modifiedContent = rawPost.content;
+            
+            const h2Regex = /<h2>(.*?)<\/h2>/g;
+            modifiedContent = modifiedContent.replace(h2Regex, (match, p1) => {
+                const id = p1.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+                tempToc.push({ id, title: p1 });
+                return `<h2 id="${id}">${p1}</h2>`;
+            });
+            
+            setToc(tempToc);
+            setContentHtml(modifiedContent);
         }
     }, [slug]);
 
@@ -160,13 +176,38 @@ const BlogPost = () => {
                         </button>
                     </div>
 
+                    {toc.length > 0 && (
+                        <div className="bg-stone-50 p-6 rounded-2xl border border-stone-100 mb-10 max-w-xl">
+                            <h3 className="font-heading font-bold text-lg text-stone-900 mb-4 flex items-center gap-2">
+                                Table of Contents
+                            </h3>
+                            <ul className="space-y-3">
+                                {toc.map((item, index) => (
+                                    <li key={index}>
+                                        <a 
+                                            href={`#${item.id}`} 
+                                            className="text-stone-600 hover:text-rose-900 transition-colors text-sm flex items-start gap-2 leading-tight"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                document.getElementById(item.id)?.scrollIntoView({ behavior: 'smooth' });
+                                            }}
+                                        >
+                                            <span className="text-stone-400 font-mono text-xs mt-0.5">{index + 1}.</span>
+                                            <span>{item.title}</span>
+                                        </a>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+
                     {/* SECURITY WARNING: dangerouslySetInnerHTML is currently safe because the content 
                         is hardcoded in this file. However, when migrating blog posts to Supabase/CMS, 
                         this becomes a critical stored XSS vector. You must use DOMPurify:
                         dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.content) }} */}
                     <article 
-                        className="prose prose-stone lg:prose-lg max-w-none prose-headings:font-heading prose-headings:font-bold prose-a:text-rose-900 prose-img:rounded-xl"
-                        dangerouslySetInnerHTML={{ __html: post.content }}
+                        className="prose prose-stone lg:prose-lg max-w-none prose-headings:font-heading prose-headings:font-bold prose-a:text-rose-900 prose-img:rounded-xl prose-headings:scroll-mt-24"
+                        dangerouslySetInnerHTML={{ __html: contentHtml }}
                     />
                 </div>
             </div>

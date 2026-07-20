@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { Mail, Phone, MapPin, Instagram, Facebook, MessageCircle, Send } from 'lucide-react';
+import { Mail, Phone, MapPin, Instagram, MessageCircle, Send } from 'lucide-react';
 import { supabase } from '../../config/supabase';
 import { useToast } from '../context/ToastContext';
+import SEO from '../components/SEO';
 
 const Contact = () => {
   const { addToast } = useToast();
@@ -40,8 +41,50 @@ const Contact = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const localBusinessSchema = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": "Embroidery By Sana",
+    "image": "https://www.embroiderybysana.live/hero-gift.png",
+    "@id": "https://www.embroiderybysana.live",
+    "url": "https://www.embroiderybysana.live/support",
+    "telephone": "+917428013214",
+    "email": "support@embroiderybysana.live",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Hauz Khas Village, Near Fort",
+      "addressLocality": "New Delhi",
+      "addressRegion": "DL",
+      "postalCode": "110016",
+      "addressCountry": "IN"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": 28.5523,
+      "longitude": 77.1934
+    },
+    "openingHoursSpecification": {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": [
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday"
+      ],
+      "opens": "10:00",
+      "closes": "19:00"
+    },
+    "priceRange": "$$"
+  };
+
   return (
     <div className="bg-[#fdfbf7] min-h-screen font-body pt-20 md:pt-28 pb-28 md:pb-20">
+      <SEO 
+        title="Contact Us | Customer Support"
+        description="Get in touch with Embroidery By Sana. Visit our studio in Hauz Khas Village, New Delhi or contact us for custom handmade embroidery and crochet gifts."
+        schema={localBusinessSchema}
+      />
       <div className="container-custom">
         <div className="text-center mb-16 max-w-3xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700">
           <span className="text-xs font-bold text-rose-900 uppercase tracking-[0.2em] mb-3 block">Customer Support</span>
@@ -79,8 +122,8 @@ const Contact = () => {
                 </div>
                 <div>
                   <h3 className="text-xl font-heading font-bold text-stone-900 mb-1">Email Support</h3>
-                  <a href="mailto:hello@sanaembroidery.com" className="text-stone-600 hover:text-rose-900 transition-colors block text-lg font-medium">
-                    hello@sanaembroidery.com
+                  <a href="mailto:support@embroiderybysana.live" className="text-stone-600 hover:text-rose-900 transition-colors block text-lg font-medium">
+                    support@embroiderybysana.live
                   </a>
                   <p className="text-xs text-stone-400 font-bold uppercase tracking-wider mt-1">Online orders & Enquiries</p>
                 </div>
@@ -90,10 +133,22 @@ const Contact = () => {
                 <div className="w-14 h-14 bg-rose-50 rounded-2xl flex items-center justify-center flex-shrink-0 rotate-1">
                   <MapPin className="w-6 h-6 text-rose-900" />
                 </div>
-                <div>
+                <div className="w-full">
                   <h3 className="text-xl font-heading font-bold text-stone-900 mb-1">The Studio</h3>
                   <p className="text-stone-600 text-lg">Hauz Khas Village, Near Fort</p>
-                  <p className="text-stone-600 text-lg">New Delhi, Delhi 110016</p>
+                  <p className="text-stone-600 text-lg mb-4">New Delhi, Delhi 110016</p>
+                  <div className="w-full h-40 rounded-xl overflow-hidden shadow-sm">
+                    <iframe 
+                      src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d14016.920556108502!2d77.18567119999999!3d28.5628581!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x390d1d86d6349c81%3A0xc4eb076294d13e31!2sHauz%20Khas%20Village%2C%20Deer%20Park%2C%20Hauz%20Khas%2C%20New%20Delhi%2C%20Delhi%20110016!5e0!3m2!1sen!2sin!4v1700000000000!5m2!1sen!2sin" 
+                      width="100%" 
+                      height="100%" 
+                      style={{ border: 0 }} 
+                      allowFullScreen="" 
+                      loading="lazy" 
+                      referrerPolicy="no-referrer-when-downgrade"
+                      title="Google Maps Location for Embroidery By Sana"
+                    ></iframe>
+                  </div>
                 </div>
               </div>
             </div>
@@ -102,13 +157,13 @@ const Contact = () => {
                <div className="absolute bottom-0 right-0 w-32 h-32 bg-rose-900 rounded-full blur-2xl translate-y-1/3 translate-x-1/3 opacity-40"></div>
               <h3 className="text-2xl font-heading font-bold mb-6">Connect on Social</h3>
               <div className="flex space-x-4">
-                <a href="#" className="p-4 bg-white/10 rounded-2xl hover:bg-white/20 transition-all hover:-translate-y-1 backdrop-blur-sm">
+                <a href="https://www.instagram.com/embroiderybysana" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Instagram" className="p-4 bg-white/10 rounded-2xl hover:bg-white/20 transition-all hover:-translate-y-1 backdrop-blur-sm">
                   <Instagram className="w-6 h-6" />
                 </a>
-                <a href="#" className="p-4 bg-white/10 rounded-2xl hover:bg-white/20 transition-all hover:-translate-y-1 backdrop-blur-sm">
-                  <Facebook className="w-6 h-6" />
+                <a href="https://www.pinterest.com/embroiderybysana" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Pinterest" className="p-4 bg-white/10 rounded-2xl hover:bg-white/20 transition-all hover:-translate-y-1 backdrop-blur-sm flex items-center justify-center font-bold text-lg leading-none">
+                  P
                 </a>
-                <a href="#" className="p-4 bg-white/10 rounded-2xl hover:bg-white/20 transition-all hover:-translate-y-1 backdrop-blur-sm">
+                <a href="https://wa.me/917428013214" target="_blank" rel="noopener noreferrer" aria-label="Message us on WhatsApp" className="p-4 bg-white/10 rounded-2xl hover:bg-white/20 transition-all hover:-translate-y-1 backdrop-blur-sm">
                   <MessageCircle className="w-6 h-6" />
                 </a>
               </div>

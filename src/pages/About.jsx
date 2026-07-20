@@ -27,7 +27,12 @@ const About = () => {
             "sameAs": [
                 "https://www.instagram.com/embroiderybysana",
                 "https://www.pinterest.com/embroiderybysana"
-            ]
+            ],
+            "contactPoint": {
+                "@type": "ContactPoint",
+                "email": "support@embroiderybysana.live",
+                "contactType": "customer support"
+            }
         },
         {
             "@context": "https://schema.org",
@@ -79,6 +84,9 @@ const About = () => {
                         </p>
                         <p>
                             Beyond traditional embroidery, my love for handcrafted aesthetics led me to explore the vibrant world of crochet. From everlasting crochet bouquets and forever flower bouquets to aesthetic crochet accessories, every piece is made with meticulous attention to detail right here in India.
+                        </p>
+                        <p className="mt-4 font-medium">
+                            <strong>Connect With Us:</strong> We are based in New Delhi, India. You can follow our journey and view our latest designs on Instagram at <a href="https://instagram.com/embroiderybysana" className="text-rose-700 hover:underline">@embroiderybysana</a> and on Pinterest at <a href="https://pinterest.com/embroiderybysana" className="text-rose-700 hover:underline">@embroiderybysana</a>. For custom inquiries, email us directly at support@embroiderybysana.live.
                         </p>
                     </div>
                 </div>

@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://www.embroiderybysana.live/sitemap.xml
+Sitemap: https://embroiderybysana.live/sitemap.xml

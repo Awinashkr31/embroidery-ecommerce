@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useId } from 'react';
 
 const FloatingInput = ({ 
   label, 
@@ -8,14 +8,18 @@ const FloatingInput = ({
   required = false, 
   name,
   className = "",
+  id,
   ...props 
 }) => {
   const [isFocused, setIsFocused] = useState(false);
   const isActive = isFocused || (value && value.toString().length > 0);
+  const generatedId = useId();
+  const inputId = id || generatedId;
 
   return (
     <div className={`relative ${className}`}>
       <input
+        id={inputId}
         type={type}
         name={name}
         required={required}
@@ -27,6 +31,7 @@ const FloatingInput = ({
         {...props}
       />
       <label
+        htmlFor={inputId}
         className={`absolute left-4 transition-all duration-200 pointer-events-none ${
           isActive 
             ? 'top-1.5 text-[10px] font-bold text-stone-500 uppercase tracking-wider' 

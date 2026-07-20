@@ -141,11 +141,12 @@ function App() {
 
               {/* Public Routes — all wrapped in the shared layout */}
               <Route element={
-                <div className="flex flex-col min-h-screen pb-16 md:pb-0">
+                <div className="flex flex-col min-h-screen pb-16 md:pb-0 relative">
+                  <a href="#main-content" className="sr-only focus:not-sr-only focus:absolute focus:z-[9999] focus:p-4 focus:bg-white focus:text-rose-900 focus:font-bold focus:shadow-xl top-0 left-0">Skip to content</a>
                   <Navbar />
                   <Suspense fallback={null}><ChatWidget /></Suspense>
                   <Suspense fallback={null}><LoginBottomSheet /></Suspense>
-                  <main className="flex-grow">
+                  <main id="main-content" className="flex-grow focus:outline-none" tabIndex="-1">
                     <ConditionalLayout>
                       <Suspense fallback={<PageLoader />}>
                         <Outlet />

@@ -11,6 +11,7 @@ const slugify = (str) => (str || '').toLowerCase().trim().replace(/\s+/g, '-').r
 
 import { ProductCard as ProductCardWithVariants } from '../components/ProductCard';
 import { getProductUrl } from '../utils/urlUtils';
+import SEO from '../components/SEO';
 
 const Shop = () => {
     const { products, loading: productsLoading, fetchProducts } = useProducts();
@@ -222,8 +223,40 @@ const Shop = () => {
         { id: 'above-199', label: 'Above ₹199' },
     ];
 
+    const itemListSchema = {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        "itemListElement": allFilteredProducts.map((product, index) => ({
+            "@type": "ListItem",
+            "position": index + 1,
+            "url": `https://www.embroiderybysana.live/product/${product.id}`
+        }))
+    };
+
+    const getPaginationUrl = (pageNumber) => {
+        const params = new URLSearchParams(searchParams);
+        if (pageNumber > 1) {
+            params.set('page', pageNumber);
+        } else {
+            params.delete('page');
+        }
+        const qs = params.toString();
+        return `https://www.embroiderybysana.live/shop${qs ? `?${qs}` : ''}`;
+    };
+
+    const prevUrl = currentPage > 1 ? getPaginationUrl(currentPage - 1) : null;
+    const nextUrl = currentPage < totalPages ? getPaginationUrl(currentPage + 1) : null;
+
     return (
         <div className="bg-[#fdfbf7] min-h-screen pb-32 font-body selection:bg-rose-100 selection:text-rose-900">
+            <SEO 
+                title="Handmade Embroidery & Crochet Collection"
+                description="Explore our complete collection of personalized handmade gifts, aesthetic crochet bouquets, and custom embroidery portrait hoops."
+                schema={itemListSchema}
+            >
+                {prevUrl && <link rel="prev" href={prevUrl} />}
+                {nextUrl && <link rel="next" href={nextUrl} />}
+            </SEO>
             <div className="container-custom pb-20 pt-4 md:pt-8">
 
                 {/* Mobile Category Circles */}
@@ -510,8 +543,9 @@ const Shop = () => {
                     <div className="flex-1 w-full relative min-w-0">
                         {/* Desktop Header */}
                         <div className="hidden md:block mb-8">
-                            <h1 className="font-heading text-3xl lg:text-4xl font-bold text-stone-900 mb-2">Our Collection</h1>
-                            <p className="text-stone-500 text-sm lg:text-base">Discover hand-crafted embroidery pieces tailored for you.</p>
+                            <h1 className="font-heading text-3xl lg:text-4xl font-bold text-stone-900 mb-2">Handmade Embroidery & Crochet Collection</h1>
+                            <p className="text-stone-500 text-sm lg:text-base mb-2">Discover hand-crafted embroidery pieces tailored for you.</p>
+                            <p className="text-stone-600 text-sm max-w-3xl leading-relaxed">Explore our extensive range of personalized handmade gifts, from intricate embroidery hoops to eternal crochet flower bouquets. Every piece is meticulously crafted with love, making them perfect for anniversaries, birthdays, or as unique aesthetic additions to your home.</p>
                         </div>
 
                         {/* Sticky Toolbar: Search, Sort, & Count */}

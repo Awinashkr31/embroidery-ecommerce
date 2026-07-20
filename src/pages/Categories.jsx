@@ -36,26 +36,39 @@ const Categories = () => {
     };
 
     const fetchedCategories = categories.map(cat => {
-        const normalize = (str) => (str || '').toLowerCase().trim();
-        const catName = normalize(cat.label);
-        const productForCat = products.find(p => normalize(p.category) === catName && p.image);
+        const cleanName = cat.label.toLowerCase().trim().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
         return {
             id: cat.id,
             label: cat.label,
-            image: productForCat ? productForCat.image : (CATEGORY_IMAGES[catName] || "https://images.unsplash.com/photo-1616627561839-074385245eb6?q=80&w=600&auto=format&fit=crop")
+            image: `/category-images/${cleanName}.webp`
         };
     });
 
     return [allCreations, ...fetchedCategories];
   }, [categories, products]);
 
+  const itemListSchema = {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      "itemListElement": dynamicCategories.map((cat, index) => ({
+          "@type": "ListItem",
+          "position": index + 1,
+          "url": cat.id === 'all' ? 'https://www.embroiderybysana.live/shop' : `https://www.embroiderybysana.live/shop?category=${encodeURIComponent(cat.label)}`
+      }))
+  };
+
   return (
     <div className="bg-white min-h-screen pb-24 font-body selection:bg-stone-900 selection:text-white pt-20">
-      <SEO title="Categories" description="Explore all categories of Sana's Hand Embroidery." />
+      <SEO 
+        title="Categories" 
+        description="Explore all categories of Sana's Hand Embroidery." 
+        schema={itemListSchema}
+      />
 
       <div className="container-custom">
-          <div className="mb-6 pb-4 border-b border-stone-100 flex items-center justify-between">
-              <h1 className="text-2xl font-heading font-bold text-stone-900 uppercase tracking-widest">Categories</h1>
+          <div className="mb-6 pb-4 border-b border-stone-100 flex flex-col items-start justify-between">
+              <h1 className="text-2xl font-heading font-bold text-stone-900 uppercase tracking-widest mb-2">Categories</h1>
+              <p className="text-stone-600 text-sm max-w-3xl leading-relaxed">Browse through our beautifully curated collections of handmade embroidery and crochet gifts. From elegant personalized hoops for weddings to cute custom accessories and forever flower bouquets, find the perfect category for your gifting needs.</p>
           </div>
 
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">

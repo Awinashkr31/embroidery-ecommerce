@@ -598,7 +598,7 @@ const ProductDetails = () => {
                                                 : 'border-transparent opacity-60 hover:opacity-100 hover:border-stone-200'
                                             }`}
                                         >
-                                            <img src={img} alt={`${product.name} - View ${idx + 1}`} className="w-full h-full object-cover object-top" />
+                                            <img src={img} alt={`${product.name} - View ${idx + 1}`} className="w-full h-full object-cover object-top" width="800" height="800" />
                                         </button>
                                     )
                                 ))}
@@ -735,12 +735,14 @@ const ProductDetails = () => {
                         {/* Price Area */}
                         <div className="mb-4 pb-4 border-b border-stone-100 font-body-alt">
                             <div className="flex flex-col gap-1.5 mb-2">
-                                <div className="flex items-center gap-2.5 bg-emerald-800 text-white px-3 py-1.5 rounded shadow-[0_2px_4px_rgba(6,78,59,0.3)] w-fit">
-                                    <span className="text-3xl lg:text-4xl font-heading font-semibold tracking-tight">
-                                        <span className="text-lg lg:text-xl font-sans mr-0.5">₹</span>{currentPrice.toLocaleString('en-IN')}
-                                    </span>
+                                <div className="flex items-center gap-3">
+                                    <div className="flex items-center gap-2.5 bg-emerald-800 text-white px-3 py-1.5 rounded shadow-[0_2px_4px_rgba(6,78,59,0.3)] w-fit">
+                                        <span className="text-3xl lg:text-4xl font-heading font-semibold tracking-tight">
+                                            <span className="text-lg lg:text-xl font-sans mr-0.5">₹</span>{currentPrice.toLocaleString('en-IN')}
+                                        </span>
+                                    </div>
                                     {product.originalPrice && product.originalPrice > currentPrice && (
-                                        <span className="text-[13px] lg:text-sm font-medium text-emerald-100 line-through mt-1">
+                                        <span className="text-lg lg:text-xl font-medium text-stone-400 line-through">
                                             ₹{product.originalPrice.toLocaleString('en-IN')}
                                         </span>
                                     )}
@@ -752,6 +754,14 @@ const ProductDetails = () => {
                                 )}
                             </div>
                             <p className="text-stone-400 text-[11px] mb-5 uppercase tracking-wider font-medium ml-1">Inclusive of all taxes</p>
+                            
+                            {/* CRO Low Stock Scarcity Indicator */}
+                            {currentStock > 0 && currentStock <= 5 && (
+                                <div className="flex items-center gap-2 text-xs font-bold text-rose-800 bg-rose-50/80 px-4 py-2.5 rounded-xl border border-rose-100/60 w-fit mb-5">
+                                    <div className="w-2 h-2 rounded-full bg-rose-600 animate-pulse"></div>
+                                    <span>Only {currentStock} left in stock - order soon!</span>
+                                </div>
+                            )}
                             
                             {/* Mobile-optimized Delivery Box */}
                             <div className="mb-4 w-full">
@@ -936,6 +946,12 @@ const ProductDetails = () => {
                             >
                                 Buy At ₹{currentPrice.toLocaleString()}
                             </motion.button>
+                            
+                            {/* CRO Estimated Delivery */}
+                            <div className="hidden lg:flex items-center justify-center gap-2 text-stone-500 mt-2 mb-2">
+                                <Package className="w-4 h-4 text-stone-400" />
+                                <span className="text-xs font-medium tracking-wide">Estimated Delivery: <span className="font-bold text-stone-700">4-7 Days</span></span>
+                            </div>
 
 
                             {/* Trust Badges */}
@@ -956,6 +972,12 @@ const ProductDetails = () => {
                                     <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
                                     <span className="text-[10px] font-bold uppercase tracking-widest">Premium<br/>Quality</span>
                                 </div>
+                            </div>
+                            
+                            {/* CRO Estimated Delivery (Mobile) */}
+                            <div className="flex lg:hidden items-center justify-center gap-2 text-stone-500 mt-4 mb-2 bg-stone-50 p-3 rounded-xl border border-stone-100">
+                                <Package className="w-4 h-4 text-stone-400" />
+                                <span className="text-xs font-medium tracking-wide">Estimated Delivery: <span className="font-bold text-stone-700">4-7 Days</span></span>
                             </div>
                         </div>
 
@@ -1397,7 +1419,7 @@ const ProductDetails = () => {
                                             <p className="text-stone-600 leading-relaxed text-sm pl-[52px]">{review.comment}</p>
                                             {review.image_url && (
                                                 <a href={review.image_url} target="_blank" rel="noopener noreferrer" className="mt-3 ml-[52px] inline-block w-20 h-20 rounded-lg overflow-hidden border border-stone-200 hover:border-rose-300 transition-colors">
-                                                    <img src={review.image_url} alt="Review photo" className="w-full h-full object-cover" />
+                                                    <img src={review.image_url} alt={`${product.name} customer review`} className="w-full h-full object-cover" width="400" height="400" />
                                                 </a>
                                             )}
                                         </div>
@@ -1677,7 +1699,7 @@ const ProductDetails = () => {
                         
                         <div className="flex items-center gap-4 mb-6 mt-2">
                             <div className="w-16 h-20 rounded-lg overflow-hidden bg-stone-50 shrink-0">
-                                <img src={selectedImage || displayImages[0] || product.image} alt="Product" className="w-full h-full object-cover" />
+                                <img src={selectedImage || displayImages[0] || product.image} alt={product.name} className="w-full h-full object-cover" width="800" height="800" />
                             </div>
                             <div>
                                 <h3 className="font-heading font-bold text-stone-900 text-lg line-clamp-1">{product.name}</h3>

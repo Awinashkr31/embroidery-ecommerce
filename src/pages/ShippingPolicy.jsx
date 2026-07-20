@@ -1,7 +1,9 @@
 import React from 'react';
 import SEO from '../components/SEO';
+import { useCart } from '../context/CartContext';
 
 const ShippingPolicy = () => {
+  const { FREE_DELIVERY_THRESHOLD } = useCart();
   return (
     <div className="min-h-screen bg-[#fdfbf7] pt-24 pb-20 font-body">
       <SEO 
@@ -27,7 +29,7 @@ const ShippingPolicy = () => {
           <p className="mt-4 text-stone-500 italic">Please note: Delivery delays can occasionally occur due to unforeseen courier issues.</p>
 
           <h2 className="text-xl font-heading font-semibold text-stone-900 mt-8 mb-4">3. Free Shipping</h2>
-          <p>We offer <strong>Free Standard Shipping</strong> on all domestic orders over ₹999.</p>
+          <p>We offer <strong>Free Standard Shipping</strong> on all domestic orders over ₹{FREE_DELIVERY_THRESHOLD || 999}.</p>
 
           <h2 className="text-xl font-heading font-semibold text-stone-900 mt-8 mb-4">4. Shipment Confirmation & Order Tracking</h2>
           <p>You will receive a Shipment Confirmation email once your order has shipped containing your tracking number(s). The tracking number will be active within 24 hours.</p>

@@ -74,13 +74,25 @@ const BottomNavigation = () => {
                     <div className={`relative flex items-center justify-center w-11 h-7 rounded-xl transition-all duration-200 ${
                       isActive ? 'bg-rose-900/10' : ''
                     }`}>
-                      <IconComponent
-                        size={20}
-                        strokeWidth={isActive ? 2.5 : 2}
-                        className={`transition-colors duration-200 ${
-                          isActive ? 'text-rose-900' : 'text-stone-500'
-                        }`}
-                      />
+                      {isProfile && currentUser ? (
+                          <div className={`w-6 h-6 rounded-full overflow-hidden flex items-center justify-center ${isActive ? 'ring-2 ring-rose-900 ring-offset-1' : 'border border-stone-300'}`}>
+                              {currentUser.photoURL ? (
+                                  <img src={currentUser.photoURL} alt="Profile" className="w-full h-full object-cover" />
+                              ) : (
+                                  <div className="w-full h-full bg-rose-900 text-white flex items-center justify-center text-[10px] font-bold uppercase">
+                                      {currentUser.displayName ? currentUser.displayName.charAt(0) : <User size={14} />}
+                                  </div>
+                              )}
+                          </div>
+                      ) : (
+                          <IconComponent
+                            size={20}
+                            strokeWidth={isActive ? 2.5 : 2}
+                            className={`transition-colors duration-200 ${
+                              isActive ? 'text-rose-900' : 'text-stone-500'
+                            }`}
+                          />
+                      )}
 
                       {/* Badge */}
                       {badge > 0 && (

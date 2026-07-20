@@ -13,7 +13,8 @@ import {
   Package,
   MapPin,
   ArrowLeft,
-  Sparkles
+  Sparkles,
+  Truck
 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -36,7 +37,7 @@ const Navbar = React.memo(() => {
   const searchContainerRef = useRef(null);
   const userMenuRef = useRef(null);
 
-  const { cartCount } = useCart();
+  const { cartCount, FREE_DELIVERY_THRESHOLD } = useCart();
   const { currentUser, logout, openLoginSheet } = useAuth();
   const { addToast } = useToast();
   const { settings } = useSettings();
@@ -143,6 +144,14 @@ const Navbar = React.memo(() => {
   return (
     <>
     <header className={`sticky top-0 w-full z-50 flex flex-col transition-transform duration-300 ease-in-out ${scrollDirection === 'down' ? '-translate-y-full' : 'translate-y-0'} ${location.pathname === '/cart' ? 'hidden lg:flex' : ''}`}>
+      {/* CRO Announcement Bar */}
+      <div className="w-full bg-[#6e132b] text-white py-1.5 md:py-2 px-4 flex items-center justify-center gap-2 overflow-hidden relative group">
+          <Truck className="w-4 h-4 md:w-5 md:h-5 shrink-0 group-hover:animate-bounce" />
+          <p className="text-[10px] md:text-xs font-bold tracking-widest uppercase">
+              Free Shipping on orders over <span className="text-rose-200">₹{FREE_DELIVERY_THRESHOLD || 999}</span>!
+          </p>
+          <Sparkles className="w-3 h-3 md:w-4 md:h-4 text-rose-300 absolute right-4 md:right-8 animate-pulse" />
+      </div>
       <nav
         className={`w-full relative z-20 transition-all duration-500 ease-in-out min-h-[56px] md:min-h-[72px]
           ${isScrolled
@@ -172,6 +181,8 @@ const Navbar = React.memo(() => {
                         className="p-1.5 -ml-1.5 text-stone-800 hover:text-rose-900 transition-colors rounded-full lg:hidden z-10"
                         onClick={() => setIsMobileMenuOpen(true)}
                         aria-label="Open menu"
+                        aria-expanded={isMobileMenuOpen}
+                        aria-controls="mobile-menu-container"
                     >
                         <Menu className="w-6 h-6" />
                     </button>
@@ -390,7 +401,7 @@ const Navbar = React.memo(() => {
     </header>
 
     {/* Mobile Side Drawer */}
-    <div className={`fixed inset-0 z-[60] lg:hidden transition-all duration-500 ${isMobileMenuOpen ? 'visible' : 'invisible'}`}>
+    <div id="mobile-menu-container" className={`fixed inset-0 z-[60] lg:hidden transition-all duration-500 ${isMobileMenuOpen ? 'visible' : 'invisible'}`}>
         {/* Backdrop */}
         <div 
             className={`absolute inset-0 bg-stone-900/40 backdrop-blur-sm transition-opacity duration-500 ${isMobileMenuOpen ? 'opacity-100' : 'opacity-0'}`}

@@ -1,19 +1,21 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
 
-const SEO = ({ title, description, keywords, schema, url, image }) => {
-    const siteTitle = "Embroidery By Sana | Handmade Embroidery & Crochet Gifts";
+const SEO = ({ title, description, keywords, schema, url, image, children }) => {
+    const siteTitle = "Handmade Embroidery & Custom Crochet Gifts | Embroidery By Sana";
     const fullTitle = title ? `${title} | Embroidery By Sana` : siteTitle;
-    const metaDescription = description || "Handcrafted crochet bouquets & embroidery gifts that last forever. Perfect for anniversaries, birthdays & gifting. Custom orders available across India.";
+    const metaDescription = description || "Shop handcrafted crochet bouquets & personalized embroidery gifts that last forever. Perfect for anniversaries & birthdays. Order now across India!";
     const metaKeywords = keywords || "crochet bouquet india, handmade gifts india, personalized handmade gifts, crochet flower bouquet, forever flower bouquet, crochet bouquet for girlfriend, aesthetic handmade gifts, custom handmade gifts, crochet accessories india, cute handmade accessories, personalized bouquet gift, aesthetic crochet bouquet, handmade anniversary gift, custom gift india, handmade flower bouquet";
-    const metaUrl = url || "https://www.embroiderybysana.live";
-    const metaImage = image || "https://www.embroiderybysana.live/logo.png";
+    const metaUrl = url || "https://embroiderybysana.live";
+    const metaImage = image || "https://embroiderybysana.live/hero-gift.png";
 
     return (
         <Helmet>
+            {children}
             <title>{fullTitle}</title>
             <meta name="description" content={metaDescription} />
             <meta name="keywords" content={metaKeywords} />
+            <meta name="robots" content="index, follow" />
             <link rel="canonical" href={metaUrl} />
             
             {/* Open Graph / Facebook */}
