@@ -93,6 +93,13 @@ const Home = () => {
   const [touchEnd, setTouchEnd] = useState(null);
   const reviewScrollRef = useRef(null);
   const budgetScrollRef = useRef(null);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+      // Delay rendering below-the-fold content to prioritize Hero LCP
+      const timer = setTimeout(() => setIsMounted(true), 100);
+      return () => clearTimeout(timer);
+  }, []);
 
   // Auto slide Budget Bazaar only when visible
   useEffect(() => {
@@ -370,6 +377,8 @@ const Home = () => {
         </section>
 
       {/* ================= SHOP BY CATEGORY ================= */}
+      {isMounted && (
+        <>
       <section className="py-12 md:py-16 bg-white border-b border-stone-100">
         <div className="container-custom">
             <Reveal>
@@ -776,6 +785,8 @@ const Home = () => {
               </div>
           </div>
       </section>
+        </>
+      )}
 
     </div>
   );

@@ -26,10 +26,8 @@ const Wishlist = lazy(() => import('./pages/Wishlist'));
 const OrderSuccess = lazy(() => import('./pages/OrderSuccess'));
 const OrderConfirmation = lazy(() => import('./pages/OrderConfirmation'));
 const OrderDetails = lazy(() => import('./pages/OrderDetails'));
-import Home from './pages/Home';
-import ProductDetails from './pages/ProductDetails';
-
-
+const Home = lazy(() => import('./pages/Home'));
+const ProductDetails = lazy(() => import('./pages/ProductDetails'));
 const About = lazy(() => import('./pages/About'));
 const Shop = lazy(() => import('./pages/Shop'));
 const Categories = lazy(() => import('./pages/Categories'));
