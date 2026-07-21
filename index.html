@@ -133,14 +133,14 @@
         document.head.appendChild(u);
         // Google Analytics
         var g = document.createElement('script');
-        g.src = 'https://www.googletagmanager.com/gtag/js?id=%VITE_FIREBASE_MEASUREMENT_ID%';
+        g.src = 'https://www.googletagmanager.com/gtag/js?id=G-9K6K20T8EB';
         g.async = true;
         document.head.appendChild(g);
         g.onload = function() {
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
           gtag('js', new Date());
-          gtag('config', '%VITE_FIREBASE_MEASUREMENT_ID%');
+          gtag('config', 'G-9K6K20T8EB');
         };
       }
       // Trigger on first interaction or after 8s timeout (whichever comes first)
