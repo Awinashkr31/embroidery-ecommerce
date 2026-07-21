@@ -161,6 +161,10 @@ function App() {
                 <Route path="/shop" element={<Shop />} />
                 <Route path="/gifts" element={<Gifts />} />
                 <Route path="/categories" element={<Categories />} />
+                <Route path="/collections/aesthetic-gifts" element={<Navigate to="/collections/crochet-gifts" replace />} />
+                <Route path="/collections/occasion-gifts" element={<Navigate to="/gifts" replace />} />
+                <Route path="/collections/embroidery-hoops" element={<Navigate to="/collections/custom-embroidery-hoops" replace />} />
+                <Route path="/collections/handmade" element={<Navigate to="/collections/handmade-gifts" replace />} />
                 <Route path="/collections/:slug" element={<Collection />} />
                 <Route path="/new-arrivals" element={<NewArrivals />} />
                 <Route path="/crochet-wali" element={<LandingPage />} />

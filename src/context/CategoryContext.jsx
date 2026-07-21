@@ -12,16 +12,13 @@ const slugify = (text) =>
     text.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
 const DEFAULT_CATEGORIES = [
-    { id: 'home-decor', label: 'Home Decor' },
-    { id: 'accessories', label: 'Accessories' },
-    { id: 'art', label: 'Art' },
+    { id: 'crochet-gifts', label: 'Crochet Gifts' },
+    { id: 'crochet-flowers', label: 'Crochet Flowers' },
+    { id: 'custom-embroidery-hoops', label: 'Custom Embroidery Hoops' },
+    { id: 'handmade-gifts', label: 'Handmade Gifts' },
     { id: 'gifts', label: 'Gifts' },
-    { id: 'hoop-art', label: 'Hoop Art' },
-    { id: 'bridal', label: 'Bridal' },
-    { id: 'clothing', label: 'Clothing' },
-    { id: 'mens-ethnic', label: 'Mens Ethnic' },
-    { id: 'womens-ethnic', label: 'Womens Ethnic' },
-    { id: 'combos', label: 'Combos' }
+    { id: 'home-decor', label: 'Home Decor' },
+    { id: 'accessories', label: 'Accessories' }
 ];
 
 export const CategoryProvider = ({ children }) => {

@@ -46,17 +46,17 @@ const COLLECTION_SEO_CONTENT = {
         h1: 'Handmade Crochet Gifts Hoops',
         text: 'Discover the finest Handmade Crochet Gifts hoops in India. Our custom embroidery hoop collection features personalized embroidery hoops with names, dates, and floral patterns. Each embroidery hoop gift is a piece of aesthetic embroidery art — perfect as embroidery room decor, embroidery wall decor, or an embroidery handmade gift. We offer floral embroidery hoops, embroidery name hoops, and embroidery decorative hoops for every occasion. Whether you need an embroidery anniversary gift, embroidery birthday gift, or embroidery wedding gift, our embroidery hoop art is handcrafted with premium quality threads and embroidery personalized decor that will impress.',
     },
-    'occasion-gifts': {
-        title: 'Handmade Gifts for Every Occasion India | Anniversary, Birthday & Wedding',
-        description: 'Find the perfect gift for girlfriend india, anniversary gift india, birthday gift for girlfriend, and romantic handmade gifts. Valentine gifts handmade and wedding gifts handmade.',
-        h1: 'Handmade Gifts for Every Occasion',
-        text: 'Finding the perfect gift for girlfriend in India has never been easier. Our handmade collection features romantic handmade gifts, handmade anniversary gifts, handmade birthday gifts, and valentine gifts handmade — all crafted with love. Whether you need a surprise gift ideas india, cute gifts for couples, or a special gift for girlfriend, we offer unique gifts for girls that are truly one-of-a-kind. From anniversary bouquet gifts and romantic bouquet gifts to forever flower gifts and handmade wedding decor gifts, every product is designed to create lasting memories. Our gifts for best friend handmade and cute birthday gifts india make thoughtful presents for any celebration.',
+    'crochet-gifts': {
+        title: 'Crochet Gifts India | Unique Handmade Gifts | Crochet Wali',
+        description: 'Explore our curated collection of unique crochet gifts. Handmade in India, perfect for anniversaries, birthdays, and customized aesthetic gifts.',
+        h1: 'Handmade Crochet Gifts',
+        text: 'Welcome to our exclusive collection of handmade crochet gifts. Every piece is carefully handcrafted by artisans in India using premium yarns. Whether you are looking for a unique crochet gift for your girlfriend, personalized handmade gifts, or budget-friendly crochet gifts under ₹500, we have something special for every occasion. Unlike mass-produced items, our crochet gifts offer a personal touch that lasts forever. From aesthetic custom pieces to ready-to-ship handmade treasures, discover the perfect crochet gift today.',
     },
-    'aesthetic-gifts': {
-        title: 'Aesthetic Gifts India | Pinterest Aesthetic Handmade Products',
-        description: 'Shop aesthetic gifts india, aesthetic handmade gifts, cute aesthetic gifts, pastel aesthetic gifts, minimalist handmade gifts, and korean aesthetic gifts. Pinterest aesthetic gifts and soft girl aesthetic gifts.',
-        h1: 'Aesthetic Gifts & Handmade Products',
-        text: 'Welcome to our curated collection of aesthetic gifts india. If you love pinterest aesthetic gifts, soft girl aesthetic gifts, korean aesthetic gifts, or pastel aesthetic gifts — you will love our collection. We offer aesthetic handmade gifts, cute aesthetic gifts, aesthetic bouquet gifts, and aesthetic crochet decor. Our aesthetic floral decor, aesthetic handmade accessories, and aesthetic room decor handmade are perfect for creating a cozy aesthetic decor vibe. Whether you are looking for minimalist handmade gifts, trendy aesthetic gifts, or aesthetic lifestyle gifts, our aesthetic handmade store has it all. Every product is an aesthetic custom gift designed for those who appreciate handmade art.',
+    'crochet-flowers': {
+        title: 'Handmade Crochet Flowers & Bouquets India | Crochet Wali',
+        description: 'Shop beautiful handmade crochet flowers and forever flower bouquets. Made to order in India. The perfect sustainable gift that never wilts.',
+        h1: 'Handmade Crochet Flowers',
+        text: 'Discover the beauty of forever flowers with our handmade crochet flower collection. Handcrafted in India, our crochet flowers are the perfect sustainable alternative to fresh bouquets. They never wilt, require zero maintenance, and serve as a beautiful keepsake for years to come. Whether you are looking for a classic crochet rose bouquet, a bright sunflower pot, or a mixed aesthetic floral arrangement, our crochet flowers are designed to impress. Ideal for Valentine\'s Day, anniversaries, or as an aesthetic room decor addition.',
     }
 };
 

@@ -6,3 +6,4 @@ Disallow: /checkout
 Disallow: /api/
 
 Sitemap: https://www.embroiderybysana.live/sitemap.xml
+Sitemap: https://www.embroiderybysana.live/sitemap_images.xml

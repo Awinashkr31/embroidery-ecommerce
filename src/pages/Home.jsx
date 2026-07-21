@@ -33,15 +33,15 @@ const Reveal = ({ children, className = '', delay = 0 }) => {
 };
 
 const CATEGORY_IMAGES = {
-    'home decor': 'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=600',
-    'accessories': 'https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?w=600',
-    'art': 'https://images.unsplash.com/photo-1543857778-c4a1a3e0b2eb?w=600',
-    'gifts': 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=600',
-    'hoop art': 'https://images.unsplash.com/photo-1584285406059-e9eb7b17d740?w=600',
-    'bridal': 'https://images.unsplash.com/photo-1583939000240-410c5cb2ed29?w=600',
-    'custom': 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600',
-    'jewelry': 'https://images.unsplash.com/photo-1599643478524-fb66f70d00f8?w=600',
-    'clothing': 'https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?w=600'
+    'home decor': 'https://images.unsplash.com/photo-1513694203232-719a280e022f?w=600&fm=webp&q=70',
+    'accessories': 'https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?w=600&fm=webp&q=70',
+    'art': 'https://images.unsplash.com/photo-1543857778-c4a1a3e0b2eb?w=600&fm=webp&q=70',
+    'gifts': 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=600&fm=webp&q=70',
+    'hoop art': 'https://images.unsplash.com/photo-1584285406059-e9eb7b17d740?w=600&fm=webp&q=70',
+    'bridal': 'https://images.unsplash.com/photo-1583939000240-410c5cb2ed29?w=600&fm=webp&q=70',
+    'custom': 'https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&fm=webp&q=70',
+    'jewelry': 'https://images.unsplash.com/photo-1599643478524-fb66f70d00f8?w=600&fm=webp&q=70',
+    'clothing': 'https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?w=600&fm=webp&q=70'
 };
 
 const REVIEWS = [
@@ -54,19 +54,19 @@ const REVIEWS = [
 ];
 
 const budgetBazaarItemsRow1 = [
-    { title: "Claw Clips", price: 99, img: "https://images.unsplash.com/photo-1596755389378-c11d66f442b3?w=400" },
-    { title: "Hair Bows", price: 149, img: "https://images.unsplash.com/photo-1627914437433-72210a17406a?w=400" },
-    { title: "Bouquets", price: 199, img: "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=400" },
-    { title: "Rubber Bands", price: 99, img: "https://images.unsplash.com/photo-1601004890684-d8cbf643f5f2?w=400" },
-    { title: "Keychains", price: 149, img: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=400" },
+    { title: "Claw Clips", price: 99, img: "https://images.unsplash.com/photo-1596755389378-c11d66f442b3?w=400&fm=webp&q=70" },
+    { title: "Hair Bows", price: 149, img: "https://images.unsplash.com/photo-1627914437433-72210a17406a?w=400&fm=webp&q=70" },
+    { title: "Bouquets", price: 199, img: "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=400&fm=webp&q=70" },
+    { title: "Rubber Bands", price: 99, img: "https://images.unsplash.com/photo-1601004890684-d8cbf643f5f2?w=400&fm=webp&q=70" },
+    { title: "Keychains", price: 149, img: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=400&fm=webp&q=70" },
 ];
 
 const budgetBazaarItemsRow2 = [
-    { title: "Parandi", price: 249, img: "https://images.unsplash.com/photo-1579782811467-33f7f185efb1?w=400" },
-    { title: "Scrunchies", price: 129, img: "https://images.unsplash.com/photo-1610444383181-e28a529fb6ee?w=400" },
-    { title: "Rings", price: 149, img: "https://images.unsplash.com/photo-1605100804763-247f67b2548e?w=400" },
-    { title: "Earrings", price: 199, img: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=400" },
-    { title: "Bracelets", price: 149, img: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=400" },
+    { title: "Parandi", price: 249, img: "https://images.unsplash.com/photo-1579782811467-33f7f185efb1?w=400&fm=webp&q=70" },
+    { title: "Scrunchies", price: 129, img: "https://images.unsplash.com/photo-1610444383181-e28a529fb6ee?w=400&fm=webp&q=70" },
+    { title: "Rings", price: 149, img: "https://images.unsplash.com/photo-1605100804763-247f67b2548e?w=400&fm=webp&q=70" },
+    { title: "Earrings", price: 199, img: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=400&fm=webp&q=70" },
+    { title: "Bracelets", price: 149, img: "https://images.unsplash.com/photo-1611591437281-460bfbe1220a?w=400&fm=webp&q=70" },
 ];
 
 const Home = () => {
@@ -315,15 +315,20 @@ const Home = () => {
         >
             {/* Background Image (Covers entire right half behind the slant) */}
             <div className="absolute right-0 top-0 w-[75%] md:w-[60%] h-full z-0 transition-opacity duration-500">
-                <img 
-                    src={homeSlides[currentSlide]?.desktopImage || "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=800"} 
-                    alt="Handcrafted Gifts" 
-                    className="w-full h-full object-cover animate-fade-in translate-x-[15%] md:translate-x-[10%] scale-[1.1]" 
-                    key={currentSlide}
-                    decoding="sync"
-                    loading="eager"
-                    fetchpriority="high"
-                />
+                <picture>
+                    <source media="(min-width: 768px)" srcSet={homeSlides[currentSlide]?.desktopImage || "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=1400&fm=webp&q=75"} />
+                    <img 
+                        src={homeSlides[currentSlide]?.mobileImage || "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=800&fm=webp&q=70"} 
+                        alt="Handcrafted Gifts" 
+                        className="w-full h-full object-cover animate-fade-in translate-x-[15%] md:translate-x-[10%] scale-[1.1]" 
+                        key={currentSlide}
+                        decoding="sync"
+                        loading="eager"
+                        fetchpriority="high"
+                        width="800"
+                        height="600"
+                    />
+                </picture>
                 {/* Optional dark overlay to ensure text/dots readability if image is bright */}
                 <div className="absolute inset-0 bg-black/10"></div>
             </div>
@@ -407,7 +412,7 @@ const Home = () => {
                                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
                                       loading={i < 4 ? "eager" : "lazy"}
                                       decoding="async"
-                                      onError={(e) => { e.target.onerror = null; e.target.src = "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=200"; }}
+                                      onError={(e) => { e.target.onerror = null; e.target.src = "https://images.unsplash.com/photo-1549465220-1a8b9238cd48?w=200&fm=webp&q=70"; }}
                                   />
                               </div>
                           </div>
@@ -574,7 +579,7 @@ const Home = () => {
                 <div ref={budgetScrollRef} className="grid grid-rows-2 grid-flow-col auto-cols-[125px] md:auto-cols-[150px] gap-2.5 md:gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide pb-4 px-4 md:px-2 max-w-5xl mx-auto">
                     {budgetGridItems.map((item, idx) => (
                         <Link key={idx} to={item.id ? `/product/${item.id}` : "/shop"} className="snap-start relative aspect-[3/4] rounded-[16px] overflow-hidden group shadow-sm block">
-                          <img src={item.img} alt={item.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                          <img src={item.img} alt={item.title} width="400" height="500" loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end p-2.5 md:p-3">
                               <span className="text-white/90 font-medium text-[9px] md:text-[10px] leading-tight drop-shadow-md">Under</span>
                               <span className="text-white font-bold text-lg md:text-xl leading-none mb-0.5 drop-shadow-md">₹{item.price || item.defaultPrice}</span>
