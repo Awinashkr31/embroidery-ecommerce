@@ -24,7 +24,7 @@ const LandingPage = () => {
         "name": "What is Crochet Wali?",
         "acceptedAnswer": {
           "@type": "Answer",
-          "text": "Crochet Wali is India's premier destination for premium handmade crochet gifts, specializing in forever crochet flower bouquets, traditional gajras, cute keychains, and aesthetic home decor. Every piece is handcrafted with love."
+          "text": "Crochet Wali (also known as Crochet Live) is India's premier destination for premium handmade crochet gifts, specializing in forever crochet flower bouquets, traditional gajras, cute keychains, and aesthetic home decor. Every piece is handcrafted with love."
         }
       },
       {
