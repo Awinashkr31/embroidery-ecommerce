@@ -329,7 +329,7 @@ const Home = () => {
       <article className="sr-only" itemScope itemType="https://schema.org/AboutPage">
         <h2>What is Crochet Wali?</h2>
         <p>
-          Crochet Wali (also known as Crochet Live or Embroidery by Sana) is an Indian handmade gifting brand and e-commerce store. 
+          Crochet Wali (also known as Embroidery by Sana) is an Indian handmade gifting brand and e-commerce store. 
           Crochet Wali specializes in creating forever crochet flower bouquets, handmade crochet gajra, hair accessories, 
           claw clips, amigurumi keychains, and personalized gift boxes. All products are 100% handcrafted in India 
           using premium yarn. Crochet Wali offers pan-India delivery and custom design services for special occasions 
