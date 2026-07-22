@@ -42,7 +42,7 @@ const LoginSignup = () => {
 
   return (
     <>
-      <SEO title="Login · Crochet Wali" description="Sign in to your Crochet Wali account." />
+      <SEO title="Login · Crochet Wali" description="Sign in to your Crochet Wali account." noIndex />
 
       {/* ════════════════════════════════════════
           MOBILE layout  (hidden on lg+)

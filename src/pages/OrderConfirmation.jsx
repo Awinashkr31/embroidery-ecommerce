@@ -128,7 +128,7 @@ const OrderConfirmation = () => {
 
     return (
         <div className="min-h-screen bg-[#F8F5F2] font-body pt-6 md:pt-12 pb-[140px] md:pb-24 transition-all duration-250 ease-in-out">
-            <SEO title="Confirm Order" description="Review your order details before confirming." />
+            <SEO title="Confirm Order" description="Review your order details before confirming." noIndex />
             
             <div className="max-w-4xl mx-auto px-[12px] md:px-8">
                 

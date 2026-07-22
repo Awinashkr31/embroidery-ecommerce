@@ -212,7 +212,7 @@ const Cart = () => {
     if (cartLoading && cart.length === 0) {
         return (
             <div className="min-h-[60vh] flex flex-col items-center justify-center bg-[#F8F5F2] font-body p-4">
-                <SEO title="Shopping Cart" description="Loading your cart..." />
+                <SEO title="Shopping Cart" description="Loading your cart..." noIndex />
                 <div className="w-12 h-12 border-4 border-stone-200 border-t-rose-900 rounded-full animate-spin mb-4"></div>
                 <p className="text-[13px] text-stone-500 font-medium animate-pulse">Loading your cart...</p>
             </div>
@@ -222,7 +222,7 @@ const Cart = () => {
     if (cart.length === 0) {
         return (
             <div className="min-h-[70vh] flex flex-col items-center justify-center bg-[#F8F5F2] font-body p-4">
-                <SEO title="Shopping Cart" description="Your shopping cart is empty." />
+                <SEO title="Shopping Cart" description="Your shopping cart is empty." noIndex />
                 <div className="bg-white p-6 rounded-full mb-6 shadow-sm border border-stone-100 animate-in zoom-in-50 duration-500">
                     <img src="/empty-cart.svg" alt="Empty Cart" className="w-24 h-24 opacity-80" onError={(e) => { e.target.style.display='none'; e.target.nextSibling.style.display='block'; }} />
                     <Trash2 className="w-12 h-12 text-stone-300 hidden" />
@@ -238,7 +238,7 @@ const Cart = () => {
 
     return (
         <div className="bg-[#F8F5F2] min-h-screen font-body pb-[140px] md:pb-24 transition-all duration-250 ease-in-out">
-            <SEO title="Shopping Cart" description="Review your selected items and proceed to checkout." />
+            <SEO title="Shopping Cart" description="Review your selected items and proceed to checkout." noIndex />
             
             {/* Mobile Nav Header */}
             <div className="lg:hidden flex items-center gap-3 bg-white px-4 py-3.5 shadow-sm mb-4 sticky top-0 z-50 border-b border-stone-100">

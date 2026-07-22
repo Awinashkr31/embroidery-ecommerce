@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "feed": "node scripts/generate-feed.js",
+    "build": "npm run feed && vite build",
     "lint": "eslint .",
     "preview": "vite preview"
   },

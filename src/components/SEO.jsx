@@ -1,7 +1,7 @@
 import React from 'react';
 import { Helmet } from 'react-helmet-async';
 
-const SEO = ({ title, description, keywords, schema, url, image, children }) => {
+const SEO = ({ title, description, keywords, schema, url, image, noIndex, children }) => {
     const siteTitle = "Crochet Wali | Handmade Crochet Flowers, Gajra, Hair Clips & Gifts India";
     const fullTitle = title 
         ? (title.includes('Crochet Wali') ? title : `${title} | Crochet Wali`) 
@@ -17,10 +17,12 @@ const SEO = ({ title, description, keywords, schema, url, image, children }) => 
             <title>{fullTitle}</title>
             <meta name="description" content={metaDescription} />
             <meta name="keywords" content={metaKeywords} />
-            <meta name="robots" content="index, follow" />
+            <meta name="robots" content={noIndex ? "noindex, follow" : "index, follow"} />
             <link rel="canonical" href={metaUrl} />
             
             {/* Open Graph / Facebook */}
+            <meta property="og:site_name" content="Crochet Wali" />
+            <meta property="og:locale" content="en_IN" />
             <meta property="og:type" content={schema && (Array.isArray(schema) ? schema.some(s => s["@type"] === "Product") : schema["@type"] === "Product") ? "product" : "website"} />
             <meta property="og:url" content={metaUrl} />
             <meta property="og:title" content={fullTitle} />

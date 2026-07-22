@@ -91,7 +91,7 @@ const OrderSuccess = () => {
 
     return (
         <div className="min-h-screen bg-[#fdfbf7] font-body pt-6 md:pt-12 pb-12 md:pb-24">
-            <SEO title="Order Confirmed" description="Your order has been placed successfully." />
+            <SEO title="Order Confirmed" description="Your order has been placed successfully." noIndex />
             
             <div className="container-custom max-w-4xl">
                 {/* Success Header */}

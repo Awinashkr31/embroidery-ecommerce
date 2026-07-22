@@ -411,10 +411,11 @@ const ProductDetails = () => {
         "@context": "https://schema.org/",
         "@type": "Product",
         "name": product.name,
-        "image": product.image,
+        "image": product.images ? product.images : [product.image],
         "description": info.longDescription || info.shortDescription || product.description,
         "sku": String(product.id),
         "mpn": String(product.id),
+        "url": window.location.href,
         "brand": {
             "@type": "Brand",
             "name": "Crochet Wali"

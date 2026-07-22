@@ -6,7 +6,7 @@ import SEO from '../components/SEO';
 const NotFound = () => {
   return (
     <div className="min-h-[70vh] flex items-center justify-center px-4">
-      <SEO title="Page Not Found" description="The page you're looking for doesn't exist." />
+      <SEO title="Page Not Found" description="The page you're looking for doesn't exist." noIndex />
       <div className="text-center max-w-md">
         {/* Large 404 */}
         <h1 className="text-8xl md:text-9xl font-heading font-bold text-stone-200 select-none leading-none">

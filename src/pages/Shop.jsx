@@ -260,7 +260,8 @@ const Shop = () => {
         <div className="bg-[#fdfbf7] min-h-screen pb-32 font-body selection:bg-rose-100 selection:text-rose-900">
             <SEO 
                 title={selectedCategories.length > 0 ? `${selectedCategories.map(c => c.charAt(0).toUpperCase() + c.slice(1)).join(', ')} | Crochet Wali` : "Shop All Handmade Crochet Gifts | Crochet Wali"} 
-                description="Browse our complete catalog of Handmade Crochet Gifts, customized embroidery hoops, and aesthetic accessories. Find the perfect customized handmade gift in India."
+                description="Shop Crochet Wali's complete collection of handmade crochet gifts — forever flower bouquets, gajra, hair clips, keychains, parandi, claw clips, and personalized gift boxes. 100% handmade in India. Buy crochet gifts online."
+                keywords="crochet wali shop, buy crochet gifts online, crochet wali collection, handmade crochet gifts india, crochet flower bouquet, crochet hair clips, crochet keychain, crochet gajra"
                 schema={pageSchema} 
             >
                 {prevUrl && <link rel="prev" href={prevUrl} />}
@@ -269,7 +270,7 @@ const Shop = () => {
             <div className="container-custom pb-20 pt-4 md:pt-8">
                 
                 {/* AEO Semantic Heading for AI context */}
-                <h1 className="sr-only">Handmade Crochet Gifts & Crochet Collection</h1>
+                <h1 className="sr-only">Crochet Wali Shop – Buy Handmade Crochet Gifts, Flower Bouquets, Gajra & Hair Accessories Online India</h1>
 
                 {/* Mobile Category Circles */}
                 <div className="lg:hidden mb-4 overflow-x-auto no-scrollbar py-2 -mx-4 px-4">

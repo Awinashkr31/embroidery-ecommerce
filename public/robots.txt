@@ -3,6 +3,17 @@ Allow: /
 Disallow: /sadmin
 Disallow: /profile
 Disallow: /checkout
+Disallow: /cart
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /wishlist
+Disallow: /order-success
+Disallow: /order-failed
+Disallow: /order-confirmation
+Disallow: /order/
+Disallow: /track-order
 Disallow: /api/
 
 Sitemap: https://www.embroiderybysana.live/sitemap.xml

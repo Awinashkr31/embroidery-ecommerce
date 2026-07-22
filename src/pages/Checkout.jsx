@@ -10,6 +10,7 @@ import { DelhiveryService } from '../services/delhivery';
 import { getEstimatedDeliveryDate } from '../utils/dateUtils';
 import { usePincode } from '../context/PincodeContext';
 import FloatingInput from '../components/FloatingInput';
+import SEO from '../components/SEO';
 
 const loadRazorpay = () => {
     return new Promise((resolve) => {
@@ -256,6 +257,7 @@ const Checkout = () => {
     if (authLoading || (cartLoading && cart.length === 0)) {
         return (
             <div className="min-h-screen bg-[#fdfbf7] flex flex-col items-center justify-center font-body pt-20">
+                 <SEO title="Checkout" description="Complete your purchase." noIndex />
                  <div className="w-12 h-12 border-4 border-stone-200 border-t-rose-900 rounded-full animate-spin mb-4"></div>
                  <p className="text-stone-500 font-medium animate-pulse">Loading checkout...</p>
             </div>
