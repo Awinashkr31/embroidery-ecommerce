@@ -105,7 +105,8 @@ export const ProductCard = React.memo(({ product, toggleWishlist, isInWishlist, 
         return product.originalPrice - displayPrice;
     }, [product.originalPrice, displayPrice]);
 
-    const productUrl = getProductUrl(product);
+    const baseProductUrl = getProductUrl(product);
+    const productUrl = selectedVariant?.color ? `${baseProductUrl}?color=${encodeURIComponent(selectedVariant.color)}` : baseProductUrl;
 
     const cartItem = useMemo(() => {
         if (!cart) return null;

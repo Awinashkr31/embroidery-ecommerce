@@ -4,7 +4,7 @@ import { useCategories } from '../context/CategoryContext';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { getOptimizedImageUrl } from '../utils/imageUtils';
-import { Star, Truck, Shield, Award, ChevronLeft, ChevronRight, Quote, ArrowRight, Sparkles } from 'lucide-react';
+import { Star, Truck, Shield, Award, ChevronLeft, ChevronRight, Quote, ArrowRight, Sparkles, ChevronDown } from 'lucide-react';
 import SEO from '../components/SEO';
 import { useSettings } from '../context/SettingsContext';
 import { ProductCard } from '../components/ProductCard';
@@ -161,6 +161,8 @@ const Home = () => {
   }, [homeSlides.length]);
 
   const [homeProducts, setHomeProducts] = useState([]);
+  const [categoryImageMap, setCategoryImageMap] = useState({});
+  const [openFaqIndex, setOpenFaqIndex] = useState(null);
 
   useEffect(() => {
     let mounted = true;
@@ -204,7 +206,39 @@ const Home = () => {
             console.error("Error fetching homepage products:", error);
         }
     };
+
+    // Lightweight fetch: one product image per category for category cards
+    const fetchCategoryImages = async () => {
+        try {
+            const { data } = await supabase
+                .from('products')
+                .select('category, images')
+                .eq('active', true)
+                .order('created_at', { ascending: false });
+
+            if (data && mounted) {
+                const imgMap = {};
+                data.forEach(p => {
+                    if (p.category && !imgMap[p.category]) {
+                        let imgs = p.images;
+                        if (typeof imgs === 'string') {
+                            try { imgs = JSON.parse(imgs); } catch (e) { imgs = []; }
+                        }
+                        const firstImg = Array.isArray(imgs) && imgs.length > 0 ? imgs[0] : null;
+                        if (firstImg && !firstImg.includes('unsplash')) {
+                            imgMap[p.category] = firstImg;
+                        }
+                    }
+                });
+                setCategoryImageMap(imgMap);
+            }
+        } catch (error) {
+            console.error("Error fetching category images:", error);
+        }
+    };
+
     fetchHomeProducts();
+    fetchCategoryImages();
     return () => { mounted = false; };
   }, []);
 
@@ -214,10 +248,10 @@ const Home = () => {
         return {
             id: cat.id,
             label: cat.label,
-            image: cat.image || CATEGORY_IMAGES[cat.label.toLowerCase()] || `/category-images/${cleanName}.webp`
+            image: categoryImageMap[cat.id] || categoryImageMap[cat.label] || cat.image || CATEGORY_IMAGES[cat.label.toLowerCase()] || `/category-images/${cleanName}.webp`
         };
     });
-  }, [categories]);
+  }, [categories, categoryImageMap]);
 
   const { newArrivals, bestsellers, premiumProducts, budgetGridItems } = useMemo(() => {
     const newArr = homeProducts.filter(p => p.homepage_tags?.includes('new_arrival'));
@@ -801,13 +835,35 @@ const Home = () => {
                   <span className="text-rose-700 font-bold tracking-widest uppercase text-sm mb-3 block">Got Questions?</span>
                   <h2 className="text-3xl md:text-5xl font-heading font-semibold text-black">Frequently Asked Questions</h2>
               </div>
-              <div className="space-y-6">
-                  {faqSchema.mainEntity.map((faq, index) => (
-                      <div key={index} className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-stone-100">
-                          <h3 className="text-lg md:text-xl font-bold text-stone-900 mb-3">{faq.name}</h3>
-                          <p className="text-stone-600 leading-relaxed">{faq.acceptedAnswer.text}</p>
-                      </div>
-                  ))}
+              <div className="space-y-4">
+                  {faqSchema.mainEntity.map((faq, index) => {
+                      const isOpen = openFaqIndex === index;
+                      return (
+                          <div 
+                              key={index} 
+                              className={`bg-white rounded-2xl border border-stone-100 overflow-hidden transition-all duration-300 ${isOpen ? 'shadow-md' : 'hover:shadow-sm'}`}
+                          >
+                              <button 
+                                  onClick={() => setOpenFaqIndex(isOpen ? null : index)}
+                                  className="w-full text-left p-6 md:p-8 flex items-center justify-between gap-4 focus:outline-none"
+                              >
+                                  <h3 className={`font-bold font-body text-lg md:text-xl transition-colors duration-300 ${isOpen ? 'text-rose-700' : 'text-stone-900'}`}>
+                                      {faq.name}
+                                  </h3>
+                                  <div className={`p-1 rounded-full flex-shrink-0 transition-transform duration-300 ${isOpen ? 'rotate-180 bg-rose-100 text-rose-700' : 'bg-stone-100 text-stone-500'}`}>
+                                      <ChevronDown className="w-5 h-5 md:w-6 md:h-6" />
+                                  </div>
+                              </button>
+                              <div 
+                                  className={`transition-all duration-300 ease-in-out ${isOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}
+                              >
+                                  <div className="p-6 md:p-8 pt-0 text-stone-600 leading-relaxed text-sm md:text-base">
+                                      {faq.acceptedAnswer.text}
+                                  </div>
+                              </div>
+                          </div>
+                      );
+                  })}
               </div>
           </div>
       </section>

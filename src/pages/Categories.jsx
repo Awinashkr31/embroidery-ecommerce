@@ -1,9 +1,9 @@
-import React, { useMemo, useEffect } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useCategories } from '../context/CategoryContext';
 import { useProducts } from '../context/ProductContext';
 import { getOptimizedImageUrl } from '../utils/imageUtils';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, ChevronDown } from 'lucide-react';
 import SEO from '../components/SEO';
 
 const CATEGORY_IMAGES = {
@@ -18,9 +18,25 @@ const CATEGORY_IMAGES = {
     'clothing': 'https://images.unsplash.com/photo-1551488831-00ddcb6c6bd3?w=600'
 };
 
+const FAQS = [
+  {
+    question: "What types of handmade gifts do you offer?",
+    answer: "We offer a wide variety of handcrafted categories including Crochet Flower Bouquets, traditional Gajras, Hair Clips, Amigurumi Keychains, and personalized Hoop Art. Every item is crafted with premium yarn to ensure it lasts forever."
+  },
+  {
+    question: "Can I order custom designs within these categories?",
+    answer: "Absolutely. While our categories showcase our most popular and trending designs, we specialize in custom orders. If you see a bouquet or keychain style you like but want it in a different color or size, simply contact us for a customized gift."
+  },
+  {
+    question: "How do I choose the right category for my gift?",
+    answer: "If you're gifting for an anniversary or Valentine's Day, our 'Bouquets' category is ideal. For small, cute tokens of appreciation, explore our 'Keychains'. For traditional Indian aesthetics, our 'Hair Accessories & Gajra' category is the best choice."
+  }
+];
+
 const Categories = () => {
   const { categories } = useCategories();
   const { products, fetchProducts } = useProducts();
+  const [openFaqIndex, setOpenFaqIndex] = useState(null);
 
   useEffect(() => {
     fetchProducts();
@@ -37,10 +53,12 @@ const Categories = () => {
 
     const fetchedCategories = categories.map(cat => {
         const cleanName = cat.label.toLowerCase().trim().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
+        // Use the first product image from this category as the card image
+        const categoryProduct = products.find(p => (p.category === cat.id || p.category === cat.label) && p.image && !p.image.includes('unsplash'));
         return {
             id: cat.id,
             label: cat.label,
-            image: `/category-images/${cleanName}.webp`
+            image: categoryProduct?.image || `/category-images/${cleanName}.webp`
         };
     });
 
@@ -67,7 +85,7 @@ const Categories = () => {
   ];
 
   return (
-    <div className="bg-white min-h-screen pb-24 font-body selection:bg-stone-900 selection:text-white pt-20">
+    <div className="bg-white min-h-screen pb-24 font-body selection:bg-stone-900 selection:text-white pt-6">
       <SEO 
         title="Categories | Crochet Wali" 
         description="Explore all categories of Crochet Wali's Handmade Crochet and Embroidery gifts." 
@@ -81,54 +99,69 @@ const Categories = () => {
           </div>
 
           <h2 className="sr-only">Handmade Gift Collections by Crochet Wali</h2>
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 4xl:grid-cols-7 xl:gap-6 3xl:gap-8">
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 justify-items-center gap-x-2 gap-y-6 sm:gap-x-4 sm:gap-y-8 md:gap-x-8 md:gap-y-10 pb-8 px-1 md:px-0">
               {dynamicCategories.map((category) => (
                   <Link 
                       key={category.id}
                       to={category.id === 'all' ? '/shop' : `/shop?category=${encodeURIComponent(category.label)}`}
-                      className={`group flex flex-col relative rounded-xl overflow-hidden bg-stone-50 border border-stone-100 shadow-sm aspect-square ${category.id === 'all' ? 'bg-gradient-to-br from-rose-900 to-rose-700 items-center justify-center p-4 text-center' : ''}`}
+                      className="group flex flex-col items-center w-full"
                   >
-                      {category.id === 'all' ? (
-                          <span className="font-bold text-lg md:text-2xl text-white uppercase tracking-widest leading-tight">ALL<br/>CREATIONS</span>
-                      ) : (
-                          <>
-                              <div className="absolute inset-0 w-full h-full overflow-hidden">
+                      <div className={`w-[105px] h-[105px] sm:w-36 sm:h-36 md:w-44 md:h-44 rounded-full p-1.5 shadow-[0_4px_15px_rgba(0,0,0,0.08)] group-hover:shadow-[0_8px_25px_rgba(0,0,0,0.15)] group-hover:-translate-y-1 transition-all duration-300 ${category.id === 'all' ? 'bg-gradient-to-br from-rose-700 to-rose-500' : 'bg-white'}`}>
+                          <div className={`w-full h-full rounded-full overflow-hidden flex flex-col items-center justify-center ${category.id === 'all' ? 'bg-transparent' : 'bg-stone-50'}`}>
+                              {category.id === 'all' ? (
+                                  <>
+                                      <span className="font-bold text-xs sm:text-base text-rose-100 uppercase tracking-widest leading-none mb-1">ALL</span>
+                                      <span className="font-bold text-xs sm:text-base text-white uppercase tracking-widest leading-none">SHOP</span>
+                                  </>
+                              ) : (
                                   <img 
                                       src={getOptimizedImageUrl(category.image, { width: 400, height: 400, quality: 80 })} 
                                       alt={category.label} 
-                                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                                       loading="lazy"
                                   />
-                                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-                              </div>
-                              <div className="absolute bottom-0 left-0 right-0 p-4 flex items-center justify-between z-10">
-                                  <span className="font-bold text-sm md:text-base text-white uppercase tracking-widest leading-tight">
-                                      {category.label}
-                                  </span>
-                                  <ChevronRight className="w-5 h-5 text-white opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300" />
-                              </div>
-                          </>
-                      )}
+                              )}
+                          </div>
+                      </div>
+                      <span className="font-semibold text-[10px] sm:text-sm md:text-base text-center uppercase tracking-wider text-stone-800 group-hover:text-[#6e132b] transition-colors break-words w-full max-w-[110px] sm:max-w-[140px] px-1 mt-3 md:mt-4 line-clamp-2">
+                          {category.id === 'all' ? 'ALL CREATIONS' : category.label}
+                      </span>
                   </Link>
               ))}
           </div>
 
           {/* SEO / AEO FAQ Section */}
-          <div className="mt-24 max-w-4xl mx-auto">
-              <h2 className="text-2xl md:text-3xl font-heading font-bold text-stone-900 mb-8 text-center">Frequently Asked Questions About Our Categories</h2>
-              <div className="space-y-6">
-                  <div className="bg-stone-50 p-6 rounded-xl border border-stone-100">
-                      <h3 className="font-bold text-lg text-stone-900 mb-2">What types of handmade gifts do you offer?</h3>
-                      <p className="text-stone-600">We offer a wide variety of handcrafted categories including Crochet Flower Bouquets, traditional Gajras, Hair Clips, Amigurumi Keychains, and personalized Hoop Art. Every item is crafted with premium yarn to ensure it lasts forever.</p>
-                  </div>
-                  <div className="bg-stone-50 p-6 rounded-xl border border-stone-100">
-                      <h3 className="font-bold text-lg text-stone-900 mb-2">Can I order custom designs within these categories?</h3>
-                      <p className="text-stone-600">Absolutely. While our categories showcase our most popular and trending designs, we specialize in custom orders. If you see a bouquet or keychain style you like but want it in a different color or size, simply contact us for a customized gift.</p>
-                  </div>
-                  <div className="bg-stone-50 p-6 rounded-xl border border-stone-100">
-                      <h3 className="font-bold text-lg text-stone-900 mb-2">How do I choose the right category for my gift?</h3>
-                      <p className="text-stone-600">If you're gifting for an anniversary or Valentine's Day, our 'Bouquets' category is ideal. For small, cute tokens of appreciation, explore our 'Keychains'. For traditional Indian aesthetics, our 'Hair Accessories & Gajra' category is the best choice.</p>
-                  </div>
+          <div className="mt-12 max-w-3xl mx-auto px-4 md:px-0">
+              <h2 className="text-xl md:text-2xl font-heading font-bold text-stone-900 mb-8 text-center">Frequently Asked Questions About Our Categories</h2>
+              <div className="space-y-4">
+                  {FAQS.map((faq, index) => {
+                      const isOpen = openFaqIndex === index;
+                      return (
+                          <div 
+                              key={index} 
+                              className={`bg-stone-50 rounded-xl border border-stone-100 overflow-hidden transition-all duration-300 ${isOpen ? 'shadow-md' : 'hover:shadow-sm'}`}
+                          >
+                              <button 
+                                  onClick={() => setOpenFaqIndex(isOpen ? null : index)}
+                                  className="w-full text-left p-5 flex items-center justify-between gap-4 focus:outline-none"
+                              >
+                                  <h3 className={`font-bold font-body text-base md:text-lg transition-colors duration-300 ${isOpen ? 'text-rose-700' : 'text-stone-900'}`}>
+                                      {faq.question}
+                                  </h3>
+                                  <div className={`p-1 rounded-full flex-shrink-0 transition-transform duration-300 ${isOpen ? 'rotate-180 bg-rose-100 text-rose-700' : 'bg-stone-200 text-stone-500'}`}>
+                                      <ChevronDown className="w-5 h-5" />
+                                  </div>
+                              </button>
+                              <div 
+                                  className={`transition-all duration-300 ease-in-out ${isOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}
+                              >
+                                  <div className="p-5 pt-0 text-stone-600 text-sm md:text-base leading-relaxed">
+                                      {faq.answer}
+                                  </div>
+                              </div>
+                          </div>
+                      );
+                  })}
               </div>
           </div>
       </div>

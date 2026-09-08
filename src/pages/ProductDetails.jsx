@@ -326,7 +326,7 @@ const ProductDetails = () => {
      const effectiveSize = selectedSize || (!hasSizes ? 'Standard' : null);
      
      // Variant-Specific Images for Display
-     const displayImages = (selectedVariant && selectedVariant.images && selectedVariant.images.length > 0 && selectedVariant.images[0])
+     const rawDisplayImages = (selectedVariant && selectedVariant.images && selectedVariant.images.length > 0 && selectedVariant.images[0])
         ? selectedVariant.images
         : (() => {
             let imgs = [];
@@ -338,6 +338,8 @@ const ProductDetails = () => {
             }
             return imgs.length > 0 ? imgs : ['https://via.placeholder.com/500'];
         })();
+
+     const displayImages = rawDisplayImages.filter(img => typeof img === 'string' && img.trim().length > 5);
 
      // Price Logic
      const matrixKey = (selectedColor && effectiveSize) ? `${selectedColor}-${effectiveSize}` : null;
