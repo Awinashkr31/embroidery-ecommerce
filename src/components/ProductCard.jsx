@@ -123,12 +123,12 @@ export const ProductCard = React.memo(({ product, toggleWishlist, isInWishlist, 
     }, [cart, product.id, selectedVariant]);
 
     return (
-        <div className="h-full flex flex-col group min-w-[150px] md:min-w-0 relative">
-            {/* Image Card Container */}
-            <div className="relative mb-3 pt-1">
+        <div className="h-full flex flex-col group w-full relative bg-white rounded-2xl overflow-hidden border border-stone-100 shadow-[0_1px_4px_rgba(0,0,0,0.04)]">
+            {/* Image Container */}
+            <div className="relative">
                 <Link 
                     to={productUrl}
-                    className="relative aspect-[1/1.15] md:aspect-[2/3] overflow-hidden bg-white rounded-[10px] border border-stone-200 block shadow-[0_1px_4px_rgba(0,0,0,0.02)]"
+                    className="relative aspect-[4/5] overflow-hidden bg-stone-50 block"
                     onMouseEnter={() => setIsHovering(true)}
                     onMouseLeave={() => { setIsHovering(false); setCurrentImageIndex(0); }}
                     onTouchStart={handleTouchStart}
@@ -136,29 +136,31 @@ export const ProductCard = React.memo(({ product, toggleWishlist, isInWishlist, 
                     onTouchEnd={handleTouchEnd}
                 >
                     {/* Image Stack with Crossfade */}
-                    {allImages.map((img, idx) => (
-                        <img
-                            key={idx}
-                            src={getOptimizedImageUrl(img, { width: 500, quality: 75 })}
-                            alt={`${product.name} - Handmade Crochet Gift India - View ${idx + 1}`}
-                            title={`${product.name} - Buy Handmade Crochet Gifts`}
-                            width={500}
-                            height={500}
-                            loading={priority && idx === 0 ? 'eager' : 'lazy'}
-                            decoding="async"
-                            style={{
-                                transition: 'opacity 500ms ease-in-out',
-                                opacity: idx === currentImageIndex ? 1 : 0,
-                                zIndex: idx === currentImageIndex ? 2 : 1,
-                            }}
-                            className={`absolute inset-0 w-full h-full object-cover md:object-contain ${!product.inStock ? 'grayscale opacity-80' : ''}`}
-                            onError={(e) => {
-                                e.target.onerror = null;
-                                e.target.src = '/logo.png';
-                                e.target.className = `absolute inset-0 w-full h-full object-contain p-8 opacity-50 ${!product.inStock ? 'grayscale' : ''}`;
-                            }}
-                        />
-                    ))}
+                    {allImages.map((img, idx) => {
+                        const isActive = idx === currentImageIndex;
+                        return (
+                            <img
+                                key={idx}
+                                src={getOptimizedImageUrl(img, { width: 400, quality: 80 })}
+                                alt={`${product.name} - View ${idx + 1}`}
+                                width={400}
+                                height={500}
+                                loading={priority && idx === 0 ? 'eager' : 'lazy'}
+                                decoding="async"
+                                style={{
+                                    transition: 'opacity 300ms ease-in-out',
+                                    opacity: isActive ? 1 : 0,
+                                    zIndex: isActive ? 2 : 1,
+                                }}
+                                className={`absolute inset-0 w-full h-full object-cover ${!product.inStock ? 'grayscale opacity-80' : ''}`}
+                                onError={(e) => {
+                                    e.target.onerror = null;
+                                    e.target.src = '/logo.png';
+                                    e.target.className = `absolute inset-0 w-full h-full object-contain p-8 opacity-50 ${!product.inStock ? 'grayscale' : ''}`;
+                                }}
+                            />
+                        );
+                    })}
 
                     {/* Image Dots Indicator */}
                     {hasMultipleImages && (
@@ -188,20 +190,25 @@ export const ProductCard = React.memo(({ product, toggleWishlist, isInWishlist, 
                     )}
 
                     {/* Badges */}
-                    <div className="absolute top-0 left-0 flex flex-col items-start gap-0.5 z-20">
+                    <div className="absolute top-2 left-2 flex flex-col items-start gap-1 z-20">
                         {product.homepage_tags?.includes('bestseller') && (
-                            <span className="bg-[#ffedd5] text-[#d97706] text-[9px] md:text-[10px] font-semibold px-2 py-0.5 rounded-br-lg rounded-tl-[9px] border-b border-r border-[#ffedd5]">
+                            <span className="bg-[#fff0e1] text-[#c2710c] text-[10px] md:text-[11px] font-bold px-2.5 py-1 rounded-full shadow-sm">
                                 Bestseller
                             </span>
                         )}
                         {product.homepage_tags?.includes('new_arrival') && (
-                            <span className="bg-[#e11d48] text-white text-[9px] md:text-[10px] font-semibold px-2 py-0.5 rounded-br-lg rounded-tl-[9px] shadow-sm">
+                            <span className="bg-[#e11d48] text-white text-[10px] md:text-[11px] font-bold px-2.5 py-1 rounded-full shadow-sm">
                                 New
                             </span>
                         )}
                         {product.homepage_tags?.includes('premium') && (
-                            <span className="bg-stone-900 text-yellow-400 text-[9px] md:text-[10px] font-semibold px-2 py-0.5 rounded-br-lg rounded-tl-[9px] shadow-sm">
+                            <span className="bg-stone-900 text-yellow-400 text-[10px] md:text-[11px] font-bold px-2.5 py-1 rounded-full shadow-sm">
                                 Premium
+                            </span>
+                        )}
+                        {product.discountPercentage > 0 && !product.homepage_tags?.includes('bestseller') && !product.homepage_tags?.includes('new_arrival') && (
+                            <span className="bg-[#e11d48] text-white text-[10px] md:text-[11px] font-bold px-2.5 py-1 rounded-full shadow-sm">
+                                -{product.discountPercentage}% OFF
                             </span>
                         )}
                     </div>
@@ -213,15 +220,69 @@ export const ProductCard = React.memo(({ product, toggleWishlist, isInWishlist, 
                             e.stopPropagation();
                             if (toggleWishlist) toggleWishlist(product);
                         }}
-                        className="absolute top-1.5 right-1.5 p-1.5 bg-white/90 backdrop-blur rounded-full text-stone-400 hover:text-[#e11d48] transition-all z-30 flex items-center justify-center shadow-[0_2px_5px_rgba(0,0,0,0.1)]"
+                        className="absolute top-2 right-2 p-1.5 bg-white/90 backdrop-blur rounded-full text-stone-400 hover:text-[#e11d48] transition-all z-30 flex items-center justify-center shadow-sm"
                     >
-                        <Heart className={`w-3.5 h-3.5 md:w-4 md:h-4 ${isInWishlist && isInWishlist(product.id) ? 'fill-[#e11d48] text-[#e11d48]' : ''}`} />
+                        <Heart className={`w-4 h-4 ${isInWishlist && isInWishlist(product.id) ? 'fill-[#e11d48] text-[#e11d48]' : ''}`} />
                     </button>
                 </Link>
+            </div>
 
-                {/* ADD Button or Quantity Toggle (Overlapping) */}
+            {/* Product Info */}
+            <div className="flex flex-col px-2 pt-2.5 pb-3 flex-1">
+                {/* Category */}
+                {product.category && (
+                    <span className="text-[10px] md:text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-1 truncate">
+                        {product.category}
+                    </span>
+                )}
+
+                {/* Product Name */}
+                <Link to={productUrl} className="font-bold text-[13px] md:text-[14px] leading-tight text-stone-900 hover:text-[#e11d48] transition-colors line-clamp-2 mb-2">
+                    {product.name}
+                </Link>
+
+                {/* Variant Swatches */}
+                {hasVariants && (
+                    <div className="flex flex-wrap gap-1.5 mb-2" onClick={e => e.preventDefault()}>
+                        {validVariants.map((variant, idx) => {
+                            const isSelected = selectedVariant?.color === variant.color;
+                            return (
+                                <button
+                                    key={idx}
+                                    onMouseEnter={() => setSelectedVariant(variant)}
+                                    onClick={(e) => {
+                                        e.preventDefault();
+                                        setSelectedVariant(variant);
+                                    }}
+                                    className={`w-4 h-4 rounded-full border-2 transition-all focus:outline-none ${
+                                        isSelected ? 'border-stone-800 scale-110 ring-1 ring-offset-1 ring-stone-400' : 'border-stone-200 hover:border-stone-400'
+                                    }`}
+                                    title={variant.color}
+                                    style={{ backgroundColor: variant.color.toLowerCase() }}
+                                />
+                            );
+                        })}
+                    </div>
+                )}
+
+                {/* Spacer */}
+                <div className="flex-1" />
+
+                {/* Price Row */}
+                <div className="flex items-baseline gap-1.5 mb-2.5">
+                    <span className="text-[17px] md:text-[18px] font-extrabold text-stone-900">
+                        ₹{displayPrice.toLocaleString('en-IN')}
+                    </span>
+                    {product.originalPrice && product.originalPrice > displayPrice && (
+                        <span className="text-[12px] md:text-[13px] font-medium text-stone-400 line-through">
+                            ₹{product.originalPrice.toLocaleString('en-IN')}
+                        </span>
+                    )}
+                </div>
+
+                {/* Add to Bag Button */}
                 {cartItem ? (
-                    <div className="absolute -bottom-3 right-1.5 md:-bottom-3 md:right-1.5 bg-white text-[#e11d48] font-extrabold rounded-[8px] md:rounded-[8px] border-2 border-[#e11d48] shadow-sm z-30 flex items-center justify-between min-w-[75px] md:min-w-[80px] h-[30px] md:h-[32px] overflow-hidden">
+                    <div className="w-full bg-white text-[#e11d48] font-bold rounded-lg border-2 border-[#e11d48] flex items-center justify-between h-[36px] overflow-hidden">
                         <button 
                             onClick={(e) => {
                                 e.preventDefault(); e.stopPropagation();
@@ -231,21 +292,21 @@ export const ProductCard = React.memo(({ product, toggleWishlist, isInWishlist, 
                                     removeFromCart(product.id, cartItem.selectedSize, cartItem.selectedColor, cartItem.variantId);
                                 }
                             }}
-                            className="h-full px-2 hover:bg-rose-50 transition-colors flex items-center justify-center flex-1 disabled:opacity-50"
+                            className="h-full px-3 hover:bg-rose-50 transition-colors flex items-center justify-center"
                             disabled={isAdding}
                         >
-                            <Minus className="w-3 h-3 md:w-4 md:h-4 stroke-[3]" />
+                            <Minus className="w-3.5 h-3.5 stroke-[3]" />
                         </button>
-                        <span className="text-[#e11d48] text-[13px] md:text-[15px] w-6 md:w-8 text-center bg-rose-50 h-full flex items-center justify-center border-x border-[#e11d48]/20">{cartItem.quantity}</span>
+                        <span className="text-[14px] font-extrabold text-[#e11d48] w-8 text-center">{cartItem.quantity}</span>
                         <button 
                             onClick={(e) => {
                                 e.preventDefault(); e.stopPropagation();
                                 updateQuantity(product.id, cartItem.quantity + 1, cartItem.selectedSize, cartItem.selectedColor, cartItem.variantId);
                             }}
-                            className="h-full px-2 hover:bg-rose-50 transition-colors flex items-center justify-center flex-1 disabled:opacity-50"
+                            className="h-full px-3 hover:bg-rose-50 transition-colors flex items-center justify-center"
                             disabled={isAdding || !product.inStock}
                         >
-                            <Plus className="w-3 h-3 md:w-4 md:h-4 stroke-[3]" />
+                            <Plus className="w-3.5 h-3.5 stroke-[3]" />
                         </button>
                     </div>
                 ) : (
@@ -266,73 +327,17 @@ export const ProductCard = React.memo(({ product, toggleWishlist, isInWishlist, 
                             setIsAdding(false);
                         }}
                         disabled={!product.inStock || isAdding}
-                        className="absolute -bottom-3 right-1.5 md:-bottom-3 md:right-1.5 bg-white text-[#e11d48] font-extrabold text-[13px] md:text-[14px] px-3 md:px-4 rounded-[8px] md:rounded-[8px] border-2 border-[#e11d48] shadow-sm z-30 hover:bg-rose-50 transition-colors tracking-wider disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[75px] md:min-w-[80px] h-[30px] md:h-[32px]"
+                        className="w-full h-[36px] bg-[#e11d48] text-white font-bold text-[12px] md:text-[13px] rounded-full border-2 border-[#e11d48] hover:bg-[#be123c] transition-colors tracking-wide disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
                     >
                         {isAdding ? (
-                            <div className="w-4 h-4 md:w-5 md:h-5 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                            <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
                         ) : (
-                            'ADD'
+                            <>
+                                <ShoppingBag className="w-3.5 h-3.5" />
+                                Add to Bag
+                            </>
                         )}
                     </button>
-                )}
-            </div>
-
-            {/* Product Info Below Image */}
-            <div className="flex flex-col px-0.5 flex-1 mt-1 md:mt-2">
-                {/* Price Box */}
-                <div className="flex items-center gap-2">
-                    <div className="bg-[#2a873b] text-white font-black text-[18px] md:text-[18px] px-2.5 md:px-3 py-0.5 md:py-1 rounded-[6px] shadow-[0_3px_0_#186326] leading-tight tracking-tight">
-                        ₹{displayPrice.toLocaleString('en-IN')}
-                    </div>
-                    {product.originalPrice && product.originalPrice > displayPrice && (
-                        <span className="text-[14px] md:text-[14px] font-medium text-slate-500 line-through decoration-slate-400">
-                            ₹{product.originalPrice.toLocaleString('en-IN')}
-                        </span>
-                    )}
-                </div>
-
-                {/* Discount text and dashed line */}
-                {product.originalPrice && product.originalPrice > displayPrice && (
-                    <div className="flex items-center gap-1.5 w-full mt-2 md:mt-2.5 mb-1.5 md:mb-2">
-                        <span className="text-[10px] md:text-[12px] font-bold text-[#2a873b] whitespace-nowrap">
-                            ₹{discountAmount.toLocaleString('en-IN')} OFF
-                        </span>
-                        <div className="flex-1 border-b border-dashed border-stone-300/80 mb-0.5"></div>
-                    </div>
-                )}
-                
-                {/* Space if no discount */}
-                {(!product.originalPrice || product.originalPrice <= displayPrice) && (
-                    <div className="h-2"></div>
-                )}
-
-                {/* Product Name */}
-                <Link to={productUrl} className="font-body font-bold text-[13px] md:text-[15px] leading-tight md:leading-[1.3] text-stone-900 hover:text-[#e11d48] transition-colors line-clamp-2 pr-1">
-                    {product.name}
-                </Link>
-
-                {/* Variant Swatches (if any) */}
-                {hasVariants && (
-                    <div className="flex flex-wrap gap-1 mt-2" onClick={e => e.preventDefault()}>
-                        {validVariants.map((variant, idx) => {
-                            const isSelected = selectedVariant?.color === variant.color;
-                            return (
-                                <button
-                                    key={idx}
-                                    onMouseEnter={() => setSelectedVariant(variant)}
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        setSelectedVariant(variant);
-                                    }}
-                                    className={`w-3 h-3 md:w-3.5 md:h-3.5 rounded-full border transition-all focus:outline-none ${
-                                        isSelected ? 'border-stone-900 ring-1 ring-stone-900 ring-offset-[1px] scale-110' : 'border-stone-300 hover:border-stone-400'
-                                    }`}
-                                    title={variant.color}
-                                    style={{ backgroundColor: variant.color.toLowerCase() }}
-                                />
-                            );
-                        })}
-                    </div>
                 )}
             </div>
         </div>

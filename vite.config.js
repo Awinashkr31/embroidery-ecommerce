@@ -93,9 +93,7 @@ export default defineConfig({
         '/shop',
         '/gifts',
         '/categories',
-        '/crochet-wali', // New Landing Page
-        // Dynamic products and categories will be indexed dynamically by Google 
-        // since we'll generate canonicals, but we'll add static main pages here.
+        '/crochet-wali',
         '/about',
         '/custom-design',
         '/support',
@@ -105,32 +103,32 @@ export default defineConfig({
         '/terms-of-service',
         '/blog'
       ]
-    })
-    /* VitePWA({
-      strategies: 'injectManifest',
-      srcDir: 'src',
-      filename: 'firebase-messaging-sw.js',
+    }),
+    VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['logo.svg', 'logo.png', 'robots.txt'],
+      includeAssets: ['favicon.png', 'logo.png', 'robots.txt'],
       manifest: {
-        name: 'Embroidery Admin',
-        short_name: 'Embroidery Admin',
-        description: 'Admin panel for Embroidery application',
-        theme_color: '#ffffff',
+        name: 'Crochet Wali | Handmade Crochet Flowers & Gifts',
+        short_name: 'Crochet Wali',
+        description: 'Shop Crochet Wali for handmade crochet bouquets, gajra, flower pots, parandi, keychains, hair clips & personalized gift boxes.',
+        theme_color: '#881337',
+        background_color: '#fdfbf7',
+        display: 'standalone',
         icons: [
           {
-            src: '/logo.png',
+            src: '/favicon.png',
             sizes: '192x192',
             type: 'image/png'
           },
           {
-            src: '/logo.png',
+            src: '/favicon.png',
             sizes: '512x512',
-            type: 'image/png'
+            type: 'image/png',
+            purpose: 'any maskable'
           }
         ]
       }
-    }) */
+    })
   ],
   build: {
     rollupOptions: {

@@ -49,6 +49,7 @@ const Shop = () => {
     const [inStockOnly, setInStockOnly] = useState(false);
     const [isSaleOnly, setIsSaleOnly] = useState(false);
     const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
+    const [isMobileSortOpen, setIsMobileSortOpen] = useState(false);
     
     const [currentPage, setCurrentPage] = useState(1);
     const ITEMS_PER_PAGE = 12;
@@ -134,11 +135,9 @@ const Shop = () => {
         return flattened.filter(product => {
             // Price Range Filter
             if (priceRange !== 'all') {
-                if (priceRange === 'under-99' && product.price >= 99) return false;
                 if (priceRange === 'under-199' && product.price >= 199) return false;
-                if (priceRange === 'under-299' && product.price >= 299) return false;
                 if (priceRange === 'under-499' && product.price >= 499) return false;
-                if (priceRange === 'above-199' && product.price <= 199) return false;
+                if (priceRange === 'above-499' && product.price <= 499) return false;
             }
 
             // Availability & Sale Filters
@@ -216,11 +215,9 @@ const Shop = () => {
 
     const priceRanges = [
         { id: 'all', label: 'All Prices' },
-        { id: 'under-99', label: 'Under ₹99' },
         { id: 'under-199', label: 'Under ₹199' },
-        { id: 'under-299', label: 'Under ₹299' },
         { id: 'under-499', label: 'Under ₹499' },
-        { id: 'above-199', label: 'Above ₹199' },
+        { id: 'above-499', label: 'Above ₹499' },
     ];
 
     const pageSchema = [
@@ -274,7 +271,7 @@ const Shop = () => {
 
                 {/* Mobile Category Circles */}
                 <div className="lg:hidden mb-4 overflow-x-auto no-scrollbar py-2 -mx-4 px-4">
-                    <div className="flex gap-4">
+                    <div className="flex gap-2">
                         {categories.map(cat => {
                             const isSelected = cat.id === 'all' ? selectedCategories.length === 0 : selectedCategories.includes(cat.id);
                             let catImage = '/logo.png';
@@ -293,30 +290,32 @@ const Shop = () => {
                                 <button 
                                     key={cat.id}
                                     onClick={() => toggleCategory(cat.id)}
-                                    className="flex flex-col items-center gap-2 min-w-[72px] group transition-all duration-300"
+                                    className="flex flex-col items-center gap-1.5 min-w-[17vw] max-w-[64px] shrink-0 group transition-all duration-300"
                                 >
                                     <div className={`
-                                        w-16 h-16 md:w-20 md:h-20 rounded-full p-0.5 transition-all duration-300
+                                        w-[15vw] h-[15vw] max-w-[56px] max-h-[56px] md:w-20 md:h-20 rounded-full p-0.5 transition-all duration-300
                                         ${isSelected 
                                             ? 'bg-gradient-to-tr from-rose-900 via-rose-600 to-rose-900 shadow-lg shadow-rose-900/30 scale-110' 
                                             : 'bg-stone-200 hover:bg-stone-300'}
                                     `}>
-                                        <div className="w-full h-full rounded-full overflow-hidden bg-white flex items-center justify-center border-2 border-white">
+                                        <div className="w-full h-full rounded-full border-2 border-[#fdfbf7] overflow-hidden bg-white shadow-inner">
                                             {cat.id === 'all' ? (
-                                                <span className="text-[11px] font-bold text-stone-800 uppercase tracking-widest leading-none">All</span>
+                                                <div className="w-full h-full flex flex-col items-center justify-center bg-stone-50 text-stone-700">
+                                                    <span className="font-bold text-[10px] md:text-[13px] tracking-wider">ALL</span>
+                                                </div>
                                             ) : (
                                                 <img 
-                                                    src={getOptimizedImageUrl(catImage, { width: 100, height: 100 }) || catImage}
-                                                    alt={cat.label}
-                                                    onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = '/logo.png'; }}
-                                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                                    src={getOptimizedImageUrl(catImage, { width: 100, quality: 70 })} 
+                                                    alt={cat.label} 
+                                                    loading="lazy" 
+                                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                                 />
                                             )}
                                         </div>
                                     </div>
-                                    <span className={`text-[10px] font-bold text-center leading-tight max-w-[72px] ${
-                                        isSelected ? 'text-rose-900' : 'text-stone-600'
-                                    }`}>
+                                    <span className={`text-[9px] md:text-xs font-bold text-center leading-tight transition-colors duration-300 px-1
+                                        ${isSelected ? 'text-rose-900' : 'text-stone-600 group-hover:text-stone-900'}
+                                    `}>
                                         {cat.label}
                                     </span>
                                 </button>
@@ -338,12 +337,17 @@ const Shop = () => {
                             onClick={() => setIsMobileFiltersOpen(false)} 
                         />
                         
-                        {/* Drawer */}
+                        {/* Bottom Sheet Drawer */}
                         <aside 
-                            className={`absolute right-0 top-0 bottom-0 w-[85vw] max-w-[360px] bg-white shadow-2xl flex flex-col transition-transform duration-300 ease-in-out ${isMobileFiltersOpen ? 'translate-x-0' : 'translate-x-full'}`}
+                            className={`absolute left-0 right-0 bottom-0 max-h-[90vh] rounded-t-3xl bg-white shadow-2xl flex flex-col transition-transform duration-400 ease-out ${isMobileFiltersOpen ? 'translate-y-0' : 'translate-y-full'}`}
                         >
+                            {/* Drag Handle */}
+                            <div className="w-full flex justify-center pt-4 pb-2 shrink-0">
+                                <div className="w-12 h-1.5 bg-stone-200 rounded-full"></div>
+                            </div>
+
                             {/* Header */}
-                            <div className="flex items-center justify-between p-5 border-b border-stone-100 shrink-0">
+                            <div className="flex items-center justify-between px-5 pb-4 border-b border-stone-100 shrink-0">
                                 <h3 className="font-heading font-bold text-xl text-stone-900 flex items-center gap-2">
                                     <SlidersHorizontal className="w-5 h-5 text-rose-900" />
                                     Filters
@@ -364,16 +368,23 @@ const Shop = () => {
                                     <div className="flex flex-wrap gap-2">
                                         {categories.map(cat => {
                                             const isSelected = cat.id === 'all' ? selectedCategories.length === 0 : selectedCategories.includes(cat.id);
+                                            const cleanName = cat.label.toLowerCase().trim().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
+                                            const categoryProduct = products.find(p => (p.category === cat.id || p.category === cat.label) && p.image && !p.image.includes('unsplash'));
+                                            const categoryImage = categoryProduct?.image || `/category-images/${cleanName}.webp`;
+
                                             return (
                                             <button
                                                 key={cat.id}
                                                 onClick={() => toggleCategory(cat.id)}
-                                                className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 border ${
+                                                className={`px-3 py-1.5 rounded-full flex items-center gap-2 text-[13px] font-semibold transition-all duration-300 border ${
                                                     isSelected
                                                     ? 'bg-rose-900 border-rose-900 text-white shadow-md shadow-rose-900/20'
-                                                    : 'bg-white border-stone-200 text-stone-600 hover:border-stone-300'
+                                                    : 'bg-white border-stone-200 text-stone-700 hover:border-stone-300'
                                                 }`}
                                             >
+                                                {cat.id !== 'all' && (
+                                                    <img src={getOptimizedImageUrl(categoryImage, 40)} alt={cat.label} className="w-5 h-5 rounded-full object-cover shadow-sm" />
+                                                )}
                                                 {cat.label}
                                             </button>
                                         )})}
@@ -448,7 +459,7 @@ const Shop = () => {
                             </div>
                             
                             {/* Footer actions */}
-                            <div className="p-5 border-t border-stone-100 bg-white shrink-0 flex gap-3 pb-24 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)] relative z-10">
+                            <div className="p-5 border-t border-stone-100 bg-white shrink-0 flex gap-3 pb-[max(1.25rem,env(safe-area-inset-bottom))] shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)] relative z-10">
                                 <button
                                     onClick={() => {
                                         setSelectedCategories([]);
@@ -481,17 +492,23 @@ const Shop = () => {
                             <div className="flex flex-col gap-2">
                                 {categories.map(cat => {
                                     const isSelected = cat.id === 'all' ? selectedCategories.length === 0 : selectedCategories.includes(cat.id);
+                                    const cleanName = cat.label.toLowerCase().trim().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
+                                    const categoryProduct = products.find(p => (p.category === cat.id || p.category === cat.label) && p.image && !p.image.includes('unsplash'));
+                                    const categoryImage = categoryProduct?.image || `/category-images/${cleanName}.webp`;
+
                                     return (
                                     <button
                                         key={cat.id}
                                         onClick={() => toggleCategory(cat.id)}
-                                        className={`text-left text-sm transition-all duration-300 py-1 flex items-center gap-2 group ${
+                                        className={`text-left text-[13px] font-medium transition-all duration-300 py-2 px-3 rounded-xl flex items-center gap-2.5 group ${
                                             isSelected
-                                            ? 'text-rose-900 font-bold'
-                                            : 'text-stone-500 hover:text-stone-900'
+                                            ? 'text-rose-900 font-bold bg-rose-50'
+                                            : 'text-stone-600 hover:text-stone-900 hover:bg-stone-50'
                                         }`}
                                     >
-                                        <span className={`w-1.5 h-1.5 rounded-full bg-rose-900 transition-all duration-300 ${isSelected ? 'opacity-100' : 'opacity-0 pre-opacity'}`} />
+                                        {cat.id !== 'all' && (
+                                            <img src={getOptimizedImageUrl(categoryImage, 40)} alt={cat.label} className={`w-6 h-6 rounded-full object-cover transition-transform ${isSelected ? 'scale-110 shadow-sm' : ''}`} />
+                                        )}
                                         {cat.label}
                                     </button>
                                 )})}
@@ -562,7 +579,7 @@ const Shop = () => {
                         </div>
 
                         {/* Sticky Toolbar: Search, Sort, & Count */}
-                        <div className="sticky top-[60px] lg:top-24 z-30 bg-white/80 md:bg-white/90 backdrop-blur-md py-2 md:py-3 mb-3 md:mb-8 border-b border-stone-200/60 shadow-sm md:shadow-[0_8px_30px_rgb(0,0,0,0.04)] md:border md:border-stone-100 flex flex-row justify-between items-center gap-3 md:gap-4 transition-all duration-300 -mx-4 px-4 md:mx-0 md:px-6 md:rounded-2xl">
+                        <div className="sticky top-[60px] lg:top-24 z-30 bg-white/80 md:bg-white/90 backdrop-blur-md py-2 md:py-3 mb-3 md:mb-8 border-b border-stone-200/60 shadow-sm md:shadow-[0_8px_30px_rgb(0,0,0,0.04)] md:border md:border-stone-100 hidden md:flex flex-row justify-between items-center gap-3 md:gap-4 transition-all duration-300 -mx-4 px-4 md:mx-0 md:px-6 md:rounded-2xl">
                              {/* Result Count (Desktop) */}
                             <div className="hidden md:block text-sm font-medium text-stone-500 pl-4">
                                 Showing {allFilteredProducts.length} results
@@ -709,6 +726,72 @@ const Shop = () => {
                         <h3 className="font-bold text-lg text-stone-900 mb-2">Do you take bulk orders for wedding return gifts?</h3>
                         <p className="text-stone-600">Yes, we take bulk orders for weddings, baby showers, and corporate events. Our crochet keychains and mini flower bouquets are very popular as return gifts. Please contact us via the Custom Design page for bulk pricing.</p>
                     </div>
+                </div>
+            </div>
+
+            {/* Mobile Floating Action Bar (Filters & Sort) */}
+            <div className="fixed bottom-3 left-4 right-4 z-40 md:hidden flex items-center bg-white/95 backdrop-blur-xl border border-stone-200 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.12)]">
+                {/* Filters Button */}
+                <button
+                    onClick={() => setIsMobileFiltersOpen(true)}
+                    className="flex-1 flex items-center justify-center gap-2 h-12 text-stone-800 font-bold text-[14px] active:bg-stone-50 transition-colors rounded-l-full"
+                >
+                    <SlidersHorizontal size={16} className="text-stone-500" />
+                    Filters
+                    {(selectedCategories.length > 0 || priceRange !== 'all' || inStockOnly || isSaleOnly) && (
+                        <span className="w-1.5 h-1.5 rounded-full bg-rose-600"></span>
+                    )}
+                </button>
+
+                {/* Vertical Divider */}
+                <div className="w-[1px] h-6 bg-stone-200 shrink-0"></div>
+
+                {/* Sort Dropdown */}
+                <div className="flex-1 relative">
+                    <button
+                        onClick={() => setIsMobileSortOpen(!isMobileSortOpen)}
+                        className="w-full h-12 flex items-center justify-center gap-2 text-[14px] font-bold text-stone-800 active:bg-stone-50 transition-colors rounded-r-full px-2"
+                    >
+                        <span className="truncate max-w-[120px]">
+                            {sortBy === 'featured' ? 'Sort by' : 
+                             sortBy === 'newest' ? 'Newest' :
+                             sortBy === 'price-low' ? 'Low to High' : 'High to Low'}
+                        </span>
+                        <ChevronDown size={16} className={`text-stone-400 transition-transform ${isMobileSortOpen ? 'rotate-180' : ''}`} />
+                    </button>
+
+                    {/* Custom Dropdown Menu */}
+                    {isMobileSortOpen && (
+                        <>
+                            <div 
+                                className="fixed inset-0 z-40" 
+                                onClick={() => setIsMobileSortOpen(false)}
+                            />
+                            <div className="absolute bottom-[calc(100%+0.5rem)] right-0 w-48 bg-white border border-stone-200 rounded-2xl p-1.5 shadow-xl z-50 animate-in slide-in-from-bottom-2 fade-in">
+                                {[
+                                    { value: 'featured', label: 'Sort by' },
+                                    { value: 'newest', label: 'Newest Arrivals' },
+                                    { value: 'price-low', label: 'Price: Low to High' },
+                                    { value: 'price-high', label: 'Price: High to Low' },
+                                ].map((option) => (
+                                    <button
+                                        key={option.value}
+                                        onClick={() => {
+                                            setSortBy(option.value);
+                                            setIsMobileSortOpen(false);
+                                        }}
+                                        className={`w-full text-left px-4 py-2.5 rounded-xl text-[13px] font-medium transition-colors ${
+                                            sortBy === option.value 
+                                            ? 'bg-rose-50 text-rose-700 font-bold' 
+                                            : 'text-stone-700 hover:bg-stone-50'
+                                        }`}
+                                    >
+                                        {option.label}
+                                    </button>
+                                ))}
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
         </div>

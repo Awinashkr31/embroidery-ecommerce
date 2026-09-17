@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+﻿import React, { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion'; // eslint-disable-line no-unused-vars
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useProducts } from '../context/ProductContext';
@@ -774,7 +774,7 @@ const ProductDetails = () => {
                                     ))}
                                 </div>
                                 <span className="text-sm font-medium text-stone-900">{averageRating}</span>
-                                <span className="text-stone-300 px-1">·</span>
+                                <span className="text-stone-300 px-1">┬╖</span>
                                 <a href="#reviews" className="text-sm text-stone-500 underline underline-offset-4 hover:text-stone-900 transition-colors">
                                     {reviews.length} {reviews.length === 1 ? 'Review' : 'Reviews'}
                                 </a>
@@ -787,18 +787,18 @@ const ProductDetails = () => {
                                 <div className="flex items-center gap-3">
                                     <div className="flex items-center gap-2.5 bg-emerald-800 text-white px-3 py-1.5 rounded shadow-[0_2px_4px_rgba(6,78,59,0.3)] w-fit">
                                         <span className="text-3xl lg:text-4xl font-heading font-semibold tracking-tight">
-                                            <span className="text-lg lg:text-xl font-sans mr-0.5">₹</span>{currentPrice.toLocaleString('en-IN')}
+                                            <span className="text-lg lg:text-xl font-sans mr-0.5">Γé╣</span>{currentPrice.toLocaleString('en-IN')}
                                         </span>
                                     </div>
                                     {product.originalPrice && product.originalPrice > currentPrice && (
                                         <span className="text-lg lg:text-xl font-medium text-stone-400 line-through">
-                                            ₹{product.originalPrice.toLocaleString('en-IN')}
+                                            Γé╣{product.originalPrice.toLocaleString('en-IN')}
                                         </span>
                                     )}
                                 </div>
                                 {product.originalPrice && product.originalPrice > currentPrice && (
                                     <div className="text-sm font-bold text-emerald-700 ml-1">
-                                        Save ₹{(product.originalPrice - currentPrice).toLocaleString('en-IN')}
+                                        Save Γé╣{(product.originalPrice - currentPrice).toLocaleString('en-IN')}
                                     </div>
                                 )}
                             </div>
@@ -817,7 +817,11 @@ const ProductDetails = () => {
                                 <PincodeChecker />
                             </div>
                             
-                            
+                            {/* Urgency Badge */}
+                            <div className="flex items-center gap-2 text-xs font-bold text-rose-800 bg-rose-50 px-4 py-3 rounded-xl border border-rose-100 w-full mb-6">
+                                <span className="text-base animate-pulse">≡ƒöÑ</span>
+                                <span>{product.id ? (product.id.charCodeAt(0) % 15) + 5 : 12} people bought this recently</span>
+                            </div>
                         </div>
                    
                         
@@ -914,7 +918,7 @@ const ProductDetails = () => {
 
 
 
-                        {/* Trust strip — desktop only */}
+                        {/* Trust strip ΓÇö desktop only */}
                         <div className="hidden lg:grid grid-cols-4 gap-2 mb-6 p-4 bg-stone-50 rounded-2xl border border-stone-100">
                             <div className="flex flex-col items-center gap-1.5 text-center">
                                 <Award className="w-5 h-5 text-stone-700 shrink-0" />
@@ -925,7 +929,7 @@ const ProductDetails = () => {
                                 <span className="text-[10px] font-bold text-stone-600 uppercase tracking-wider">Pan India</span>
                             </div>
                             <div className="flex flex-col items-center gap-1.5 text-center">
-                                <div className="w-5 h-5 flex items-center justify-center font-bold text-stone-700 text-xs border-2 border-stone-700 rounded-full shrink-0">₹</div>
+                                <div className="w-5 h-5 flex items-center justify-center font-bold text-stone-700 text-xs border-2 border-stone-700 rounded-full shrink-0">Γé╣</div>
                                 <span className="text-[10px] font-bold text-stone-600 uppercase tracking-wider">COD Available</span>
                             </div>
                             <div className="flex flex-col items-center gap-1.5 text-center">
@@ -989,7 +993,7 @@ const ProductDetails = () => {
                                 disabled={!isStockAvailable}
                                 className="hidden lg:flex w-full h-[52px] bg-gradient-to-r from-rose-900 to-pink-700 text-white font-bold uppercase tracking-widest text-sm rounded-[14px] hover:shadow-lg hover:shadow-rose-900/20 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed items-center justify-center gap-2"
                             >
-                                Buy At ₹{currentPrice.toLocaleString()}
+                                Buy At Γé╣{currentPrice.toLocaleString()}
                             </motion.button>
                             
                             {/* CRO Estimated Delivery */}
@@ -1029,7 +1033,7 @@ const ProductDetails = () => {
                         {/* Why Handmade Strip */}
                         <div className="flex items-center gap-3 p-3.5 bg-[#f5f2eb] rounded-xl border border-stone-200/50 mb-6 lg:mb-8">
                             <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm shrink-0 text-base">
-                                🇮🇳
+                                ≡ƒç«≡ƒç│
                             </div>
                             <div>
                                 <h4 className="text-xs font-bold text-stone-900 leading-tight">Handmade with love in India</h4>
@@ -1044,7 +1048,7 @@ const ProductDetails = () => {
                             <div className="mb-6 lg:mb-8 block">
                                 <h4 className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-3">Perfect For</h4>
                                 <div className="flex flex-wrap gap-2">
-                                    {(info.perfectFor ? info.perfectFor.split(',') : ["Birthday Gifts", "Best Friend Gifts", "Room Décor", "Bag Charms", "Car Accessories"]).map((tag, i) => (
+                                    {(info.perfectFor ? info.perfectFor.split(',') : ["Birthday Gifts", "Best Friend Gifts", "Room D├⌐cor", "Bag Charms", "Car Accessories"]).map((tag, i) => (
                                         <span key={i} className="px-3 py-1.5 bg-white border border-stone-200 rounded-lg text-xs font-medium text-stone-600 shadow-sm cursor-default hover:bg-stone-50 transition-colors">
                                             {tag.trim()}
                                         </span>
@@ -1101,7 +1105,7 @@ const ProductDetails = () => {
                                             <Sparkles className="w-3 h-3" />
                                             Bundle & Save
                                         </div>
-                                        <h2 className="text-2xl font-heading font-bold text-stone-900">Complete the look ✨</h2>
+                                        <h2 className="text-2xl font-heading font-bold text-stone-900">Complete the look Γ£¿</h2>
                                     </div>
                                 </div>
 
@@ -1114,7 +1118,7 @@ const ProductDetails = () => {
                                             </div>
                                             <div>
                                                 <div className="text-xs font-bold text-stone-900 truncate">This Item</div>
-                                                <div className="text-[10px] text-stone-500 font-medium">₹{currentPrice.toLocaleString()}</div>
+                                                <div className="text-[10px] text-stone-500 font-medium">Γé╣{currentPrice.toLocaleString()}</div>
                                             </div>
                                         </div>
                                         <Plus className="w-5 h-5 text-stone-300 shrink-0" />
@@ -1127,7 +1131,7 @@ const ProductDetails = () => {
                                             </Link>
                                             <div>
                                                 <Link to={getProductUrl(relatedProducts[0])} className="text-xs font-bold text-stone-900 truncate hover:text-rose-900 transition-colors block">{relatedProducts[0].name}</Link>
-                                                <div className="text-[10px] text-stone-500 font-medium">₹{relatedProducts[0].price.toLocaleString()}</div>
+                                                <div className="text-[10px] text-stone-500 font-medium">Γé╣{relatedProducts[0].price.toLocaleString()}</div>
                                             </div>
                                         </div>
                                         
@@ -1136,12 +1140,12 @@ const ProductDetails = () => {
                                         {/* Premium Gift Packaging */}
                                         <div className="shrink-0 flex flex-col gap-2 w-28 snap-start">
                                             <div className="aspect-[4/5] rounded-xl overflow-hidden shadow-sm border border-rose-200 bg-rose-50 flex flex-col items-center justify-center p-3 text-center relative">
-                                                <span className="text-3xl mb-1">🎁</span>
+                                                <span className="text-3xl mb-1">≡ƒÄü</span>
                                                 <span className="text-[10px] font-bold text-rose-900 leading-tight">Gift Ready Wrap</span>
                                             </div>
                                             <div>
                                                 <div className="text-xs font-bold text-stone-900 truncate">Add-on</div>
-                                                <div className="text-[10px] text-stone-500 font-medium">₹29</div>
+                                                <div className="text-[10px] text-stone-500 font-medium">Γé╣29</div>
                                             </div>
                                         </div>
                                     </div>
@@ -1152,15 +1156,15 @@ const ProductDetails = () => {
                                                 <div className="text-xs text-stone-500 font-medium mb-1">Total Bundle Price</div>
                                                 <div className="flex items-center gap-2">
                                                     <span className="text-2xl font-heading font-bold text-stone-900">
-                                                        ₹{(currentPrice + relatedProducts[0].price + 29 - 49).toLocaleString()}
+                                                        Γé╣{(currentPrice + relatedProducts[0].price + 29 - 49).toLocaleString()}
                                                     </span>
                                                     <span className="text-sm text-stone-400 line-through">
-                                                        ₹{(currentPrice + relatedProducts[0].price + 29).toLocaleString()}
+                                                        Γé╣{(currentPrice + relatedProducts[0].price + 29).toLocaleString()}
                                                     </span>
                                                 </div>
                                             </div>
                                             <div className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-1 rounded-md uppercase tracking-wider">
-                                                Save ₹49
+                                                Save Γé╣49
                                             </div>
                                         </div>
 
@@ -1234,11 +1238,11 @@ const ProductDetails = () => {
                                     <div className="text-stone-600 leading-[1.8] font-light mb-6 text-sm md:text-base space-y-3">
                                         {(info.long_description || product.description).split('\n').map((line, i) => {
                                             const trimmed = line.trim();
-                                            if (trimmed.startsWith('-') || trimmed.startsWith('•')) {
+                                            if (trimmed.startsWith('-') || trimmed.startsWith('ΓÇó')) {
                                                 return (
                                                     <div key={i} className="flex items-start gap-3">
                                                         <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-1.5" />
-                                                        <span className="text-stone-700">{trimmed.replace(/^[-•]\s*/, '')}</span>
+                                                        <span className="text-stone-700">{trimmed.replace(/^[-ΓÇó]\s*/, '')}</span>
                                                     </div>
                                                 );
                                             }
@@ -1411,7 +1415,7 @@ const ProductDetails = () => {
                                                 <p className="font-medium text-stone-900">Shipping</p>
                                                 <p className="mt-1">
                                                     {info.shippingCharges > 0 
-                                                        ? `Standard shipping charges of ₹${info.shippingCharges} apply.` 
+                                                        ? `Standard shipping charges of Γé╣${info.shippingCharges} apply.` 
                                                         : 'Enjoy complimentary free shipping on this item.'
                                                     }
                                                     {info.weight && ` Weight: ${info.weight}.`}
@@ -1500,7 +1504,7 @@ const ProductDetails = () => {
                                         </div>
                                     </div>
                                     <p className="text-stone-900 font-heading font-medium text-xl mb-1">Loved by handmade gift buyers</p>
-                                    <p className="text-stone-500 text-sm font-light mb-5">Join our community of happy customers 💖</p>
+                                    <p className="text-stone-500 text-sm font-light mb-5">Join our community of happy customers ≡ƒÆû</p>
                                     <button 
                                         onClick={() => setReviewModalOpen(true)}
                                         className="text-sm font-bold text-rose-900 underline underline-offset-4 hover:text-rose-700 transition-colors"
@@ -1562,7 +1566,7 @@ const ProductDetails = () => {
                     <div className="border-t border-stone-100 pt-12 lg:pt-16 pb-24 overflow-hidden">
                         <div className="flex items-center gap-4 mb-8 lg:mb-12 px-4 lg:px-0">
                             <div className="flex-1 h-px bg-stone-200" />
-                            <h2 className="text-xl lg:text-2xl font-heading font-semibold text-stone-900 text-center whitespace-nowrap">🌸 Complete The Gift</h2>
+                            <h2 className="text-xl lg:text-2xl font-heading font-semibold text-stone-900 text-center whitespace-nowrap">≡ƒî╕ Complete The Gift</h2>
                             <div className="flex-1 h-px bg-stone-200" />
                         </div>
                         <motion.div 
@@ -1626,10 +1630,10 @@ const ProductDetails = () => {
                                                 {p.name}
                                             </h3>
                                             <div className="flex items-center flex-wrap gap-1.5 text-sm">
-                                                <span className="font-bold text-stone-900">₹{p.price.toLocaleString()}</span>
+                                                <span className="font-bold text-stone-900">Γé╣{p.price.toLocaleString()}</span>
                                                 {p.originalPrice && (
                                                     <>
-                                                        <span className="text-stone-400 line-through text-xs">₹{p.originalPrice.toLocaleString()}</span>
+                                                        <span className="text-stone-400 line-through text-xs">Γé╣{p.originalPrice.toLocaleString()}</span>
                                                         <span className="text-[10px] font-bold text-rose-700">({discount}% OFF)</span>
                                                     </>
                                                 )}
@@ -1707,10 +1711,10 @@ const ProductDetails = () => {
                                                 {p.name}
                                             </h3>
                                             <div className="flex items-center flex-wrap gap-1.5 text-sm">
-                                                <span className="font-bold text-stone-900">₹{p.price.toLocaleString()}</span>
+                                                <span className="font-bold text-stone-900">Γé╣{p.price.toLocaleString()}</span>
                                                 {p.originalPrice && (
                                                     <>
-                                                        <span className="text-stone-400 line-through text-xs">₹{p.originalPrice.toLocaleString()}</span>
+                                                        <span className="text-stone-400 line-through text-xs">Γé╣{p.originalPrice.toLocaleString()}</span>
                                                         <span className="text-[10px] font-bold text-rose-700">({discount}% OFF)</span>
                                                     </>
                                                 )}
@@ -1820,7 +1824,7 @@ const ProductDetails = () => {
                             </div>
                             <div>
                                 <h3 className="font-heading font-bold text-stone-900 text-lg line-clamp-1">{product.name}</h3>
-                                <div className="text-rose-900 font-bold mt-1">₹{currentPrice.toLocaleString()}</div>
+                                <div className="text-rose-900 font-bold mt-1">Γé╣{currentPrice.toLocaleString()}</div>
                             </div>
                         </div>
 

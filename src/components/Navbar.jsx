@@ -144,14 +144,7 @@ const Navbar = React.memo(() => {
   return (
     <>
     <header className={`sticky top-0 w-full z-50 flex flex-col transition-transform duration-300 ease-in-out ${scrollDirection === 'down' ? '-translate-y-full' : 'translate-y-0'} ${location.pathname === '/cart' ? 'hidden lg:flex' : ''}`}>
-      {/* CRO Announcement Bar */}
-      <div className="w-full bg-[#6e132b] text-white py-1.5 md:py-2 px-4 flex items-center justify-center gap-2 overflow-hidden relative group">
-          <Truck className="w-4 h-4 md:w-5 md:h-5 shrink-0 group-hover:animate-bounce" />
-          <p className="text-[10px] md:text-xs font-bold tracking-widest uppercase">
-              Free Shipping on orders over <span className="text-rose-200">₹{FREE_DELIVERY_THRESHOLD || 999}</span>!
-          </p>
-          <Sparkles className="w-3 h-3 md:w-4 md:h-4 text-rose-300 absolute right-4 md:right-8 animate-pulse" />
-      </div>
+
       <nav
         className={`w-full relative z-20 transition-all duration-500 ease-in-out min-h-[56px] md:min-h-[72px]
           ${isScrolled
@@ -268,14 +261,16 @@ const Navbar = React.memo(() => {
             </div>
 
             {/* Mobile Search Icon */}
-            <button 
-                id="mobile-search-button"
-                onClick={() => setIsSearchOpen(!isSearchOpen)} 
-                className="p-1.5 md:p-2 text-stone-600 hover:text-rose-900 transition-colors rounded-full hover:bg-stone-100 lg:hidden animate-fade-in" 
-                aria-label="Search"
-            >
-                {isSearchOpen ? <X className="w-5 h-5" /> : <Search className="w-5 h-5" />}
-            </button>
+            {location.pathname !== '/' && (
+              <button 
+                  id="mobile-search-button"
+                  onClick={() => setIsSearchOpen(!isSearchOpen)} 
+                  className="p-1.5 md:p-2 text-stone-600 hover:text-rose-900 transition-colors rounded-full hover:bg-stone-100 lg:hidden animate-fade-in" 
+                  aria-label="Search"
+              >
+                  {isSearchOpen ? <X className="w-5 h-5" /> : <Search className="w-5 h-5" />}
+              </button>
+            )}
 
              {/* Wishlist */}
             <Link 

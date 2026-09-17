@@ -1,7 +1,7 @@
 /* Google Fonts moved to index.html for performance */
 
 @import "tailwindcss";
-
+@config "../tailwind.config.js";
 @theme {
   --breakpoint-3xl: 1728px;
   --breakpoint-4xl: 1920px;
@@ -29,8 +29,8 @@
   }
 
   body {
-    @apply antialiased text-stone-900 bg-[#fdfbf7];
-    font-family: var(--font-body);
+    @apply antialiased text-on-background bg-background;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
     /* Prevent pull-to-refresh on mobile if needed, though usually handled by JS */
     overscroll-behavior-y: none;
@@ -38,7 +38,7 @@
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-heading);
+    font-family: 'Playfair Display', Georgia, serif;
     @apply font-semibold tracking-tight;
   }
 }
@@ -232,6 +232,11 @@
   @keyframes typing {
     0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
     40% { transform: scale(1); opacity: 1; }
+  }
+
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
   }
 }
 

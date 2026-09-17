@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+
+<html class="scroll-smooth" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Anuki Crochet — Everlasting Handcrafted Keepsakes &amp; Bouquets</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&amp;family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols Outlined -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind Play CDN -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Custom Configuration -->
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "surface-tint": "#a5384a",
+            "error": "#ba1a1a",
+            "surface-container": "#faeaea",
+            "primary-fixed": "#ffdadb",
+            "on-tertiary-container": "#fff6f4",
+            "primary-fixed-dim": "#ffb2b9",
+            "background": "#fff8f7",
+            "on-surface-variant": "#564243",
+            "surface-cream": "#FBF8F5",
+            "on-primary-fixed": "#40000f",
+            "on-error-container": "#93000a",
+            "surface-variant": "#efdfde",
+            "tertiary-fixed-dim": "#fbb6a8",
+            "pistachio-text": "#3F5F49",
+            "inverse-primary": "#ffb2b9",
+            "surface-container-low": "#fff0f0",
+            "surface-dim": "#e6d6d6",
+            "outline-variant": "#ddc0c1",
+            "on-primary-fixed-variant": "#852033",
+            "surface-blush": "#F6ECE8",
+            "secondary-container": "#caebd1",
+            "border-warm": "#EFE5DE",
+            "secondary": "#486551",
+            "on-secondary": "#ffffff",
+            "pistachio-badge": "#EAF0EA",
+            "surface": "#fff8f7",
+            "on-secondary-container": "#4e6b56",
+            "on-tertiary-fixed-variant": "#6a3930",
+            "terracotta-dark": "#8C2F3D",
+            "surface-container-lowest": "#ffffff",
+            "inverse-on-surface": "#fdedec",
+            "on-background": "#221a1a",
+            "on-tertiary": "#ffffff",
+            "on-secondary-fixed": "#042011",
+            "surface-bright": "#fff8f7",
+            "on-primary": "#ffffff",
+            "on-error": "#ffffff",
+            "secondary-fixed-dim": "#aeceb6",
+            "on-surface": "#221a1a",
+            "tertiary-fixed": "#ffdad3",
+            "primary-container": "#be4b5c",
+            "tertiary-container": "#9c6358",
+            "surface-card": "#FFFFFF",
+            "on-tertiary-fixed": "#351009",
+            "on-secondary-fixed-variant": "#314d3a",
+            "surface-container-high": "#f4e5e4",
+            "primary": "#9e3345",
+            "error-container": "#ffdad6",
+            "tertiary": "#804b41",
+            "surface-container-highest": "#efdfde",
+            "inverse-surface": "#372e2e",
+            "on-primary-container": "#fff6f6",
+            "secondary-fixed": "#caebd1",
+            "outline": "#897173",
+            "espresso-muted": "#6E6363"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px"
+          },
+          "spacing": {
+            "space-2xl": "2rem",
+            "margin": "1rem",
+            "space-xs": "0.375rem",
+            "space-2xs": "0.25rem",
+            "space-xl": "1.5rem",
+            "space-md": "0.75rem",
+            "space-3xl": "3rem",
+            "margin-desktop": "2.5rem",
+            "gutter-desktop": "1.25rem",
+            "gutter": "0.75rem",
+            "space-lg": "1rem",
+            "space-sm": "0.5rem"
+          },
+          "fontFamily": {
+            "label-sm": ["Plus Jakarta Sans"],
+            "body-sm": ["Plus Jakarta Sans"],
+            "headline-lg-mobile": ["Playfair Display"],
+            "headline-lg": ["Playfair Display"],
+            "price-lg": ["Plus Jakarta Sans"],
+            "headline-xl": ["Playfair Display"],
+            "body-lg": ["Plus Jakarta Sans"],
+            "title-md": ["Plus Jakarta Sans"],
+            "price-sm": ["Plus Jakarta Sans"],
+            "headline-xl-mobile": ["Playfair Display"],
+            "body-md": ["Plus Jakarta Sans"],
+            "title-lg": ["Plus Jakarta Sans"],
+            "headline-md": ["Playfair Display"],
+            "label-md": ["Plus Jakarta Sans"]
+          },
+          "fontSize": {
+            "label-sm": ["11px", { "lineHeight": "14px", "fontWeight": "600" }],
+            "body-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+            "headline-lg-mobile": ["22px", { "lineHeight": "30px", "fontWeight": "600" }],
+            "headline-lg": ["28px", { "lineHeight": "36px", "fontWeight": "600" }],
+            "price-lg": ["18px", { "lineHeight": "22px", "fontWeight": "700" }],
+            "headline-xl": ["36px", { "lineHeight": "44px", "fontWeight": "600" }],
+            "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+            "title-md": ["16px", { "lineHeight": "22px", "fontWeight": "600" }],
+            "price-sm": ["14px", { "lineHeight": "18px", "fontWeight": "600" }],
+            "headline-xl-mobile": ["28px", { "lineHeight": "36px", "fontWeight": "600" }],
+            "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+            "title-lg": ["18px", { "lineHeight": "24px", "fontWeight": "700" }],
+            "headline-md": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+            "label-md": ["13px", { "lineHeight": "16px", "fontWeight": "600" }]
+          }
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-family: 'Material Symbols Outlined';
+      font-weight: normal;
+      font-style: normal;
+      font-size: 20px;
+      line-height: 1;
+      letter-spacing: normal;
+      text-transform: none;
+      display: inline-block;
+      white-space: nowrap;
+      word-wrap: normal;
+      direction: ltr;
+      -webkit-font-feature-settings: 'liga';
+      -webkit-font-smoothing: antialiased;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      height: 6px;
+      width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #F6ECE8;
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #be4b5c;
+      border-radius: 9999px;
+    }
+    .hero-glow {
+      background: radial-gradient(circle at 60% 40%, rgba(250, 234, 234, 0.9) 0%, rgba(255, 248, 247, 0) 70%);
+    }
+  </style>
+</head>
+<body class="bg-background text-on-surface font-body-md text-body-md antialiased selection:bg-primary-fixed selection:text-terracotta-dark">
+<!-- ================================================================= -->
+<!-- 1. ANNOUNCEMENT TOP TICKER                                      -->
+<!-- ================================================================= -->
+<aside class="bg-terracotta-dark text-on-primary py-space-xs px-margin-desktop text-center overflow-hidden border-b border-outline-variant/20">
+<div class="flex items-center justify-center gap-space-md text-label-sm font-label-sm tracking-wide">
+<span class="inline-flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px]" style="font-variation-settings: 'FILL' 1;">local_shipping</span>
+        FREE SHIPPING ON ORDERS OVER ₹799!
+      </span>
+<span class="hidden md:inline text-primary-fixed-dim">•</span>
+<span class="hidden md:inline-flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px]">redeem</span>
+        Complimentary Silk Gift Packaging on orders over ₹799
+      </span>
+<span class="hidden lg:inline text-primary-fixed-dim">•</span>
+<span class="hidden lg:inline-flex items-center gap-1">
+<span class="material-symbols-outlined text-[15px]">eco</span>
+        100% Hypoallergenic Hand-spun Milk Cotton
+      </span>
+</div>
+</aside>
+<!-- ================================================================= -->
+<!-- 2. SHARED TOP NAVBAR (Desktop & Mobile Responsive Pivot)           -->
+<!-- ================================================================= -->
+<header class="sticky top-0 z-40 bg-surface-cream/95 backdrop-blur-md border-b border-border-warm shadow-sm transition-all duration-200">
+<div class="flex justify-between items-center w-full px-margin-desktop max-w-[1200px] mx-auto py-space-md">
+<!-- Brand Logo / Identity -->
+<a class="flex items-center gap-space-xs group" href="#">
+<span class="w-8 h-8 rounded-full bg-primary-container/15 flex items-center justify-center text-primary group-hover:scale-105 transition-transform duration-200">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">yard</span>
+</span>
+<div class="flex flex-col">
+<span class="font-headline-lg text-headline-lg font-semibold text-terracotta-dark tracking-tight leading-none">Anuki Crochet</span>
+<span class="font-label-sm text-label-sm text-espresso-muted font-normal tracking-wider">Handcrafted Keepsakes</span>
+</div>
+</a>
+<!-- Desktop Navigation Menu (Derived from Shared JSON) -->
+<nav aria-label="Main Navigation" class="hidden lg:flex items-center gap-space-xl">
+<!-- Active link: Bouquets -->
+<a class="text-primary font-title-md text-title-md border-b-2 border-primary pb-1 transition-colors" href="#bouquets">
+          Bouquets
+        </a>
+<a class="text-on-surface-variant font-title-md text-title-md hover:text-primary transition-colors" href="#amigurumi">
+          Amigurumi
+        </a>
+<a class="text-on-surface-variant font-title-md text-title-md hover:text-primary transition-colors" href="#floral-pots">
+          Floral Pots
+        </a>
+<a class="text-on-surface-variant font-title-md text-title-md hover:text-primary transition-colors" href="#bespoke">
+          Bespoke Gifts
+        </a>
+<a class="text-on-surface-variant font-title-md text-title-md hover:text-primary transition-colors" href="#journal">
+          Artisan Journal
+        </a>
+</nav>
+<!-- Right Utility Actions -->
+<div class="flex items-center gap-space-md">
+<!-- Search Input with live appearance -->
+<div class="hidden md:flex items-center relative">
+<input class="w-56 lg:w-64 pl-9 pr-3 py-1.5 text-body-sm font-body-sm bg-surface-card border border-border-warm rounded-full focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-sm" placeholder="Search sunflowers, roses, plushies..." type="text"/>
+<span class="material-symbols-outlined absolute left-2.5 text-espresso-muted pointer-events-none text-[18px]">search</span>
+</div>
+<!-- Currency Selector -->
+<span class="hidden sm:inline-flex text-label-sm font-label-sm px-2.5 py-1 rounded-full bg-surface-blush text-terracotta-dark border border-border-warm font-semibold">
+          ₹ INR
+        </span>
+<!-- Trailing Icon Action: favorite -->
+<button aria-label="Wishlist" class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface hover:text-primary hover:bg-surface-blush transition-colors active:scale-95 duration-150">
+<span class="material-symbols-outlined" data-icon="favorite">favorite</span>
+</button>
+<!-- Trailing Icon Action: person -->
+<button aria-label="Account Login" class="w-10 h-10 rounded-full flex items-center justify-center text-on-surface hover:text-primary hover:bg-surface-blush transition-colors active:scale-95 duration-150">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+</button>
+<!-- Trailing Primary Action: Bag (0) -->
+<button class="flex items-center gap-2 bg-primary-container text-on-primary-container px-4 py-2 rounded-full font-label-md text-label-md shadow-sm hover:bg-terracotta-dark active:scale-95 transition-all duration-150" id="cart-toggle-btn">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">shopping_bag</span>
+<span class="tracking-wide">Bag (0)</span>
+</button>
+</div>
+</div>
+</header>
+<!-- ================================================================= -->
+<!-- 3. IMMERSIVE HERO SECTION                                         -->
+<!-- ================================================================= -->
+<section class="relative overflow-hidden hero-glow border-b border-border-warm pt-space-xl pb-space-3xl">
+<div class="w-full px-margin-desktop max-w-[1200px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-space-2xl items-center">
+<!-- Left Hero Editorial Copy -->
+<div class="lg:col-span-6 flex flex-col items-start">
+<!-- Seasonal Tag -->
+<div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-pistachio-badge text-pistachio-text border border-secondary/20 mb-space-md font-label-md text-label-md">
+<span class="material-symbols-outlined text-[15px]" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+<span>Spring 2025 Everlasting Drop</span>
+</div>
+<h1 class="font-headline-xl text-headline-xl text-on-surface tracking-tight leading-tight mb-space-md">
+          Blooms That <span class="italic font-normal text-primary underline decoration-border-warm underline-offset-8">Never Wilt.</span> Heirloom Memories in Every Stitch.
+        </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-xl mb-space-xl leading-relaxed">
+          Handmade with pure 5-ply organic milk cotton. Each bespoke bouquet and amigurumi keepsake is lovingly hooked by master women artisans across India—never drying, never fading, forever cherished.
+        </p>
+<!-- CTAs -->
+<div class="flex flex-wrap items-center gap-space-md w-full sm:w-auto mb-space-2xl">
+<a class="w-full sm:w-auto px-7 py-3.5 bg-primary-container text-on-primary-container rounded-full font-title-md text-title-md font-semibold text-center shadow-md hover:bg-terracotta-dark active:scale-95 transition-all flex items-center justify-center gap-2" href="#catalog">
+<span>Explore New Arrivals</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</a>
+<a class="w-full sm:w-auto px-6 py-3.5 bg-surface-card text-primary border-2 border-primary-container rounded-full font-title-md text-title-md font-semibold text-center hover:bg-surface-blush active:scale-95 transition-all flex items-center justify-center gap-2" href="#bespoke">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">palette</span>
+<span>Bespoke &amp; Custom Orders</span>
+</a>
+</div>
+<!-- Social Proof Metric Band -->
+<div class="grid grid-cols-3 gap-space-md pt-space-md border-t border-border-warm w-full max-w-lg">
+<div>
+<div class="font-title-lg text-title-lg text-terracotta-dark font-bold">15,000+</div>
+<div class="font-body-sm text-body-sm text-espresso-muted">Stitches Per Piece</div>
+</div>
+<div>
+<div class="flex items-center gap-1 font-title-lg text-title-lg text-terracotta-dark font-bold">
+<span>4.9/5</span>
+<span class="material-symbols-outlined text-amber-500 text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<div class="font-body-sm text-body-sm text-espresso-muted">2,400+ Verified Reviews</div>
+</div>
+<div>
+<div class="font-title-lg text-title-lg text-terracotta-dark font-bold">100%</div>
+<div class="font-body-sm text-body-sm text-espresso-muted">Women Artisan Made</div>
+</div>
+</div>
+</div>
+<!-- Right Visual Showcase: Asymmetric Composition -->
+<div class="lg:col-span-6 relative flex justify-center items-center">
+<!-- Floating Backdrop Canvas -->
+<div class="relative w-full max-w-lg">
+<!-- Main Hero Image Frame -->
+<div class="relative rounded-3xl overflow-hidden shadow-2xl border-4 border-surface-card bg-surface-card">
+<img alt="Artisanal crochet floral bouquet and amigurumi collection" class="w-full h-[440px] object-cover object-center transform hover:scale-105 transition-transform duration-700" src="https://lh3.googleusercontent.com/aida/AEtjO1Wom1mIGRNuOEHuMRpl8ERplpKKLOvBKW5RAxy2BlA88xv6juJw3BrPZcu0S5wYUvT26JB26xd6eBMwYwCOOhVlXXHRJokij6BUZ7YbCBNfMX6m33Teiltuyo2dU8bGJGcGs4EPLhBNhoru2e_hkN7vyIUPA8mscLSsITEUjY2qr5KjL_FDJXliiwsJhRQYzZMP4auM-nXeAna4BPCSBUP-rOzm4EMOgWGtXdHEa47pThvuZiJIK9CHI3Q"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+<!-- Inset Badge bottom -->
+<div class="absolute bottom-4 left-4 right-4 bg-surface-card/90 backdrop-blur-md rounded-2xl p-3 border border-border-warm flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-surface-blush flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">spa</span>
+</div>
+<div>
+<h2 class="font-title-md text-title-md font-semibold text-on-surface">The Signature Pastel Meadow</h2>
+<p class="font-body-sm text-body-sm text-espresso-muted">Tulips, Daisies, &amp; English Roses</p>
+</div>
+</div>
+<span class="font-price-lg text-price-lg text-terracotta-dark font-bold">₹1,499</span>
+</div>
+</div>
+<!-- Floating Secondary Badge Pill (Top-Right) -->
+<div class="absolute -top-4 -right-4 bg-surface-card rounded-full py-2 px-4 shadow-lg border border-border-warm flex items-center gap-2 animate-bounce duration-1000">
+<span class="w-3 h-3 rounded-full bg-secondary"></span>
+<span class="font-label-sm text-label-sm text-on-surface font-medium">100% Organic Milk Cotton</span>
+</div>
+<!-- Floating Secondary Badge Pill (Bottom-Left) -->
+<div class="absolute -bottom-4 -left-4 bg-surface-card rounded-2xl p-3 shadow-lg border border-border-warm flex items-center gap-3">
+<div class="w-9 h-9 rounded-full bg-pistachio-badge flex items-center justify-center text-pistachio-text">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+<div>
+<div class="font-label-md text-label-md font-bold text-on-surface">Lifelong Guarantee</div>
+<div class="font-body-sm text-body-sm text-espresso-muted">Never wilts or loses color</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ================================================================= -->
+<!-- 4. SHOP BY CATEGORY (Circular Image Row)                           -->
+<!-- ================================================================= -->
+<section class="py-space-3xl border-b border-border-warm bg-surface-card">
+<div class="w-full px-margin-desktop max-w-[1200px] mx-auto">
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-space-2xl gap-space-sm">
+<div>
+<span class="font-label-md text-label-md text-primary tracking-widest uppercase">Curated Catalog</span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface tracking-tight mt-1">Shop by Category — Crafted Loop by Loop</h2>
+</div>
+<a class="inline-flex items-center gap-1.5 text-primary font-title-md text-title-md hover:underline font-semibold" href="#catalog">
+<span>View All Categories</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</a>
+</div>
+<!-- Categories Container with horizontal scroll on mobile, flex on desktop -->
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-space-lg">
+<!-- Category 1 -->
+<a class="group flex flex-col items-center text-center" href="#bouquets">
+<div class="w-28 h-28 sm:w-32 sm:h-32 rounded-full overflow-hidden p-1 border-2 border-border-warm group-hover:border-primary transition-all duration-300 shadow-sm group-hover:shadow-md bg-surface-blush">
+<img alt="Crochet Flower Bouquets" class="w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida/AEtjO1XdER-GB7E_Emsww1Ke_VVnpaQn50MPSVFxp7Cj0cFHwGZBcNVp9loOE1tijz8ZS88aae-7MXF1FZcICAfNAS0KeVjI2z9LVzoW4Hfc_W05VikkVbPGE8vwNODyrj-2a12R0xo2EefDF7dvoobXl3M7xVG1zL_AHpJcNgasvBn80zXIzTfB3k2rHcRXavdrzkSRR8_986hTJ4CVIXrWvur-wQl4nc2Jhh-QTb9nT39Bbx8163RT2BKPf5c"/>
+</div>
+<h3 class="font-title-md text-title-md text-on-surface mt-3 group-hover:text-primary transition-colors">Flower Bouquets</h3>
+<p class="font-body-sm text-body-sm text-espresso-muted">Bridal &amp; Keepsakes</p>
+</a>
+<!-- Category 2 -->
+<a class="group flex flex-col items-center text-center" href="#floral-pots">
+<div class="w-28 h-28 sm:w-32 sm:h-32 rounded-full overflow-hidden p-1 border-2 border-border-warm group-hover:border-primary transition-all duration-300 shadow-sm group-hover:shadow-md bg-surface-blush">
+<img alt="Crochet Floral Pots" class="w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida/AEtjO1USy8NxpmGp-2OewCe_bZei0n74U5KByjOHkLo_VNodHnzP9gIkTWqLqojCrNB1O7CrPUEYboG9uBI73KgzVTI0ZVCcKMWcdV_W2OxN-1sH2QargC2eOia_1GGumfTbCi5UXIeNqXhitIU0GMBvAPMJ6a2KPRKNa3zx5IPHl2QaGMLs9QuEh9eeoQwjNCimqB881LHtgVW0vKIXKJBSO6oa3FKybBTsHEMQEAPOmrlGNRq3iCy4B7AflUg"/>
+</div>
+<h3 class="font-title-md text-title-md text-on-surface mt-3 group-hover:text-primary transition-colors">Potted Botanicals</h3>
+<p class="font-body-sm text-body-sm text-espresso-muted">Desk &amp; Sill Greenery</p>
+</a>
+<!-- Category 3 -->
+<a class="group flex flex-col items-center text-center" href="#amigurumi">
+<div class="w-28 h-28 sm:w-32 sm:h-32 rounded-full overflow-hidden p-1 border-2 border-border-warm group-hover:border-primary transition-all duration-300 shadow-sm group-hover:shadow-md bg-surface-blush">
+<img alt="Crochet Amigurumi &amp; Plushies" class="w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida/AEtjO1U72T0D-61ADbigUT3akMsLuqi8C0lb2V4oW841uLlleXZGKHN4kocayxDo-LJIBxyy_poeZfRiihVSHVBFPUNj0PFF2gSBIL-719vtFCbZUr6EAlmrHvdzycaI0pGz-35znnNsckUcARQT9o_ytB2KAuedKFLTx_nTLMWNW84aKSreR8L8OwXPxHkQRDOcr5iJrmruodNkPYWMH308BhXmx_5C_ePcT3ZAsw9DZIpHA4BcauUbcH8bBiw"/>
+</div>
+<h3 class="font-title-md text-title-md text-on-surface mt-3 group-hover:text-primary transition-colors">Amigurumi &amp; Plush</h3>
+<p class="font-body-sm text-body-sm text-espresso-muted">Cuddly Companions</p>
+</a>
+<!-- Category 4 -->
+<a class="group flex flex-col items-center text-center" href="#hair-accessories">
+<div class="w-28 h-28 sm:w-32 sm:h-32 rounded-full overflow-hidden p-1 border-2 border-border-warm group-hover:border-primary transition-all duration-300 shadow-sm group-hover:shadow-md bg-surface-blush">
+<img alt="Handmade Crochet Hair Accessories" class="w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida/AEtjO1W_IceYiyZ20odLkPEYcDzURRMZDGWkQFAOeW4i7NxBHxbp70mnEPNj4rWXraXEIGvqNvd6nrrKHwVui9G3-nCIqhCwAMnHEAVCw_uyArcOdSDRqsZddeESo8MvfIy5dQTFYw_J-ilGTtxS8mzzs3t7wGBsTxomkbZFvIusjO6JmUSNeVGFYEkvRDU4UZrBSMec78sDFUlAI0YexI-pAvpvWxpps2fgDxTO6hh5WlyIGBB4EZ2O2sltEsE"/>
+</div>
+<h3 class="font-title-md text-title-md text-on-surface mt-3 group-hover:text-primary transition-colors">Hair Accessories</h3>
+<p class="font-body-sm text-body-sm text-espresso-muted">Claws, Ties &amp; Clips</p>
+</a>
+<!-- Category 5 -->
+<a class="group flex flex-col items-center text-center" href="#keychains">
+<div class="w-28 h-28 sm:w-32 sm:h-32 rounded-full overflow-hidden p-1 border-2 border-border-warm group-hover:border-primary transition-all duration-300 shadow-sm group-hover:shadow-md bg-surface-blush">
+<img alt="Bag Charms and Keychains" class="w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida/AEtjO1V9QQ_sc_P0goqGuV2jOWxfqAXZcb71D5Ttf12zHGr0a_XUM6DfMpvmDcxYDp9wPUjWQtCaKsst1ssbNzOOfPjzM5FHgoetZrOqx6KFJiO9zQ9nHdoGRbP7I7ohI33A6taK_rSYU7jkUQkle8ry3ewUADRnVVVG-v3Z8r_6McG6WzuKSD19BuwpRzDfxLks6_tk-occfLHNvQ1TAWUA73YHzfa254yex8v9NSIoDVUNbYNIilg5O62spsY"/>
+</div>
+<h3 class="font-title-md text-title-md text-on-surface mt-3 group-hover:text-primary transition-colors">Bag Charms</h3>
+<p class="font-body-sm text-body-sm text-espresso-muted">Pocket-sized Joy</p>
+</a>
+<!-- Category 6 -->
+<a class="group flex flex-col items-center text-center" href="#bespoke">
+<div class="w-28 h-28 sm:w-32 sm:h-32 rounded-full overflow-hidden p-1 border-2 border-border-warm group-hover:border-primary transition-all duration-300 shadow-sm group-hover:shadow-md bg-surface-blush">
+<img alt="Bespoke Custom Orders" class="w-full h-full object-cover rounded-full group-hover:scale-110 transition-transform duration-300" src="https://lh3.googleusercontent.com/aida/AEtjO1VD3RjAqzXotLtU_yOW-1WoPeQ04KeqPs5CrDzG8K0bd32Lxa5gtrJs7q-iXhhz75gAdeakQDzKSndQz2qy7Plx5ptYaN2agQUnL_1vebGPJRLrEub7zRZYdL1SZ7bPbUCbM9fEjWiNj-xK6v_bIf0Ou6JGARMjN4CmqPFHXsFKzRf7I2zpQAXxZiIsbZTpUQhoto3sbsAFH9VaoSDkPNEYmJn4dRAvG-UpO1NOiOwlE4kDz_lbmURTim0"/>
+</div>
+<h3 class="font-title-md text-title-md text-on-surface mt-3 group-hover:text-primary transition-colors">Bespoke Orders</h3>
+<p class="font-body-sm text-body-sm text-espresso-muted">Your Custom Vision</p>
+</a>
+</div>
+</div>
+</section>
+<!-- ================================================================= -->
+<!-- 5. CURATED EDITORIAL PROMO CARDS (Bento Spotlight)                -->
+<!-- ================================================================= -->
+<section class="py-space-3xl bg-surface-cream border-b border-border-warm">
+<div class="w-full px-margin-desktop max-w-[1200px] mx-auto">
+<div class="text-center max-w-2xl mx-auto mb-space-2xl">
+<span class="font-label-md text-label-md text-primary tracking-widest uppercase">Artisan Spotlights</span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface mt-1">Thoughtful Curations for Life's Soft Moments</h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-lg">
+<!-- Bento Card 1 -->
+<div class="relative rounded-3xl p-space-xl bg-surface-card border border-border-warm shadow-sm hover:shadow-md transition-all flex flex-col justify-between overflow-hidden group">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary-container/10 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110"></div>
+<div>
+<span class="inline-block px-2.5 py-1 rounded-full bg-pistachio-badge text-pistachio-text text-label-sm font-label-sm mb-space-md">
+              Bestselling Floral Edit
+            </span>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-space-xs">The Bridal Meadow Bouquet</h3>
+<p class="font-body-sm text-body-sm text-espresso-muted mb-space-lg">
+              Hand-spun peony, lavender sprigs, and champagne roses. Finished with craft paper wrapping and customizable wooden monogram tags.
+            </p>
+</div>
+<div class="mt-4">
+<div class="flex items-baseline gap-2 mb-3">
+<span class="font-price-lg text-price-lg text-terracotta-dark font-bold">₹1,299</span>
+<span class="text-body-sm text-espresso-muted line-through">₹1,899</span>
+</div>
+<a class="inline-flex items-center gap-2 text-primary font-title-md text-title-md font-semibold group-hover:translate-x-1 transition-transform" href="#bouquets">
+<span>Shop the Bridal Edit</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</a>
+</div>
+</div>
+<!-- Bento Card 2 -->
+<div class="relative rounded-3xl p-space-xl bg-surface-blush border border-border-warm shadow-sm hover:shadow-md transition-all flex flex-col justify-between overflow-hidden group">
+<div class="absolute top-0 right-0 w-32 h-32 bg-secondary-container/40 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110"></div>
+<div>
+<span class="inline-block px-2.5 py-1 rounded-full bg-white/80 text-terracotta-dark text-label-sm font-label-sm mb-space-md border border-border-warm">
+              100% Made to Order
+            </span>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-space-xs">Bespoke Pet &amp; Portrait Plushies</h3>
+<p class="font-body-sm text-body-sm text-espresso-muted mb-space-lg">
+              Send us a photo of your furry companion or loved one; our crochet artists hand-loop an exact heirloom replica in 7–10 days.
+            </p>
+</div>
+<div class="mt-4">
+<div class="flex items-baseline gap-2 mb-3">
+<span class="font-price-lg text-price-lg text-primary font-bold">From ₹899</span>
+<span class="text-body-sm text-secondary font-medium">Free Color Mockup</span>
+</div>
+<a class="inline-flex items-center gap-2 text-primary font-title-md text-title-md font-semibold group-hover:translate-x-1 transition-transform" href="#bespoke">
+<span>Book Custom Consultation</span>
+<span class="material-symbols-outlined text-[18px]">chat</span>
+</a>
+</div>
+</div>
+<!-- Bento Card 3 -->
+<div class="relative rounded-3xl p-space-xl bg-surface-container-low border border-border-warm shadow-sm hover:shadow-md transition-all flex flex-col justify-between overflow-hidden group">
+<div class="absolute top-0 right-0 w-32 h-32 bg-tertiary-container/10 rounded-bl-full pointer-events-none transition-transform group-hover:scale-110"></div>
+<div>
+<span class="inline-block px-2.5 py-1 rounded-full bg-terracotta-dark text-white text-label-sm font-label-sm mb-space-md">
+              Gift Box Special • 30% OFF
+            </span>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-space-xs">Spring Hair &amp; Charm Bundle</h3>
+<p class="font-body-sm text-body-sm text-espresso-muted mb-space-lg">
+              Curated bundle: 1 Sunflower Claw Clip, 1 Daisy Pearl Hair Tie, and 1 Mini Strawberry Bag Charm packed in a velvet pouch.
+            </p>
+</div>
+<div class="mt-4">
+<div class="flex items-baseline gap-2 mb-3">
+<span class="font-price-lg text-price-lg text-terracotta-dark font-bold">₹449</span>
+<span class="text-body-sm text-espresso-muted line-through">₹699</span>
+</div>
+<button class="w-full py-2.5 bg-primary-container text-on-primary-container rounded-full font-label-md text-label-md font-semibold hover:bg-terracotta-dark transition-colors flex items-center justify-center gap-2 shadow-sm" onclick="addBundleToBag()">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">add_shopping_cart</span>
+<span>Claim Bundle Deal</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ================================================================= -->
+<!-- 6. NEW ARRIVALS GRID (Interactive Showcase)                       -->
+<!-- ================================================================= -->
+<section class="py-space-3xl bg-background border-b border-border-warm" id="catalog">
+<div class="w-full px-margin-desktop max-w-[1200px] mx-auto">
+<!-- Section Header -->
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-space-xl gap-space-md">
+<div>
+<div class="inline-flex items-center gap-2 font-label-sm text-label-sm text-primary font-semibold tracking-wider uppercase mb-1">
+<span class="w-2 h-2 rounded-full bg-primary animate-ping"></span>
+            Freshly Hooked in the Studio
+          </div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">New Arrivals &amp; Daily Bestsellers</h2>
+</div>
+<!-- Filter Pill Tabs -->
+<div class="flex items-center gap-2 overflow-x-auto custom-scrollbar pb-1">
+<button class="px-4 py-2 rounded-full bg-terracotta-dark text-white font-label-md text-label-md whitespace-nowrap shadow-sm">
+            All Keepsakes (18)
+          </button>
+<button class="px-4 py-2 rounded-full bg-surface-card hover:bg-surface-blush text-on-surface-variant border border-border-warm font-label-md text-label-md whitespace-nowrap transition-colors">
+            🌸 Fresh Florals
+          </button>
+<button class="px-4 py-2 rounded-full bg-surface-card hover:bg-surface-blush text-on-surface-variant border border-border-warm font-label-md text-label-md whitespace-nowrap transition-colors">
+            🧸 Plush Friends
+          </button>
+<button class="px-4 py-2 rounded-full bg-surface-card hover:bg-surface-blush text-on-surface-variant border border-border-warm font-label-md text-label-md whitespace-nowrap transition-colors">
+            🎀 Hair Adornments
+          </button>
+<button class="px-4 py-2 rounded-full bg-surface-card hover:bg-surface-blush text-on-surface-variant border border-border-warm font-label-md text-label-md whitespace-nowrap transition-colors">
+            ✨ Keychains
+          </button>
+</div>
+</div>
+<!-- Product Cards Grid: Responsive 4-col on Desktop, 2-col on Mobile -->
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-gutter lg:gap-space-lg">
+<!-- Product Card 1 -->
+<article class="bg-surface-card rounded-2xl border border-border-warm p-space-sm shadow-sm hover:shadow-md transition-all flex flex-col group relative">
+<!-- Thumbnail Frame -->
+<div class="relative w-full aspect-square rounded-xl overflow-hidden bg-surface-blush mb-space-sm">
+<img alt="Crochet Pink Flower Hair Claw Clip" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida/AEtjO1XdER-GB7E_Emsww1Ke_VVnpaQn50MPSVFxp7Cj0cFHwGZBcNVp9loOE1tijz8ZS88aae-7MXF1FZcICAfNAS0KeVjI2z9LVzoW4Hfc_W05VikkVbPGE8vwNODyrj-2a12R0xo2EefDF7dvoobXl3M7xVG1zL_AHpJcNgasvBn80zXIzTfB3k2rHcRXavdrzkSRR8_986hTJ4CVIXrWvur-wQl4nc2Jhh-QTb9nT39Bbx8163RT2BKPf5c"/>
+<!-- Discount Badge -->
+<span class="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-pistachio-badge text-pistachio-text font-label-sm text-label-sm font-semibold shadow-xs">
+              50% OFF
+            </span>
+<!-- Wishlist Heart -->
+<button class="absolute top-2 right-2 w-8 h-8 rounded-full bg-surface-card/85 backdrop-blur-sm text-on-surface hover:text-primary flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[18px]">favorite</span>
+</button>
+</div>
+<div class="flex-1 flex flex-col">
+<span class="font-label-sm text-label-sm text-espresso-muted uppercase tracking-wider mb-1">Hair Accessories</span>
+<h3 class="font-title-md text-title-md text-on-surface font-semibold group-hover:text-primary transition-colors line-clamp-1">
+              Crochet Pink Flower Hair Claw Clip
+            </h3>
+<p class="font-body-sm text-body-sm text-espresso-muted mt-0.5">5-ply Organic Cotton</p>
+<!-- Swatches & Rating -->
+<div class="flex items-center justify-between mt-2 pt-2 border-t border-border-warm/60">
+<div class="flex items-center gap-1">
+<span class="w-3.5 h-3.5 rounded-full bg-[#f4a7b9] border border-border-warm ring-1 ring-primary/40"></span>
+<span class="w-3.5 h-3.5 rounded-full bg-[#fae3d9] border border-border-warm"></span>
+<span class="w-3.5 h-3.5 rounded-full bg-[#bbded6] border border-border-warm"></span>
+</div>
+<div class="flex items-center gap-1 text-label-sm font-label-sm text-on-surface font-semibold">
+<span class="material-symbols-outlined text-amber-500 text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span>4.9</span>
+</div>
+</div>
+<!-- Price & CTA -->
+<div class="flex items-center justify-between mt-3 pt-2">
+<div>
+<span class="font-price-lg text-price-lg text-terracotta-dark font-bold">₹149</span>
+<span class="text-body-sm text-espresso-muted line-through ml-1">₹299</span>
+</div>
+<button class="px-3 py-1.5 rounded-full bg-primary-container text-on-primary-container hover:bg-terracotta-dark active:scale-95 transition-all text-label-sm font-label-sm font-semibold flex items-center gap-1" onclick="addToBag('Crochet Pink Flower Hair Claw Clip', 149)">
+<span class="material-symbols-outlined text-[16px]">add</span>
+<span>Add</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Product Card 2 -->
+<article class="bg-surface-card rounded-2xl border border-border-warm p-space-sm shadow-sm hover:shadow-md transition-all flex flex-col group relative">
+<div class="relative w-full aspect-square rounded-xl overflow-hidden bg-surface-blush mb-space-sm">
+<img alt="Crochet Bunny Keychain Yellow Rabbit" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida/AEtjO1U72T0D-61ADbigUT3akMsLuqi8C0lb2V4oW841uLlleXZGKHN4kocayxDo-LJIBxyy_poeZfRiihVSHVBFPUNj0PFF2gSBIL-719vtFCbZUr6EAlmrHvdzycaI0pGz-35znnNsckUcARQT9o_ytB2KAuedKFLTx_nTLMWNW84aKSreR8L8OwXPxHkQRDOcr5iJrmruodNkPYWMH308BhXmx_5C_ePcT3ZAsw9DZIpHA4BcauUbcH8bBiw"/>
+<span class="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-pistachio-badge text-pistachio-text font-label-sm text-label-sm font-semibold shadow-xs">
+              Bestseller
+            </span>
+<button class="absolute top-2 right-2 w-8 h-8 rounded-full bg-surface-card/85 backdrop-blur-sm text-on-surface hover:text-primary flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[18px]">favorite</span>
+</button>
+</div>
+<div class="flex-1 flex flex-col">
+<span class="font-label-sm text-label-sm text-espresso-muted uppercase tracking-wider mb-1">Keychains &amp; Toys</span>
+<h3 class="font-title-md text-title-md text-on-surface font-semibold group-hover:text-primary transition-colors line-clamp-1">
+              Crochet Bunny Keychain Yellow Rabbit
+            </h3>
+<p class="font-body-sm text-body-sm text-espresso-muted mt-0.5">Hand-stitched ears &amp; dress</p>
+<div class="flex items-center justify-between mt-2 pt-2 border-t border-border-warm/60">
+<div class="flex items-center gap-1">
+<span class="w-3.5 h-3.5 rounded-full bg-[#fde047] border border-border-warm ring-1 ring-primary/40"></span>
+<span class="w-3.5 h-3.5 rounded-full bg-[#fbcfe8] border border-border-warm"></span>
+</div>
+<div class="flex items-center gap-1 text-label-sm font-label-sm text-on-surface font-semibold">
+<span class="material-symbols-outlined text-amber-500 text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span>5.0</span>
+</div>
+</div>
+<div class="flex items-center justify-between mt-3 pt-2">
+<div>
+<span class="font-price-lg text-price-lg text-terracotta-dark font-bold">₹249</span>
+<span class="text-body-sm text-espresso-muted line-through ml-1">₹350</span>
+</div>
+<button class="px-3 py-1.5 rounded-full bg-primary-container text-on-primary-container hover:bg-terracotta-dark active:scale-95 transition-all text-label-sm font-label-sm font-semibold flex items-center gap-1" onclick="addToBag('Crochet Bunny Keychain', 249)">
+<span class="material-symbols-outlined text-[16px]">add</span>
+<span>Add</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Product Card 3 -->
+<article class="bg-surface-card rounded-2xl border border-border-warm p-space-sm shadow-sm hover:shadow-md transition-all flex flex-col group relative">
+<div class="relative w-full aspect-square rounded-xl overflow-hidden bg-surface-blush mb-space-sm">
+<img alt="Crochet Daisy Hair Tie with Pearl Tassels" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida/AEtjO1W_IceYiyZ20odLkPEYcDzURRMZDGWkQFAOeW4i7NxBHxbp70mnEPNj4rWXraXEIGvqNvd6nrrKHwVui9G3-nCIqhCwAMnHEAVCw_uyArcOdSDRqsZddeESo8MvfIy5dQTFYw_J-ilGTtxS8mzzs3t7wGBsTxomkbZFvIusjO6JmUSNeVGFYEkvRDU4UZrBSMec78sDFUlAI0YexI-pAvpvWxpps2fgDxTO6hh5WlyIGBB4EZ2O2sltEsE"/>
+<span class="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-terracotta-dark text-white font-label-sm text-label-sm font-semibold shadow-xs">
+              Trending
+            </span>
+<button class="absolute top-2 right-2 w-8 h-8 rounded-full bg-surface-card/85 backdrop-blur-sm text-on-surface hover:text-primary flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[18px]">favorite</span>
+</button>
+</div>
+<div class="flex-1 flex flex-col">
+<span class="font-label-sm text-label-sm text-espresso-muted uppercase tracking-wider mb-1">Hair Accessories</span>
+<h3 class="font-title-md text-title-md text-on-surface font-semibold group-hover:text-primary transition-colors line-clamp-1">
+              Crochet Daisy Hair Tie with Pearl Tassels
+            </h3>
+<p class="font-body-sm text-body-sm text-espresso-muted mt-0.5">Natural Faux-pearl beaded fringe</p>
+<div class="flex items-center justify-between mt-2 pt-2 border-t border-border-warm/60">
+<div class="flex items-center gap-1">
+<span class="w-3.5 h-3.5 rounded-full bg-[#ffffff] border border-stone-300 ring-1 ring-primary/40"></span>
+<span class="w-3.5 h-3.5 rounded-full bg-[#fca5a5] border border-border-warm"></span>
+</div>
+<div class="flex items-center gap-1 text-label-sm font-label-sm text-on-surface font-semibold">
+<span class="material-symbols-outlined text-amber-500 text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span>4.8</span>
+</div>
+</div>
+<div class="flex items-center justify-between mt-3 pt-2">
+<div>
+<span class="font-price-lg text-price-lg text-terracotta-dark font-bold">₹199</span>
+<span class="text-body-sm text-espresso-muted line-through ml-1">₹350</span>
+</div>
+<button class="px-3 py-1.5 rounded-full bg-primary-container text-on-primary-container hover:bg-terracotta-dark active:scale-95 transition-all text-label-sm font-label-sm font-semibold flex items-center gap-1" onclick="addToBag('Daisy Hair Tie with Pearls', 199)">
+<span class="material-symbols-outlined text-[16px]">add</span>
+<span>Add</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Product Card 4 -->
+<article class="bg-surface-card rounded-2xl border border-border-warm p-space-sm shadow-sm hover:shadow-md transition-all flex flex-col group relative">
+<div class="relative w-full aspect-square rounded-xl overflow-hidden bg-surface-blush mb-space-sm">
+<img alt="Handmade Crochet Sunflower Pot Arrangement" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://lh3.googleusercontent.com/aida/AEtjO1USy8NxpmGp-2OewCe_bZei0n74U5KByjOHkLo_VNodHnzP9gIkTWqLqojCrNB1O7CrPUEYboG9uBI73KgzVTI0ZVCcKMWcdV_W2OxN-1sH2QargC2eOia_1GGumfTbCi5UXIeNqXhitIU0GMBvAPMJ6a2KPRKNa3zx5IPHl2QaGMLs9QuEh9eeoQwjNCimqB881LHtgVW0vKIXKJBSO6oa3FKybBTsHEMQEAPOmrlGNRq3iCy4B7AflUg"/>
+<span class="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-secondary text-white font-label-sm text-label-sm font-semibold shadow-xs">
+              Home Décor
+            </span>
+<button class="absolute top-2 right-2 w-8 h-8 rounded-full bg-surface-card/85 backdrop-blur-sm text-on-surface hover:text-primary flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-[18px]">favorite</span>
+</button>
+</div>
+<div class="flex-1 flex flex-col">
+<span class="font-label-sm text-label-sm text-espresso-muted uppercase tracking-wider mb-1">Floral Pots</span>
+<h3 class="font-title-md text-title-md text-on-surface font-semibold group-hover:text-primary transition-colors line-clamp-1">
+              Handmade Crochet Sunflower Pot Arrangement
+            </h3>
+<p class="font-body-sm text-body-sm text-espresso-muted mt-0.5">Weighted terracotta base</p>
+<div class="flex items-center justify-between mt-2 pt-2 border-t border-border-warm/60">
+<div class="flex items-center gap-1">
+<span class="w-3.5 h-3.5 rounded-full bg-[#f59e0b] border border-border-warm ring-1 ring-primary/40"></span>
+<span class="w-3.5 h-3.5 rounded-full bg-[#e11d48] border border-border-warm"></span>
+</div>
+<div class="flex items-center gap-1 text-label-sm font-label-sm text-on-surface font-semibold">
+<span class="material-symbols-outlined text-amber-500 text-[14px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span>4.9</span>
+</div>
+</div>
+<div class="flex items-center justify-between mt-3 pt-2">
+<div>
+<span class="font-price-lg text-price-lg text-terracotta-dark font-bold">₹499</span>
+<span class="text-body-sm text-espresso-muted line-through ml-1">₹1,000</span>
+</div>
+<button class="px-3 py-1.5 rounded-full bg-primary-container text-on-primary-container hover:bg-terracotta-dark active:scale-95 transition-all text-label-sm font-label-sm font-semibold flex items-center gap-1" onclick="addToBag('Sunflower Pot Arrangement', 499)">
+<span class="material-symbols-outlined text-[16px]">add</span>
+<span>Add</span>
+</button>
+</div>
+</div>
+</article>
+</div>
+</div>
+</section>
+<!-- ================================================================= -->
+<!-- 7. 'BUDGET BAZAAR' SCROLLING SECTION (Under ₹199, ₹299, ₹499)       -->
+<!-- ================================================================= -->
+<section class="py-space-3xl bg-surface-blush border-b border-border-warm">
+<div class="w-full px-margin-desktop max-w-[1200px] mx-auto">
+<!-- Banner Header -->
+<div class="bg-surface-card rounded-3xl p-space-xl border border-border-warm shadow-sm mb-space-xl flex flex-col md:flex-row items-center justify-between gap-space-lg">
+<div class="flex items-center gap-space-md">
+<div class="w-14 h-14 rounded-2xl bg-pistachio-badge text-pistachio-text flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[32px]">sell</span>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<span class="font-headline-lg text-headline-lg font-semibold text-on-surface">The Budget Bazaar</span>
+<span class="px-2.5 py-0.5 rounded-full bg-primary-container text-on-primary-container font-label-sm text-label-sm">Little Luxuries</span>
+</div>
+<p class="font-body-md text-body-md text-espresso-muted mt-1">
+              Affordable handmade crochet gifts starting under ₹199. Packed in signature muslin gift envelopes.
+            </p>
+</div>
+</div>
+<!-- Quick Price Filter Tabs -->
+<div class="flex items-center gap-2">
+<span class="px-3.5 py-1.5 rounded-full bg-white border border-border-warm text-label-md font-label-md font-semibold text-terracotta-dark cursor-pointer hover:bg-surface-cream shadow-xs">
+            Under ₹199
+          </span>
+<span class="px-3.5 py-1.5 rounded-full bg-white border border-border-warm text-label-md font-label-md font-semibold text-terracotta-dark cursor-pointer hover:bg-surface-cream shadow-xs">
+            Under ₹299
+          </span>
+<span class="px-3.5 py-1.5 rounded-full bg-white border border-border-warm text-label-md font-label-md font-semibold text-terracotta-dark cursor-pointer hover:bg-surface-cream shadow-xs">
+            Twin Packs
+          </span>
+</div>
+</div>
+<!-- Quick Impulse Buys Horizontal Row -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
+<!-- Bazaar Card 1 -->
+<div class="bg-surface-card rounded-2xl p-space-md border border-border-warm flex items-center gap-3 hover:border-primary transition-colors">
+<img alt="Handmade Sunflower Crochet Keychain" class="w-16 h-16 rounded-xl object-cover bg-surface-cream shrink-0" src="https://lh3.googleusercontent.com/aida/AEtjO1VD3RjAqzXotLtU_yOW-1WoPeQ04KeqPs5CrDzG8K0bd32Lxa5gtrJs7q-iXhhz75gAdeakQDzKSndQz2qy7Plx5ptYaN2agQUnL_1vebGPJRLrEub7zRZYdL1SZ7bPbUCbM9fEjWiNj-xK6v_bIf0Ou6JGARMjN4CmqPFHXsFKzRf7I2zpQAXxZiIsbZTpUQhoto3sbsAFH9VaoSDkPNEYmJn4dRAvG-UpO1NOiOwlE4kDz_lbmURTim0"/>
+<div class="flex-1 min-w-0">
+<h4 class="font-title-md text-title-md text-on-surface truncate">Sunflower Mini Charm</h4>
+<div class="flex items-baseline gap-1.5">
+<span class="font-price-sm text-price-sm text-terracotta-dark font-bold">₹119</span>
+<span class="text-label-sm text-espresso-muted line-through">₹349</span>
+</div>
+<span class="text-label-sm font-label-sm text-secondary">In Stock • Ready to Ship</span>
+</div>
+<button aria-label="Add to Bag" class="w-9 h-9 rounded-full bg-surface-blush text-primary flex items-center justify-center hover:bg-primary-container hover:text-white transition-colors" onclick="addToBag('Sunflower Mini Charm', 119)">
+<span class="material-symbols-outlined text-[18px]">add</span>
+</button>
+</div>
+<!-- Bazaar Card 2 -->
+<div class="bg-surface-card rounded-2xl p-space-md border border-border-warm flex items-center gap-3 hover:border-primary transition-colors">
+<img alt="Krishna Mor Pankh Handmade Crochet Keychain" class="w-16 h-16 rounded-xl object-cover bg-surface-cream shrink-0" src="https://lh3.googleusercontent.com/aida/AEtjO1V9QQ_sc_P0goqGuV2jOWxfqAXZcb71D5Ttf12zHGr0a_XUM6DfMpvmDcxYDp9wPUjWQtCaKsst1ssbNzOOfPjzM5FHgoetZrOqx6KFJiO9zQ9nHdoGRbP7I7ohI33A6taK_rSYU7jkUQkle8ry3ewUADRnVVVG-v3Z8r_6McG6WzuKSD19BuwpRzDfxLks6_tk-occfLHNvQ1TAWUA73YHzfa254yex8v9NSIoDVUNbYNIilg5O62spsY"/>
+<div class="flex-1 min-w-0">
+<h4 class="font-title-md text-title-md text-on-surface truncate">Krishna Mor Pankh</h4>
+<div class="flex items-baseline gap-1.5">
+<span class="font-price-sm text-price-sm text-terracotta-dark font-bold">₹199</span>
+<span class="text-label-sm text-espresso-muted line-through">₹299</span>
+</div>
+<span class="text-label-sm font-label-sm text-secondary">Devotional Keepsake</span>
+</div>
+<button aria-label="Add to Bag" class="w-9 h-9 rounded-full bg-surface-blush text-primary flex items-center justify-center hover:bg-primary-container hover:text-white transition-colors" onclick="addToBag('Krishna Mor Pankh', 199)">
+<span class="material-symbols-outlined text-[18px]">add</span>
+</button>
+</div>
+<!-- Bazaar Card 3 -->
+<div class="bg-surface-card rounded-2xl p-space-md border border-border-warm flex items-center gap-3 hover:border-primary transition-colors">
+<img alt="Baby Dinosaur Crochet Animal Keychain" class="w-16 h-16 rounded-xl object-cover bg-surface-cream shrink-0" src="https://lh3.googleusercontent.com/aida/AEtjO1V_gKdK0plZgTvRsZeG-IqCepQ8T3RyZKZcjoiHBnp7QIvRGyth-0PxwUwKpVH30D5sA-dKXfTgserBnBjHVDbNGSDA9URuh6t1BRDUjObmuuhlB11taTaCIdSUpLX6DXB8pFNtfTmctfRvBzQ3UHkYhfI7Y83LvYm1LYep8ye7xzZ2muw_eSgEmDIVfaL3LGuJkqf1JfA2FYrHFXmFA36Z3WB60hNZfdaxOXY-gbkFG-ytGPbtJltZsLs"/>
+<div class="flex-1 min-w-0">
+<h4 class="font-title-md text-title-md text-on-surface truncate">Baby Dinosaur Charm</h4>
+<div class="flex items-baseline gap-1.5">
+<span class="font-price-sm text-price-sm text-terracotta-dark font-bold">₹249</span>
+<span class="text-label-sm text-espresso-muted line-through">₹399</span>
+</div>
+<span class="text-label-sm font-label-sm text-secondary">Soft Velvet Yarn</span>
+</div>
+<button aria-label="Add to Bag" class="w-9 h-9 rounded-full bg-surface-blush text-primary flex items-center justify-center hover:bg-primary-container hover:text-white transition-colors" onclick="addToBag('Baby Dinosaur Charm', 249)">
+<span class="material-symbols-outlined text-[18px]">add</span>
+</button>
+</div>
+<!-- Bazaar Card 4 -->
+<div class="bg-surface-card rounded-2xl p-space-md border border-border-warm flex items-center gap-3 hover:border-primary transition-colors">
+<img alt="Crochet Teddy Bear Keychain" class="w-16 h-16 rounded-xl object-cover bg-surface-cream shrink-0" src="https://lh3.googleusercontent.com/aida/AEtjO1XdER-GB7E_Emsww1Ke_VVnpaQn50MPSVFxp7Cj0cFHwGZBcNVp9loOE1tijz8ZS88aae-7MXF1FZcICAfNAS0KeVjI2z9LVzoW4Hfc_W05VikkVbPGE8vwNODyrj-2a12R0xo2EefDF7dvoobXl3M7xVG1zL_AHpJcNgasvBn80zXIzTfB3k2rHcRXavdrzkSRR8_986hTJ4CVIXrWvur-wQl4nc2Jhh-QTb9nT39Bbx8163RT2BKPf5c"/>
+<div class="flex-1 min-w-0">
+<h4 class="font-title-md text-title-md text-on-surface truncate">Crochet Teddy Bear</h4>
+<div class="flex items-baseline gap-1.5">
+<span class="font-price-sm text-price-sm text-terracotta-dark font-bold">₹199</span>
+<span class="text-label-sm text-espresso-muted line-through">₹299</span>
+</div>
+<span class="text-label-sm font-label-sm text-secondary">Includes Key Ring</span>
+</div>
+<button aria-label="Add to Bag" class="w-9 h-9 rounded-full bg-surface-blush text-primary flex items-center justify-center hover:bg-primary-container hover:text-white transition-colors" onclick="addToBag('Crochet Teddy Bear', 199)">
+<span class="material-symbols-outlined text-[18px]">add</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- ================================================================= -->
+<!-- 8. ARTISAN & PREMIUM HEIRLOOM SHOWCASE (Atmospheric Dark Terracotta)-->
+<!-- ================================================================= -->
+<section class="py-space-3xl bg-inverse-surface text-inverse-on-surface relative overflow-hidden">
+<div class="w-full px-margin-desktop max-w-[1200px] mx-auto relative z-10">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-2xl items-center">
+<!-- Left Editorial Story -->
+<div class="lg:col-span-6">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-container/20 text-inverse-primary border border-outline-variant/30 text-label-sm font-label-sm mb-space-md">
+<span class="material-symbols-outlined text-[16px]">fingerprint</span>
+<span>Artisan Heritage Studio</span>
+</div>
+<h2 class="font-headline-xl text-headline-xl tracking-tight leading-snug mb-space-md text-surface-cream">
+            Preserving the Meditative Craft of Slow Yarncraft
+          </h2>
+<p class="font-body-lg text-body-lg text-surface-variant mb-space-xl leading-relaxed">
+            In an era of fast plastics and disposable flowers, each Anuki keepsake is slow-hooked stitch by stitch. Founded with a mission to empower self-taught rural and semi-urban women artisans across India, our pieces celebrate the patience, warmth, and enduring beauty of handmade craft.
+          </p>
+<!-- 4 Pillars Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-space-md mb-space-xl">
+<div class="flex items-start gap-3">
+<div class="w-9 h-9 rounded-lg bg-primary-container/30 text-inverse-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px]">palette</span>
+</div>
+<div>
+<h4 class="font-title-md text-title-md text-surface-cream font-semibold">Zero-Fade Dyeing</h4>
+<p class="font-body-sm text-body-sm text-surface-dim">Retains chromatic luster for decades without sunlight fading.</p>
+</div>
+</div>
+<div class="flex items-start gap-3">
+<div class="w-9 h-9 rounded-lg bg-primary-container/30 text-inverse-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px]">eco</span>
+</div>
+<div>
+<h4 class="font-title-md text-title-md text-surface-cream font-semibold">Hypoallergenic Milk Yarn</h4>
+<p class="font-body-sm text-body-sm text-surface-dim">100% gentle on sensitive skin, safe for infants and pets.</p>
+</div>
+</div>
+<div class="flex items-start gap-3">
+<div class="w-9 h-9 rounded-lg bg-primary-container/30 text-inverse-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px]">draw</span>
+</div>
+<div>
+<h4 class="font-title-md text-title-md text-surface-cream font-semibold">Handmade Paper Letters</h4>
+<p class="font-body-sm text-body-sm text-surface-dim">Free wax-sealed personalized notes with every single gift box.</p>
+</div>
+</div>
+<div class="flex items-start gap-3">
+<div class="w-9 h-9 rounded-lg bg-primary-container/30 text-inverse-primary flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[20px]">verified_user</span>
+</div>
+<div>
+<h4 class="font-title-md text-title-md text-surface-cream font-semibold">Insured Pan-India Transit</h4>
+<p class="font-body-sm text-body-sm text-surface-dim">Reinforced anti-crush outer carton guaranteeing safe delivery.</p>
+</div>
+</div>
+</div>
+<div class="flex items-center gap-space-md">
+<a class="px-6 py-3 bg-primary-container text-on-primary-container rounded-full font-label-md text-label-md font-semibold hover:bg-terracotta-dark transition-all inline-flex items-center gap-2" href="#bespoke">
+<span>Commission an Heirloom Bouquet</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</a>
+</div>
+</div>
+<!-- Right Artisan Frame -->
+<div class="lg:col-span-6 relative">
+<div class="relative rounded-3xl overflow-hidden border border-outline-variant/30 shadow-2xl">
+<img alt="Artisan hands gently assembling handcrafted crochet flower pot" class="w-full h-[460px] object-cover" src="https://lh3.googleusercontent.com/aida/AEtjO1USy8NxpmGp-2OewCe_bZei0n74U5KByjOHkLo_VNodHnzP9gIkTWqLqojCrNB1O7CrPUEYboG9uBI73KgzVTI0ZVCcKMWcdV_W2OxN-1sH2QargC2eOia_1GGumfTbCi5UXIeNqXhitIU0GMBvAPMJ6a2KPRKNa3zx5IPHl2QaGMLs9QuEh9eeoQwjNCimqB881LHtgVW0vKIXKJBSO6oa3FKybBTsHEMQEAPOmrlGNRq3iCy4B7AflUg"/>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+<div class="absolute bottom-6 left-6 right-6 p-space-md bg-inverse-surface/80 backdrop-blur-md rounded-2xl border border-outline-variant/20">
+<p class="italic font-headline-md text-headline-md text-surface-cream mb-1">
+                "Each stitch requires continuous breath and focus. We aren’t manufacturing products; we are wrapping blessings in yarn."
+              </p>
+<div class="flex items-center justify-between text-body-sm text-surface-dim mt-2">
+<span>— Sunita &amp; Sana, Lead Master Weavers</span>
+<span class="text-inverse-primary font-semibold">Bengaluru Studio</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ================================================================= -->
+<!-- 9. SOCIAL PROOF & VERIFIED CUSTOMER LOVE                           -->
+<!-- ================================================================= -->
+<section class="py-space-3xl bg-surface-card border-b border-border-warm">
+<div class="w-full px-margin-desktop max-w-[1200px] mx-auto">
+<div class="text-center max-w-xl mx-auto mb-space-2xl">
+<div class="flex items-center justify-center gap-1 text-amber-500 mb-2">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface">Loved by 12,000+ Gift Givers in India</h2>
+<p class="font-body-md text-body-md text-espresso-muted mt-1">Don't just take our word for it—read real heartfelt unboxing stories.</p>
+</div>
+<!-- Testimonial Cards Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-lg">
+<!-- Review 1 -->
+<div class="bg-surface-cream rounded-2xl p-space-xl border border-border-warm flex flex-col justify-between shadow-xs">
+<div>
+<div class="flex items-center gap-1 text-amber-500 mb-space-md">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant italic mb-space-lg">
+              "Absolutely stunning work! The custom bouquet I ordered for my mom's 50th birthday arrived in perfect condition. She literally cried when she opened the wax-sealed box."
+            </p>
+</div>
+<div class="flex items-center gap-3 pt-space-sm border-t border-border-warm">
+<div class="w-10 h-10 rounded-full bg-primary-fixed text-terracotta-dark font-bold flex items-center justify-center">
+              P
+            </div>
+<div>
+<div class="font-title-md text-title-md font-semibold text-on-surface">Priya Sharma</div>
+<div class="font-body-sm text-body-sm text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">verified</span> Verified Buyer • Mumbai
+              </div>
+</div>
+</div>
+</div>
+<!-- Review 2 -->
+<div class="bg-surface-cream rounded-2xl p-space-xl border border-border-warm flex flex-col justify-between shadow-xs">
+<div>
+<div class="flex items-center gap-1 text-amber-500 mb-space-md">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant italic mb-space-lg">
+              "Ordered a sunflower pot for my study desk and it brings so much pure sunshine. The yarn quality is noticeably premium, zero loose threads. 10/10 recommend!"
+            </p>
+</div>
+<div class="flex items-center gap-3 pt-space-sm border-t border-border-warm">
+<div class="w-10 h-10 rounded-full bg-secondary-container text-pistachio-text font-bold flex items-center justify-center">
+              R
+            </div>
+<div>
+<div class="font-title-md text-title-md font-semibold text-on-surface">Rohan Mehta</div>
+<div class="font-body-sm text-body-sm text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">verified</span> Verified Buyer • Bengaluru
+              </div>
+</div>
+</div>
+</div>
+<!-- Review 3 -->
+<div class="bg-surface-cream rounded-2xl p-space-xl border border-border-warm flex flex-col justify-between shadow-xs">
+<div>
+<div class="flex items-center gap-1 text-amber-500 mb-space-md">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">star</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant italic mb-space-lg">
+              "I gifted the everlasting pastel rose bouquet to my wife for our 3rd anniversary. Better than real flowers since they won't dry out after 3 days. Beautiful packaging!"
+            </p>
+</div>
+<div class="flex items-center gap-3 pt-space-sm border-t border-border-warm">
+<div class="w-10 h-10 rounded-full bg-surface-container text-terracotta-dark font-bold flex items-center justify-center">
+              S
+            </div>
+<div>
+<div class="font-title-md text-title-md font-semibold text-on-surface">Sneha &amp; Neha</div>
+<div class="font-body-sm text-body-sm text-secondary flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">verified</span> Verified Buyer • New Delhi
+              </div>
+</div>
+</div>
+</div>
+</div>
+<!-- Instagram Community Hook -->
+<div class="mt-space-2xl text-center">
+<a class="inline-flex items-center gap-2 text-primary font-title-md text-title-md font-semibold hover:underline" href="https://instagram.com" rel="noreferrer" target="_blank">
+<span class="material-symbols-outlined text-[20px]">photo_camera</span>
+<span>Join 35,000+ yarn enthusiasts on Instagram @anuki_crochet</span>
+</a>
+</div>
+</div>
+</section>
+<!-- ================================================================= -->
+<!-- 10. NEWSLETTER & OCCASION GIFTING HELPER                           -->
+<!-- ================================================================= -->
+<section class="py-space-2xl bg-surface-container-low border-b border-border-warm">
+<div class="w-full px-margin-desktop max-w-[800px] mx-auto text-center">
+<div class="w-12 h-12 rounded-full bg-surface-blush text-primary mx-auto flex items-center justify-center mb-space-sm">
+<span class="material-symbols-outlined text-[24px]">mark_email_read</span>
+</div>
+<h3 class="font-headline-lg text-headline-lg text-on-surface">Join the Yarn &amp; Tea Society</h3>
+<p class="font-body-md text-body-md text-espresso-muted mt-2 mb-space-lg">
+        Enjoy <span class="text-terracotta-dark font-bold">10% off</span> your first order, exclusive access to limited holiday yarn batches, and DIY crochet pattern tutorials.
+      </p>
+<form class="flex flex-col sm:flex-row items-center gap-2 max-w-md mx-auto" onsubmit="event.preventDefault(); alert('Welcome to the Yarn &amp; Tea Society! Use code YARNLOVE10 at checkout.');">
+<input class="w-full px-4 py-3 bg-surface-card border border-border-warm rounded-full text-body-sm font-body-sm focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary shadow-xs" placeholder="Enter your email address..." required="" type="email"/>
+<button class="w-full sm:w-auto px-6 py-3 bg-primary-container text-on-primary-container rounded-full font-label-md text-label-md font-semibold hover:bg-terracotta-dark whitespace-nowrap shadow-sm transition-all" type="submit">
+          Subscribe
+        </button>
+</form>
+</div>
+</section>
+<!-- ================================================================= -->
+<!-- 11. SHARED FOOTER (Derived directly from Shared JSON)             -->
+<!-- ================================================================= -->
+<footer class="w-full bg-surface-blush dark:bg-inverse-surface border-t border-border-warm dark:border-outline-variant">
+<div class="w-full px-margin-desktop max-w-[1200px] mx-auto py-space-3xl">
+<div class="grid grid-cols-1 md:grid-cols-12 gap-space-2xl mb-space-2xl">
+<!-- Col 1: Brand Narrative & Identity -->
+<div class="md:col-span-5">
+<span class="font-headline-md text-headline-md font-semibold text-terracotta-dark dark:text-inverse-primary tracking-tight">
+            Anuki Crochet
+          </span>
+<p class="font-body-sm text-body-sm text-on-surface-variant dark:text-surface-variant mt-2 max-w-sm leading-relaxed">
+            Everlasting yarncraft made with love. We transform premium organic milk cotton into everlasting botanical art, amigurumi keepsakes, and charming accessories.
+          </p>
+<div class="flex items-center gap-3 mt-space-md text-on-surface-variant dark:text-surface-variant">
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px] text-primary">favorite</span> Hand-hooked in India
+            </span>
+<span>•</span>
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[16px] text-secondary">recycling</span> Zero-waste packaging
+            </span>
+</div>
+</div>
+<!-- Col 2: Studio Links (Immutable links from JSON) -->
+<div class="md:col-span-4">
+<h4 class="font-title-md text-title-md font-semibold text-on-surface dark:text-inverse-on-surface mb-3">Customer Care &amp; Orders</h4>
+<ul class="space-y-2">
+<li>
+<a class="text-on-surface-variant dark:text-surface-variant font-label-md text-label-md hover:text-primary dark:hover:text-inverse-primary transition-colors" href="#bespoke">
+                Bespoke Commissions
+              </a>
+</li>
+<li>
+<a class="text-on-surface-variant dark:text-surface-variant font-label-md text-label-md hover:text-primary dark:hover:text-inverse-primary transition-colors" href="#care">
+                Care Guide &amp; Yarn Details
+              </a>
+</li>
+<li>
+<a class="text-on-surface-variant dark:text-surface-variant font-label-md text-label-md hover:text-primary dark:hover:text-inverse-primary transition-colors" href="#shipping">
+                Pan-India Shipping Policy
+              </a>
+</li>
+<li>
+<a class="text-on-surface-variant dark:text-surface-variant font-label-md text-label-md hover:text-primary dark:hover:text-inverse-primary transition-colors" href="#artisan">
+                Artisan Story &amp; Philosophy
+              </a>
+</li>
+</ul>
+</div>
+<!-- Col 3: Assistance & Legal -->
+<div class="md:col-span-3">
+<h4 class="font-title-md text-title-md font-semibold text-on-surface dark:text-inverse-on-surface mb-3">Assistance</h4>
+<ul class="space-y-2">
+<li>
+<a class="text-on-surface-variant dark:text-surface-variant font-label-md text-label-md hover:text-primary dark:hover:text-inverse-primary transition-colors" href="#track">
+                Track Order
+              </a>
+</li>
+<li>
+<a class="text-on-surface-variant dark:text-surface-variant font-label-md text-label-md hover:text-primary dark:hover:text-inverse-primary transition-colors" href="#privacy">
+                Privacy &amp; Terms
+              </a>
+</li>
+</ul>
+<div class="mt-space-md pt-space-sm border-t border-border-warm/60">
+<span class="font-label-sm text-label-sm text-espresso-muted block mb-1">Supported Payments:</span>
+<div class="flex items-center gap-2 text-label-sm font-semibold text-espresso-muted">
+<span class="px-2 py-0.5 bg-surface-card rounded border border-border-warm">UPI / GPay</span>
+<span class="px-2 py-0.5 bg-surface-card rounded border border-border-warm">Cards</span>
+<span class="px-2 py-0.5 bg-surface-card rounded border border-border-warm">COD</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Separator & Copyright (Exact text from JSON) -->
+<div class="pt-space-lg border-t border-border-warm dark:border-outline-variant flex flex-col sm:flex-row items-center justify-between text-body-sm font-body-sm text-on-surface-variant dark:text-surface-variant">
+<p>© 2025 Anuki Crochet Handcrafted Studio. All rights reserved. Everlasting yarncraft made with love.</p>
+<div class="flex items-center gap-space-md mt-2 sm:mt-0">
+<span class="text-label-sm font-label-sm">As Featured in Vogue India &amp; LBB</span>
+</div>
+</div>
+</div>
+</footer>
+<!-- ================================================================= -->
+<!-- 12. FLOATING QUICK-NOTIFICATION & SLIDE-OUT CART MODAL            -->
+<!-- ================================================================= -->
+<div class="fixed bottom-6 right-6 z-50 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none bg-inverse-surface text-white px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3" id="toast-notification">
+<span class="material-symbols-outlined text-secondary-fixed text-[22px]">check_circle</span>
+<div>
+<h5 class="font-title-md text-title-md font-semibold leading-tight" id="toast-title">Added to Bag</h5>
+<p class="font-body-sm text-body-sm text-surface-variant">Crafted loop by loop with care.</p>
+</div>
+</div>
+<!-- Micro-interaction Vanilla Script -->
+<script>
+    let cartCount = 0;
+    const cartButton = document.getElementById('cart-toggle-btn');
+    const toast = document.getElementById('toast-notification');
+    const toastTitle = document.getElementById('toast-title');
+
+    function addToBag(productName, price) {
+      cartCount++;
+      if (cartButton) {
+        cartButton.querySelector('span:last-child').textContent = `Bag (${cartCount})`;
+        cartButton.classList.add('scale-105');
+        setTimeout(() => cartButton.classList.remove('scale-105'), 200);
+      }
+
+      if (toast && toastTitle) {
+        toastTitle.textContent = `${productName} (₹${price})`;
+        toast.classList.remove('translate-y-24', 'opacity-0');
+        toast.classList.add('translate-y-0', 'opacity-100');
+        
+        setTimeout(() => {
+          toast.classList.remove('translate-y-0', 'opacity-100');
+          toast.classList.add('translate-y-24', 'opacity-0');
+        }, 2600);
+      }
+    }
+
+    function addBundleToBag() {
+      addToBag('Spring Hair & Charm Bundle', 449);
+    }
+  </script>
+</body></html>

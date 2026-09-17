@@ -100,6 +100,7 @@ const PageLoader = () => (
 
 function App() {
   return (
+    <Router>
     <AuthProvider>
       <ToastProvider>
       <WishlistProvider>
@@ -108,7 +109,6 @@ function App() {
       <CartProvider>
       <ProductProvider>
       <PincodeProvider>
-        <Router>
           <ScrollToTop />
           <Suspense fallback={null}><VercelSpeedInsights /></Suspense>
           <Suspense fallback={null}><VercelAnalytics /></Suspense>
@@ -195,7 +195,6 @@ function App() {
               </Route>
             </Routes>
           </Suspense>
-        </Router>
       </PincodeProvider>
       </ProductProvider>
       </CartProvider>
@@ -204,6 +203,7 @@ function App() {
       </WishlistProvider>
       </ToastProvider>
     </AuthProvider>
+    </Router>
   )
 }
 
