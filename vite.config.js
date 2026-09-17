@@ -107,13 +107,20 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.png', 'logo.png', 'robots.txt'],
+      devOptions: {
+        enabled: true // Enable SW in dev mode so beforeinstallprompt fires
+      },
       manifest: {
         name: 'Crochet Wali | Handmade Crochet Flowers & Gifts',
         short_name: 'Crochet Wali',
         description: 'Shop Crochet Wali for handmade crochet bouquets, gajra, flower pots, parandi, keychains, hair clips & personalized gift boxes.',
+        start_url: '/',
+        scope: '/',
         theme_color: '#881337',
         background_color: '#fdfbf7',
         display: 'standalone',
+        orientation: 'portrait',
+        categories: ['shopping', 'lifestyle'],
         icons: [
           {
             src: '/favicon.png',

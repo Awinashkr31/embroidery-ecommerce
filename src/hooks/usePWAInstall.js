@@ -17,6 +17,15 @@ export const usePWAInstall = () => {
 
   const isIos = /ipad|iphone|ipod/.test(navigator.userAgent.toLowerCase());
 
+  // Debug logging
+  console.log('[PWA Hook] Init:', { 
+    hasDeferredPrompt: !!window.deferredPrompt, 
+    isStandalone: window.matchMedia('(display-mode: standalone)').matches,
+    iosStandalone: window.navigator.standalone,
+    hasInstalled: localStorage.getItem('pwa_installed'),
+    isIos
+  });
+
   useEffect(() => {
     // Listen for the prompt event
     const handleBeforeInstallPrompt = (e) => {
