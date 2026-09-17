@@ -138,8 +138,9 @@ const Home = () => {
       </div>
 
       {/* Category Pills */}
-      <div className="flex overflow-x-auto no-scrollbar gap-2.5 px-4 pb-4 mb-2 snap-x">
-        <Link to="/shop" className="px-5 py-1.5 bg-gradient-to-r from-rose-700 to-rose-600 text-white text-[13px] font-semibold border border-rose-700 rounded-full shrink-0 snap-start shadow-[0_4px_12px_rgba(225,29,72,0.25)]">
+      <div className="flex overflow-x-auto no-scrollbar gap-2.5 pb-4 mb-2 snap-x">
+        <div className="w-1.5 shrink-0" /> {/* Left Spacer to equal px-4 total (gap 2.5 + 1.5 = 4) */}
+        <Link to="/shop" className="px-5 py-1.5 bg-gradient-to-r from-rose-700 to-rose-600 text-white text-[13px] font-semibold border border-rose-700 rounded-full shrink-0 snap-start shadow-[0_4px_12px_rgba(225,29,72,0.25)] ml-1">
           All
         </Link>
         {dynamicCategories.map((cat, idx) => (
@@ -151,11 +152,13 @@ const Home = () => {
             {cat.label}
           </Link>
         ))}
+        <div className="w-1.5 shrink-0" /> {/* Right Spacer */}
       </div>
 
       {/* Hero Banner (Screenshot Layout) */}
       <section className="mb-8">
-        <div className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar pl-4 pr-4 gap-4 transform-gpu will-change-scroll">
+        <div className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar gap-4 transform-gpu will-change-scroll">
+          <div className="w-0 shrink-0" /> {/* Left Spacer */}
           {heroSlides.map((slide, idx) => (
             <div key={idx} className="relative flex shrink-0 w-[92vw] sm:w-[85vw] md:w-[600px] bg-stone-900 rounded-2xl overflow-hidden shadow-sm h-[320px] snap-center">
               {/* Background Image & Overlay */}
@@ -190,6 +193,7 @@ const Home = () => {
               </div>
             </div>
           ))}
+          <div className="w-0 shrink-0" /> {/* Right Spacer */}
         </div>
       </section>
 

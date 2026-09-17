@@ -28,14 +28,21 @@ const BottomNavigation = () => {
       return;
     }
     
-    // If installable and on home page, trigger the delay sequence
-    if (location.pathname === '/' && !hasAnimated) {
+    if (location.pathname === '/') {
+      // Start large every time we visit Home
+      setHasAnimated(false);
+      
+      // Animate to compact after delay
       const timer = setTimeout(() => {
         setHasAnimated(true);
       }, 1000); // 1000ms delay for the large -> compact transition
+      
       return () => clearTimeout(timer);
+    } else {
+      // On other pages, stay compact
+      setHasAnimated(true);
     }
-  }, [location.pathname, isInstallable, hasAnimated]);
+  }, [location.pathname, isInstallable]);
 
   // isShrunk means we are in the "compact" phase and we have a button to show
   const isShrunk = hasAnimated && isInstallable;
@@ -167,7 +174,7 @@ const BottomNavigation = () => {
             className="w-[56px] h-[56px] rounded-2xl bg-gradient-to-br from-rose-700 to-rose-900 text-white flex flex-col items-center justify-center gap-1 shadow-lg shadow-rose-900/20 shrink-0 hover:from-rose-800 hover:to-rose-950 active:scale-90 transition-all duration-300"
           >
             <Download size={20} className="drop-shadow-sm" />
-            <span className="text-[10px] font-bold leading-none tracking-wide">Install</span>
+            <span className="text-[10px] font-bold leading-none tracking-wide">Get App</span>
           </button>
         </div>
       </div>

@@ -18,6 +18,17 @@ window.addEventListener('beforeinstallprompt', (e) => {
   console.log('[PWA] beforeinstallprompt captured early');
 });
 
+// Register Service Worker and gracefully handle errors to prevent Unhandled Promise Rejection crashes
+import { registerSW } from 'virtual:pwa-register';
+
+if ('serviceWorker' in navigator) {
+  registerSW({
+    onRegisterError(error) {
+      console.warn('[PWA] Service worker registration failed:', error);
+    }
+  });
+}
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <HelmetProvider>

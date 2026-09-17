@@ -590,9 +590,14 @@ const ProductDetails = () => {
                                         : 'border-stone-200 hover:border-stone-400'
                                 }`}
                             >
-                                <div className="w-14 h-16 sm:w-16 sm:h-20 rounded-xl overflow-hidden bg-stone-100">
+                                <div className="w-14 h-16 sm:w-16 sm:h-20 rounded-xl overflow-hidden bg-stone-100 mb-1">
                                     <img src={colorImage} alt={color} className="w-full h-full object-cover" />
                                 </div>
+                                <span className={`block text-[9px] sm:text-[10px] text-center font-bold capitalize leading-none pb-0.5 ${
+                                    isSelected ? 'text-stone-900' : 'text-stone-500'
+                                }`}>
+                                    {color}
+                                </span>
                             </button>
                         );
                     })}
@@ -716,11 +721,6 @@ const ProductDetails = () => {
                             </div>
                         </div>
 
-                        {/* Mobile-only Color Selector and Gift Packaging */}
-                        <div className="block lg:hidden mt-4 space-y-4">
-                            {renderColorSelector()}
-
-                        </div>
                     </div>
 
 
@@ -781,13 +781,18 @@ const ProductDetails = () => {
                             </div>
                         </div>
 
+                        {/* Color Selector (Above Price) */}
+                        <div className="mb-4">
+                            {renderColorSelector()}
+                        </div>
+
                         {/* Price Area */}
                         <div className="mb-4 pb-4 border-b border-stone-100 font-body-alt">
                             <div className="flex flex-col gap-1.5 mb-2">
                                 <div className="flex items-center gap-3">
-                                    <div className="flex items-center gap-2.5 bg-emerald-800 text-white px-3 py-1.5 rounded shadow-[0_2px_4px_rgba(6,78,59,0.3)] w-fit">
-                                        <span className="text-3xl lg:text-4xl font-heading font-semibold tracking-tight">
-                                            <span className="text-lg lg:text-xl font-sans mr-0.5">₹</span>{currentPrice.toLocaleString('en-IN')}
+                                    <div className="flex items-center gap-2.5 bg-emerald-800 text-white pl-4 pr-3 py-1.5 rounded shadow-[0_2px_4px_rgba(6,78,59,0.3)] w-fit">
+                                        <span className="text-3xl lg:text-4xl font-sans font-bold tracking-tight">
+                                            <span className="text-lg lg:text-xl font-sans mr-0.5 ml-0.5 inline-block">₹</span>{currentPrice.toLocaleString('en-IN')}
                                         </span>
                                     </div>
                                     {product.originalPrice && product.originalPrice > currentPrice && (
@@ -824,13 +829,6 @@ const ProductDetails = () => {
                         {/* Selector Section: Color & Size */}
                         {product.clothingInformation && (
                             <div className="mb-6 space-y-5">
-                                {/* Desktop-only Color Selector Using availableColors */}
-                                {availableColors && availableColors.length > 0 && !hasOnlyNAColor && (
-                                    <div className="hidden lg:block mb-4">
-                                        {renderColorSelector()}
-                                    </div>
-                                )}
-
                                 {/* Size Selector */}
                                 {!shouldHideSizeSelector && Object.keys(sizes).length > 0 && (
                                 <div className="space-y-4" id="size-selector">

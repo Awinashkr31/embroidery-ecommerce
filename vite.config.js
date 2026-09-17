@@ -106,6 +106,7 @@ export default defineConfig({
     }),
     VitePWA({
       registerType: 'autoUpdate',
+      injectRegister: null, // We will manually register in main.jsx to catch promise rejections
       includeAssets: ['favicon.png', 'logo.png', 'robots.txt'],
       devOptions: {
         enabled: true // Enable SW in dev mode so beforeinstallprompt fires
