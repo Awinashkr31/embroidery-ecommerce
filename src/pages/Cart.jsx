@@ -52,24 +52,27 @@ const Cart = () => {
     const [isDiscountsOpen, setIsDiscountsOpen] = useState(false);
 
     // Address State
-    const userAddresses = savedAddresses?.filter(addr => addr.userId === (currentUser?.uid || currentUser?.id)) || [];
+    const currentUserId = currentUser?.uid || currentUser?.id;
+    const userAddresses = savedAddresses?.filter(addr => 
+        currentUserId ? addr.userId === currentUserId : (!addr.userId || addr.userId === 'guest')
+    ) || [];
     const [selectedAddressId, setSelectedAddressId] = useState(null);
     const [editingAddressId, setEditingAddressId] = useState(null);
     const [isAddingNewAddress, setIsAddingNewAddress] = useState(false);
     const [isAddressDrawerOpen, setIsAddressDrawerOpen] = useState(false);
     const [isZipLoading, setIsZipLoading] = useState(false);
     const [addressForm, setAddressForm] = useState({
-        fullName: '', phone: '', zipCode: '', address: '', landmark: '', city: '', state: ''
+        fullName: '', email: '', phone: '', zipCode: '', address: '', landmark: '', city: '', state: ''
     });
     const [pendingCheckout, setPendingCheckout] = useState(false);
 
     React.useEffect(() => {
-        // If pendingCheckout is true, user is logged in, and has an address, redirect to checkout
-        if (pendingCheckout && currentUser && selectedAddressId) {
+        // If pendingCheckout is true and address is selected, redirect to checkout
+        if (pendingCheckout && selectedAddressId) {
             setPendingCheckout(false);
             navigate('/checkout', { state: { selectedAddressId } });
         }
-    }, [currentUser, selectedAddressId, pendingCheckout, navigate]);
+    }, [selectedAddressId, pendingCheckout, navigate]);
 
     React.useEffect(() => {
         if (!selectedAddressId && userAddresses.length > 0) {
@@ -98,15 +101,12 @@ const Cart = () => {
 
     const handleSaveAddress = async (e) => {
         e.preventDefault();
-        if (!currentUser) {
-            openLoginSheet();
-            return;
-        }
-        
         setIsSubmitting(true);
+        const guestEmail = addressForm.email?.trim() || currentUser?.email || '';
         const submissionData = {
             firstName: addressForm.fullName.split(' ')[0] || '',
             lastName: addressForm.fullName.split(' ').slice(1).join(' ') || '',
+            email: guestEmail,
             phone: addressForm.phone,
             alternatePhone: '',
             houseNo: addressForm.address,
@@ -126,7 +126,7 @@ const Cart = () => {
                     addToast('Address updated successfully!', 'success');
                 }
             } else {
-                const newAddr = await saveAddress(submissionData, (currentUser.uid || currentUser.id));
+                const newAddr = await saveAddress(submissionData, (currentUser?.uid || currentUser?.id || 'guest'));
                 if (newAddr && newAddr.id) {
                     setSelectedAddressId(newAddr.id);
                     addToast('Address saved successfully!', 'success');
@@ -134,7 +134,7 @@ const Cart = () => {
             }
             setIsAddressDrawerOpen(false);
             setEditingAddressId(null);
-            setAddressForm({ fullName: '', phone: '', zipCode: '', address: '', landmark: '', city: '', state: '' });
+            setAddressForm({ fullName: '', email: '', phone: '', zipCode: '', address: '', landmark: '', city: '', state: '' });
         } catch (err) {
             console.error('Save address error:', err);
             addToast(`Failed to save: ${err.message || err.error_description || JSON.stringify(err)}`, 'error');
@@ -144,10 +144,7 @@ const Cart = () => {
     };
 
     const handlePlaceOrderClick = () => {
-        if (!currentUser) {
-            setPendingCheckout(true);
-            openLoginSheet();
-        } else if (!selectedAddressId) {
+        if (!selectedAddressId) {
             setPendingCheckout(true);
             setIsAddressDrawerOpen(true);
         } else {
@@ -825,7 +822,8 @@ const Cart = () => {
                                                             e.stopPropagation();
                                                             setEditingAddressId(addr.id);
                                                             setAddressForm({
-                                                                fullName: `${addr.firstName} ${addr.lastName}`,
+                                                                fullName: `${addr.firstName} ${addr.lastName}`.trim(),
+                                                                email: addr.email || '',
                                                                 phone: addr.phone || '',
                                                                 zipCode: addr.zipCode || '',
                                                                 address: addr.address || `${addr.houseNo}, ${addr.area}`,
@@ -849,7 +847,7 @@ const Cart = () => {
                                                     onClick={() => {
                                                         setIsAddingNewAddress(true);
                                                         setEditingAddressId(null);
-                                                        setAddressForm({ fullName: '', phone: '', zipCode: '', address: '', landmark: '', city: '', state: '' });
+                                                        setAddressForm({ fullName: '', email: '', phone: '', zipCode: '', address: '', landmark: '', city: '', state: '' });
                                                     }}
                                                     className="text-[12px] text-stone-500 font-bold uppercase tracking-wider hover:text-rose-900 hover:bg-rose-50 px-4 py-2 rounded-full transition-colors border border-stone-200 hover:border-rose-200"
                                                 >
@@ -875,7 +873,7 @@ const Cart = () => {
                                                     onClick={() => {
                                                         setEditingAddressId(null);
                                                         setIsAddingNewAddress(false);
-                                                        setAddressForm({ fullName: '', phone: '', zipCode: '', address: '', landmark: '', city: '', state: '' });
+                                                        setAddressForm({ fullName: '', email: '', phone: '', zipCode: '', address: '', landmark: '', city: '', state: '' });
                                                     }}
                                                     className="text-xs text-stone-500 font-medium hover:text-stone-900"
                                                 >
@@ -886,6 +884,16 @@ const Cart = () => {
                                     </div>
                                     <div className="space-y-4">
                                         <FloatingInput label="Full Name" required value={addressForm.fullName} onChange={e => setAddressForm({...addressForm, fullName: e.target.value})} />
+                                        
+                                        {!currentUser && (
+                                            <FloatingInput 
+                                                label="Email Address (for order updates)" 
+                                                type="email" 
+                                                required 
+                                                value={addressForm.email || ''} 
+                                                onChange={e => setAddressForm({...addressForm, email: e.target.value})} 
+                                            />
+                                        )}
                                         
                                         <div className="grid grid-cols-2 gap-3">
                                             <FloatingInput label="Mobile Number" type="tel" required pattern="[0-9]{10}" maxLength="10" value={addressForm.phone} onChange={e => setAddressForm({...addressForm, phone: e.target.value.replace(/\D/g, '')})} />

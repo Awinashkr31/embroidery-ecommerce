@@ -5,11 +5,11 @@ import { useProducts } from '../context/ProductContext';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useToast } from '../context/ToastContext';
-import { supabase } from '../../config/supabase';
+import { supabase } from '../config/supabase';
 import { Heart, ShoppingBag, ArrowLeft, Truck, Shield, Star, Award, Search, Sparkles, Plus, Minus, ChevronDown, Share2, X, Loader, Calendar, CheckCircle2, Package, Gift, ShoppingCart } from 'lucide-react';
 import SEO from '../components/SEO';
 import { PincodeChecker } from '../components/PincodeChecker';
-import { extractProductIdFromSlug, getProductUrl, slugify } from '../../src/utils/urlUtils';
+import { extractProductIdFromSlug, getProductUrl, slugify } from '../utils/urlUtils';
 
 const ProductDetails = () => {
     const { slug } = useParams();
@@ -186,18 +186,56 @@ const ProductDetails = () => {
 
     useEffect(() => {
         window.scrollTo(0, 0);
-        if (products.length > 0) {
+        if (products && products.length > 0) {
             let found = null;
+            
+            // 1. Match by extracted ID (UUID)
             if (id) {
-                found = products.find(p => p.id === parseInt(id) || p.id === id);
+                found = products.find(p => p.id === id || String(p.id) === String(id));
             }
+            
+            // 2. Match by exact slug or exact name slug or direct ID
             if (!found && slug) {
+                const targetSlug = slug.toLowerCase().trim();
                 found = products.find(p => 
-                    (p.clothing_information?.slug === slug) || 
-                    (slugify(p.name) === slug) ||
-                    (p.id === slug) // fallback in case the URL just passed an ID directly
+                    (p.clothing_information?.slug && p.clothing_information.slug.toLowerCase() === targetSlug) ||
+                    (slugify(p.name) === targetSlug) ||
+                    (p.id === targetSlug)
                 );
             }
+
+            // 3. Match if slug contains UUID anywhere
+            if (!found && slug) {
+                const uuidMatch = slug.match(/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i);
+                if (uuidMatch) {
+                    const extractedUuid = uuidMatch[1];
+                    found = products.find(p => p.id === extractedUuid);
+                }
+            }
+
+            // 4. Match prefix / slugify fallback
+            if (!found && slug) {
+                const targetSlug = slug.toLowerCase().trim();
+                found = products.find(p => {
+                    const pSlug = slugify(p.name);
+                    return pSlug && (targetSlug.startsWith(pSlug) || pSlug.startsWith(targetSlug));
+                });
+            }
+
+            // 5. Keyword fallback: e.g. "crochet-keychain" -> match a product whose name contains those keywords
+            if (!found && slug) {
+                const cleanKeywords = slug.replace(/[^a-zA-Z0-9]/g, ' ').toLowerCase().split(' ').filter(Boolean);
+                if (cleanKeywords.length > 0) {
+                    found = products.find(p => {
+                        const pName = p.name.toLowerCase();
+                        return cleanKeywords.every(kw => pName.includes(kw));
+                    }) || products.find(p => {
+                        const pName = p.name.toLowerCase();
+                        return cleanKeywords.some(kw => pName.includes(kw));
+                    });
+                }
+            }
+
             setProduct(found);
             setLoading(false);
             if (found) {
@@ -205,7 +243,7 @@ const ProductDetails = () => {
                  setSelectedImage(found.image);
                  
                  // SEO Update
-                 document.title = found.clothingInformation?.metaTitle || found.name + " | Enbroidery";
+                 document.title = found.clothingInformation?.metaTitle || `${found.name} | Crochet Wali`;
             }
         }
     }, [id, slug, products]);

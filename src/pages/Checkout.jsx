@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { CheckCircle, MapPin, Truck, CreditCard, Loader, Plus, AlertTriangle, Tag, X, ShoppingBag, ChevronDown, ChevronUp, Lock, Gift, Smartphone, Smile, ArrowLeft, Edit3, CheckCircle2 } from 'lucide-react';
@@ -28,12 +28,17 @@ const Checkout = () => {
     const { addToast } = useToast();
     const { pincode: globalPincode } = usePincode();
     const navigate = useNavigate();
+    const location = useLocation();
+    const preselectedAddressId = location.state?.selectedAddressId;
     
     const [shouldSaveAddress, setShouldSaveAddress] = useState(true);
-    const [selectedAddressId, setSelectedAddressId] = useState('new'); // 'new' or address ID
+    const [selectedAddressId, setSelectedAddressId] = useState(preselectedAddressId || 'new'); // 'new' or address ID
 
-    // Filter addresses for current user
-    const userAddresses = savedAddresses.filter(addr => addr.userId === (currentUser?.uid || currentUser?.id));
+    // Filter addresses for current user or guest
+    const currentUserId = currentUser?.uid || currentUser?.id;
+    const userAddresses = savedAddresses.filter(addr => 
+        currentUserId ? addr.userId === currentUserId : (!addr.userId || addr.userId === 'guest')
+    );
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isZipLoading, setIsZipLoading] = useState(false);
@@ -74,7 +79,7 @@ const Checkout = () => {
     const [editingAddressId, setEditingAddressId] = useState(null);
     const [isAddingNewAddress, setIsAddingNewAddress] = useState(false);
     const [addressForm, setAddressForm] = useState({
-        fullName: '', phone: '', zipCode: '', address: '', landmark: '', city: '', state: ''
+        fullName: '', email: '', phone: '', zipCode: '', address: '', landmark: '', city: '', state: ''
     });
 
     // Force payment method to online if COD is not active
@@ -89,12 +94,12 @@ const Checkout = () => {
 
     const handleSaveAddress = async (e) => {
         e.preventDefault();
-        if (!currentUser) return;
-        
         setIsSubmitting(true);
+        const contactEmail = addressForm.email?.trim() || currentUser?.email || '';
         const submissionData = {
             firstName: addressForm.fullName.split(' ')[0] || '',
             lastName: addressForm.fullName.split(' ').slice(1).join(' ') || '',
+            email: contactEmail,
             phone: addressForm.phone,
             alternatePhone: '',
             houseNo: addressForm.address,
@@ -115,7 +120,7 @@ const Checkout = () => {
                     addToast('Address updated successfully!', 'success');
                 }
             } else {
-                const newAddr = await saveAddress(submissionData, (currentUser.uid || currentUser.id));
+                const newAddr = await saveAddress(submissionData, (currentUser?.uid || currentUser?.id || 'guest'));
                 if (newAddr && newAddr.id) {
                     setSelectedAddressId(newAddr.id);
                     simulateZipCheck(newAddr.zipCode);
@@ -124,7 +129,7 @@ const Checkout = () => {
             }
             setIsAddressDrawerOpen(false);
             setEditingAddressId(null);
-            setAddressForm({ fullName: '', phone: '', zipCode: '', address: '', landmark: '', city: '', state: '' });
+            setAddressForm({ fullName: '', email: '', phone: '', zipCode: '', address: '', landmark: '', city: '', state: '' });
         } catch (err) {
             console.error('Save address error:', err);
             addToast('Failed to save address. Please try again.', 'error');
@@ -170,15 +175,15 @@ const Checkout = () => {
 
     // Set default address if available
     React.useEffect(() => {
-        if (savedAddresses.length > 0 && !hasInitializedAddressRef.current) {
-            const defaultAddr = savedAddresses.find(addr => addr.userId === (currentUser?.uid || currentUser?.id));
-            if (defaultAddr) {
-                     setSelectedAddressId(defaultAddr.id);
-                     simulateZipCheck(defaultAddr.zipCode);
+        if (userAddresses.length > 0 && (!selectedAddressId || selectedAddressId === 'new')) {
+            const chosen = (preselectedAddressId && userAddresses.find(a => a.id === preselectedAddressId)) || userAddresses[0];
+            if (chosen) {
+                setSelectedAddressId(chosen.id);
+                simulateZipCheck(chosen.zipCode);
             }
             hasInitializedAddressRef.current = true;
         }
-    }, [savedAddresses, currentUser]);
+    }, [userAddresses, preselectedAddressId, selectedAddressId]);
 
 
     const handleZipChange = (e) => {
@@ -264,31 +269,6 @@ const Checkout = () => {
         );
     }
 
-    if (!currentUser) {
-        return (
-            <div className="min-h-screen bg-[#fdfbf7] flex items-center justify-center font-body pt-20">
-                <div className="text-center bg-white p-10 rounded-2xl shadow-lg border border-stone-100 max-w-md mx-4">
-                    <h2 className="text-2xl font-heading font-bold text-stone-900 mb-4">Please Log In</h2>
-                    <p className="text-stone-600 mb-8">You must be logged in to complete your purchase.</p>
-                    <div className="space-y-4">
-                        <Link 
-                            to="/login" 
-                            className="block w-full bg-rose-900 text-white py-3 rounded-xl font-bold uppercase hover:bg-rose-800 transition-colors"
-                        >
-                            Log In
-                        </Link>
-                        <Link 
-                            to="/register" 
-                            className="block w-full bg-stone-100 text-stone-900 py-3 rounded-xl font-bold uppercase hover:bg-stone-200 transition-colors"
-                        >
-                            Create Account
-                        </Link>
-                    </div>
-                </div>
-            </div>
-        );
-    }
-
     if (cart.length === 0 && !isSubmitting) {
         return (
             <div className="min-h-screen bg-[#fdfbf7] flex items-center justify-center font-body pt-20">
@@ -314,11 +294,19 @@ const Checkout = () => {
             return;
         }
 
+        const contactEmail = selectedAddr?.email || addressForm?.email || currentUser?.email || '';
+
+        if (!contactEmail) {
+            addToast('Please provide an email address for order updates.', 'error');
+            setIsAddressDrawerOpen(true);
+            return;
+        }
+
         setIsSubmitting(true);
 
         const submissionData = {
             ...selectedAddr,
-            email: currentUser?.email
+            email: contactEmail
         };
 
 
@@ -380,7 +368,7 @@ const Checkout = () => {
                             // 5. Place Order in Database
                             const orderResult = await placeOrder({
                                 ...submissionData,
-                                userId: (currentUser?.uid || currentUser?.id)
+                                userId: (currentUser?.uid || currentUser?.id || null)
                             }, {
                                 status: 'paid',
                                 paymentId: response.razorpay_payment_id
@@ -418,6 +406,7 @@ const Checkout = () => {
                     state: { 
                         formData: {
                             ...submissionData,
+                            userId: (currentUser?.uid || currentUser?.id || null),
                             paymentMethod: 'cod',
                             codCharge: codCharge
                         } 
@@ -770,7 +759,8 @@ const Checkout = () => {
                                                             e.stopPropagation();
                                                             setEditingAddressId(addr.id);
                                                             setAddressForm({
-                                                                fullName: `${addr.firstName} ${addr.lastName}`,
+                                                                fullName: `${addr.firstName} ${addr.lastName}`.trim(),
+                                                                email: addr.email || '',
                                                                 phone: addr.phone || '',
                                                                 zipCode: addr.zipCode || '',
                                                                 address: addr.address || `${addr.houseNo}, ${addr.area}`,
@@ -794,7 +784,7 @@ const Checkout = () => {
                                                     onClick={() => {
                                                         setIsAddingNewAddress(true);
                                                         setEditingAddressId(null);
-                                                        setAddressForm({ fullName: '', phone: '', zipCode: '', address: '', landmark: '', city: '', state: '' });
+                                                        setAddressForm({ fullName: '', email: '', phone: '', zipCode: '', address: '', landmark: '', city: '', state: '' });
                                                     }}
                                                     className="text-[12px] text-stone-500 font-bold uppercase tracking-wider hover:text-rose-900 hover:bg-rose-50 px-4 py-2 rounded-full transition-colors border border-stone-200 hover:border-rose-200"
                                                 >
@@ -820,7 +810,7 @@ const Checkout = () => {
                                                     onClick={() => {
                                                         setEditingAddressId(null);
                                                         setIsAddingNewAddress(false);
-                                                        setAddressForm({ fullName: '', phone: '', zipCode: '', address: '', landmark: '', city: '', state: '' });
+                                                        setAddressForm({ fullName: '', email: '', phone: '', zipCode: '', address: '', landmark: '', city: '', state: '' });
                                                     }}
                                                     className="text-xs text-stone-500 font-medium hover:text-stone-900"
                                                 >
@@ -831,6 +821,16 @@ const Checkout = () => {
                                     </div>
                                     <div className="space-y-4">
                                         <FloatingInput label="Full Name" required value={addressForm.fullName} onChange={e => setAddressForm({...addressForm, fullName: e.target.value})} />
+                                        
+                                        {!currentUser && (
+                                            <FloatingInput 
+                                                label="Email Address (for order updates)" 
+                                                type="email" 
+                                                required 
+                                                value={addressForm.email || ''} 
+                                                onChange={e => setAddressForm({...addressForm, email: e.target.value})} 
+                                            />
+                                        )}
                                         
                                         <div className="grid grid-cols-2 gap-3">
                                             <FloatingInput label="Mobile Number" type="tel" required pattern="[0-9]{10}" maxLength="10" value={addressForm.phone} onChange={e => setAddressForm({...addressForm, phone: e.target.value.replace(/\D/g, '')})} />

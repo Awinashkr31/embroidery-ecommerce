@@ -101,8 +101,8 @@ const OrderConfirmation = () => {
 
             const orderResult = await placeOrder({
                 ...formData,
-                userId: currentUser?.id,
-                email: currentUser?.email || formData.email
+                userId: currentUser?.uid || currentUser?.id || formData?.userId || null,
+                email: currentUser?.email || formData?.email || ''
             });
             
             // Navigate only if we have a result

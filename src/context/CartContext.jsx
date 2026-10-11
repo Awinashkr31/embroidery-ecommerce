@@ -851,7 +851,14 @@ export const CartProvider = ({ children }) => {
            }
         }
       } else {
-        if (mounted) setSavedAddresses([]);
+        if (mounted) {
+          try {
+            const guestAddresses = JSON.parse(localStorage.getItem('guest_addresses') || '[]');
+            setSavedAddresses(Array.isArray(guestAddresses) ? guestAddresses : []);
+          } catch {
+            setSavedAddresses([]);
+          }
+        }
       }
     };
 
@@ -863,50 +870,55 @@ export const CartProvider = ({ children }) => {
   }, [currentUser]);
 
   const saveAddress = async (address, userId) => {
-    try {
-      const dbAddress = {
-          user_id: userId,
-          first_name: address.firstName,
-          last_name: address.lastName,
-          phone: address.phone,
-          alternate_phone: address.alternatePhone,
-          house_no: address.houseNo,
-          area: address.area,
-          landmark: address.landmark,
-          address_type: address.addressType,
-          city: address.city,
-          state: address.state,
-          zip_code: address.zipCode
-      };
+    const effectiveUserId = userId || currentUser?.uid || currentUser?.id;
+    if (effectiveUserId) {
+      try {
+        const dbAddress = {
+            user_id: effectiveUserId,
+            first_name: address.firstName,
+            last_name: address.lastName,
+            phone: address.phone,
+            alternate_phone: address.alternatePhone,
+            house_no: address.houseNo,
+            area: address.area,
+            landmark: address.landmark,
+            address_type: address.addressType,
+            city: address.city,
+            state: address.state,
+            zip_code: address.zipCode
+        };
 
-      const { data, error } = await supabase
-        .from('addresses')
-        .insert([dbAddress])
-        .select()
-        .single();
+        const { data, error } = await supabase
+          .from('addresses')
+          .insert([dbAddress])
+          .select()
+          .single();
 
-      if (error) {
-          console.warn("Supabase insert failed, using local storage fallback:", error.message);
-          throw error;
+        if (error) {
+            console.warn("Supabase insert failed, using local storage fallback:", error.message);
+            throw error;
+        }
+
+        const mapped = mapAddressFromDB(data);
+        setSavedAddresses(prev => [mapped, ...prev]);
+        return mapped;
+      } catch (error) {
+        console.error('Error saving address to DB:', error);
       }
-
-      const mapped = mapAddressFromDB(data);
-      setSavedAddresses(prev => [mapped, ...prev]);
-      return mapped;
-    } catch (error) {
-      console.error('Error saving address to DB:', error);
-      // Local storage fallback
-      const newAddr = {
-          id: crypto.randomUUID(),
-          userId: userId,
-          ...address
-      };
-      const prevLocal = JSON.parse(localStorage.getItem(`addresses_${userId}`) || '[]');
-      const newLocal = [newAddr, ...prevLocal];
-      localStorage.setItem(`addresses_${userId}`, JSON.stringify(newLocal));
-      setSavedAddresses(newLocal);
-      return newAddr;
     }
+
+    // Guest or Local storage fallback
+    const newAddr = {
+        id: crypto.randomUUID(),
+        userId: effectiveUserId || 'guest',
+        ...address
+    };
+    const storageKey = effectiveUserId ? `addresses_${effectiveUserId}` : 'guest_addresses';
+    const prevLocal = JSON.parse(localStorage.getItem(storageKey) || '[]');
+    const newLocal = [newAddr, ...prevLocal];
+    localStorage.setItem(storageKey, JSON.stringify(newLocal));
+    setSavedAddresses(newLocal);
+    return newAddr;
   };
 
   const deleteAddress = async (id) => {
@@ -963,7 +975,8 @@ export const CartProvider = ({ children }) => {
       console.error('Error updating address in DB:', error);
       // Local storage fallback
       const userId = currentUser?.uid || currentUser?.id;
-      const prevLocal = JSON.parse(localStorage.getItem(`addresses_${userId}`) || '[]');
+      const storageKey = userId ? `addresses_${userId}` : 'guest_addresses';
+      const prevLocal = JSON.parse(localStorage.getItem(storageKey) || '[]');
       let updatedLocalAddr = null;
       const newLocal = prevLocal.map(addr => {
           if (addr.id === id) {
@@ -973,7 +986,7 @@ export const CartProvider = ({ children }) => {
           return addr;
       });
       if (updatedLocalAddr) {
-          localStorage.setItem(`addresses_${userId}`, JSON.stringify(newLocal));
+          localStorage.setItem(storageKey, JSON.stringify(newLocal));
           setSavedAddresses(newLocal);
           return updatedLocalAddr;
       }

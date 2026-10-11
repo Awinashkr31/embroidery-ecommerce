@@ -3,11 +3,13 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { CheckCircle, Package, MapPin, ArrowRight, Loader, AlertTriangle } from 'lucide-react';
 import { supabase } from '../config/supabase';
 import { getEstimatedDeliveryDate } from '../utils/dateUtils';
+import { useAuth } from '../context/AuthContext';
 import SEO from '../components/SEO';
 
 const OrderSuccess = () => {
     const location = useLocation();
     const navigate = useNavigate();
+    const { currentUser } = useAuth();
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -83,7 +85,7 @@ const OrderSuccess = () => {
                     <h2 className="text-2xl font-bold text-stone-900 mb-2">Order Confirmed!</h2>
                     <p className="text-stone-600 mb-6">Your order ID is <span className="font-mono font-bold">{orderId}</span>.</p>
                     <p className="text-sm text-stone-500 mb-8">We couldn't load the details right now, but your order has been placed successfully.</p>
-                    <Link to="/profile" className="px-6 py-3 bg-stone-900 text-white rounded-xl font-bold uppercase tracking-wider text-sm hover:bg-stone-800 transition">View My Orders</Link>
+                    <Link to={currentUser ? "/profile" : "/track-order"} className="px-6 py-3 bg-stone-900 text-white rounded-xl font-bold uppercase tracking-wider text-sm hover:bg-stone-800 transition">{currentUser ? 'View My Orders' : 'Track Your Order'}</Link>
                 </div>
             </div>
         );
@@ -175,8 +177,8 @@ const OrderSuccess = () => {
                     </div>
 
                     <div className="flex flex-col sm:flex-row gap-3 mt-8 max-w-lg mx-auto w-full animate-stagger-fade" style={{ animationDelay: '0.6s' }}>
-                         <Link to="/profile" className="flex-1 bg-stone-900 text-white py-3.5 rounded-xl hover:bg-stone-800 transition font-bold text-center uppercase tracking-wide text-sm shadow-lg">
-                            View Order Details
+                         <Link to={currentUser ? "/profile" : "/track-order"} className="flex-1 bg-stone-900 text-white py-3.5 rounded-xl hover:bg-stone-800 transition font-bold text-center uppercase tracking-wide text-sm shadow-lg">
+                            {currentUser ? 'View Order Details' : 'Track Order'}
                         </Link>
                         <Link to="/shop" className="flex-1 bg-white border border-stone-200 text-stone-700 py-3.5 rounded-xl hover:bg-stone-50 transition font-bold text-center uppercase tracking-wide text-sm">
                             Continue Shopping

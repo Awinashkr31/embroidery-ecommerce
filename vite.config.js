@@ -4,7 +4,6 @@ import { fileURLToPath } from 'url'
 import path, { dirname } from 'path'
 import { VitePWA } from 'vite-plugin-pwa'
 import viteCompression from 'vite-plugin-compression';
-import Sitemap from 'vite-plugin-sitemap';
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
 
@@ -87,23 +86,6 @@ export default defineConfig({
     viteCompression({ algorithm: 'brotliCompress' }),
     viteCompression({ algorithm: 'gzip' }),
     localApiPlugin(),
-    Sitemap({
-      hostname: 'https://www.crochetwali.in',
-      dynamicRoutes: [
-        '/shop',
-        '/gifts',
-        '/categories',
-        '/crochet-wali',
-        '/about',
-        '/custom-design',
-        '/support',
-        '/return-policy',
-        '/shipping-policy',
-        '/privacy-policy',
-        '/terms-of-service',
-        '/blog'
-      ]
-    }),
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: null, // We will manually register in main.jsx to catch promise rejections
