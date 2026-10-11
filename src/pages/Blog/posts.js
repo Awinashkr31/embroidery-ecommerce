@@ -596,5 +596,98 @@ While flowers and hair accessories lean feminine, we have fantastic unisex optio
     metaDescription: "Find the perfect gift without overspending. Shop premium handmade crochet bouquets, decor, and accessory sets under ₹1000.",
     keywords: "gifts under 1000, best birthday gifts under 1000, handmade gifts under 1000, premium budget gifts india, unique gifts for friends",
     image: "/promo-images/promo_flowerpot_1784372090942.webp"
+  },
+  {
+    id: "reusable-crochet-gajra-bridal-haldi-wedding-guide",
+    slug: "reusable-crochet-gajra-bridal-haldi-wedding-guide",
+    title: "Why Modern Indian Brides Are Switching to Reusable Crochet Gajras",
+    date: "2026-10-10",
+    excerpt: "Real jasmine gajras crush and turn brown within hours. Discover why handcrafted reusable crochet gajras are becoming the #1 bridal hair accessory for Haldi, Mehendi, and weddings.",
+    content: `
+For generations, fresh mogra and jasmine gajras have been the quintessential crown of Indian ethnic hairstyles. But ask any bride or bridesmaid who has danced through a summer sangeet or Haldi ceremony, and they will tell you the harsh reality: fresh flowers wilt, crush against car seats, and turn brown before the photography session even ends.
+
+Enter the modern ethnic revolution: **Handmade Crochet Gajras**.
+
+At [Crochet Wali](/collections/crochet-gajra), our artisanal floral gajras have become one of the most requested accessories for Indian weddings and festive celebrations.
+
+### Why Choose a Crochet Gajra Over Fresh Flowers?
+
+| Feature | Fresh Mogra Gajra | Reusable Crochet Gajra |
+|---|---|---|
+| **Lifespan** | 4 to 8 hours (wilts) | **Forever keepsake (Years)** |
+| **Crush Resistance** | Crushes easily against headrests/chairs | **Retains 100% shape** |
+| **Scent Customization** | Fades rapidly | **Sprayable with your favorite attar or perfume** |
+| **Staining** | Flower sap can stain silk sarees | **100% clean, milk cotton yarn** |
+| **Post-Event Value** | Discarded in trash | **Rewear for Diwali, Rakhi, and Puja** |
+
+### How to Style Your Crochet Gajra
+
+#### 1. The Classic Low Bun
+Wrap a double-layered [white jasmine crochet gajra](/collections/reusable-bridal-gajra) around your hair bun and pin it with U-pins. It gives a full, neat, symmetrical frame that looks flawless from every camera angle.
+
+#### 2. The South Indian Half-Moon (Ardhachandra) Style
+Place the gajra along the upper curve of the bun for a subtle, regal touch that pairs beautifully with Kanjeevaram and Banarasi sarees.
+
+#### 3. Braid Accent with Parandi
+Intertwine smaller crochet floral clips down a traditional long braid or pair with our handcrafted [Crochet Parandi](/collections/crochet-parandi) for a vibrant Punjabi bridal look.
+
+### The Secret Tip: Spraying Attar or Perfume
+Unlike plastic artificial flowers which can react poorly to alcohol-based sprays, our milk cotton yarn fibers absorb scents naturally. Lightly mist your signature jasmine attar or floral perfume over the gajra 10 minutes before wearing. The fibers will release a gentle fragrance throughout your event!
+
+### Frequently Asked Questions (FAQ)
+
+**Can I wash my crochet gajra if it gets dirty?**
+Yes! You can gently hand-wash it in lukewarm water with mild liquid detergent. Reshape the petals with your fingers and lay it flat on a clean towel to dry.
+
+**Is it heavy on the hair?**
+Not at all. In fact, a crochet gajra is significantly lighter than a dense fresh mogra string, preventing hair pulling during long wedding rituals.
+    `,
+    metaTitle: "Reusable Crochet Gajra: Complete Bridal & Wedding Hair Guide | Crochet Wali",
+    metaDescription: "Why brides love reusable crochet gajras for weddings, Haldi, and sangeet. Scent-sprayable, non-wilting, and reusable forever.",
+    keywords: "crochet gajra, reusable gajra, bridal hair accessories india, haldi hair jewelry, wedding floral bun, handmade gajra",
+    image: "/assets/flower.webp"
+  },
+  {
+    id: "how-to-clean-and-care-for-crochet-flowers",
+    slug: "how-to-clean-and-care-for-crochet-flowers",
+    title: "How to Clean and Care for Handmade Crochet Flowers (Complete Guide)",
+    date: "2026-10-11",
+    excerpt: "Do crochet flowers collect dust? Can you wash them? Here is everything you need to know about cleaning, dusting, and preserving your forever crochet bouquet.",
+    content: `
+One of the most common questions our customers ask before buying a [handmade crochet bouquet](/collections/crochet-bouquets) is: *"How do I keep it clean over time?"*
+
+Because crochet flowers are crafted from premium cotton and acrylic yarn rather than live botanical stems, they require virtually no daily maintenance. However, with occasional dusting and gentle care, your crochet bouquet will look fresh and vibrant for decades.
+
+Here is the step-by-step master guide from Crochet Wali artisans.
+
+### 1. Routine Dusting (Every 2–3 Weeks)
+Just like books or decorative ceramics on your shelf, crochet flowers naturally accumulate air dust over time.
+
+- **Use a Hairdryer on Cool Setting**: Hold a hairdryer 8 to 10 inches away on the lowest speed and coolest air setting to blow away loose dust particles.
+- **Soft Makeup Brush**: A clean, fluffy powder brush or blush brush works wonders for dusting inside delicate petals like roses and tulips without disturbing the stitch structure.
+
+### 2. Spot Cleaning Minor Stains
+If you accidentally spill tea, coffee, or makeup near your desk bouquet:
+1. Dip a clean microfibre cloth or cotton swab into lukewarm water mixed with a drop of mild baby shampoo.
+2. Gently dab (do not rub aggressively) the stained yarn area.
+3. Blot with a dry tissue and let it air-dry naturally.
+
+### 3. Deep Washing (For Stems Without Wire or Loose Florals)
+For individual flower stems or gajras that need a complete refresh:
+- Submerge in cool soapy water for 5 minutes.
+- Squeeze gently with your palms (never wring or twist).
+- Pat dry between two clean towels and shape the petals into position while damp.
+- Lay flat in a shaded, well-ventilated area to dry completely.
+
+### 4. Preventing Sun Fading
+Keep your crochet arrangements out of continuous, harsh direct afternoon sunlight. While premium dyes are fade-resistant, intense UV rays over years can gradually soften pastel tones. Bright ambient room lighting or soft morning sun is ideal!
+
+### Summary: Why Crochet Keepsakes Beat Real Flowers
+With just 2 minutes of care a month, your forever flowers will continue to hold the memory of your anniversary, birthday, or graduation forever. Browse our latest [handmade crochet gifts](/shop) to find your next eternal piece.
+    `,
+    metaTitle: "How to Clean & Care for Crochet Flowers: The Definitive Guide | Crochet Wali",
+    metaDescription: "Learn how to dust, wash, and maintain handmade crochet bouquets and flower pots so they stay vibrant and fresh for years.",
+    keywords: "how to clean crochet flowers, crochet bouquet care, washing crochet yarn, crochet flower maintenance, forever flowers care",
+    image: "/promo-images/promo_bouquet_1784372081052.webp"
   }
 ];

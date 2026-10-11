@@ -57,6 +57,48 @@ const COLLECTION_SEO_CONTENT = {
         description: 'Shop beautiful handmade crochet flowers and forever flower bouquets. Made to order in India. The perfect sustainable gift that never wilts.',
         h1: 'Handmade Crochet Flowers',
         text: 'Discover the beauty of forever flowers with our handmade crochet flower collection. Handcrafted in India, our crochet flowers are the perfect sustainable alternative to fresh bouquets. They never wilt, require zero maintenance, and serve as a beautiful keepsake for years to come. Whether you are looking for a classic crochet rose bouquet, a bright sunflower pot, or a mixed aesthetic floral arrangement, our crochet flowers are designed to impress. Ideal for Valentine\'s Day, anniversaries, or as an aesthetic room decor addition.',
+    },
+    'crochet-gajra': {
+        title: 'Handmade Crochet Gajra India | Reusable Floral Hair Accessory',
+        description: 'Shop reusable handmade crochet gajra for weddings, Haldi, Mehendi, and festive hairstyles. Never turns brown, scent-sprayable, and lasts forever.',
+        h1: 'Handmade Crochet Gajra',
+        text: 'Elevate your festive and bridal ethnic look with our handcrafted crochet gajra. Real jasmine flowers turn brown within hours, but our crocheted floral gajras retain their pristine beauty forever. Spray your favorite attar or perfume onto the yarn fibers for a fragrant touch that lasts all day. Ideal for bun styling, braid accents, Haldi ceremonies, and wedding guests. Hand-crocheted in India with premium yarn.',
+    },
+    'reusable-bridal-gajra': {
+        title: 'Reusable Bridal Gajra for Haldi, Mehendi & Wedding | Crochet Wali',
+        description: 'Stunning reusable crochet gajras designed for brides and bridesmaids. Perfect keepsake hair jewelry for Haldi ceremonies, sangeet, and traditional festivities.',
+        h1: 'Reusable Bridal Gajra',
+        text: 'Make your wedding memories timeless with Crochet Wali’s reusable bridal gajra collection. Designed specifically for Indian brides, bridesmaids, and festive dancers, each gajra is crafted to stay lightweight and secure without wilting or shedding petals. Reusable across every wedding ritual from Mehendi to Reception.',
+    },
+    'crochet-keychains': {
+        title: 'Cute Crochet Keychains & Amigurumi Charms India | Crochet Wali',
+        description: 'Shop handmade crochet keychains and cute amigurumi bag charms in India. The perfect budget-friendly cute surprise gift for friends, sisters, and bags.',
+        h1: 'Handmade Crochet Keychains & Bag Charms',
+        text: 'Discover our delightful collection of handmade crochet keychains and amigurumi bag charms. Each piece is hand-stitched with durable yarn and sturdy metal key rings. Perfect as a cute, thoughtful gift for besties, college bags, car keys, or birthday surprise hampers.',
+    },
+    'crochet-claw-clips': {
+        title: 'Handmade Crochet Claw Clips & Hair Clips India | Crochet Wali',
+        description: 'Shop aesthetic handmade crochet claw clips, floral hair pins, and aesthetic hair accessories in India. Snag-free, durable, and handcrafted with soft yarn.',
+        h1: 'Handmade Crochet Claw Clips & Hair Accessories',
+        text: 'Level up your daily hair styling with Crochet Wali’s handcrafted crochet claw clips and floral hair pins. Built on durable, salon-grade hair clips and wrapped in soft, botanical-toned crochet flowers, our hair accessories offer a firm yet snag-free hold for everyday comfort.',
+    },
+    'crochet-parandi': {
+        title: 'Handmade Crochet Parandi for Hair Braids India | Crochet Wali',
+        description: 'Traditional handcrafted crochet parandi with floral tassels. Perfect for Punjabi braid styling, bridal Haldi, festive dance, and weddings in India.',
+        h1: 'Handmade Crochet Parandi',
+        text: 'Celebrate traditional Indian hair elegance with our handmade crochet parandi. Featuring intricate floral tassels and vibrant colored cords, these parandis add instant drama and charm to any long braid or festive hair style.',
+    },
+    'gifts-for-girlfriend': {
+        title: 'Handmade Gifts for Girlfriend | Romantic Crochet Keepsakes India',
+        description: 'Find thoughtful, unique handmade gifts for your girlfriend in India. Forever crochet bouquets, aesthetic hair accessories, and personalized gift boxes.',
+        h1: 'Romantic Handmade Gifts for Girlfriend',
+        text: 'Show her how much you care with a gift that never fades. Fresh roses wilt in three days, but a handmade crochet flower bouquet from Crochet Wali stays as vibrant as your love. Browse our romantic curated picks including everlasting roses, cute amigurumi charms, and personalized handwritten cards.',
+    },
+    'anniversary-gifts': {
+        title: 'Handmade Anniversary Gifts India | Everlasting Romantic Keepsakes',
+        description: 'Celebrate love with handcrafted crochet anniversary gifts in India. Forever flower pots, customized initial hoops, and luxury keepsake gift boxes.',
+        h1: 'Handmade Anniversary Keepsakes',
+        text: 'Mark your special milestone with an anniversary gift that stands the test of time. Our handmade anniversary keepsakes symbolize lasting love — from forever crochet tulip pots to personalized gift boxes packaged with love in India.',
     }
 };
 
@@ -102,11 +144,24 @@ const Collection = () => {
         });
 
         return flattened.filter(product => {
-            // Very loose matching for categories to ensure collections populate
             const productSlug = slugify(product.category);
             const titleSlug = slugify(product.name);
-            const isMatch = productSlug.includes(slug.split('-')[0]) || titleSlug.includes(slug.split('-')[0]);
-            return isMatch;
+            const keywords = slug.split('-');
+
+            // Recipient & Occasion special matching
+            if (slug === 'gifts-for-girlfriend' || slug === 'anniversary-gifts') {
+                return titleSlug.includes('bouquet') || titleSlug.includes('rose') || titleSlug.includes('flower') || titleSlug.includes('pot') || productSlug.includes('bouquet') || productSlug.includes('flower');
+            }
+            if (slug === 'reusable-bridal-gajra') {
+                return titleSlug.includes('gajra') || productSlug.includes('gajra') || titleSlug.includes('parandi');
+            }
+
+            // Keyword specific filter (e.g. gajra, parandi, clip, keychain, bouquet, sunflower, rose)
+            const targetKeywords = keywords.filter(k => k !== 'crochet' && k !== 'handmade' && k !== 'gifts' && k !== 'custom');
+            if (targetKeywords.length > 0) {
+                return targetKeywords.some(k => productSlug.includes(k) || titleSlug.includes(k));
+            }
+            return productSlug.includes(keywords[0]) || titleSlug.includes(keywords[0]);
         });
     }, [products, slug]);
 

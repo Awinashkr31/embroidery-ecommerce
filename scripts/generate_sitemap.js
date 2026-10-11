@@ -59,6 +59,11 @@ const COLLECTION_ROUTES = [
   'crochet-rose-bouquet',
   'crochet-sunflower',
   'crochet-tulip',
+  'crochet-flowers',
+  'crochet-gajra',
+  'reusable-bridal-gajra',
+  'gifts-for-girlfriend',
+  'anniversary-gifts',
 ];
 
 async function generateSitemap() {

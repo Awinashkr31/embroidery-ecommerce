@@ -11,6 +11,45 @@ import SEO from '../components/SEO';
 import { PincodeChecker } from '../components/PincodeChecker';
 import { extractProductIdFromSlug, getProductUrl, slugify } from '../utils/urlUtils';
 
+const getIntentDetails = (productName, category) => {
+    const pName = (productName || '').toLowerCase();
+    const cat = (category || '').toLowerCase();
+    
+    if (pName.includes('gajra') || pName.includes('parandi')) {
+        return {
+            occasion: "Weddings, Haldi, Mehendi, Sangeet & Festive Dressing",
+            bestFor: "Brides, Bridesmaids, Saree & Ethnic Styling",
+            keepsake: "Forever Keepsake • Fragrance-sprayable & Non-wilting"
+        };
+    }
+    if (pName.includes('clip') || pName.includes('claw') || pName.includes('band') || cat.includes('accessories')) {
+        return {
+            occasion: "Daily Styling, College, Work & Casual Outings",
+            bestFor: "Girls, Teens, Sisters, Aesthetic Accessory Lovers",
+            keepsake: "100% Hand-Knitted Yarn • Snag-free & Gentle on Hair"
+        };
+    }
+    if (pName.includes('bouquet') || pName.includes('rose') || pName.includes('tulip') || pName.includes('flower') || pName.includes('pot') || cat.includes('bouquet') || cat.includes('flower')) {
+        return {
+            occasion: "Anniversaries, Birthdays, Valentine's & Everlasting Keepsakes",
+            bestFor: "Girlfriend, Wife, Best Friend, Desk & Room Decor",
+            keepsake: "Eternal Bloom • 100% Milk Cotton Yarn, Never Wilts"
+        };
+    }
+    if (pName.includes('keychain') || pName.includes('charm') || cat.includes('keychain')) {
+        return {
+            occasion: "Surprise Gifts, Birthday Favors & Daily Keepsakes",
+            bestFor: "Besties, Bag Charm Lovers, Car Key Decor",
+            keepsake: "Durable Hand-Stitched Amigurumi"
+        };
+    }
+    return {
+        occasion: "Birthdays, Special Anniversaries & Festive Gifting",
+        bestFor: "Loved Ones, Handmade Art Enthusiasts",
+        keepsake: "100% Artisanal Craft • Made with Premium Yarn in India"
+    };
+};
+
 const ProductDetails = () => {
     const { slug } = useParams();
     const id = extractProductIdFromSlug(slug);
@@ -859,6 +898,36 @@ const ProductDetails = () => {
                             <div className="mb-4 w-full">
                                 <PincodeChecker />
                             </div>
+
+                            {/* Occasion & Gifting Intent Guide */}
+                            {(() => {
+                                const intent = getIntentDetails(product.name, product.category);
+                                return (
+                                    <div className="mb-5 rounded-2xl p-4 bg-gradient-to-br from-rose-50/80 via-white to-amber-50/50 border border-rose-100 shadow-[0_2px_10px_rgba(225,29,72,0.04)] space-y-2.5">
+                                        <div className="flex items-start gap-2.5">
+                                            <Sparkles className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                                            <div>
+                                                <span className="font-bold text-stone-900 block text-[11px] uppercase tracking-wider">Perfect Occasion</span>
+                                                <span className="text-stone-600 text-xs">{intent.occasion}</span>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-start gap-2.5">
+                                            <Heart className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+                                            <div>
+                                                <span className="font-bold text-stone-900 block text-[11px] uppercase tracking-wider">Ideal Recipient</span>
+                                                <span className="text-stone-600 text-xs">{intent.bestFor}</span>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-start gap-2.5">
+                                            <Gift className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+                                            <div>
+                                                <span className="font-bold text-stone-900 block text-[11px] uppercase tracking-wider">Why It's Special</span>
+                                                <span className="text-stone-600 text-xs">{intent.keepsake}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })()}
                             
                             
                         </div>

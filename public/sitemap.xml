@@ -146,6 +146,31 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://www.crochetwali.in/collections/crochet-flowers</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.crochetwali.in/collections/crochet-gajra</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.crochetwali.in/collections/reusable-bridal-gajra</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.crochetwali.in/collections/gifts-for-girlfriend</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.crochetwali.in/collections/anniversary-gifts</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>https://www.crochetwali.in/product/swtoberry-pot-e3404716-4ad2-4d81-9a6f-b4d0efe18451</loc>
     <lastmod>2026-10-02</lastmod>
     <changefreq>weekly</changefreq>
@@ -441,6 +466,18 @@
   </url>
   <url>
     <loc>https://www.crochetwali.in/blog/best-gifts-under-1000-rupees-india</loc>
+    <lastmod>2026-10-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.crochetwali.in/blog/reusable-crochet-gajra-bridal-haldi-wedding-guide</loc>
+    <lastmod>2026-10-11</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.crochetwali.in/blog/how-to-clean-and-care-for-crochet-flowers</loc>
     <lastmod>2026-10-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
