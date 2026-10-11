@@ -81,6 +81,7 @@ const Footer = () => {
                           <FooterLink to="/about" label="About" />
                           <FooterLink to="/support" label="Support" />
                           <FooterLink to="/profile" label="Order History" />
+                          <FooterExternalLink href="/sitemap.xml" label="Sitemap" />
                       </ul>
                   </details>
                   <div className="hidden lg:block space-y-4">
@@ -89,6 +90,7 @@ const Footer = () => {
                           <FooterLink to="/about" label="About" />
                           <FooterLink to="/support" label="Support" />
                           <FooterLink to="/profile" label="Order History" />
+                          <FooterExternalLink href="/sitemap.xml" label="Sitemap" />
                       </ul>
                   </div>
               </div>
@@ -149,7 +151,18 @@ const Footer = () => {
             <strong>Crochet Wali</strong> is India's premier handmade crochet gift shop. Shop forever crochet flower bouquets, handmade gajra, crochet hair clips, crochet keychains, crochet parandi, crochet claw clips, flower pots, and personalized gift boxes. Every product at Crochet Wali is 100% handmade with premium yarn. Crochet Wali delivers aesthetic handmade gifts across India — perfect for birthdays, anniversaries, rakhi, and special occasions. Buy handmade crochet gifts online at Crochet Wali.
           </p>
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-stone-400">
-               <p>&copy; {currentYear} Crochet Wali. All rights reserved.</p>
+               <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-3 gap-y-1">
+                 <p>&copy; {currentYear} Crochet Wali. All rights reserved.</p>
+                 <span className="hidden md:inline text-stone-300">•</span>
+                 <a 
+                   href="/sitemap.xml" 
+                   target="_blank" 
+                   rel="noopener noreferrer" 
+                   className="hover:text-rose-900 transition-colors underline-offset-2 hover:underline"
+                 >
+                   Sitemap
+                 </a>
+               </div>
                <div className="flex items-center gap-1">
                   <span>Handcrafted with</span>
                   <Heart className="w-3 h-3 text-rose-500 fill-current" />
@@ -186,6 +199,22 @@ const FooterLink = ({ to, label }) => (
             </span>
             {label}
         </Link>
+    </li>
+);
+
+const FooterExternalLink = ({ href, label }) => (
+    <li>
+        <a 
+            href={href} 
+            target="_blank" 
+            rel="noopener noreferrer"
+            className="group flex items-center gap-2 text-stone-500 hover:text-rose-900 transition-colors"
+        >
+            <span className="w-0 overflow-hidden group-hover:w-3 transition-all duration-300">
+                <ArrowRight size={12} />
+            </span>
+            {label}
+        </a>
     </li>
 );
 
