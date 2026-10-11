@@ -39,7 +39,7 @@ const QUICK_OPTIONS = [
 ];
 
 const CustomDesign = () => {
-  const [bannerImage, setBannerImage] = useState(null);
+  const [bannerImage, setBannerImage] = useState("/custom-images/custom_hero_banner.webp");
   const [pageTitle, setPageTitle] = useState("Custom Design Request");
   const [pageSubtitle, setPageSubtitle] = useState("Let's bring your unique vision to life.");
 
@@ -86,6 +86,7 @@ const CustomDesign = () => {
       <SEO 
         title="Custom Design Request - Handmade Gifts" 
         description="Request custom handmade gifts, personalized embroidery portrait hoops, and bespoke crochet designs directly via WhatsApp from Crochet Wali."
+        image={bannerImage || "https://www.crochetwali.in/custom-images/custom_hero_banner.webp"}
         schema={serviceSchema}
       />
       
@@ -93,11 +94,11 @@ const CustomDesign = () => {
       <div className="relative w-full h-[60vh] min-h-[500px] overflow-hidden flex items-center justify-center">
         {/* Background */}
         <div className="absolute inset-0">
-          {bannerImage ? (
-            <img src={bannerImage} alt="Custom Design" className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full bg-stone-900" />
-          )}
+          <img 
+            src={bannerImage || "/custom-images/custom_hero_banner.webp"} 
+            alt="Handcrafted custom crochet & embroidery design workshop" 
+            className="w-full h-full object-cover" 
+          />
           <div className="absolute inset-0 bg-gradient-to-t from-stone-900 via-stone-900/60 to-transparent opacity-90" />
         </div>
 
