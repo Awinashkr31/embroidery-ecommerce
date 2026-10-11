@@ -31,7 +31,7 @@ const TermsOfService = () => {
           <p>Prices for our products are subject to change without notice. We reserve the right at any time to modify or discontinue the Service (or any part or content thereof) without notice at any time.</p>
 
           <h2 className="text-xl font-heading font-semibold text-stone-900 mt-8 mb-4">6. Contact Information</h2>
-          <p>Questions about the Terms of Service should be sent to us at <strong>hello@sanaembroidery.com</strong>.</p>
+          <p>Questions about the Terms of Service should be sent to us at <strong>support@crochetwali.in</strong>.</p>
         </div>
       </div>
     </div>

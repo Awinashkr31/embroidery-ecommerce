@@ -88,7 +88,7 @@ export default defineConfig({
     viteCompression({ algorithm: 'gzip' }),
     localApiPlugin(),
     Sitemap({
-      hostname: 'https://www.embroiderybysana.live',
+      hostname: 'https://www.crochetwali.in',
       dynamicRoutes: [
         '/shop',
         '/gifts',

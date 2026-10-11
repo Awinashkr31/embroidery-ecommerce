@@ -8,8 +8,8 @@ const SEO = ({ title, description, keywords, schema, url, image, noIndex, childr
         : siteTitle;
     const metaDescription = description || "Shop Crochet Wali for handmade crochet bouquets, gajra, flower pots, parandi, keychains, hair clips & personalized gift boxes. Aesthetic handmade gifts, made to order across India.";
     const metaKeywords = keywords || "crochet wali, crochet flower bouquet, handmade gajra, crochet flower pot, crochet parandi, crochet keychain, crochet hair clips, embroidery hair clips, handmade gift box india, crochet claw clip, crochet bow, aesthetic handmade gifts india, custom crochet gifts, forever flower bouquet india";
-    const metaUrl = url || "https://www.embroiderybysana.live";
-    const metaImage = image || "https://www.embroiderybysana.live/hero-gift.png";
+    const metaUrl = url || "https://www.crochetwali.in";
+    const metaImage = image || "https://www.crochetwali.in/hero-gift.png";
 
     return (
         <Helmet>

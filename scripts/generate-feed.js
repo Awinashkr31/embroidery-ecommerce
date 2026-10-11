@@ -35,7 +35,7 @@ const slugify = (text) => {
 
 const getProductUrl = (product) => {
     const slug = slugify(product.name);
-    return `https://www.embroiderybysana.live/product/${slug}-${product.id}`;
+    return `https://www.crochetwali.in/product/${slug}-${product.id}`;
 };
 
 const escapeXml = (unsafe) => {
@@ -67,7 +67,7 @@ async function generateFeed() {
 <rss xmlns:g="http://base.google.com/ns/1.0" version="2.0">
     <channel>
         <title>Crochet Wali</title>
-        <link>https://www.embroiderybysana.live</link>
+        <link>https://www.crochetwali.in</link>
         <description>Handmade crochet flowers, gajra, hair accessories &amp; personalized gifts</description>
 `;
 
@@ -85,7 +85,7 @@ async function generateFeed() {
             }
             if (images.length === 0 && product.image) images.push(product.image);
             
-            const mainImage = images[0] ? escapeXml(images[0]) : 'https://www.embroiderybysana.live/logo.png';
+            const mainImage = images[0] ? escapeXml(images[0]) : 'https://www.crochetwali.in/logo.png';
             
             // Determine availability
             const inStock = product.stock_quantity > 0;
@@ -93,6 +93,16 @@ async function generateFeed() {
             
             // Extract Price
             const price = product.price;
+
+            // Dynamically determine Google Product Category based on product title/category
+            let googleCategory = 'Home &amp; Garden &gt; Decor &gt; Artificial Flora';
+            const nameLower = (product.name || '').toLowerCase();
+            const catLower = (product.category || '').toLowerCase();
+            if (nameLower.includes('clip') || nameLower.includes('band') || nameLower.includes('hair') || nameLower.includes('gajra') || catLower.includes('hair') || catLower.includes('accessories')) {
+                googleCategory = 'Apparel &amp; Accessories &gt; Clothing Accessories &gt; Hair Accessories &gt; Hair Pins, Claw Clips &amp; Clips';
+            } else if (nameLower.includes('keychain') || catLower.includes('keychain')) {
+                googleCategory = 'Apparel &amp; Accessories &gt; Handbag &amp; Wallet Accessories &gt; Keychains';
+            }
 
             xml += `
         <item>
@@ -105,7 +115,7 @@ async function generateFeed() {
             <g:availability>${availability}</g:availability>
             <g:price>${price} INR</g:price>
             <g:brand>Crochet Wali</g:brand>
-            <g:google_product_category>Home &amp; Garden &gt; Decor &gt; Artificial Flora</g:google_product_category>
+            <g:google_product_category>${googleCategory}</g:google_product_category>
             <g:identifier_exists>no</g:identifier_exists>
         </item>`;
         });

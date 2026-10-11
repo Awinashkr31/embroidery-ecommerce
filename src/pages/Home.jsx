@@ -121,7 +121,8 @@ const Home = () => {
 
   return (
     <div className="bg-background text-on-background font-body pb-24 lg:pb-0 pt-[env(safe-area-inset-top)] antialiased relative">
-      <SEO title="Anuki Crochet | Luxury Artisanal Keepsakes" />
+      <SEO title="Crochet Wali | Handmade Crochet Flowers & Artisanal Keepsakes" />
+      <h1 className="sr-only">Crochet Wali – Handmade Crochet Flowers, Gajra, Hair Accessories & Aesthetic Gifts India</h1>
 
       {/* Search Bar */}
       <div className="px-4 pt-2 pb-3">
@@ -162,7 +163,7 @@ const Home = () => {
           {heroSlides.map((slide, idx) => (
             <div key={idx} className="relative flex shrink-0 w-[92vw] sm:w-[85vw] md:w-[600px] bg-stone-900 rounded-2xl overflow-hidden shadow-sm h-[320px] snap-center">
               {/* Background Image & Overlay */}
-              <img src={slide.image} loading={idx === 0 ? "eager" : "lazy"} fetchPriority={idx === 0 ? "high" : "auto"} decoding="async" className="absolute inset-0 w-full h-full object-cover z-0" alt="Hero Featured" />
+              <img src={slide.image} loading={idx === 0 ? "eager" : "lazy"} fetchPriority={idx === 0 ? "high" : "auto"} decoding="async" className="absolute inset-0 w-full h-full object-cover z-0" alt={`${slide.title.replace(/\n/g, ' ')} - Crochet Wali`} />
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-10" />
 
               {/* Content Overlay */}
@@ -173,9 +174,9 @@ const Home = () => {
                   </span>
                 </div>
                 
-                <h1 className="font-headline-md text-white mb-3 leading-tight whitespace-pre-line drop-shadow-md" style={{ fontFamily: "'Playfair Display', serif" }}>
+                <h2 className="font-headline-md text-white mb-3 leading-tight whitespace-pre-line drop-shadow-md" style={{ fontFamily: "'Playfair Display', serif" }}>
                   {slide.title}
-                </h1>
+                </h2>
                 
                 <div className="bg-white/95 backdrop-blur-sm text-rose-700 text-[10px] font-bold px-3 py-2 rounded-xl mb-4 flex items-center gap-2 w-fit shadow-lg">
                   <Tag size={14} className="shrink-0" />

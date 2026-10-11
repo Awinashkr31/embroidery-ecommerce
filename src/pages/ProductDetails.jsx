@@ -498,13 +498,13 @@ const ProductDetails = () => {
                 "@type": "ListItem",
                 "position": 1,
                 "name": "Home",
-                "item": "https://www.embroiderybysana.live"
+                "item": "https://www.crochetwali.in"
             },
             {
                 "@type": "ListItem",
                 "position": 2,
                 "name": "Shop",
-                "item": "https://www.embroiderybysana.live/shop"
+                "item": "https://www.crochetwali.in/shop"
             },
             {
                 "@type": "ListItem",

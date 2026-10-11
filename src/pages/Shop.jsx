@@ -226,7 +226,7 @@ const Shop = () => {
             "@type": "CollectionPage",
             "name": selectedCategories.length > 0 ? `${selectedCategories.map(c => c.charAt(0).toUpperCase() + c.slice(1)).join(', ')} | Crochet Wali` : "Shop All Handmade Crochet Gifts | Crochet Wali",
             "description": "Browse our complete catalog of Handmade Crochet Gifts, customized embroidery hoops, and aesthetic accessories. Find the perfect customized handmade gift in India.",
-            "url": "https://www.embroiderybysana.live/shop"
+            "url": "https://www.crochetwali.in/shop"
         },
         {
             "@context": "https://schema.org",
@@ -234,7 +234,7 @@ const Shop = () => {
             "itemListElement": allFilteredProducts.map((product, index) => ({
                 "@type": "ListItem",
                 "position": index + 1,
-                "url": `https://www.embroiderybysana.live/product/${product.id}`
+                "url": `https://www.crochetwali.in/product/${product.id}`
             }))
         }
     ];
@@ -247,7 +247,7 @@ const Shop = () => {
             params.delete('page');
         }
         const qs = params.toString();
-        return `https://www.embroiderybysana.live/shop${qs ? `?${qs}` : ''}`;
+        return `https://www.crochetwali.in/shop${qs ? `?${qs}` : ''}`;
     };
 
     const prevUrl = currentPage > 1 ? getPaginationUrl(currentPage - 1) : null;
@@ -573,7 +573,7 @@ const Shop = () => {
                     <div className="flex-1 w-full relative min-w-0">
                         {/* Desktop Header */}
                         <div className="hidden md:block mb-8">
-                            <h1 className="font-heading text-3xl lg:text-4xl font-bold text-stone-900 mb-2">Handmade Crochet Gifts & Crochet Collection</h1>
+                            <h2 className="font-heading text-3xl lg:text-4xl font-bold text-stone-900 mb-2">Handmade Crochet Gifts & Crochet Collection</h2>
                             <p className="text-stone-500 text-sm lg:text-base mb-2">Discover hand-crafted embroidery pieces tailored for you.</p>
                             <p className="text-stone-600 text-sm max-w-3xl leading-relaxed">Explore our extensive range of personalized handmade gifts, from intricate embroidery hoops to eternal crochet flower bouquets. Every piece is meticulously crafted with love, making them perfect for anniversaries, birthdays, or as unique aesthetic additions to your home.</p>
                         </div>

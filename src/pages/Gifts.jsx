@@ -63,12 +63,54 @@ const Gifts = () => {
         );
     }
 
+    const giftSchema = [
+        {
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+                { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.crochetwali.in" },
+                { "@type": "ListItem", "position": 2, "name": "Gifts Guide", "item": "https://www.crochetwali.in/gifts" }
+            ]
+        },
+        {
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": [
+                {
+                    "@type": "Question",
+                    "name": "Why are handmade crochet flower bouquets better than real flowers for gifting?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Unlike fresh flowers that wilt in 3-5 days, Crochet Wali handmade crochet bouquets last forever. They require zero watering, never fade, and serve as an everlasting aesthetic keepsake for anniversaries, birthdays, and special occasions."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "How long does delivery take for crochet gifts in India?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Standard delivery takes approximately 4-7 business days across India. Custom handmade gift orders may take an additional 1-3 days for artisanal crafting."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "Do crochet gifts come in ready-to-gift packaging?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Yes, every gift bouquet and accessory from Crochet Wali is beautifully wrapped in aesthetic artisanal packaging, complete with ribbons, making them ready to gift right out of the box."
+                    }
+                }
+            ]
+        }
+    ];
+
     return (
         <div className="bg-[#fdfbf7] min-h-screen font-body selection:bg-rose-100 selection:text-[#d6336c]">
             <SEO 
                 title="Unique Handmade Gifts for Girlfriend, Anniversary & Birthdays | Crochet Wali"
                 description="Shop unique, handmade crochet bouquets & personalized embroidery gifts in India. The perfect romantic gift for your girlfriend, wife, or best friend."
-                url="https://www.embroiderybysana.live/gifts"
+                url="https://www.crochetwali.in/gifts"
+                schema={giftSchema}
             />
             
             {/* Hero Section */}

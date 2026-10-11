@@ -112,7 +112,7 @@ serve(async (req) => {
           </div>` : ''}
 
           <div style="margin-top: 20px; text-align: center;">
-            <a href="https://www.Crochet Wali.live/sadmin/crash-logs" 
+            <a href="https://www.crochetwali.in/sadmin/crash-logs" 
                style="display: inline-block; background: #991b1b; color: white; padding: 12px 24px; border-radius: 12px; text-decoration: none; font-weight: 700; font-size: 14px;">
               View in Dashboard →
             </a>

@@ -8,7 +8,29 @@
           "value": "embroiderybysana.live"
         }
       ],
-      "destination": "https://www.embroiderybysana.live/$1",
+      "destination": "https://www.crochetwali.in/$1",
+      "permanent": true
+    },
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.embroiderybysana.live"
+        }
+      ],
+      "destination": "https://www.crochetwali.in/$1",
+      "permanent": true
+    },
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "crochetwali.in"
+        }
+      ],
+      "destination": "https://www.crochetwali.in/$1",
       "permanent": true
     }
   ],

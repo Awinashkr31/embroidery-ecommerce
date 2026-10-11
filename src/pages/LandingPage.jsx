@@ -68,7 +68,7 @@ const LandingPage = () => {
         title="Crochet Wali – Handmade Crochet Gifts Made with Love"
         description="Discover Crochet Wali for premium handmade crochet flowers, bouquets, gajra, and personalized gifts. Beautifully crafted in India. Shop our aesthetic collections today!"
         schema={[landingSchema, faqSchema]}
-        url="https://www.embroiderybysana.live/crochet-wali"
+        url="https://www.crochetwali.in/crochet-wali"
       />
 
       {/* HERO SECTION */}

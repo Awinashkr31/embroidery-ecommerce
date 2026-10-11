@@ -1,10 +1,12 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-// Restrict CORS to known production domains
+// Restrict CORS to known production domains (crochetwali.in primary, embroiderybysana.live legacy until expiry)
 const ALLOWED_ORIGINS = [
-  'https://www.Crochet Wali.live',
-  'https://Crochet Wali.live',
+  'https://www.crochetwali.in',
+  'https://crochetwali.in',
+  'https://www.embroiderybysana.live',
+  'https://embroiderybysana.live',
   'http://localhost:5173', // dev only
 ];
 

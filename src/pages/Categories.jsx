@@ -71,7 +71,7 @@ const Categories = () => {
           "@type": "CollectionPage",
           "name": "All Categories | Crochet Wali",
           "description": "Browse all categories of Handmade Crochet Gifts, Gajra, Hair Clips, and Custom Bouquets by Crochet Wali.",
-          "url": "https://www.embroiderybysana.live/categories"
+          "url": "https://www.crochetwali.in/categories"
       },
       {
           "@context": "https://schema.org",
@@ -79,7 +79,7 @@ const Categories = () => {
           "itemListElement": dynamicCategories.map((cat, index) => ({
               "@type": "ListItem",
               "position": index + 1,
-              "url": cat.id === 'all' ? 'https://www.embroiderybysana.live/shop' : `https://www.embroiderybysana.live/shop?category=${encodeURIComponent(cat.label)}`
+              "url": cat.id === 'all' ? 'https://www.crochetwali.in/shop' : `https://www.crochetwali.in/shop?category=${encodeURIComponent(cat.label)}`
           }))
       }
   ];

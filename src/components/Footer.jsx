@@ -39,7 +39,7 @@ const Footer = () => {
             <div className="flex gap-3 pt-2">
                <SocialLink href="https://www.instagram.com/embroidery_by__sana" icon={<Instagram size={16} />} label="Instagram" />
                <SocialLink href="https://wa.me/917428013214" icon={<MessageCircle size={16} />} label="WhatsApp" />
-               <SocialLink href="mailto:hello@sanaembroidery.com" icon={<Mail size={16} />} label="Email" />
+               <SocialLink href="mailto:support@crochetwali.in" icon={<Mail size={16} />} label="Email" />
             </div>
           </div>
 

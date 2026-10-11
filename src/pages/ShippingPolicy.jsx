@@ -40,7 +40,7 @@ const ShippingPolicy = () => {
           <h2 className="text-xl font-heading font-semibold text-stone-900 mt-8 mb-4">6. Contact Us</h2>
           <p>If you have any questions or concerns regarding your order's shipping, please reach out to our support team:</p>
           <ul className="list-disc pl-5 mt-2 space-y-1">
-            <li><strong>Email:</strong> support@embroiderybysana.live</li>
+            <li><strong>Email:</strong> support@crochetwali.in</li>
             <li><strong>Operating Hours:</strong> Monday - Saturday, 10:00 AM - 6:00 PM IST</li>
             <li><strong>Location:</strong> New Delhi, India</li>
           </ul>

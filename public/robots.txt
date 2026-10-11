@@ -16,5 +16,5 @@ Disallow: /order/
 Disallow: /track-order
 Disallow: /api/
 
-Sitemap: https://www.embroiderybysana.live/sitemap.xml
-Sitemap: https://www.embroiderybysana.live/sitemap_images.xml
+Sitemap: https://www.crochetwali.in/sitemap.xml
+Sitemap: https://www.crochetwali.in/sitemap_images.xml

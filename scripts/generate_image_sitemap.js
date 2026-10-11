@@ -45,7 +45,7 @@ async function generateImageSitemap() {
 
   for (const product of products) {
     const productSlug = slugify(product.name) || product.id;
-    const productUrl = `https://www.embroiderybysana.live/product/${productSlug}`;
+    const productUrl = `https://www.crochetwali.in/product/${productSlug}`;
     
     // Collect all unique images from product and variants
     const allImages = new Set();
@@ -70,7 +70,7 @@ async function generateImageSitemap() {
         // Ensure image URL is absolute (assuming Supabase storage or similar)
         let absoluteImgUrl = imgUrl;
         if (imgUrl.startsWith('/')) {
-            absoluteImgUrl = `https://www.embroiderybysana.live${imgUrl}`;
+            absoluteImgUrl = `https://www.crochetwali.in${imgUrl}`;
         } else if (!imgUrl.startsWith('http')) {
              absoluteImgUrl = `https://yqtrlqkmitgnaehbawdm.supabase.co/storage/v1/object/public/products/${imgUrl}`;
         }

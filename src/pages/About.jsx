@@ -12,14 +12,14 @@ const About = () => {
             "@type": "AboutPage",
             "name": "About Crochet Wali",
             "description": "Discover the story behind Sana's passion for Handmade Crochet Gifts and personalized crochet gifts.",
-            "url": "https://www.embroiderybysana.live/about"
+            "url": "https://www.crochetwali.in/about"
         },
         {
             "@context": "https://schema.org",
             "@type": "Organization",
             "name": "Crochet Wali",
-            "url": "https://www.embroiderybysana.live",
-            "logo": "https://www.embroiderybysana.live/logo.png",
+            "url": "https://www.crochetwali.in",
+            "logo": "https://www.crochetwali.in/logo.png",
             "founder": {
                 "@type": "Person",
                 "name": "Sana"
@@ -30,7 +30,7 @@ const About = () => {
             ],
             "contactPoint": {
                 "@type": "ContactPoint",
-                "email": "support@embroiderybysana.live",
+                "email": "support@crochetwali.in",
                 "contactType": "customer support"
             }
         },
@@ -43,7 +43,7 @@ const About = () => {
                 "@type": "Organization",
                 "name": "Crochet Wali"
             },
-            "url": "https://www.embroiderybysana.live/about",
+            "url": "https://www.crochetwali.in/about",
             "description": "Expert embroidery artist specializing in custom portrait hoops and handmade crochet bouquets in India."
         }
     ];
@@ -53,7 +53,7 @@ const About = () => {
             <SEO 
                 title="About Us - The Handmade Journey"
                 description="Learn about Sana, an expert embroidery artist in India creating custom embroidery hoops, personalized embroidery hoops, crochet bouquets, aesthetic handmade gifts, and Handmade Crochet Gifts decor."
-                url="https://www.embroiderybysana.live/about"
+                url="https://www.crochetwali.in/about"
                 keywords="custom embroidery hoop, Handmade Crochet Gifts hoop, embroidery hoop gift, personalized embroidery hoop, aesthetic embroidery art, embroidery room decor, floral embroidery hoop, embroidery handmade gift, custom embroidery gifts, embroidery decor india, embroidery wall decor, embroidery name hoop, handmade gifts india, personalized gifts india, aesthetic handmade gifts"
                 schema={aboutSchema}
             />
@@ -86,7 +86,7 @@ const About = () => {
                             Beyond traditional embroidery, my love for handcrafted aesthetics led me to explore the vibrant world of crochet. From everlasting crochet bouquets and forever flower bouquets to aesthetic crochet accessories, every piece is made with meticulous attention to detail right here in India.
                         </p>
                         <p className="mt-4 font-medium">
-                            <strong>Connect With Us:</strong> We are based in New Delhi, India. You can follow our journey and view our latest designs on Instagram at <a href="https://instagram.com/Crochet Wali" className="text-rose-700 hover:underline">@Crochet Wali</a> and on Pinterest at <a href="https://pinterest.com/Crochet Wali" className="text-rose-700 hover:underline">@Crochet Wali</a>. For custom inquiries, email us directly at support@embroiderybysana.live.
+                            <strong>Connect With Us:</strong> We are based in New Delhi, India. You can follow our journey and view our latest designs on Instagram at <a href="https://instagram.com/Crochet Wali" className="text-rose-700 hover:underline">@Crochet Wali</a> and on Pinterest at <a href="https://pinterest.com/Crochet Wali" className="text-rose-700 hover:underline">@Crochet Wali</a>. For custom inquiries, email us directly at support@crochetwali.in.
                         </p>
                     </div>
                 </div>

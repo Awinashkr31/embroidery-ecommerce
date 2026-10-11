@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Cloudflare Worker for handling direct image uploads to Cloudflare R2
  * 
  * Instructions:
@@ -17,8 +17,10 @@ export default {
 
     // CORS origin whitelist
     const ALLOWED_ORIGINS = [
-      'https://www.Crochet Wali.live',
-      'https://Crochet Wali.live',
+      'https://www.crochetwali.in',
+      'https://crochetwali.in',
+      'https://www.embroiderybysana.live',
+      'https://embroiderybysana.live',
       'http://localhost:5173',
     ];
     const requestOrigin = request.headers.get('Origin') || '';

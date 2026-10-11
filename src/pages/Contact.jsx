@@ -45,11 +45,11 @@ const Contact = () => {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
     "name": "Crochet Wali",
-    "image": "https://www.embroiderybysana.live/hero-gift.png",
-    "@id": "https://www.embroiderybysana.live",
-    "url": "https://www.embroiderybysana.live/support",
+    "image": "https://www.crochetwali.in/hero-gift.png",
+    "@id": "https://www.crochetwali.in",
+    "url": "https://www.crochetwali.in/support",
     "telephone": "+917428013214",
-    "email": "support@embroiderybysana.live",
+    "email": "support@crochetwali.in",
     "address": {
       "@type": "PostalAddress",
       "streetAddress": "Hauz Khas Village, Near Fort",
@@ -122,8 +122,8 @@ const Contact = () => {
                 </div>
                 <div>
                   <h3 className="text-xl font-heading font-bold text-stone-900 mb-1">Email Support</h3>
-                  <a href="mailto:support@embroiderybysana.live" className="text-stone-600 hover:text-rose-900 transition-colors block text-lg font-medium">
-                    support@embroiderybysana.live
+                  <a href="mailto:support@crochetwali.in" className="text-stone-600 hover:text-rose-900 transition-colors block text-lg font-medium">
+                    support@crochetwali.in
                   </a>
                   <p className="text-xs text-stone-400 font-bold uppercase tracking-wider mt-1">Online orders & Enquiries</p>
                 </div>

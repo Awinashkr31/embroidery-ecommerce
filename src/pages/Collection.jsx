@@ -122,19 +122,19 @@ const Collection = () => {
                 "@type": "ListItem",
                 "position": 1,
                 "name": "Home",
-                "item": "https://www.embroiderybysana.live/"
+                "item": "https://www.crochetwali.in/"
             },
             {
                 "@type": "ListItem",
                 "position": 2,
                 "name": "Collections",
-                "item": "https://www.embroiderybysana.live/categories"
+                "item": "https://www.crochetwali.in/categories"
             },
             {
                 "@type": "ListItem",
                 "position": 3,
                 "name": collectionData.h1,
-                "item": `https://www.embroiderybysana.live/collections/${slug}`
+                "item": `https://www.crochetwali.in/collections/${slug}`
             }
         ]
     };
@@ -145,7 +145,7 @@ const Collection = () => {
         "@type": "CollectionPage",
         "name": collectionData.h1,
         "description": collectionData.description,
-        "url": `https://www.embroiderybysana.live/collections/${slug}`
+        "url": `https://www.crochetwali.in/collections/${slug}`
     };
 
     const itemListSchema = {
@@ -154,7 +154,7 @@ const Collection = () => {
         "itemListElement": allFilteredProducts.map((p, index) => ({
             "@type": "ListItem",
             "position": index + 1,
-            "url": `https://www.embroiderybysana.live${getProductUrl(p)}`
+            "url": `https://www.crochetwali.in${getProductUrl(p)}`
         }))
     };
 
@@ -164,7 +164,7 @@ const Collection = () => {
                 title={collectionData.title} 
                 description={collectionData.description} 
                 schema={[breadcrumbSchema, collectionSchema, itemListSchema]}
-                url={`https://www.embroiderybysana.live/collections/${slug}`}
+                url={`https://www.crochetwali.in/collections/${slug}`}
             />
             
             <div className="container-custom pt-24 md:pt-32">
