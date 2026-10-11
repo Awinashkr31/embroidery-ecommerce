@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, Phone, MessageSquare, Palette, Scissors, Star, Gift, Camera, Check, Clock, ArrowRight } from 'lucide-react';
+import { Sparkles, Phone, MessageSquare, Palette, Scissors, Star, Camera, Check, Clock, ArrowRight } from 'lucide-react';
 import { fetchSetting } from '../utils/settingsUtils';
 import SEO from '../components/SEO';
 
@@ -201,33 +201,6 @@ const CustomDesign = () => {
             <div className="text-rose-900 font-bold text-xs">🚚 Delivery in India</div>
             <h3 className="font-heading font-bold text-stone-900 text-base">4–7 Days Transit</h3>
             <p className="text-stone-600 text-xs">Shipped safely in rigid gift-ready packaging via express couriers with live tracking.</p>
-          </div>
-        </div>
-      </div>
-
-      {/* ─── Bulk & Wedding Favors Callout ─── */}
-      <div className="container-custom px-5 max-w-4xl mb-10 -mt-6 relative z-20">
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-rose-950 via-stone-900 to-amber-950 text-white p-6 md:p-8 shadow-xl border border-rose-900/30">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="space-y-2 text-center md:text-left">
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-rose-500/20 border border-rose-400/30 rounded-full text-white text-xs font-semibold">
-                <Gift className="w-3.5 h-3.5 text-rose-300" /> Bulk &amp; Event Orders (10+ Pieces)
-              </div>
-              <h2 className="text-xl md:text-2xl font-heading font-bold text-white">
-                Planning Wedding Favors or Haldi Giveaways?
-              </h2>
-              <p className="text-stone-200 text-xs md:text-sm max-w-xl leading-relaxed">
-                Need matching crochet gajras, bridesmaid floral gift boxes, or bulk amigurumi charms? We provide dedicated artisan design, custom color themes, and special tiered bulk pricing.
-              </p>
-            </div>
-            <a
-              href={getWhatsAppUrl("Hi Crochet Wali, I am inquiring about a bulk order (wedding favors/haldi/events, 10+ pieces).")}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="shrink-0 px-6 py-3.5 bg-[#25D366] hover:bg-[#20bd5a] text-white rounded-full font-bold text-sm tracking-wide transition-all shadow-lg flex items-center justify-center gap-2 hover:scale-105 active:scale-95 w-full sm:w-auto"
-            >
-              <Phone className="w-4 h-4" /> Bulk WhatsApp Inquiry
-            </a>
           </div>
         </div>
       </div>
