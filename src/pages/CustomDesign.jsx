@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, Phone, MessageSquare, Palette, Scissors, Star, Camera, Check, Clock, ArrowRight } from 'lucide-react';
+import { Sparkles, MessageCircle, MessageSquare, Palette, Scissors, Star, Camera, Check, Clock, ArrowRight } from 'lucide-react';
 import { fetchSetting } from '../utils/settingsUtils';
 import SEO from '../components/SEO';
 
 const WHATSAPP_NUMBER = "917428013214";
-const WHATSAPP_DISPLAY = "+91 74280 13214";
 
 const QUICK_OPTIONS = [
   {
@@ -121,7 +120,7 @@ const CustomDesign = () => {
                 rel="noopener noreferrer"
                 className="bg-[#25D366] hover:bg-[#20bd5a] text-white px-8 py-4 rounded-full font-bold text-sm tracking-wide shadow-xl hover:-translate-y-1 transition-all flex items-center gap-2.5 active:scale-95"
              >
-                <Phone className="w-4 h-4" /> Chat on WhatsApp
+                <MessageCircle className="w-4 h-4" /> Chat on WhatsApp
              </a>
              <button 
                 onClick={() => document.getElementById('whatsapp-order-hub').scrollIntoView({ behavior: 'smooth' })}
@@ -266,8 +265,8 @@ const CustomDesign = () => {
                 rel="noopener noreferrer"
                 className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white py-4 px-8 rounded-2xl font-bold text-base tracking-wide shadow-xl shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all flex items-center justify-center gap-3 hover:-translate-y-0.5 active:translate-y-0"
               >
-                <Phone className="w-5 h-5 fill-current" />
-                <span>Chat on WhatsApp ({WHATSAPP_DISPLAY})</span>
+                <MessageCircle className="w-5 h-5" />
+                <span>Chat on WhatsApp</span>
               </a>
               <p className="text-xs text-stone-500">
                 Direct chat with founder Sana · No registration required · Instant photo sharing
