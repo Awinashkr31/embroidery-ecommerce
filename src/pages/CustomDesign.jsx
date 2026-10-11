@@ -134,21 +134,21 @@ const CustomDesign = () => {
       </div>
 
       {/* ─── How it Works ─── */}
-      <div className="container-custom px-5 -mt-8 relative z-10 mb-8 md:mb-12">
-        <div className="flex gap-3 md:gap-4 overflow-x-auto no-scrollbar pb-2 snap-x snap-mandatory md:grid md:grid-cols-4">
+      <div className="container-custom px-4 sm:px-5 -mt-8 relative z-10 mb-8 md:mb-12">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
           {steps.map((step, i) => (
             <div
               key={i}
-              className="snap-center flex-shrink-0 w-[65%] sm:w-auto bg-white rounded-2xl p-5 shadow-sm border border-stone-100 flex flex-col items-center text-center group hover:shadow-md transition-all"
+              className="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-stone-100 flex flex-col items-center text-center group hover:shadow-md transition-all"
             >
-              <div className="w-11 h-11 rounded-xl bg-rose-50 flex items-center justify-center mb-3 group-hover:bg-rose-100 transition-colors">
-                <step.icon className="w-5 h-5 text-rose-900" />
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-rose-50 flex items-center justify-center mb-2.5 sm:mb-3 group-hover:bg-rose-100 transition-colors">
+                <step.icon className="w-4 h-4 sm:w-5 sm:h-5 text-rose-900" />
               </div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-[10px] font-bold text-rose-900/60 bg-rose-50 w-5 h-5 rounded-full flex items-center justify-center">{i + 1}</span>
-                <h3 className="text-sm font-bold text-stone-900">{step.title}</h3>
+              <div className="flex items-center gap-1.5 mb-1">
+                <span className="text-[9px] sm:text-[10px] font-bold text-rose-900/70 bg-rose-50 w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center">{i + 1}</span>
+                <h3 className="text-xs sm:text-sm font-bold text-stone-900">{step.title}</h3>
               </div>
-              <p className="text-xs text-stone-500">{step.desc}</p>
+              <p className="text-[11px] sm:text-xs text-stone-500 leading-relaxed">{step.desc}</p>
             </div>
           ))}
         </div>
