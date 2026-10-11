@@ -278,6 +278,55 @@ const Collection = () => {
                         )}
                     </>
                 )}
+
+                {/* Collection Buyer's Guide & Craft Notes for SEO & E-E-A-T */}
+                <div className="mt-16 md:mt-24 pt-12 border-t border-stone-200 max-w-4xl mx-auto">
+                    <div className="bg-white rounded-3xl p-6 md:p-10 border border-stone-100 shadow-sm space-y-6">
+                        <div className="flex items-center gap-2 text-rose-800 text-xs font-bold uppercase tracking-widest">
+                            <Sparkles className="w-4 h-4" /> Buyer's Guide &amp; Craft Notes
+                        </div>
+                        <h2 className="text-xl md:text-2xl font-heading font-bold text-stone-900">
+                            Everything You Need to Know About Our {collectionData.h1}
+                        </h2>
+                        
+                        <div className="grid md:grid-cols-2 gap-4 text-stone-600 leading-relaxed pt-2">
+                            <div className="space-y-1.5 bg-stone-50/70 p-4 rounded-2xl border border-stone-100">
+                                <h3 className="font-bold text-stone-900 text-sm">✨ 100% Handcrafted Artisanal Quality</h3>
+                                <p className="text-xs">
+                                    Every item in this collection is individually hand-knitted by skilled artisans using premium botanical-dyed milk cotton yarn. Zero plastic mass-production.
+                                </p>
+                            </div>
+                            <div className="space-y-1.5 bg-stone-50/70 p-4 rounded-2xl border border-stone-100">
+                                <h3 className="font-bold text-stone-900 text-sm">🚚 Pan-India Express Delivery</h3>
+                                <p className="text-xs">
+                                    Dispatched with protective aesthetic gift packing in 1-3 business days. Arrives safely in 4-7 days via premium couriers with live tracking.
+                                </p>
+                            </div>
+                            <div className="space-y-1.5 bg-stone-50/70 p-4 rounded-2xl border border-stone-100">
+                                <h3 className="font-bold text-stone-900 text-sm">💌 Complimentary Gift Note Card</h3>
+                                <p className="text-xs">
+                                    Ordering as a surprise gift? We include a handwritten personal note card with your custom message and luxury ribbon wrapping at checkout.
+                                </p>
+                            </div>
+                            <div className="space-y-1.5 bg-stone-50/70 p-4 rounded-2xl border border-stone-100">
+                                <h3 className="font-bold text-stone-900 text-sm">🌸 Zero Wilting &amp; Easy Care</h3>
+                                <p className="text-xs">
+                                    Never wilts or needs water. Simply dust with a cool hairdryer or soft powder brush every few weeks to keep yarn colors fresh for years.
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Internal cross-links */}
+                        <div className="pt-4 border-t border-stone-100 flex flex-wrap items-center gap-2 text-xs">
+                            <span className="text-stone-400 font-medium py-1">Related collections:</span>
+                            <Link to="/collections/crochet-bouquets" className="px-3 py-1 bg-stone-100 hover:bg-rose-50 hover:text-rose-900 rounded-full text-stone-700 transition-colors">Crochet Bouquets</Link>
+                            <Link to="/collections/reusable-bridal-gajra" className="px-3 py-1 bg-stone-100 hover:bg-rose-50 hover:text-rose-900 rounded-full text-stone-700 transition-colors">Bridal Gajra</Link>
+                            <Link to="/collections/gifts-under-500" className="px-3 py-1 bg-stone-100 hover:bg-rose-50 hover:text-rose-900 rounded-full text-stone-700 transition-colors">Gifts Under ₹500</Link>
+                            <Link to="/collections/gifts-for-girlfriend" className="px-3 py-1 bg-stone-100 hover:bg-rose-50 hover:text-rose-900 rounded-full text-stone-700 transition-colors">Gifts for Her</Link>
+                            <Link to="/custom-design" className="px-3 py-1 bg-stone-100 hover:bg-rose-50 hover:text-rose-900 rounded-full text-stone-700 transition-colors">Custom Orders</Link>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );

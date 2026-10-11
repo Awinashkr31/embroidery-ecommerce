@@ -241,6 +241,32 @@ const CustomDesign = () => {
          </div>
       </div>
 
+      {/* ─── Transparent Order Specs, Timelines & MOQs (P1 & E-E-A-T) ─── */}
+      <div className="container-custom px-5 max-w-4xl mb-12">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-white p-5 rounded-2xl border border-stone-200/70 shadow-sm space-y-1.5">
+            <div className="text-rose-900 font-bold text-xs uppercase tracking-wider">📦 Minimum Order (MOQ)</div>
+            <div className="font-heading font-bold text-stone-900 text-base">MOQ = 1 Piece</div>
+            <p className="text-stone-500 text-xs">No minimum required for retail gifts. 10+ pieces qualify for bulk wedding/event discounts.</p>
+          </div>
+          <div className="bg-white p-5 rounded-2xl border border-stone-200/70 shadow-sm space-y-1.5">
+            <div className="text-rose-900 font-bold text-xs uppercase tracking-wider">⏱️ Production Time</div>
+            <div className="font-heading font-bold text-stone-900 text-base">1–3 Days Crafting</div>
+            <p className="text-stone-500 text-xs">Each piece is hand-knitted from scratch with botanical-dyed milk cotton yarn.</p>
+          </div>
+          <div className="bg-white p-5 rounded-2xl border border-stone-200/70 shadow-sm space-y-1.5">
+            <div className="text-rose-900 font-bold text-xs uppercase tracking-wider">🎨 Customization</div>
+            <div className="font-heading font-bold text-stone-900 text-base">30+ Yarn Shades</div>
+            <p className="text-stone-500 text-xs">Custom names, dates, quotes, color palettes, and custom bouquet combinations.</p>
+          </div>
+          <div className="bg-white p-5 rounded-2xl border border-stone-200/70 shadow-sm space-y-1.5">
+            <div className="text-rose-900 font-bold text-xs uppercase tracking-wider">🚚 Delivery in India</div>
+            <div className="font-heading font-bold text-stone-900 text-base">4–7 Days Transit</div>
+            <p className="text-stone-500 text-xs">Shipped safely in rigid gift-ready packaging via express couriers with live tracking.</p>
+          </div>
+        </div>
+      </div>
+
       {/* ─── Bulk & Wedding Favors Callout (Audience E) ─── */}
       <div className="container-custom px-5 max-w-4xl mb-10 -mt-6 relative z-20">
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-rose-950 via-stone-900 to-amber-950 text-white p-6 md:p-8 shadow-xl border border-rose-900/30">

@@ -161,6 +161,16 @@ function App() {
                 <Route path="/shop" element={<Shop />} />
                 <Route path="/gifts" element={<Gifts />} />
                 <Route path="/categories" element={<Categories />} />
+                <Route path="/crochet-flower-bouquets" element={<Navigate to="/collections/crochet-bouquets" replace />} />
+                <Route path="/crochet-gajra" element={<Navigate to="/collections/crochet-gajra" replace />} />
+                <Route path="/crochet-parandi" element={<Navigate to="/collections/crochet-parandi" replace />} />
+                <Route path="/crochet-hair-accessories" element={<Navigate to="/collections/crochet-accessories" replace />} />
+                <Route path="/crochet-keychains" element={<Navigate to="/collections/crochet-keychains" replace />} />
+                <Route path="/crochet-gifts-under-499" element={<Navigate to="/collections/gifts-under-500" replace />} />
+                <Route path="/crochet-birthday-gifts" element={<Navigate to="/gifts" replace />} />
+                <Route path="/crochet-gifts-for-girlfriend" element={<Navigate to="/collections/gifts-for-girlfriend" replace />} />
+                <Route path="/crochet-wedding-gifts" element={<Navigate to="/collections/reusable-bridal-gajra" replace />} />
+                <Route path="/bulk-crochet-gifts" element={<Navigate to="/custom-design" replace />} />
                 <Route path="/collections/aesthetic-gifts" element={<Navigate to="/collections/crochet-gifts" replace />} />
                 <Route path="/collections/occasion-gifts" element={<Navigate to="/gifts" replace />} />
                 <Route path="/collections/embroidery-hoops" element={<Navigate to="/collections/custom-embroidery-hoops" replace />} />
