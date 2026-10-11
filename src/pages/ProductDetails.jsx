@@ -1103,6 +1103,19 @@ const ProductDetails = () => {
                                 <span className="text-xs font-medium tracking-wide">Estimated Delivery: <span className="font-bold text-stone-700">4-7 Days</span></span>
                             </div>
 
+                            {/* Bulk Orders Callout (Question 8) */}
+                            <div className="flex items-center justify-between p-3 bg-stone-50 rounded-xl border border-stone-200/60 text-xs my-1">
+                                <span className="text-stone-600 font-medium">Ordering 10+ pieces for events or favors?</span>
+                                <a 
+                                    href={`https://wa.me/917428013214?text=Hi%20Crochet%20Wali,%20I%20am%20inquiring%20about%20a%20bulk%20order%20for%20${encodeURIComponent(product.name)}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="font-bold text-rose-900 hover:text-rose-700 underline underline-offset-2 shrink-0 ml-2"
+                                >
+                                    Bulk Inquiry →
+                                </a>
+                            </div>
+
 
                             {/* Trust Badges */}
                             <div className="grid grid-cols-2 gap-3 pt-4">
