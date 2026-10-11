@@ -1,29 +1,48 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Send, Loader, Sparkles, CheckCircle, Phone, MessageSquare, Palette, Scissors, Star, ImagePlus, X, PenTool, Gift, Users } from 'lucide-react';
-import { supabase } from '../config/supabase';
-import { useToast } from '../context/ToastContext';
+import React, { useState, useEffect } from 'react';
+import { Sparkles, Phone, MessageSquare, Palette, Scissors, Star, Gift, Camera, Check, Clock, ArrowRight, Heart } from 'lucide-react';
 import { fetchSetting } from '../utils/settingsUtils';
-import { useAuth } from '../context/AuthContext';
-import { uploadImage } from '../utils/uploadUtils';
 import SEO from '../components/SEO';
 
+const WHATSAPP_NUMBER = "917428013214";
+const WHATSAPP_DISPLAY = "+91 74280 13214";
+
+const QUICK_OPTIONS = [
+  {
+    icon: "🌸",
+    title: "Custom Flower Bouquet",
+    desc: "Pick your favorite flowers, colors & bouquet wrapping",
+    message: "Hi Crochet Wali, I want to customize a crochet flower bouquet (flowers, colors, wrapping)!"
+  },
+  {
+    icon: "👰",
+    title: "Bridal Gajra & Parandi",
+    desc: "Custom scented/reusable floral accessories for wedding & haldi",
+    message: "Hi Crochet Wali, I am looking for custom reusable bridal gajra / parandi for wedding styling."
+  },
+  {
+    icon: "🎨",
+    title: "Portrait Embroidery Hoop",
+    desc: "Turn your couple/family photo into handcrafted thread art",
+    message: "Hi Crochet Wali, I want to order a custom portrait embroidery hoop with my photo."
+  },
+  {
+    icon: "🎁",
+    title: "Bulk Wedding & Event Favors",
+    desc: "10+ pieces with custom color palettes & bulk pricing",
+    message: "Hi Crochet Wali, I want to inquire about bulk wedding / haldi favors (10+ pieces)."
+  },
+  {
+    icon: "✨",
+    title: "Something Completely Unique",
+    desc: "Share your Pinterest reference or sketch with us",
+    message: "Hi Crochet Wali, I have a unique handmade design idea I would like to discuss with you!"
+  }
+];
+
 const CustomDesign = () => {
-  const { addToast } = useToast();
-  const { currentUser } = useAuth();
-  const [loading, setLoading] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
   const [bannerImage, setBannerImage] = useState(null);
   const [pageTitle, setPageTitle] = useState("Custom Design Request");
   const [pageSubtitle, setPageSubtitle] = useState("Let's bring your unique vision to life.");
-  const [selectedImages, setSelectedImages] = useState([]);
-  const [imagePreviews, setImagePreviews] = useState([]);
-  const fileInputRef = useRef(null);
-
-  const [formData, setFormData] = useState({
-    name: '',
-    phone: '',
-    description: '',
-  });
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -38,116 +57,19 @@ const CustomDesign = () => {
     loadSettings();
   }, []);
 
-  // Pre-fill name if logged in
-  useEffect(() => {
-    if (currentUser) {
-      setFormData(prev => ({
-        ...prev,
-        name: currentUser.displayName || currentUser.user_metadata?.full_name || prev.name,
-      }));
-    }
-  }, [currentUser]);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!formData.name.trim() || !formData.phone.trim() || !formData.description.trim()) {
-      addToast('Please fill in all required fields.', 'error');
-      return;
-    }
-    setLoading(true);
-    try {
-      // Upload selected images to Supabase Storage
-      let imageUrls = [];
-      if (selectedImages.length > 0) {
-        for (const file of selectedImages) {
-          try {
-            const url = await uploadImage(file, 'images', 'custom-requests');
-            imageUrls.push(url);
-          } catch (uploadErr) {
-            console.error('Image upload failed:', uploadErr);
-          }
-        }
-      }
-
-      const { error } = await supabase
-        .from('custom_requests')
-        .insert([{
-          name: formData.name.trim(),
-          phone: formData.phone.trim(),
-          email: currentUser?.email || null,
-          description: formData.description.trim(),
-          status: 'new',
-          reference_images: imageUrls,
-        }]);
-
-      if (error) throw error;
-
-      setSubmitted(true);
-      addToast('Your design request has been submitted!', 'success');
-    } catch (error) {
-      console.error('Submission error:', error);
-      addToast('Failed to submit. Please try again.', 'error');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleReset = () => {
-    setSubmitted(false);
-    setFormData({ name: '', phone: '', description: '' });
-    setSelectedImages([]);
-    setImagePreviews([]);
-  };
-
-  // Image handlers
-  const handleImageSelect = (e) => {
-    const files = Array.from(e.target.files || []);
-    if (files.length === 0) return;
-
-    const remaining = 3 - selectedImages.length;
-    if (remaining <= 0) {
-      addToast('Maximum 3 images allowed', 'error');
-      return;
-    }
-    const newFiles = files.slice(0, remaining);
-
-    // Generate previews
-    newFiles.forEach(file => {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        setImagePreviews(prev => [...prev, ev.target.result]);
-      };
-      reader.readAsDataURL(file);
-    });
-
-    setSelectedImages(prev => [...prev, ...newFiles]);
-    // Reset input so same file can be re-selected
-    if (fileInputRef.current) fileInputRef.current.value = '';
-  };
-
-  const removeImage = (index) => {
-    setSelectedImages(prev => prev.filter((_, i) => i !== index));
-    setImagePreviews(prev => prev.filter((_, i) => i !== index));
-  };
-
   // Process steps
   const steps = [
-    { icon: MessageSquare, title: 'Share Your Idea', desc: 'Tell us what you envision' },
-    { icon: Palette, title: 'We Design', desc: 'Our artists create your concept' },
-    { icon: Scissors, title: 'Handcrafted', desc: 'Expert artisans bring it to life' },
-    { icon: Star, title: 'Delivered', desc: 'Your unique piece, delivered' },
+    { icon: MessageSquare, title: 'Share Your Idea', desc: 'Send reference photo or idea on WhatsApp' },
+    { icon: Palette, title: 'Design & Colors', desc: 'Choose yarn shades and size with artisan' },
+    { icon: Scissors, title: 'Handcrafted', desc: 'Expertly knitted by hand with love' },
+    { icon: Star, title: 'Doorstep Delivery', desc: 'Safely boxed & delivered with live tracking' },
   ];
 
   const serviceSchema = {
     "@context": "https://schema.org",
     "@type": "Service",
     "name": "Bespoke Custom Embroidery & Crochet",
-    "description": "Request custom handmade gifts, personalized embroidery portrait hoops, and bespoke crochet designs from Crochet Wali.",
+    "description": "Order custom handmade gifts, personalized embroidery portrait hoops, and bespoke crochet designs directly via WhatsApp from Crochet Wali.",
     "provider": {
         "@type": "Organization",
         "name": "Crochet Wali"
@@ -155,14 +77,20 @@ const CustomDesign = () => {
     "serviceType": "Handmade Gifts & Embroidery"
   };
 
+  const getWhatsAppUrl = (customText) => {
+    const text = customText || "Hi Crochet Wali, I want to discuss a custom handmade order with you!";
+    return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
+  };
+
   return (
     <div className="bg-[#fdfbf7] min-h-screen font-body pb-24 lg:pb-20">
       <SEO 
         title="Custom Design Request - Handmade Gifts" 
-        description="Request custom handmade gifts, personalized embroidery portrait hoops, and bespoke crochet designs from Crochet Wali."
+        description="Request custom handmade gifts, personalized embroidery portrait hoops, and bespoke crochet designs directly via WhatsApp from Crochet Wali."
         schema={serviceSchema}
       />
-      {/* Hero — improved */}
+      
+      {/* ─── Hero Section ─── */}
       <div className="relative w-full h-[60vh] min-h-[500px] overflow-hidden flex items-center justify-center">
         {/* Background */}
         <div className="absolute inset-0">
@@ -186,18 +114,26 @@ const CustomDesign = () => {
           <p className="text-lg md:text-xl text-stone-200 max-w-xl mx-auto leading-relaxed font-light mb-8 drop-shadow-sm">
             {pageSubtitle}
           </p>
-          <div className="flex justify-center gap-4 animate-fade-in-up">
-             <button 
-                onClick={() => document.getElementById('request-form').scrollIntoView({ behavior: 'smooth' })}
-                className="bg-white text-stone-900 px-8 py-4 rounded-full font-bold uppercase tracking-widest text-sm shadow-xl hover:-translate-y-1 transition-all hover:bg-rose-50 flex items-center gap-2"
+          <div className="flex flex-col sm:flex-row justify-center items-center gap-3 animate-fade-in-up">
+             <a 
+                href={getWhatsAppUrl("Hi Crochet Wali, I want to discuss a custom design!")}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-[#25D366] hover:bg-[#20bd5a] text-white px-8 py-4 rounded-full font-bold uppercase tracking-widest text-sm shadow-xl hover:-translate-y-1 transition-all flex items-center gap-2.5 active:scale-95"
              >
-                Start Designing <PenTool className="w-4 h-4 ml-1" />
+                <Phone className="w-4 h-4" /> Chat on WhatsApp
+             </a>
+             <button 
+                onClick={() => document.getElementById('whatsapp-order-hub').scrollIntoView({ behavior: 'smooth' })}
+                className="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/30 px-6 py-4 rounded-full font-bold uppercase tracking-widest text-xs transition-all"
+             >
+                View Options ↓
              </button>
           </div>
         </div>
       </div>
 
-      {/* How it Works — horizontal scroll on mobile */}
+      {/* ─── How it Works ─── */}
       <div className="container-custom px-5 -mt-8 relative z-10 mb-8 md:mb-12">
         <div className="flex gap-3 md:gap-4 overflow-x-auto no-scrollbar pb-2 snap-x snap-mandatory md:grid md:grid-cols-4">
           {steps.map((step, i) => (
@@ -241,7 +177,7 @@ const CustomDesign = () => {
          </div>
       </div>
 
-      {/* ─── Transparent Order Specs, Timelines & MOQs (P1 & E-E-A-T) ─── */}
+      {/* ─── Transparent Order Specs, Timelines & MOQs ─── */}
       <div className="container-custom px-5 max-w-4xl mb-12">
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-white p-5 rounded-2xl border border-stone-200/70 shadow-sm space-y-1.5">
@@ -267,7 +203,7 @@ const CustomDesign = () => {
         </div>
       </div>
 
-      {/* ─── Bulk & Wedding Favors Callout (Audience E) ─── */}
+      {/* ─── Bulk & Wedding Favors Callout ─── */}
       <div className="container-custom px-5 max-w-4xl mb-10 -mt-6 relative z-20">
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-rose-950 via-stone-900 to-amber-950 text-white p-6 md:p-8 shadow-xl border border-rose-900/30">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
@@ -283,7 +219,7 @@ const CustomDesign = () => {
               </p>
             </div>
             <a
-              href="https://wa.me/917428013214?text=Hi%20Crochet%20Wali,%20I%20am%20inquiring%20about%20a%20bulk%20order%20(wedding%20favors/haldi/events)."
+              href={getWhatsAppUrl("Hi Crochet Wali, I am inquiring about a bulk order (wedding favors/haldi/events, 10+ pieces).")}
               target="_blank"
               rel="noopener noreferrer"
               className="shrink-0 px-6 py-3.5 bg-[#25D366] hover:bg-[#20bd5a] text-white rounded-full font-bold text-sm tracking-wide transition-all shadow-lg flex items-center justify-center gap-2 hover:scale-105 active:scale-95 w-full sm:w-auto"
@@ -294,190 +230,116 @@ const CustomDesign = () => {
         </div>
       </div>
 
-      {/* Main Content */}
-      <div id="request-form" className="container-custom px-5 max-w-2xl scroll-m-24">
-
-        {submitted ? (
-          /* ─── Success State ─── */
-          <div className="bg-white rounded-3xl shadow-sm border border-stone-100 p-8 md:p-12 text-center animate-in fade-in zoom-in-95 duration-500">
-            <div className="w-16 h-16 rounded-full bg-emerald-50 flex items-center justify-center mx-auto mb-5">
-              <CheckCircle className="w-8 h-8 text-emerald-600" />
+      {/* ─── Direct WhatsApp Consultation Hub (Replaces Web Form) ─── */}
+      <div id="whatsapp-order-hub" className="container-custom px-5 max-w-3xl scroll-m-24">
+        <div className="bg-white rounded-3xl shadow-xl border border-stone-200/80 overflow-hidden">
+          {/* Header Banner */}
+          <div className="bg-gradient-to-r from-stone-900 via-rose-950 to-stone-900 text-white px-6 py-8 md:px-10 md:py-10 text-center relative overflow-hidden">
+            <div className="absolute top-0 right-0 -mr-10 -mt-10 w-40 h-40 bg-rose-500/10 rounded-full blur-2xl" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-[#25D366]/20 border border-[#25D366]/40 rounded-full text-[#25D366] text-xs font-bold uppercase tracking-widest mb-3">
+              <span className="w-2 h-2 rounded-full bg-[#25D366] animate-pulse" /> Direct Artisan WhatsApp
             </div>
-            <h2 className="text-2xl md:text-3xl font-heading font-bold text-stone-900 mb-2">Request Received!</h2>
-            <p className="text-stone-500 mb-6 max-w-sm mx-auto leading-relaxed">
-              We'll review your design idea and get back to you on WhatsApp within 24 hours.
+            <h2 className="text-2xl md:text-4xl font-heading font-bold mb-3">
+              Order or Customize on WhatsApp
+            </h2>
+            <p className="text-stone-300 text-sm md:text-base max-w-lg mx-auto leading-relaxed">
+              Skip the forms! Share your idea, photos, color choices, or Pinterest references directly with head artist Sana.
             </p>
-
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <button
-                onClick={handleReset}
-                className="px-6 py-3 bg-stone-100 text-stone-700 rounded-xl font-bold text-sm hover:bg-stone-200 transition-colors"
-              >
-                Submit Another Request
-              </button>
-              <a
-                href="https://wa.me/917428013214?text=Hi,%20I%20just%20submitted%20a%20custom%20design%20request.%20My%20name%20is%20" 
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-6 py-3 bg-[#25D366] text-white rounded-xl font-bold text-sm hover:bg-[#20bd5a] transition-colors flex items-center justify-center gap-2"
-              >
-                <Phone className="w-4 h-4" /> Chat on WhatsApp
-              </a>
+            <div className="mt-4 inline-flex items-center gap-2 text-stone-400 text-xs">
+              <Clock className="w-3.5 h-3.5 text-amber-400" />
+              <span>Replies usually within <strong>15–30 minutes</strong></span>
             </div>
           </div>
-        ) : (
-          /* ─── Form ─── */
-          <div className="bg-white rounded-3xl shadow-sm border border-stone-100 overflow-hidden">
-            {/* Form Header */}
-            <div className="px-6 py-5 md:px-8 md:py-6 border-b border-stone-100 bg-stone-50/50">
-              <h2 className="text-xl md:text-2xl font-heading font-bold text-stone-900">Tell Us Your Idea</h2>
-              <p className="text-sm text-stone-500 mt-1">Single custom gifts or bulk wedding favors — we handle both.</p>
-            </div>
 
-            <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-5">
-
-              {/* Name */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-stone-600 uppercase tracking-wider">
-                  Your Name <span className="text-rose-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                  className="w-full px-4 py-3.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-rose-900/15 focus:border-rose-900/40 outline-none transition-all bg-stone-50/50 focus:bg-white text-stone-900 placeholder:text-stone-400"
-                  placeholder="Your full name"
-                />
-              </div>
-
-              {/* Phone */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-stone-600 uppercase tracking-wider">
-                  WhatsApp Number <span className="text-rose-500">*</span>
-                </label>
-                <div className="relative">
-                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-stone-400 text-sm font-medium">+91</span>
-                  <input
-                    type="tel"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    required
-                    maxLength={10}
-                    className="w-full pl-12 pr-4 py-3.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-rose-900/15 focus:border-rose-900/40 outline-none transition-all bg-stone-50/50 focus:bg-white text-stone-900 placeholder:text-stone-400"
-                    placeholder="98765 43210"
-                  />
-                </div>
-                <p className="text-[11px] text-stone-400">We'll reach you on WhatsApp for design discussion</p>
-              </div>
-
-              {/* Description */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-stone-600 uppercase tracking-wider">
-                  What do you want? <span className="text-rose-500">*</span>
-                </label>
-                <textarea
-                  name="description"
-                  value={formData.description}
-                  onChange={handleChange}
-                  required
-                  rows="4"
-                  className="w-full px-4 py-3.5 rounded-xl border border-stone-200 focus:ring-2 focus:ring-rose-900/15 focus:border-rose-900/40 outline-none transition-all resize-none bg-stone-50/50 focus:bg-white text-stone-900 placeholder:text-stone-400"
-                  placeholder="Describe your design idea — type, colors, occasion, fabric, or share any reference..."
-                />
-              </div>
-
-              {/* Reference Images — Optional */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-stone-600 uppercase tracking-wider">
-                  Reference Images <span className="text-stone-400 font-normal normal-case">(optional, max 3)</span>
-                </label>
-
-                {/* Previews */}
-                {imagePreviews.length > 0 && (
-                  <div className="flex gap-3 flex-wrap">
-                    {imagePreviews.map((src, i) => (
-                      <div key={i} className="relative w-20 h-20 rounded-xl overflow-hidden border border-stone-200 group">
-                        <img src={src} alt={`Ref ${i + 1}`} className="w-full h-full object-cover" />
-                        <button
-                          type="button"
-                          onClick={() => removeImage(i)}
-                          className="absolute top-1 right-1 w-5 h-5 bg-black/60 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-
-                {/* Upload button */}
-                {selectedImages.length < 3 && (
-                  <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="flex items-center gap-2 px-4 py-3 rounded-xl border-2 border-dashed border-stone-200 text-stone-500 text-sm font-medium hover:border-rose-300 hover:text-rose-700 hover:bg-rose-50/50 transition-all w-full justify-center"
+          <div className="p-6 md:p-10 space-y-8">
+            {/* Quick Option Cards */}
+            <div>
+              <p className="text-xs font-bold uppercase tracking-wider text-stone-400 mb-3 text-center md:text-left">
+                Select an option to prefill WhatsApp message:
+              </p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {QUICK_OPTIONS.map((opt, i) => (
+                  <a
+                    key={i}
+                    href={getWhatsAppUrl(opt.message)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-4 rounded-2xl border border-stone-200/80 hover:border-[#25D366] hover:bg-emerald-50/30 transition-all flex items-start gap-3 group text-left hover:shadow-md"
                   >
-                    <ImagePlus className="w-4 h-4" />
-                    {selectedImages.length === 0 ? 'Add reference images' : `Add more (${3 - selectedImages.length} left)`}
-                  </button>
-                )}
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={handleImageSelect}
-                  className="hidden"
-                />
+                    <span className="text-2xl p-2 bg-stone-50 rounded-xl group-hover:scale-110 transition-transform">
+                      {opt.icon}
+                    </span>
+                    <div className="flex-1">
+                      <div className="font-bold text-stone-900 text-sm flex items-center justify-between">
+                        {opt.title}
+                        <ArrowRight className="w-4 h-4 text-stone-400 group-hover:text-[#25D366] group-hover:translate-x-1 transition-all" />
+                      </div>
+                      <p className="text-xs text-stone-500 mt-0.5 leading-relaxed">
+                        {opt.desc}
+                      </p>
+                    </div>
+                  </a>
+                ))}
               </div>
+            </div>
 
-              {/* Submit */}
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-rose-900 text-white py-4 rounded-xl font-bold text-sm uppercase tracking-widest hover:bg-rose-800 transition-all shadow-lg shadow-rose-900/15 flex items-center justify-center gap-2.5 disabled:opacity-60 disabled:cursor-not-allowed transform hover:-translate-y-0.5 active:translate-y-0"
-              >
-                {loading ? (
-                  <Loader className="w-4 h-4 animate-spin" />
-                ) : (
-                  <Send className="w-4 h-4" />
-                )}
-                {loading ? 'Submitting...' : 'Submit Request'}
-              </button>
-
-              {/* Divider */}
-              <div className="relative flex items-center justify-center pt-1">
-                <div className="absolute inset-0 flex items-center top-1/2">
-                  <div className="w-full border-t border-stone-200"></div>
-                </div>
-                <span className="relative bg-white px-4 text-[11px] font-bold text-stone-400 uppercase tracking-widest">
-                  or reach us directly
-                </span>
-              </div>
-
-              {/* WhatsApp CTA */}
+            {/* Primary Action Button */}
+            <div className="pt-2 text-center space-y-4">
               <a
-                href="https://wa.me/917428013214?text=Hello,%20I%20am%20interested%20in%20a%20custom%20design."
+                href={getWhatsAppUrl("Hi Crochet Wali, I want to discuss a custom handmade order with you!")}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full bg-[#25D366] text-white py-3.5 rounded-xl font-bold text-sm uppercase tracking-widest hover:bg-[#20bd5a] transition-all flex items-center justify-center gap-2.5 shadow-sm"
+                className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white py-4 px-8 rounded-2xl font-bold text-base tracking-wide shadow-xl shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all flex items-center justify-center gap-3 hover:-translate-y-0.5 active:translate-y-0"
               >
-                <svg viewBox="0 0 24 24" className="w-4 h-4 fill-current" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                </svg>
-                Chat on WhatsApp
+                <Phone className="w-5 h-5 fill-current" />
+                <span>Chat on WhatsApp ({WHATSAPP_DISPLAY})</span>
               </a>
-            </form>
-          </div>
-        )}
+              <p className="text-xs text-stone-400">
+                Direct chat with founder Sana · No registration required · Instant photo sharing
+              </p>
+            </div>
 
+            {/* Why Chat on WhatsApp Reassurances */}
+            <div className="border-t border-stone-100 pt-6">
+              <div className="grid sm:grid-cols-3 gap-4 text-center sm:text-left">
+                <div className="flex items-start gap-2.5">
+                  <div className="w-7 h-7 rounded-full bg-rose-50 text-rose-900 flex items-center justify-center shrink-0">
+                    <Camera className="w-3.5 h-3.5" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-stone-900">Send Any Reference</h4>
+                    <p className="text-[11px] text-stone-500 mt-0.5">Share photos, sketches, or screenshot ideas</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-2.5">
+                  <div className="w-7 h-7 rounded-full bg-emerald-50 text-emerald-900 flex items-center justify-center shrink-0">
+                    <Palette className="w-3.5 h-3.5" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-stone-900">Choose Any Colors</h4>
+                    <p className="text-[11px] text-stone-500 mt-0.5">Pick from 30+ botanical yarn shades</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-2.5">
+                  <div className="w-7 h-7 rounded-full bg-amber-50 text-amber-900 flex items-center justify-center shrink-0">
+                    <Check className="w-3.5 h-3.5" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-stone-900">Price &amp; Mockup</h4>
+                    <p className="text-[11px] text-stone-500 mt-0.5">Clear upfront quote with dispatch timeline</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
       </div>
 
       {/* ─── Testimonials ─── */}
-      <div className="py-16 md:py-24 bg-[#fdfbf7] border-b border-stone-100 mb-16">
+      <div className="py-16 md:py-24 bg-[#fdfbf7] border-b border-stone-100 mt-12 mb-16">
          <div className="container-custom px-5">
              <div className="text-center mb-12">
                  <h2 className="text-3xl md:text-4xl font-heading font-bold text-stone-900 mb-4">Client Stories</h2>
@@ -505,13 +367,15 @@ const CustomDesign = () => {
       </div>
 
       {/* ─── Mobile Sticky CTA ─── */}
-      <div className="fixed bottom-6 left-4 right-4 p-2 bg-white/90 backdrop-blur-2xl border border-white/50 flex items-center justify-center gap-3 lg:hidden z-50 shadow-2xl rounded-full">
-          <button 
-             onClick={() => document.getElementById('request-form').scrollIntoView({ behavior: 'smooth' })}
-             className="w-full bg-stone-900 text-white border border-stone-900 px-4 py-3.5 rounded-full font-bold text-sm tracking-widest uppercase hover:bg-stone-800 transition-all flex items-center justify-center gap-2 shadow-xl active:scale-95"
+      <div className="fixed bottom-6 left-4 right-4 p-2 bg-white/95 backdrop-blur-2xl border border-white/50 flex items-center justify-center gap-3 lg:hidden z-50 shadow-2xl rounded-full">
+          <a 
+             href={getWhatsAppUrl("Hi Crochet Wali, I want to discuss a custom design!")}
+             target="_blank"
+             rel="noopener noreferrer"
+             className="w-full bg-[#25D366] text-white px-4 py-3.5 rounded-full font-bold text-sm tracking-wide uppercase hover:bg-[#20bd5a] transition-all flex items-center justify-center gap-2 shadow-xl active:scale-95"
           >
-             Request Design <PenTool className="w-4 h-4" />
-          </button>
+             <Phone className="w-4 h-4" /> Chat on WhatsApp
+          </a>
       </div>
     </div>
   );
