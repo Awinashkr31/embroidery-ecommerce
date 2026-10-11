@@ -204,106 +204,96 @@ const CustomDesign = () => {
         </div>
       </div>
 
-      {/* ─── Direct WhatsApp Consultation Hub (Replaces Web Form) ─── */}
-      <div id="whatsapp-order-hub" className="container-custom px-5 max-w-3xl scroll-m-24">
-        <div className="bg-white rounded-3xl shadow-xl border border-stone-200/80 overflow-hidden">
-          {/* Header Banner */}
-          <div className="bg-gradient-to-r from-stone-900 via-rose-950 to-stone-900 text-white px-6 py-8 md:px-10 md:py-10 text-center relative overflow-hidden">
-            <div className="absolute top-0 right-0 -mr-10 -mt-10 w-40 h-40 bg-rose-500/10 rounded-full blur-2xl" />
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-[#25D366]/20 border border-[#25D366]/40 rounded-full text-[#25D366] text-xs font-semibold tracking-wide mb-3">
-              <span className="w-2 h-2 rounded-full bg-[#25D366] animate-pulse" /> Direct Artisan WhatsApp
+      {/* ─── Direct WhatsApp Consultation Hub (Compact & Sleek) ─── */}
+      <div id="whatsapp-order-hub" className="container-custom px-4 sm:px-5 max-w-2xl scroll-m-24">
+        <div className="bg-white rounded-2xl sm:rounded-3xl shadow-lg border border-stone-200/80 overflow-hidden">
+          {/* Header Banner — compact */}
+          <div className="bg-gradient-to-r from-stone-900 via-rose-950 to-stone-900 text-white px-5 py-5 sm:px-8 sm:py-6 text-center relative overflow-hidden">
+            <div className="absolute top-0 right-0 -mr-10 -mt-10 w-32 h-32 bg-rose-500/10 rounded-full blur-2xl" />
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#25D366]/20 border border-[#25D366]/40 rounded-full text-[#25D366] text-xs font-semibold tracking-wide mb-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#25D366] animate-pulse" /> Direct Artisan WhatsApp
             </div>
-            <h2 className="text-2xl md:text-3xl font-heading font-bold mb-3">
+            <h2 className="text-xl sm:text-2xl font-heading font-bold mb-1.5">
               Order or Customize on WhatsApp
             </h2>
-            <p className="text-stone-200 text-sm md:text-base max-w-lg mx-auto leading-relaxed">
+            <p className="text-stone-200 text-xs sm:text-sm max-w-md mx-auto leading-relaxed">
               Skip the forms! Share your idea, photos, color choices, or Pinterest references directly with head artist Sana.
             </p>
-            <div className="mt-4 inline-flex items-center gap-2 text-stone-200 text-xs">
+            <div className="mt-2.5 inline-flex items-center gap-1.5 text-stone-300 text-xs">
               <Clock className="w-3.5 h-3.5 text-amber-400" />
-              <span>Replies usually within <strong>15–30 minutes</strong></span>
+              <span>Average response time: <strong>Less than 1 hour</strong></span>
             </div>
           </div>
 
-          <div className="p-6 md:p-10 space-y-8">
-            {/* Quick Option Cards */}
+          <div className="p-4 sm:p-6 space-y-4">
+            {/* Quick Option Pills */}
             <div>
-              <p className="text-sm font-semibold text-stone-600 mb-3 text-center md:text-left">
-                Select an option to prefill WhatsApp message:
+              <p className="text-xs font-semibold text-stone-600 mb-2.5 text-center sm:text-left">
+                Select an option to start chat:
               </p>
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {QUICK_OPTIONS.map((opt, i) => (
                   <a
                     key={i}
                     href={getWhatsAppUrl(opt.message)}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-4 rounded-2xl border border-stone-200/80 hover:border-[#25D366] hover:bg-emerald-50/30 transition-all flex items-start gap-3 group text-left hover:shadow-md"
+                    className={`p-2.5 sm:p-3 rounded-xl border border-stone-200 bg-stone-50/70 hover:bg-emerald-50/50 hover:border-[#25D366] transition-all flex items-center justify-between group text-left hover:shadow-xs ${
+                      i === QUICK_OPTIONS.length - 1 ? 'sm:col-span-2' : ''
+                    }`}
                   >
-                    <span className="text-2xl p-2 bg-stone-50 rounded-xl group-hover:scale-110 transition-transform">
-                      {opt.icon}
-                    </span>
-                    <div className="flex-1">
-                      <div className="font-bold text-stone-900 text-sm flex items-center justify-between">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <span className="text-lg shrink-0 p-1 bg-white rounded-lg shadow-2xs group-hover:scale-110 transition-transform">
+                        {opt.icon}
+                      </span>
+                      <span className="font-semibold text-stone-900 text-xs sm:text-sm truncate">
                         {opt.title}
-                        <ArrowRight className="w-4 h-4 text-stone-500 group-hover:text-[#25D366] group-hover:translate-x-1 transition-all" />
-                      </div>
-                      <p className="text-xs text-stone-600 mt-0.5 leading-relaxed">
-                        {opt.desc}
-                      </p>
+                      </span>
                     </div>
+                    <ArrowRight className="w-4 h-4 text-stone-400 group-hover:text-[#25D366] group-hover:translate-x-0.5 transition-all shrink-0 ml-1.5" />
                   </a>
                 ))}
               </div>
             </div>
 
             {/* Primary Action Button */}
-            <div className="pt-2 text-center space-y-4">
+            <div className="pt-1 text-center space-y-2">
               <a
                 href={getWhatsAppUrl("Hi Crochet Wali, I want to discuss a custom handmade order with you!")}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white py-4 px-8 rounded-2xl font-bold text-base tracking-wide shadow-xl shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all flex items-center justify-center gap-3 hover:-translate-y-0.5 active:translate-y-0"
+                className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white py-3.5 px-6 rounded-xl font-bold text-sm sm:text-base tracking-wide shadow-md shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all flex items-center justify-center gap-2.5 hover:-translate-y-0.5 active:translate-y-0"
               >
                 <MessageCircle className="w-5 h-5" />
                 <span>Chat on WhatsApp</span>
               </a>
               <p className="text-xs text-stone-500">
-                Direct chat with founder Sana · No registration required · Instant photo sharing
+                Direct chat with founder Sana · Instant photo sharing · No registration
               </p>
             </div>
 
-            {/* Why Chat on WhatsApp Reassurances */}
-            <div className="border-t border-stone-100 pt-6">
-              <div className="grid sm:grid-cols-3 gap-4 text-center sm:text-left">
-                <div className="flex items-start gap-2.5">
-                  <div className="w-7 h-7 rounded-full bg-rose-50 text-rose-900 flex items-center justify-center shrink-0">
-                    <Camera className="w-3.5 h-3.5" />
+            {/* Reassurances — compact single row */}
+            <div className="border-t border-stone-100 pt-3.5">
+              <div className="grid grid-cols-3 gap-2 text-center">
+                <div className="flex flex-col items-center gap-1">
+                  <div className="w-6 h-6 rounded-full bg-rose-50 text-rose-900 flex items-center justify-center shrink-0">
+                    <Camera className="w-3 h-3" />
                   </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-stone-900">Send Any Reference</h3>
-                    <p className="text-xs text-stone-600 mt-0.5">Share photos, sketches, or screenshot ideas</p>
-                  </div>
+                  <h3 className="text-xs font-semibold text-stone-900 leading-tight">Send Photos</h3>
                 </div>
 
-                <div className="flex items-start gap-2.5">
-                  <div className="w-7 h-7 rounded-full bg-rose-50 text-rose-900 flex items-center justify-center shrink-0">
-                    <Palette className="w-3.5 h-3.5" />
+                <div className="flex flex-col items-center gap-1">
+                  <div className="w-6 h-6 rounded-full bg-rose-50 text-rose-900 flex items-center justify-center shrink-0">
+                    <Palette className="w-3 h-3" />
                   </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-stone-900">Choose Any Colors</h3>
-                    <p className="text-xs text-stone-600 mt-0.5">Pick from 30+ botanical yarn shades</p>
-                  </div>
+                  <h3 className="text-xs font-semibold text-stone-900 leading-tight">30+ Colors</h3>
                 </div>
 
-                <div className="flex items-start gap-2.5">
-                  <div className="w-7 h-7 rounded-full bg-rose-50 text-rose-900 flex items-center justify-center shrink-0">
-                    <Check className="w-3.5 h-3.5" />
+                <div className="flex flex-col items-center gap-1">
+                  <div className="w-6 h-6 rounded-full bg-rose-50 text-rose-900 flex items-center justify-center shrink-0">
+                    <Check className="w-3 h-3" />
                   </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-stone-900">Price &amp; Mockup</h3>
-                    <p className="text-xs text-stone-600 mt-0.5">Clear upfront quote with dispatch timeline</p>
-                  </div>
+                  <h3 className="text-xs font-semibold text-stone-900 leading-tight">Instant Quote</h3>
                 </div>
               </div>
             </div>
