@@ -48,6 +48,15 @@ const Gifts = () => {
         p.name.toLowerCase().includes('flower')
     ).slice(0, 8); // Showing 8 for slider
 
+    const weddingGifts = allFilteredProducts.filter(p =>
+        p.name.toLowerCase().includes('gajra') ||
+        p.name.toLowerCase().includes('parandi') ||
+        p.name.toLowerCase().includes('clip') ||
+        p.category?.toLowerCase().includes('accessories')
+    ).slice(0, 4);
+
+    const under499 = allFilteredProducts.filter(p => p.price <= 499).slice(0, 4);
+
     const personalizedGifts = allFilteredProducts.filter(p => 
         p.category?.toLowerCase().includes('hoop') || 
         p.category?.toLowerCase().includes('embroidery')
@@ -158,32 +167,43 @@ const Gifts = () => {
                         </div>
                     </div>
                     
-                    {/* Category Chips (Mobile: horizontal scroll, Desktop: flex wrap) */}
+                    {/* Audience-Targeted Quick Navigation Chips */}
                     <div className="mt-8 md:mt-12 flex overflow-x-auto snap-x snap-mandatory scrollbar-hide gap-3 pb-4 px-4 md:px-0 md:flex-wrap md:justify-center">
-                        <a href="#trending" className="snap-start shrink-0 px-5 py-2.5 bg-white border border-stone-200 rounded-full text-[13px] md:text-sm font-medium text-stone-700 hover:border-[#d6336c] hover:text-[#d6336c] transition-colors shadow-sm">Trending Gifts</a>
-                        <a href="#personalized" className="snap-start shrink-0 px-5 py-2.5 bg-white border border-stone-200 rounded-full text-[13px] md:text-sm font-medium text-stone-700 hover:border-[#d6336c] hover:text-[#d6336c] transition-colors shadow-sm">Personalized</a>
-                        <a href="#budget" className="snap-start shrink-0 px-5 py-2.5 bg-white border border-stone-200 rounded-full text-[13px] md:text-sm font-medium text-stone-700 hover:border-[#d6336c] hover:text-[#d6336c] transition-colors shadow-sm">Under ₹999</a>
-                        <Link to="/shop" className="snap-start shrink-0 px-5 py-2.5 bg-white border border-stone-200 rounded-full text-[13px] md:text-sm font-medium text-stone-700 hover:border-[#d6336c] hover:text-[#d6336c] transition-colors shadow-sm">View All Gifts</Link>
+                        <a href="#trending" className="snap-start shrink-0 px-5 py-2.5 bg-white border border-stone-200 rounded-full text-[13px] md:text-sm font-semibold text-stone-800 hover:border-[#d6336c] hover:text-[#d6336c] transition-colors shadow-sm">
+                            🌸 For Her &amp; Anniversaries
+                        </a>
+                        <a href="#wedding" className="snap-start shrink-0 px-5 py-2.5 bg-white border border-stone-200 rounded-full text-[13px] md:text-sm font-semibold text-stone-800 hover:border-[#d6336c] hover:text-[#d6336c] transition-colors shadow-sm">
+                            👰 Wedding &amp; Haldi Gajra
+                        </a>
+                        <a href="#budget-500" className="snap-start shrink-0 px-5 py-2.5 bg-white border border-stone-200 rounded-full text-[13px] md:text-sm font-semibold text-stone-800 hover:border-[#d6336c] hover:text-[#d6336c] transition-colors shadow-sm">
+                            💸 Budget Under ₹500
+                        </a>
+                        <a href="#personalized" className="snap-start shrink-0 px-5 py-2.5 bg-white border border-stone-200 rounded-full text-[13px] md:text-sm font-semibold text-stone-800 hover:border-[#d6336c] hover:text-[#d6336c] transition-colors shadow-sm">
+                            🎨 Personalized Keepsakes
+                        </a>
+                        <Link to="/custom-design" className="snap-start shrink-0 px-5 py-2.5 bg-rose-50 border border-rose-200 rounded-full text-[13px] md:text-sm font-bold text-rose-800 hover:bg-rose-100 transition-colors shadow-sm">
+                            🎁 Bulk &amp; Event Favors (10+)
+                        </Link>
                     </div>
                 </div>
             </div>
 
-            {/* Trending Gifts Section */}
+            {/* 1. Trending Gifts Section (For Her & Anniversaries) */}
             <section id="trending" className="scroll-mt-24 py-12 md:py-20 bg-white">
                 <div className="container-custom">
                     <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 md:mb-12 gap-4 px-4 md:px-0">
                         <div className="max-w-2xl">
                             <div className="flex items-center gap-2 text-[#d6336c] mb-3">
                                 <Heart className="w-5 h-5 fill-current" />
-                                <span className="text-xs font-bold uppercase tracking-widest">Most Loved</span>
+                                <span className="text-xs font-bold uppercase tracking-widest">Audience: For Her &amp; Anniversaries</span>
                             </div>
-                            <h2 className="text-[26px] md:text-4xl font-heading font-bold text-stone-900 mb-3">Trending Today</h2>
+                            <h2 className="text-[26px] md:text-4xl font-heading font-bold text-stone-900 mb-3">Romantic Forever Bouquets</h2>
                             <p className="text-stone-600 text-sm md:text-base leading-relaxed">
-                                Highly requested aesthetic gifts that are flying off the shelves this week.
+                                Thoughtful, everlasting floral keepsakes for girlfriends, wives, and best friends. Handcrafted with botanical milk cotton yarn.
                             </p>
                         </div>
-                        <Link to="/shop?category=crochet" className="text-[13px] md:text-sm font-bold text-[#d6336c] hover:text-rose-700 uppercase tracking-widest shrink-0 hidden md:flex items-center gap-1 group">
-                            Shop All <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        <Link to="/collections/gifts-for-girlfriend" className="text-[13px] md:text-sm font-bold text-[#d6336c] hover:text-rose-700 uppercase tracking-widest shrink-0 hidden md:flex items-center gap-1 group">
+                            View All Gifts For Her <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                         </Link>
                     </div>
                     
@@ -198,18 +218,72 @@ const Gifts = () => {
                 </div>
             </section>
 
-            {/* Personalized Gifts Section */}
-            <section id="personalized" className="scroll-mt-24 py-12 md:py-20 bg-gradient-to-b from-[#fff7f8] to-[#ffffff]">
+            {/* 2. Wedding & Festive Hair Accessories Section */}
+            <section id="wedding" className="scroll-mt-24 py-12 md:py-20 bg-[#fff7f8]">
+                <div className="container-custom px-4 md:px-0">
+                    <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 md:mb-12 gap-4">
+                        <div className="max-w-2xl">
+                            <div className="flex items-center gap-2 text-[#d6336c] mb-3">
+                                <Sparkles className="w-5 h-5 fill-current" />
+                                <span className="text-xs font-bold uppercase tracking-widest">Audience: Wedding &amp; Festive Shoppers</span>
+                            </div>
+                            <h2 className="text-[26px] md:text-4xl font-heading font-bold text-stone-900 mb-3">Bridal Haldi &amp; Wedding Hair Keepsakes</h2>
+                            <p className="text-stone-600 text-sm md:text-base leading-relaxed">
+                                Reusable crochet gajra, floral hair claw clips, and parandi designed for Indian brides and bridesmaids. Never wilts, non-staining, and scent-sprayable.
+                            </p>
+                        </div>
+                        <Link to="/collections/reusable-bridal-gajra" className="text-[13px] md:text-sm font-bold text-[#d6336c] hover:text-rose-700 uppercase tracking-widest shrink-0 hidden md:flex items-center gap-1 group">
+                            Explore Bridal Gajra <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        </Link>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6 lg:gap-8">
+                        {weddingGifts.map(product => (
+                            <ProductCardWithVariants key={product.uniqueId} product={product} />
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* 3. Budget Section (Under ₹500) */}
+            <section id="budget-500" className="scroll-mt-24 py-12 md:py-20 bg-[#fffaf3]">
+                <div className="container-custom px-4 md:px-0">
+                    <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 md:mb-12 gap-4">
+                        <div className="max-w-2xl">
+                            <div className="flex items-center gap-2 text-[#d6336c] mb-3">
+                                <Gift className="w-5 h-5 fill-current" />
+                                <span className="text-xs font-bold uppercase tracking-widest">Audience: Budget-Conscious Shoppers</span>
+                            </div>
+                            <h2 className="text-[26px] md:text-4xl font-heading font-bold text-stone-900 mb-3">Cute Handmade Gifts Under ₹500</h2>
+                            <p className="text-stone-600 text-sm md:text-base leading-relaxed">
+                                Aesthetic amigurumi keychains, single flowers, and cute hair accessories starting at just ₹99. High-impact surprises on a budget.
+                            </p>
+                        </div>
+                        <Link to="/collections/gifts-under-500" className="text-[13px] md:text-sm font-bold text-[#d6336c] hover:text-rose-700 uppercase tracking-widest shrink-0 hidden md:flex items-center gap-1 group">
+                            View All Under ₹500 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                        </Link>
+                    </div>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6 lg:gap-8">
+                        {under499.map(product => (
+                            <ProductCardWithVariants key={product.uniqueId} product={product} />
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* 4. Personalized Gifts Section (Sentimental Shoppers) */}
+            <section id="personalized" className="scroll-mt-24 py-12 md:py-20 bg-gradient-to-b from-[#ffffff] to-[#fff7f8]">
                 <div className="container-custom px-4 md:px-0">
                     <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 md:mb-12 gap-4">
                         <div className="max-w-2xl">
                             <div className="flex items-center gap-2 text-[#d6336c] mb-3">
                                 <Star className="w-5 h-5 fill-current" />
-                                <span className="text-xs font-bold uppercase tracking-widest">Custom Made</span>
+                                <span className="text-xs font-bold uppercase tracking-widest">Audience: Sentimental &amp; Custom Art</span>
                             </div>
                             <h2 className="text-[26px] md:text-4xl font-heading font-bold text-stone-900 mb-3">Personalized For You</h2>
                             <p className="text-stone-600 text-sm md:text-base leading-relaxed">
-                                Capture your most precious memories in thread. Custom hand-embroidery hoops make the perfect anniversary gift.
+                                Capture your most precious memories in thread. Custom hand-embroidery hoops make the perfect anniversary and wedding milestone gift.
                             </p>
                         </div>
                         <Link to="/custom-design" className="text-[13px] md:text-sm font-bold text-[#d6336c] hover:text-rose-700 uppercase tracking-widest shrink-0 hidden md:flex items-center gap-1 group">
@@ -225,29 +299,37 @@ const Gifts = () => {
                 </div>
             </section>
 
-            {/* Budget Section */}
-            <section id="budget" className="scroll-mt-24 py-12 md:py-20 bg-[#fffaf3]">
+            {/* 5. Bulk & Wedding Favors Callout Banner (Audience E) */}
+            <section className="py-12 bg-white border-t border-stone-100">
                 <div className="container-custom px-4 md:px-0">
-                    <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 md:mb-12 gap-4">
-                        <div className="max-w-2xl">
-                            <div className="flex items-center gap-2 text-[#d6336c] mb-3">
-                                <Gift className="w-5 h-5 fill-current" />
-                                <span className="text-xs font-bold uppercase tracking-widest">Affordable Luxury</span>
-                            </div>
-                            <h2 className="text-[26px] md:text-4xl font-heading font-bold text-stone-900 mb-3">Gifts Under ₹999</h2>
-                            <p className="text-stone-600 text-sm md:text-base leading-relaxed">
-                                Thoughtful, cute handmade accessories that won't break the bank. Perfect for small surprises.
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-6 bg-gradient-to-r from-stone-900 via-rose-950 to-stone-900 p-8 md:p-12 rounded-3xl border border-rose-900/40 text-white shadow-xl">
+                        <div className="space-y-3 text-center md:text-left">
+                            <span className="text-[11px] uppercase font-bold tracking-widest text-rose-300 bg-rose-500/20 px-3.5 py-1 rounded-full border border-rose-400/30 inline-block">
+                                Audience: Bulk &amp; Event Planners (10+ Units)
+                            </span>
+                            <h3 className="text-2xl md:text-3xl font-heading font-bold text-white">
+                                Planning Wedding Favors or Haldi Giveaways?
+                            </h3>
+                            <p className="text-stone-300 text-sm max-w-xl leading-relaxed">
+                                Order coordinated crochet gajras, bridesmaid floral hampers, or custom amigurumi keychains in bulk with special tiered pricing and dedicated artisan coordination.
                             </p>
                         </div>
-                        <Link to="/shop" className="text-[13px] md:text-sm font-bold text-[#d6336c] hover:text-rose-700 uppercase tracking-widest shrink-0 hidden md:flex items-center gap-1 group">
-                            Shop All <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                        </Link>
-                    </div>
-                    
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6 lg:gap-8">
-                        {under999.map(product => (
-                            <ProductCardWithVariants key={product.uniqueId} product={product} />
-                        ))}
+                        <div className="flex flex-col sm:flex-row gap-3 shrink-0 w-full sm:w-auto">
+                            <Link 
+                                to="/custom-design"
+                                className="px-6 py-3.5 bg-white text-stone-900 hover:bg-stone-100 rounded-full font-bold text-sm text-center transition-all shadow-md"
+                            >
+                                Custom Bulk Order
+                            </Link>
+                            <a
+                                href="https://wa.me/917428013214?text=Hi%20Crochet%20Wali,%20I%20am%20inquiring%20about%20a%20bulk%20order%20(wedding%20favors/haldi/events)."
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="px-6 py-3.5 bg-[#25D366] hover:bg-[#20bd5a] text-white rounded-full font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-md"
+                            >
+                                WhatsApp Inquiry
+                            </a>
+                        </div>
                     </div>
                 </div>
             </section>

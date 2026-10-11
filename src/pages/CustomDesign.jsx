@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Send, Loader, Sparkles, CheckCircle, Phone, MessageSquare, Palette, Scissors, Star, ImagePlus, X, PenTool } from 'lucide-react';
+import { Send, Loader, Sparkles, CheckCircle, Phone, MessageSquare, Palette, Scissors, Star, ImagePlus, X, PenTool, Gift, Users } from 'lucide-react';
 import { supabase } from '../config/supabase';
 import { useToast } from '../context/ToastContext';
 import { fetchSetting } from '../utils/settingsUtils';
@@ -241,6 +241,33 @@ const CustomDesign = () => {
          </div>
       </div>
 
+      {/* ─── Bulk & Wedding Favors Callout (Audience E) ─── */}
+      <div className="container-custom px-5 max-w-4xl mb-10 -mt-6 relative z-20">
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-rose-950 via-stone-900 to-amber-950 text-white p-6 md:p-8 shadow-xl border border-rose-900/30">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="space-y-2 text-center md:text-left">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-rose-500/20 border border-rose-400/30 rounded-full text-rose-300 text-[11px] font-bold uppercase tracking-widest">
+                <Gift className="w-3.5 h-3.5" /> Bulk &amp; Event Orders (10+ Pieces)
+              </div>
+              <h3 className="text-xl md:text-2xl font-heading font-bold text-white">
+                Planning Wedding Favors or Haldi Giveaways?
+              </h3>
+              <p className="text-stone-300 text-xs md:text-sm max-w-xl leading-relaxed">
+                Need matching crochet gajras, bridesmaid floral gift boxes, or bulk amigurumi charms? We provide dedicated artisan design, custom color themes, and special tiered bulk pricing.
+              </p>
+            </div>
+            <a
+              href="https://wa.me/917428013214?text=Hi%20Crochet%20Wali,%20I%20am%20inquiring%20about%20a%20bulk%20order%20(wedding%20favors/haldi/events)."
+              target="_blank"
+              rel="noopener noreferrer"
+              className="shrink-0 px-6 py-3.5 bg-[#25D366] hover:bg-[#20bd5a] text-white rounded-full font-bold text-sm tracking-wide transition-all shadow-lg flex items-center justify-center gap-2 hover:scale-105 active:scale-95 w-full sm:w-auto"
+            >
+              <Phone className="w-4 h-4" /> Bulk WhatsApp Inquiry
+            </a>
+          </div>
+        </div>
+      </div>
+
       {/* Main Content */}
       <div id="request-form" className="container-custom px-5 max-w-2xl scroll-m-24">
 
@@ -278,7 +305,7 @@ const CustomDesign = () => {
             {/* Form Header */}
             <div className="px-6 py-5 md:px-8 md:py-6 border-b border-stone-100 bg-stone-50/50">
               <h2 className="text-xl md:text-2xl font-heading font-bold text-stone-900">Tell Us Your Idea</h2>
-              <p className="text-sm text-stone-500 mt-1">Just 3 simple details — we'll handle the rest.</p>
+              <p className="text-sm text-stone-500 mt-1">Single custom gifts or bulk wedding favors — we handle both.</p>
             </div>
 
             <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-5">
