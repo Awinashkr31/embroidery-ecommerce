@@ -366,17 +366,6 @@ const CustomDesign = () => {
          </div>
       </div>
 
-      {/* ─── Mobile Sticky CTA ─── */}
-      <div className="fixed bottom-6 left-4 right-4 p-2 bg-white/95 backdrop-blur-2xl border border-white/50 flex items-center justify-center gap-3 lg:hidden z-50 shadow-2xl rounded-full">
-          <a 
-             href={getWhatsAppUrl("Hi Crochet Wali, I want to discuss a custom design!")}
-             target="_blank"
-             rel="noopener noreferrer"
-             className="w-full bg-[#25D366] text-white px-4 py-3.5 rounded-full font-bold text-sm tracking-wide uppercase hover:bg-[#20bd5a] transition-all flex items-center justify-center gap-2 shadow-xl active:scale-95"
-          >
-             <Phone className="w-4 h-4" /> Chat on WhatsApp
-          </a>
-      </div>
     </div>
   );
 };
