@@ -6,6 +6,14 @@
   --breakpoint-3xl: 1728px;
   --breakpoint-4xl: 1920px;
   --breakpoint-5xl: 2560px;
+
+  --font-heading: 'Playfair Display', Georgia, serif;
+  --font-serif: 'Playfair Display', Georgia, serif;
+  --font-body: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-playfair: 'Playfair Display', Georgia, serif;
+  --font-outfit: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-inter: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 @layer base {
   :root {
@@ -44,6 +52,25 @@
 }
 
 @layer utilities {
+  .font-heading {
+    font-family: var(--font-heading), 'Playfair Display', Georgia, serif;
+  }
+  .font-serif {
+    font-family: var(--font-heading), 'Playfair Display', Georgia, serif;
+  }
+  .font-body {
+    font-family: var(--font-body), 'Outfit', system-ui, -apple-system, sans-serif;
+  }
+  .font-sans {
+    font-family: var(--font-body), 'Outfit', system-ui, -apple-system, sans-serif;
+  }
+  .font-outfit {
+    font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+  }
+  .font-playfair {
+    font-family: 'Playfair Display', Georgia, serif;
+  }
+
   .no-scrollbar::-webkit-scrollbar,
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
