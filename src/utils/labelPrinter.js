@@ -1,7 +1,9 @@
-import html2pdf from 'html2pdf.js';
-
 export const generateShippingLabels = async (orders) => {
     if (!orders || orders.length === 0) return;
+
+    // Dynamically load html2pdf only when labels are printed
+    const html2pdfModule = await import('html2pdf.js');
+    const html2pdf = html2pdfModule.default || html2pdfModule;
 
     // Create a hidden container for the labels
     const container = document.createElement('div');

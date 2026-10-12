@@ -1,11 +1,13 @@
 import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import { fileURLToPath } from 'url'
-import path, { dirname } from 'path'
+import { dirname } from 'path'
 import { VitePWA } from 'vite-plugin-pwa'
 import viteCompression from 'vite-plugin-compression';
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
+import { Buffer } from 'buffer';
+import process from 'process';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -55,8 +57,12 @@ const localApiPlugin = () => ({
             hmac.update(`${razorpay_order_id}|${razorpay_payment_id}`);
             const expectedSignature = hmac.digest('hex');
             
+            const expectedBuffer = Buffer.from(expectedSignature, 'utf8');
+            const signatureBuffer = Buffer.from(razorpay_signature || '', 'utf8');
+            const isMatch = expectedBuffer.length === signatureBuffer.length && crypto.timingSafeEqual(expectedBuffer, signatureBuffer);
+            
             res.setHeader('Content-Type', 'application/json');
-            if (expectedSignature === razorpay_signature) {
+            if (isMatch) {
                 res.statusCode = 200;
                 return res.end(JSON.stringify({ success: true }));
             } else {
@@ -90,6 +96,10 @@ export default defineConfig({
       registerType: 'autoUpdate',
       injectRegister: null, // We will manually register in main.jsx to catch promise rejections
       includeAssets: ['favicon.png', 'logo.png', 'robots.txt'],
+      workbox: {
+        globIgnores: ['**/admin/**', '**/Admin*', '**/labelPrinter*', '**/Users*', '**/html2pdf*'],
+        navigateFallbackDenylist: [/^\/sadmin/, /^\/api/]
+      },
       devOptions: {
         enabled: true // Enable SW in dev mode so beforeinstallprompt fires
       },

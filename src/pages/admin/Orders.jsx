@@ -83,6 +83,9 @@ const Orders = () => {
     }
   }, [orders, location.state]);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const ORDERS_PER_PAGE = 15;
+
   const filteredOrders = orders.filter(order => {
     const term = searchTerm.toLowerCase();
     const customerName = order.customer ? `${order.customer.firstName} ${order.customer.lastName}`.toLowerCase() : '';
@@ -91,6 +94,13 @@ const Orders = () => {
     if (activeTab === 'All') return matchesSearch;
     return matchesSearch && (order.status || '').toLowerCase() === activeTab.toLowerCase();
   });
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, activeTab]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredOrders.length / ORDERS_PER_PAGE));
+  const paginatedOrders = filteredOrders.slice((currentPage - 1) * ORDERS_PER_PAGE, currentPage * ORDERS_PER_PAGE);
 
 
   const updateOrderStatus = async (orderId, newStatus, extraData = {}) => {
@@ -498,7 +508,7 @@ const Orders = () => {
             <p className="font-medium text-stone-500">No orders found</p>
             <p className="text-xs text-stone-400 mt-1">Try adjusting your filters</p>
           </div>
-        ) : filteredOrders.map((order) => (
+        ) : paginatedOrders.map((order) => (
           <button
             key={order.id}
             onClick={() => setSelectedOrder(order)}
@@ -572,8 +582,8 @@ const Orders = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-stone-100">
-              {filteredOrders.length > 0 ? (
-                filteredOrders.map((order) => (
+              {paginatedOrders.length > 0 ? (
+                paginatedOrders.map((order) => (
                   <tr key={order.id} className={`hover:bg-stone-50/50 transition-colors group ${selectedOrders.includes(order.id) ? 'bg-rose-50/30' : ''}`}>
                     <td className="px-6 py-4">
                         <input 
@@ -643,6 +653,32 @@ const Orders = () => {
           </table>
         </div>
       </div>
+
+      {/* Pagination Controls */}
+      {filteredOrders.length > ORDERS_PER_PAGE && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white px-5 py-3.5 rounded-2xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border-0 text-xs font-bold text-stone-600">
+          <div>
+            Showing {(currentPage - 1) * ORDERS_PER_PAGE + 1}–{Math.min(currentPage * ORDERS_PER_PAGE, filteredOrders.length)} of {filteredOrders.length} orders
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="px-3.5 py-1.5 rounded-xl border border-stone-200 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-stone-50 transition-colors"
+            >
+              Previous
+            </button>
+            <span className="px-2 font-mono text-stone-800">Page {currentPage} of {totalPages}</span>
+            <button
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="px-3.5 py-1.5 rounded-xl border border-stone-200 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-stone-50 transition-colors"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Order Details Drawer/Modal */}
       {selectedOrder && (

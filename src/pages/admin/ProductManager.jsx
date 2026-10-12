@@ -484,11 +484,21 @@ const ProductManager = () => {
         }
     };
 
-    // Render Logic
+    // Render Logic with Pagination
+    const [currentPage, setCurrentPage] = useState(1);
+    const PRODUCTS_PER_PAGE = 20;
+
     const filteredProducts = products.filter(p => 
         p.name.toLowerCase().includes(searchTerm.toLowerCase()) && 
         (categoryFilter === 'All' || p.category === categoryFilter)
     );
+
+    React.useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, categoryFilter]);
+
+    const totalPages = Math.max(1, Math.ceil(filteredProducts.length / PRODUCTS_PER_PAGE));
+    const paginatedProducts = filteredProducts.slice((currentPage - 1) * PRODUCTS_PER_PAGE, currentPage * PRODUCTS_PER_PAGE);
 
     return (
         <div className="font-body space-y-6">
@@ -542,7 +552,7 @@ const ProductManager = () => {
                                 <Package className="w-10 h-10 mx-auto mb-3 text-stone-200" />
                                 <p className="text-stone-500 font-medium text-sm">No products found</p>
                             </div>
-                        ) : filteredProducts.map(p => (
+                        ) : paginatedProducts.map(p => (
                             <div key={p.id} className="flex items-center gap-3 p-4">
                                 <div className="relative shrink-0">
                                     <img
@@ -612,7 +622,7 @@ const ProductManager = () => {
                                         <p className="text-xs text-stone-400 mt-1">Try changing the search or category filter</p>
                                     </td>
                                 </tr>
-                            ) : filteredProducts.map(p => (
+                            ) : paginatedProducts.map(p => (
                                 <tr key={p.id} className="hover:bg-stone-50/60 transition-colors group">
                                     <td className="px-6 py-3.5">
                                         <div className="flex items-center gap-4">
@@ -684,6 +694,32 @@ const ProductManager = () => {
                     </div>{/* end hidden md:block */}
                 </div>{/* end Table */}
             </div>
+
+            {/* Pagination Controls */}
+            {filteredProducts.length > PRODUCTS_PER_PAGE && (
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white px-5 py-3.5 rounded-2xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border-0 text-xs font-bold text-stone-600">
+                    <div>
+                        Showing {(currentPage - 1) * PRODUCTS_PER_PAGE + 1}–{Math.min(currentPage * PRODUCTS_PER_PAGE, filteredProducts.length)} of {filteredProducts.length} products
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            disabled={currentPage === 1}
+                            className="px-3.5 py-1.5 rounded-xl border border-stone-200 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-stone-50 transition-colors"
+                        >
+                            Previous
+                        </button>
+                        <span className="px-2 font-mono text-stone-800">Page {currentPage} of {totalPages}</span>
+                        <button
+                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            disabled={currentPage === totalPages}
+                            className="px-3.5 py-1.5 rounded-xl border border-stone-200 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-stone-50 transition-colors"
+                        >
+                            Next
+                        </button>
+                    </div>
+                </div>
+            )}
 
             {/* Mobile FAB */}
             <button

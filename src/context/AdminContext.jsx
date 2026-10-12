@@ -29,11 +29,12 @@ export const AdminProvider = ({ children }) => {
         }
 
         try {
-            // 1. Fetch orders optimized (avoiding heavy SELECT * where possible, though we need most fields for Orders page)
+            // 1. Fetch orders optimized with sensible limit to prevent memory crash
             const { data: ordersData, error: ordersError } = await supabase
                 .from('orders')
                 .select('id, created_at, status, payment_status, payment_method, total, customer_name, customer_email, customer_phone, shipping_address, items, waybill_id, courier_name, tracking_url, expected_delivery_date, final_shipping_cost')
-                .order('created_at', { ascending: false });
+                .order('created_at', { ascending: false })
+                .limit(200);
 
             if (ordersError) throw ordersError;
             

@@ -29,6 +29,15 @@ const Shop = () => {
     // Filter States
     const [selectedCategories, setSelectedCategories] = useState([]);
     
+    const isCategorySelected = useCallback((catId, catLabel) => {
+        if (catId === 'all') return selectedCategories.length === 0;
+        return selectedCategories.some(c => 
+            c === catId || 
+            slugify(c) === slugify(catId) || 
+            (catLabel && slugify(c) === slugify(catLabel))
+        );
+    }, [selectedCategories]);
+
     const toggleCategory = (catId) => {
         if (catId === 'all') {
             setSelectedCategories([]);
@@ -36,11 +45,10 @@ const Shop = () => {
         }
         // At a time select one circle: replace the array instead of appending
         setSelectedCategories(prev => {
-            // If already selected, deselect it (acts as toggle)
-            if (prev.includes(catId)) {
+            const alreadySelected = prev.some(c => c === catId || slugify(c) === slugify(catId));
+            if (alreadySelected) {
                 return [];
             }
-            // Otherwise, select ONLY the new category
             return [catId];
         });
     };
@@ -68,8 +76,26 @@ const Shop = () => {
         
         // Handle URL params
         const categoryParam = searchParams.get('category');
+        const targetProductParam = searchParams.get('product') || searchParams.get('productId');
+
         if (categoryParam && categoryParam !== 'all') {
-            setSelectedCategories([categoryParam]);
+            const matched = contextCategories.find(c => 
+                slugify(c.id) === slugify(categoryParam) || 
+                slugify(c.label) === slugify(categoryParam)
+            );
+            setSelectedCategories([matched ? matched.id : categoryParam]);
+        } else if (targetProductParam && products.length > 0) {
+            const prod = products.find(p => 
+                String(p.id) === String(targetProductParam) || 
+                p.slug === targetProductParam
+            );
+            if (prod && prod.category) {
+                const matched = contextCategories.find(c => 
+                    slugify(c.id) === slugify(prod.category) || 
+                    slugify(c.label) === slugify(prod.category)
+                );
+                setSelectedCategories([matched ? matched.id : prod.category]);
+            }
         }
 
         const maxPriceParam = searchParams.get('maxPrice');
@@ -81,7 +107,7 @@ const Shop = () => {
         if (saleParam === 'true') {
             setIsSaleOnly(true);
         }
-    }, [searchParams]);
+    }, [searchParams, contextCategories, products]);
 
     useEffect(() => {
         setCurrentPage(1);
@@ -109,15 +135,13 @@ const Shop = () => {
                         uniqueId: `${prod.id}-${slugify(v.color)}`,
                         preselectedVariant: v,
                         price: v.price ? Number(v.price) : prod.price,
-                        randomOrder: Math.random(),
                     });
                 });
             } else {
                 flattened.push({
                     ...prod,
-                    uniqueId: prod.id,
+                    uniqueId: String(prod.id),
                     preselectedVariant: null,
-                    randomOrder: Math.random(),
                 });
             }
         });
@@ -127,10 +151,29 @@ const Shop = () => {
         if (selectedCategories.length > 0) {
             selectedCategories.forEach(catId => {
                 selectedSlugs.add(slugify(catId));
-                const catObj = contextCategories.find(c => c.id === catId);
-                if (catObj) selectedSlugs.add(slugify(catObj.label));
+                const catObj = contextCategories.find(c => c.id === catId || slugify(c.label) === slugify(catId));
+                if (catObj) {
+                    selectedSlugs.add(slugify(catObj.id));
+                    selectedSlugs.add(slugify(catObj.label));
+                }
             });
         }
+
+        const targetProductParam = searchParams.get('product') || searchParams.get('productId');
+        const targetColorParam = searchParams.get('color');
+
+        const isTarget = (item) => {
+            if (!targetProductParam) return false;
+            const matchesId = String(item.id) === String(targetProductParam);
+            const matchesSlug = item.slug && String(item.slug).toLowerCase() === String(targetProductParam).toLowerCase();
+            const matchesUnique = String(item.uniqueId).toLowerCase() === String(targetProductParam).toLowerCase();
+            if (!(matchesId || matchesSlug || matchesUnique)) return false;
+
+            if (targetColorParam && item.preselectedVariant?.color) {
+                return slugify(item.preselectedVariant.color) === slugify(targetColorParam);
+            }
+            return true;
+        };
 
         return flattened.filter(product => {
             // Price Range Filter
@@ -146,31 +189,32 @@ const Shop = () => {
 
             return true;
         }).sort((a, b) => {
+            // 1. Same product clicked on card appears at the VERY top
+            const aTarget = isTarget(a);
+            const bTarget = isTarget(b);
+            if (aTarget && !bTarget) return -1;
+            if (!aTarget && bTarget) return 1;
+
+            // 2. Rest of products in that category come next
             const aIsSelected = selectedCategories.length > 0 && selectedSlugs.has(slugify(a.category));
             const bIsSelected = selectedCategories.length > 0 && selectedSlugs.has(slugify(b.category));
 
-            // If one is in the selected category and the other is not, the selected one comes first
             if (aIsSelected && !bIsSelected) return -1;
             if (!aIsSelected && bIsSelected) return 1;
 
-            // If neither is in the selected category (but there is a selected category), sort them randomly
-            if (selectedCategories.length > 0 && !aIsSelected && !bIsSelected) {
-                return a.randomOrder - b.randomOrder;
-            }
-
-            // Otherwise (both selected, or no category selected), sort according to sortBy
+            // 3. Other category products come afterwards (sorted by chosen sortBy)
             switch (sortBy) {
-                case 'price-low': return a.price - b.price;
-                case 'price-high': return b.price - a.price;
-                case 'newest': return String(b.id).localeCompare(String(a.id));
+                case 'price-low': return (a.price - b.price) || String(a.uniqueId).localeCompare(String(b.uniqueId));
+                case 'price-high': return (b.price - a.price) || String(a.uniqueId).localeCompare(String(b.uniqueId));
+                case 'newest': return (new Date(b.created_at || 0) - new Date(a.created_at || 0)) || String(b.uniqueId).localeCompare(String(a.uniqueId));
                 default: 
-                    if (selectedCategories.length === 0) {
-                        return a.randomOrder - b.randomOrder;
+                    if (a.featured !== b.featured) {
+                        return a.featured ? -1 : 1;
                     }
-                    return (a.featured === b.featured) ? 0 : a.featured ? -1 : 1;
+                    return String(a.uniqueId).localeCompare(String(b.uniqueId));
             }
         });
-    }, [products, selectedCategories, contextCategories, priceRange, inStockOnly, isSaleOnly, sortBy]);
+    }, [products, selectedCategories, contextCategories, priceRange, inStockOnly, isSaleOnly, sortBy, searchParams]);
 
 
     const totalPages = Math.ceil(allFilteredProducts.length / ITEMS_PER_PAGE);
@@ -273,7 +317,7 @@ const Shop = () => {
                 <div className="lg:hidden mb-4 overflow-x-auto no-scrollbar py-2 -mx-4 px-4">
                     <div className="flex gap-2">
                         {categories.map(cat => {
-                            const isSelected = cat.id === 'all' ? selectedCategories.length === 0 : selectedCategories.includes(cat.id);
+                            const isSelected = isCategorySelected(cat.id, cat.label);
                             let catImage = '/logo.png';
                             if (cat.id !== 'all') {
                                 const catSlug = slugify(cat.id);
@@ -367,7 +411,7 @@ const Shop = () => {
                                     <h3 className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-4">Categories</h3>
                                     <div className="flex flex-wrap gap-2">
                                         {categories.map(cat => {
-                                            const isSelected = cat.id === 'all' ? selectedCategories.length === 0 : selectedCategories.includes(cat.id);
+                                            const isSelected = isCategorySelected(cat.id, cat.label);
                                             const cleanName = cat.label.toLowerCase().trim().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
                                             const categoryProduct = products.find(p => (p.category === cat.id || p.category === cat.label) && p.image && !p.image.includes('unsplash'));
                                             const categoryImage = categoryProduct?.image || `/category-images/${cleanName}.webp`;
@@ -491,7 +535,7 @@ const Shop = () => {
                             <h3 className="font-heading font-bold text-stone-900 mb-4 text-base uppercase tracking-wider">Categories</h3>
                             <div className="flex flex-col gap-2">
                                 {categories.map(cat => {
-                                    const isSelected = cat.id === 'all' ? selectedCategories.length === 0 : selectedCategories.includes(cat.id);
+                                    const isSelected = isCategorySelected(cat.id, cat.label);
                                     const cleanName = cat.label.toLowerCase().trim().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
                                     const categoryProduct = products.find(p => (p.category === cat.id || p.category === cat.label) && p.image && !p.image.includes('unsplash'));
                                     const categoryImage = categoryProduct?.image || `/category-images/${cleanName}.webp`;

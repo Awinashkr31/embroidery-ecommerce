@@ -4,26 +4,86 @@ import { deleteImage } from '../utils/uploadUtils';
 
 const ProductContext = createContext();
 
-const CACHE_DURATION_MS = 0; // Fetch fresh data on navigation
+const CACHE_DURATION_MS = 5 * 60 * 1000; // 5 minutes cache
+const CACHE_KEY = 'cw_products_cache';
+const CACHE_TIME_KEY = 'cw_products_cache_time';
 
 export const useProducts = () => useContext(ProductContext);
 
+// Helper to normalize and map raw DB products
+const mapProductRecord = (p) => {
+    let parsedImages = p.images;
+    if (typeof parsedImages === 'string') {
+        try { parsedImages = JSON.parse(parsedImages); } catch (e) { parsedImages = []; }
+    }
+    let parsedVariants = p.variants;
+    if (typeof parsedVariants === 'string') {
+        try { parsedVariants = JSON.parse(parsedVariants); } catch (e) { parsedVariants = []; }
+    }
+    
+    return {
+        ...p,
+        images: Array.isArray(parsedImages) ? parsedImages : [],
+        image: (Array.isArray(parsedImages) && parsedImages.length > 0) ? parsedImages[0] : 'https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=500',
+        inStock: (p.stock_quantity || 0) > 0,
+        stock: p.stock_quantity,
+        clothingInformation: p.clothing_information,
+        originalPrice: p.original_price,
+        discountPercentage: (p.original_price && p.original_price > p.price)
+            ? Math.round(((p.original_price - p.price) / p.original_price) * 100)
+            : 0,
+        variants: Array.isArray(parsedVariants) ? parsedVariants : [],
+        homepage_tags: Array.isArray(p.homepage_tags) ? p.homepage_tags : []
+    };
+};
+
 export const ProductProvider = ({ children }) => {
-    const [products, setProducts] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const lastFetchTime = useRef(0);
+    // Instant hydration from sessionStorage if available
+    const [products, setProducts] = useState(() => {
+        try {
+            const cached = sessionStorage.getItem(CACHE_KEY);
+            return cached ? JSON.parse(cached) : [];
+        } catch {
+            return [];
+        }
+    });
+    const [loading, setLoading] = useState(() => {
+        try {
+            return !sessionStorage.getItem(CACHE_KEY);
+        } catch {
+            return true;
+        }
+    });
+
+    const productsRef = useRef(products);
+    productsRef.current = products;
+
+    const lastFetchTime = useRef(() => {
+        try {
+            return Number(sessionStorage.getItem(CACHE_TIME_KEY)) || 0;
+        } catch {
+            return 0;
+        }
+    });
     const isFetching = useRef(false);
 
-    // Fetch Products (with cache check)
+    // Fetch Products (with SWR cache check)
     const fetchProducts = useCallback(async (force = false) => {
-        // Skip if we fetched recently and already have data
         const now = Date.now();
-        if (!force && products.length > 0 && (now - lastFetchTime.current) < CACHE_DURATION_MS) {
-            return;
+        const hasData = productsRef.current.length > 0;
+        const isFresh = (now - lastFetchTime.current) < CACHE_DURATION_MS;
+
+        // Skip network hit if fresh and not forced
+        if (!force && hasData && isFresh) {
+            setLoading(false);
+            return productsRef.current;
         }
 
-        if (isFetching.current) return;
+        if (isFetching.current) return productsRef.current;
         isFetching.current = true;
+
+        // If we have stale data, don't show full-page loading spinner (Stale-While-Revalidate)
+        if (!hasData) setLoading(true);
 
         try {
             const { data, error } = await supabase
@@ -31,47 +91,75 @@ export const ProductProvider = ({ children }) => {
                 .select('id, name, description, price, original_price, category, images, featured, stock_quantity, fabric, clothing_information, variants, created_at, active, homepage_tags')
                 .eq('active', true)
                 .order('created_at', { ascending: false })
-                .limit(500); // Prevents catastrophic memory crash on massive catalogs
+                .limit(500);
 
             if (error) throw error;
 
-            const mappedProducts = data.map(p => {
-                let parsedImages = p.images;
-                if (typeof parsedImages === 'string') {
-                    try { parsedImages = JSON.parse(parsedImages); } catch (e) { parsedImages = []; }
-                }
-                let parsedVariants = p.variants;
-                if (typeof parsedVariants === 'string') {
-                    try { parsedVariants = JSON.parse(parsedVariants); } catch (e) { parsedVariants = []; }
-                }
-                
-                return {
-                    ...p,
-                    images: Array.isArray(parsedImages) ? parsedImages : [],
-                    image: (Array.isArray(parsedImages) && parsedImages.length > 0) ? parsedImages[0] : 'https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=500',
-                    inStock: (p.stock_quantity || 0) > 0,
-                    stock: p.stock_quantity,
-                    clothingInformation: p.clothing_information,
-                    originalPrice: p.original_price,
-                    discountPercentage: (p.original_price && p.original_price > p.price)
-                        ? Math.round(((p.original_price - p.price) / p.original_price) * 100)
-                        : 0,
-                    variants: Array.isArray(parsedVariants) ? parsedVariants : [],
-                    homepage_tags: Array.isArray(p.homepage_tags) ? p.homepage_tags : []
-                };
-            });
+            const mappedProducts = (data || []).map(mapProductRecord);
 
             setProducts(mappedProducts);
             lastFetchTime.current = now;
+
+            try {
+                sessionStorage.setItem(CACHE_KEY, JSON.stringify(mappedProducts));
+                sessionStorage.setItem(CACHE_TIME_KEY, String(now));
+            } catch {
+                // SessionStorage may fail on quota exceeded, gracefully ignore
+            }
+
+            return mappedProducts;
         } catch (error) {
             console.error('Error fetching products:', error);
+            return productsRef.current;
         } finally {
             isFetching.current = false;
             setLoading(false);
         }
-    }, [products.length]); // Intentionally not including 'products' itself, only length if needed to avoid infinite loops, but realistically it's safe if structured well
+    }, []); // Stable dependency array!
 
-    // Auto-fetch removed for performance. Components like Shop should call fetchProducts() themselves.
+    // Fetch single product by id or slug (prevents downloading 500 products on direct product page hit)
+    const fetchSingleProduct = useCallback(async (idOrSlug) => {
+        if (!idOrSlug) return null;
+        
+        // 1. Check memory / existing products
+        const existing = productsRef.current.find(p => 
+            p.id === idOrSlug || 
+            p.clothing_information?.slug === idOrSlug ||
+            p.name?.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') === idOrSlug.toLowerCase()
+        );
+        if (existing) return existing;
+
+        // 2. Fetch specific product from DB (Single-row query!)
+        try {
+            let query = supabase
+                .from('products')
+                .select('id, name, description, price, original_price, category, images, featured, stock_quantity, fabric, clothing_information, variants, created_at, active, homepage_tags')
+                .eq('active', true);
+
+            const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(idOrSlug);
+            if (isUUID) {
+                query = query.eq('id', idOrSlug);
+            } else {
+                // Match by slug or name
+                query = query.or(`id.eq.${idOrSlug},name.ilike.%${idOrSlug.replace(/-/g, ' ')}%`);
+            }
+
+            const { data, error } = await query.limit(1);
+            if (error || !data || data.length === 0) return null;
+
+            const mapped = mapProductRecord(data[0]);
+            
+            // Add to products array in background
+            setProducts(prev => {
+                if (prev.some(p => p.id === mapped.id)) return prev;
+                return [...prev, mapped];
+            });
+            return mapped;
+        } catch (err) {
+            console.error('Error fetching single product:', err);
+            return null;
+        }
+    }, []);
 
     const addProduct = async (product) => {
         try {
@@ -251,7 +339,7 @@ export const ProductProvider = ({ children }) => {
     };
 
     return (
-        <ProductContext.Provider value={{ products, loading, addProduct, updateProduct, deleteProduct, toggleStock, fetchProducts }}>
+        <ProductContext.Provider value={{ products, loading, addProduct, updateProduct, deleteProduct, toggleStock, fetchProducts, fetchSingleProduct }}>
             {children}
         </ProductContext.Provider>
     );

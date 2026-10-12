@@ -146,6 +146,7 @@ const Navbar = React.memo(() => {
     <header className={`sticky top-0 w-full z-50 flex flex-col transition-transform duration-300 ease-in-out ${scrollDirection === 'down' ? '-translate-y-full' : 'translate-y-0'} ${location.pathname === '/cart' ? 'hidden lg:flex' : ''}`}>
 
       <nav
+        aria-label="Main navigation"
         className={`w-full relative z-20 transition-all duration-500 ease-in-out min-h-[56px] md:min-h-[72px]
           ${isScrolled
             ? 'bg-white/95 backdrop-blur-[12px] border-b border-stone-100 shadow-lg shadow-black/5 py-2 px-2 md:px-12 lg:px-20'
@@ -169,7 +170,7 @@ const Navbar = React.memo(() => {
                 <>
                     <button
                         type="button"
-                        className="p-1.5 -ml-1.5 text-stone-800 hover:text-rose-900 transition-colors rounded-full lg:hidden z-10"
+                        className="p-1.5 -ml-1.5 text-stone-900 hover:text-rose-900 transition-colors rounded-full lg:hidden z-10"
                         onClick={() => setIsMobileMenuOpen(true)}
                         aria-label="Open menu"
                         aria-expanded={isMobileMenuOpen}
@@ -187,7 +188,7 @@ const Navbar = React.memo(() => {
                 <div className="flex items-center gap-1 lg:hidden z-10">
                     <button
                         type="button"
-                        className="p-2 -ml-2 text-stone-800 hover:text-rose-900 active:scale-90 transition-all rounded-full hover:bg-stone-100"
+                        className="p-2 -ml-2 text-stone-900 hover:text-rose-900 active:scale-90 transition-all rounded-full hover:bg-stone-100"
                         onClick={() => navigate(-1)}
                         aria-label="Go back"
                     >
@@ -229,24 +230,24 @@ const Navbar = React.memo(() => {
                             <div>
                                 <h4 className="font-heading font-bold text-stone-900 mb-3 text-[11px] tracking-widest uppercase border-b border-stone-100 pb-2">By Category</h4>
                                 <ul className="space-y-2">
-                                    <li><Link to="/shop?category=crochet" className="text-sm text-stone-600 hover:text-[#d6336c] transition-colors">Crochet Bouquets</Link></li>
-                                    <li><Link to="/shop?category=embroidery" className="text-sm text-stone-600 hover:text-[#d6336c] transition-colors">Embroidery Hoops</Link></li>
-                                    <li><Link to="/shop?category=accessories" className="text-sm text-stone-600 hover:text-[#d6336c] transition-colors">Accessories</Link></li>
+                                    <li><Link to="/shop?category=crochet" className="text-sm text-stone-600 hover:text-rose-900 transition-colors">Crochet Bouquets</Link></li>
+                                    <li><Link to="/shop?category=embroidery" className="text-sm text-stone-600 hover:text-rose-900 transition-colors">Embroidery Hoops</Link></li>
+                                    <li><Link to="/shop?category=accessories" className="text-sm text-stone-600 hover:text-rose-900 transition-colors">Accessories</Link></li>
                                 </ul>
                             </div>
                             <div>
-                                <h4 className="font-heading font-bold text-stone-900 mb-3 text-[11px] tracking-widest uppercase border-b border-stone-100 pb-2">By Occasion</h4>
+                                <h4 className="font-heading font-bold text-stone-900 mb-3 text-xs tracking-widest uppercase border-b border-stone-100 pb-2">By Occasion</h4>
                                 <ul className="space-y-2">
-                                    <li><Link to="/gifts#anniversary" className="text-sm text-stone-600 hover:text-[#d6336c] transition-colors">Anniversary</Link></li>
-                                    <li><Link to="/gifts#girlfriend" className="text-sm text-stone-600 hover:text-[#d6336c] transition-colors">For Her</Link></li>
-                                    <li><Link to="/gifts#budget" className="text-sm text-stone-600 hover:text-[#d6336c] transition-colors">Under ₹999</Link></li>
+                                    <li><Link to="/gifts#anniversary" className="text-sm text-stone-600 hover:text-rose-900 transition-colors">Anniversary</Link></li>
+                                    <li><Link to="/gifts#girlfriend" className="text-sm text-stone-600 hover:text-rose-900 transition-colors">For Her</Link></li>
+                                    <li><Link to="/gifts#budget" className="text-sm text-stone-600 hover:text-rose-900 transition-colors">Under ₹999</Link></li>
                                 </ul>
                             </div>
                             <div className="bg-[#fffaf3] p-4 rounded-xl flex flex-col items-center justify-center text-center">
-                                <Sparkles className="w-5 h-5 text-[#d6336c] mb-2" />
+                                <Sparkles className="w-5 h-5 text-rose-900 mb-2" />
                                 <h4 className="font-heading font-bold text-stone-900 text-sm mb-1">New Arrivals</h4>
-                                <p className="text-[11px] text-stone-500 mb-3">Discover the latest handcrafted creations.</p>
-                                <Link to="/shop" className="text-[10px] font-bold text-white bg-[#d6336c] px-4 py-2 rounded-full uppercase tracking-wider hover:scale-105 transition-transform">Shop Now</Link>
+                                <p className="text-xs text-stone-500 mb-3">Discover the latest handcrafted creations.</p>
+                                <Link to="/shop" className="text-[10px] font-bold text-white bg-rose-900 px-4 py-2 rounded-full uppercase tracking-wider hover:scale-105 transition-transform">Shop Now</Link>
                             </div>
                         </div>
                     )}

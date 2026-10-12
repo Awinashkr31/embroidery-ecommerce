@@ -14,65 +14,37 @@ const SEO = ({ title, description, keywords, schema, url, image, noIndex, childr
     useEffect(() => {
         if (typeof document === 'undefined') return;
 
-        // 1. Direct document title update
+        // 1. Direct document title update for instant tab text update
         document.title = fullTitle;
 
-        // 2. Direct single meta description update & deduplication
-        const allDescs = document.querySelectorAll('meta[name="description"]');
-        if (allDescs.length > 0) {
-            allDescs[0].setAttribute('content', metaDescription);
-            for (let i = 1; i < allDescs.length; i++) {
-                allDescs[i].remove();
-            }
-        } else {
-            const el = document.createElement('meta');
-            el.setAttribute('name', 'description');
-            el.setAttribute('content', metaDescription);
-            document.head.appendChild(el);
+        // 2. Direct single meta description update in-place (NEVER remove DOM nodes to prevent React 19 reconciler crashes)
+        const descEl = document.querySelector('meta[name="description"]');
+        if (descEl) {
+            descEl.setAttribute('content', metaDescription);
         }
 
-        // 3. Direct single canonical link update & deduplication
-        const allCanonicals = document.querySelectorAll('link[rel="canonical"]');
-        if (allCanonicals.length > 0) {
-            allCanonicals[0].setAttribute('href', metaUrl);
-            for (let i = 1; i < allCanonicals.length; i++) {
-                allCanonicals[i].remove();
-            }
-        } else {
-            const el = document.createElement('link');
-            el.setAttribute('rel', 'canonical');
-            el.setAttribute('href', metaUrl);
-            document.head.appendChild(el);
+        // 3. Direct canonical link update in-place
+        const canonicalEl = document.querySelector('link[rel="canonical"]');
+        if (canonicalEl) {
+            canonicalEl.setAttribute('href', metaUrl);
         }
 
         // 4. Update OpenGraph and Twitter tags in place
-        const updateMeta = (selector, attr, val) => {
-            const metas = document.querySelectorAll(selector);
-            if (metas.length > 0) {
-                metas[0].setAttribute('content', val);
-                for (let i = 1; i < metas.length; i++) {
-                    metas[i].remove();
-                }
-            } else {
-                const el = document.createElement('meta');
-                if (selector.includes('property=')) {
-                    el.setAttribute('property', selector.split('="')[1].replace('"]', ''));
-                } else if (selector.includes('name=')) {
-                    el.setAttribute('name', selector.split('="')[1].replace('"]', ''));
-                }
+        const updateMetaAttr = (selector, val) => {
+            const el = document.querySelector(selector);
+            if (el) {
                 el.setAttribute('content', val);
-                document.head.appendChild(el);
             }
         };
 
-        updateMeta('meta[property="og:title"]', 'content', fullTitle);
-        updateMeta('meta[property="og:description"]', 'content', metaDescription);
-        updateMeta('meta[property="og:url"]', 'content', metaUrl);
-        updateMeta('meta[property="og:image"]', 'content', metaImage);
-        updateMeta('meta[property="twitter:title"]', 'content', fullTitle);
-        updateMeta('meta[property="twitter:description"]', 'content', metaDescription);
-        updateMeta('meta[property="twitter:url"]', 'content', metaUrl);
-        updateMeta('meta[property="twitter:image"]', 'content', metaImage);
+        updateMetaAttr('meta[property="og:title"]', fullTitle);
+        updateMetaAttr('meta[property="og:description"]', metaDescription);
+        updateMetaAttr('meta[property="og:url"]', metaUrl);
+        updateMetaAttr('meta[property="og:image"]', metaImage);
+        updateMetaAttr('meta[name="twitter:title"]', fullTitle);
+        updateMetaAttr('meta[name="twitter:description"]', metaDescription);
+        updateMetaAttr('meta[name="twitter:url"]', metaUrl);
+        updateMetaAttr('meta[name="twitter:image"]', metaImage);
     }, [fullTitle, metaDescription, metaUrl, metaImage]);
 
     return (
@@ -82,6 +54,7 @@ const SEO = ({ title, description, keywords, schema, url, image, noIndex, childr
             <meta name="description" content={metaDescription} />
             <meta name="keywords" content={metaKeywords} />
             <meta name="robots" content={noIndex ? "noindex, follow" : "index, follow"} />
+            <link rel="canonical" href={metaUrl} />
             
             {/* Open Graph / Facebook */}
             <meta property="og:site_name" content="Crochet Wali" />

@@ -1,4 +1,4 @@
-﻿import Razorpay from 'razorpay';
+import Razorpay from 'razorpay';
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
@@ -9,13 +9,9 @@ export default async function handler(req, res) {
         const keyId = process.env.RAZORPAY_KEY_ID;
         const keySecret = process.env.RAZORPAY_KEY_SECRET;
 
-        console.log('RAZORPAY_KEY_ID present:', !!keyId, 'length:', keyId?.length);
-        console.log('RAZORPAY_KEY_SECRET present:', !!keySecret, 'length:', keySecret?.length);
-
         if (!keyId || !keySecret) {
             return res.status(500).json({ 
-                error: 'Razorpay credentials not configured on server.',
-                debug: { keyIdPresent: !!keyId, keySecretPresent: !!keySecret }
+                error: 'Razorpay credentials not configured on server.'
             });
         }
 

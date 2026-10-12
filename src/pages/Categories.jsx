@@ -123,8 +123,8 @@ const Categories = () => {
                               )}
                           </div>
                       </div>
-                      <span className="font-semibold text-[10px] sm:text-sm md:text-base text-center uppercase tracking-wider text-stone-800 group-hover:text-[#6e132b] transition-colors break-words w-full max-w-[110px] sm:max-w-[140px] px-1 mt-3 md:mt-4 line-clamp-2">
-                          {category.id === 'all' ? 'ALL CREATIONS' : category.label}
+                      <span className="font-semibold text-xs sm:text-sm md:text-base text-center text-stone-800 group-hover:text-rose-900 transition-colors break-words w-full max-w-[110px] sm:max-w-[140px] px-1 mt-3 md:mt-4 line-clamp-2">
+                          {category.id === 'all' ? 'All Creations' : category.label}
                       </span>
                   </Link>
               ))}

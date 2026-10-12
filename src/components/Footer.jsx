@@ -32,7 +32,7 @@ const Footer = () => {
                 />
               </picture>
             </Link>
-            <p className="text-stone-500 leading-relaxed max-w-sm font-light text-[13px] lg:text-sm">
+            <p className="text-stone-600 leading-relaxed max-w-sm font-light text-sm">
               Weaving stories into fabric. Handcrafted embroidery and detailed designs 
               that bring a touch of heritage and elegance to your special moments.
             </p>
@@ -48,10 +48,10 @@ const Footer = () => {
               {/* 2. Explore Links */}
               <div className="lg:col-span-2 border-b border-stone-200 lg:border-0 py-4 lg:py-0">
                   <details className="group lg:hidden" name="footer-accordion">
-                      <summary className="flex items-center justify-between font-heading font-bold text-stone-900 uppercase tracking-widest text-[13px] cursor-pointer list-none [&::-webkit-details-marker]:hidden">
-                          Explore <ChevronDown className="w-4 h-4 group-open:rotate-180 transition-transform text-stone-400" />
+                      <summary className="flex items-center justify-between font-heading font-bold text-stone-900 uppercase tracking-widest text-sm cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+                          Explore <ChevronDown className="w-4 h-4 group-open:rotate-180 transition-transform text-stone-500" />
                       </summary>
-                      <ul className="space-y-3 mt-4 text-[13px] pb-2">
+                      <ul className="space-y-3 mt-4 text-sm pb-2">
                           <FooterLink to="/gifts" label="Gift Guide" />
                           <FooterLink to="/shop" label="Shop Collection" />
                           <FooterLink to="/blog" label="Journal & Blog" />
@@ -60,7 +60,7 @@ const Footer = () => {
                       </ul>
                   </details>
                   <div className="hidden lg:block space-y-4">
-                      <h4 className="font-heading text-base font-bold text-stone-900 uppercase tracking-widest">Explore</h4>
+                      <h3 className="font-heading text-base font-bold text-stone-900 uppercase tracking-widest">Explore</h3>
                       <ul className="space-y-3 text-sm">
                           <FooterLink to="/gifts" label="Gift Guide" />
                           <FooterLink to="/shop" label="Shop Collection" />
@@ -74,10 +74,10 @@ const Footer = () => {
               {/* 3. Help Links */}
               <div className="lg:col-span-2 border-b border-stone-200 lg:border-0 py-4 lg:py-0">
                   <details className="group lg:hidden" name="footer-accordion">
-                      <summary className="flex items-center justify-between font-heading font-bold text-stone-900 uppercase tracking-widest text-[13px] cursor-pointer list-none [&::-webkit-details-marker]:hidden">
-                          Help <ChevronDown className="w-4 h-4 group-open:rotate-180 transition-transform text-stone-400" />
+                      <summary className="flex items-center justify-between font-heading font-bold text-stone-900 uppercase tracking-widest text-sm cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+                          Help <ChevronDown className="w-4 h-4 group-open:rotate-180 transition-transform text-stone-500" />
                       </summary>
-                      <ul className="space-y-3 mt-4 text-[13px] pb-2">
+                      <ul className="space-y-3 mt-4 text-sm pb-2">
                           <FooterLink to="/about" label="About" />
                           <FooterLink to="/support" label="Support" />
                           <FooterLink to="/profile" label="Order History" />
@@ -85,7 +85,7 @@ const Footer = () => {
                       </ul>
                   </details>
                   <div className="hidden lg:block space-y-4">
-                      <h4 className="font-heading text-base font-bold text-stone-900 uppercase tracking-widest">Help</h4>
+                      <h3 className="font-heading text-base font-bold text-stone-900 uppercase tracking-widest">Help</h3>
                       <ul className="space-y-3 text-sm">
                           <FooterLink to="/about" label="About" />
                           <FooterLink to="/support" label="Support" />
@@ -98,10 +98,10 @@ const Footer = () => {
               {/* 4. Policies */}
               <div className="lg:col-span-2 border-b border-stone-200 lg:border-0 py-4 lg:py-0">
                   <details className="group lg:hidden" name="footer-accordion">
-                      <summary className="flex items-center justify-between font-heading font-bold text-stone-900 uppercase tracking-widest text-[13px] cursor-pointer list-none [&::-webkit-details-marker]:hidden">
-                          Policies <ChevronDown className="w-4 h-4 group-open:rotate-180 transition-transform text-stone-400" />
+                      <summary className="flex items-center justify-between font-heading font-bold text-stone-900 uppercase tracking-widest text-sm cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+                          Policies <ChevronDown className="w-4 h-4 group-open:rotate-180 transition-transform text-stone-500" />
                       </summary>
-                      <ul className="space-y-3 mt-4 text-[13px] pb-2">
+                      <ul className="space-y-3 mt-4 text-sm pb-2">
                           <FooterLink to="/return-policy" label="Returns & Refunds" />
                           <FooterLink to="/shipping-policy" label="Shipping Policy" />
                           <FooterLink to="/privacy-policy" label="Privacy Policy" />
@@ -109,7 +109,7 @@ const Footer = () => {
                       </ul>
                   </details>
                   <div className="hidden lg:block space-y-4">
-                      <h4 className="font-heading text-base font-bold text-stone-900 uppercase tracking-widest">Policies</h4>
+                      <h3 className="font-heading text-base font-bold text-stone-900 uppercase tracking-widest">Policies</h3>
                       <ul className="space-y-3 text-sm">
                           <FooterLink to="/return-policy" label="Returns & Refunds" />
                           <FooterLink to="/shipping-policy" label="Shipping Policy" />
@@ -122,21 +122,21 @@ const Footer = () => {
               {/* 5. Visit Us */}
               <div className="lg:col-span-2 py-4 lg:py-0">
                   <details className="group lg:hidden" name="footer-accordion">
-                      <summary className="flex items-center justify-between font-heading font-bold text-stone-900 uppercase tracking-widest text-[13px] cursor-pointer list-none [&::-webkit-details-marker]:hidden">
-                          Visit Us <ChevronDown className="w-4 h-4 group-open:rotate-180 transition-transform text-stone-400" />
+                      <summary className="flex items-center justify-between font-heading font-bold text-stone-900 uppercase tracking-widest text-sm cursor-pointer list-none [&::-webkit-details-marker]:hidden">
+                          Visit Us <ChevronDown className="w-4 h-4 group-open:rotate-180 transition-transform text-stone-500" />
                       </summary>
-                      <ul className="space-y-3 mt-4 text-[13px] text-stone-500 pb-2">
+                      <ul className="space-y-3 mt-4 text-sm text-stone-500 pb-2">
                           <li className="flex items-start gap-2">
-                              <MapPin className="w-4 h-4 text-[#d6336c] shrink-0 mt-0.5" />
+                              <MapPin className="w-4 h-4 text-rose-900 shrink-0 mt-0.5" />
                               <span>Based in India,<br/>Shipping Worldwide</span>
                           </li>
                       </ul>
                   </details>
                   <div className="hidden lg:block space-y-4">
-                      <h4 className="font-heading text-base font-bold text-stone-900 uppercase tracking-widest">Visit Us</h4>
+                      <h3 className="font-heading text-base font-bold text-stone-900 uppercase tracking-widest">Visit Us</h3>
                       <ul className="space-y-3 text-sm text-stone-500">
                           <li className="flex items-start gap-2">
-                              <MapPin className="w-5 h-5 text-[#d6336c] shrink-0 mt-0.5" />
+                              <MapPin className="w-5 h-5 text-rose-900 shrink-0 mt-0.5" />
                               <span>Based in India,<br/>Shipping Worldwide</span>
                           </li>
                       </ul>
@@ -147,25 +147,25 @@ const Footer = () => {
 
         {/* SEO-rich Footer Description */}
         <div className="mt-8 pt-6 border-t border-stone-200">
-          <p className="text-[11px] leading-relaxed text-stone-400 max-w-4xl mx-auto text-center mb-6">
-            <strong>Crochet Wali</strong> is India's premier handmade crochet gift shop. Shop forever crochet flower bouquets, handmade gajra, crochet hair clips, crochet keychains, crochet parandi, crochet claw clips, flower pots, and personalized gift boxes. Every product at Crochet Wali is 100% handmade with premium yarn. Crochet Wali delivers aesthetic handmade gifts across India — perfect for birthdays, anniversaries, rakhi, and special occasions. Buy handmade crochet gifts online at Crochet Wali.
+          <p className="text-xs leading-relaxed text-stone-600 max-w-4xl mx-auto text-center mb-6">
+            <strong className="font-semibold text-stone-800">Crochet Wali</strong> is India's premier handmade crochet gift shop. Shop forever crochet flower bouquets, handmade gajra, crochet hair clips, crochet keychains, crochet parandi, crochet claw clips, flower pots, and personalized gift boxes. Every product at Crochet Wali is 100% handmade with premium yarn. Crochet Wali delivers aesthetic handmade gifts across India — perfect for birthdays, anniversaries, rakhi, and special occasions. Buy handmade crochet gifts online at Crochet Wali.
           </p>
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-stone-400">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-stone-600">
                <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-3 gap-y-1">
                  <p>&copy; {currentYear} Crochet Wali. All rights reserved.</p>
-                 <span className="hidden md:inline text-stone-300">•</span>
+                 <span className="hidden md:inline text-stone-500">•</span>
                  <a 
                    href="/sitemap.xml" 
                    target="_blank" 
                    rel="noopener noreferrer" 
-                   className="hover:text-rose-900 transition-colors underline-offset-2 hover:underline"
+                   className="text-stone-600 hover:text-rose-900 transition-colors underline-offset-2 hover:underline"
                  >
                    Sitemap
                  </a>
                </div>
-               <div className="flex items-center gap-1">
+               <div className="flex items-center gap-1 text-stone-600">
                   <span>Handcrafted with</span>
-                  <Heart className="w-3 h-3 text-rose-500 fill-current" />
+                  <Heart className="w-3 h-3 text-rose-900 fill-current" />
                   <span>in India</span>
                </div>
           </div>

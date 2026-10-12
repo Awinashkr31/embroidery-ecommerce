@@ -3,7 +3,7 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { CheckCircle, MapPin, Truck, CreditCard, Loader, Plus, AlertTriangle, Tag, X, ShoppingBag, ChevronDown, ChevronUp, Lock, Gift, Smartphone, Smile, ArrowLeft, Edit3, CheckCircle2 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion'; // eslint-disable-line no-unused-vars
 import { useToast } from '../context/ToastContext';
 import { supabase } from '../config/supabase';
 import { DelhiveryService } from '../services/delhivery';
@@ -14,6 +14,10 @@ import SEO from '../components/SEO';
 
 const loadRazorpay = () => {
     return new Promise((resolve) => {
+        if (typeof window !== 'undefined' && window.Razorpay) {
+            resolve(true);
+            return;
+        }
         const script = document.createElement('script');
         script.src = 'https://checkout.razorpay.com/v1/checkout.js';
         script.onload = () => resolve(true);
@@ -272,6 +276,7 @@ const Checkout = () => {
     if (cart.length === 0 && !isSubmitting) {
         return (
             <div className="min-h-screen bg-[#fdfbf7] flex items-center justify-center font-body pt-20">
+                <SEO title="Checkout" description="Complete your purchase." noIndex />
                 <div className="text-center">
                     <h2 className="text-2xl font-heading font-bold text-stone-900 mb-4">Your cart is empty</h2>
                     <Link to="/shop" className="text-rose-900 hover:underline font-bold">Return to Shop</Link>
@@ -424,6 +429,7 @@ const Checkout = () => {
 
     return (
         <div className="min-h-screen bg-[#FAF8F6] font-body pb-32 md:pb-24 selection:bg-rose-100 selection:text-rose-900">
+            <SEO title="Checkout" description="Complete your purchase." noIndex />
             {/* Header - Compact */}
             <div className="sticky top-0 z-40 bg-white shadow-sm border-b border-stone-100">
                 <div className="px-4 py-3 flex items-center justify-between max-w-6xl mx-auto">
@@ -704,21 +710,24 @@ const Checkout = () => {
             {/* Address Selection Drawer */}
             <AnimatePresence>
                 {isAddressDrawerOpen && (
-                    <>
-                        <motion.div 
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            onClick={() => setIsAddressDrawerOpen(false)}
-                            className="fixed inset-0 bg-stone-900/60 z-[60] backdrop-blur-[2px]" 
-                        />
-                        <motion.div 
-                            initial={{ y: '100%' }}
-                            animate={{ y: 0 }}
-                            exit={{ y: '100%' }}
-                            transition={{ type: "spring", bounce: 0, duration: 0.4 }}
-                            className="fixed bottom-0 left-0 right-0 z-[70] bg-[#f5f5f6] rounded-t-[24px] shadow-2xl flex flex-col max-h-[90vh] md:max-w-md md:left-1/2 md:-translate-x-1/2 md:bottom-auto md:top-1/2 md:-translate-y-1/2 md:rounded-[24px]"
-                        >
+                    <motion.div 
+                        key="address-backdrop"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setIsAddressDrawerOpen(false)}
+                        className="fixed inset-0 bg-stone-900/60 z-[60] backdrop-blur-[2px]" 
+                    />
+                )}
+                {isAddressDrawerOpen && (
+                    <motion.div 
+                        key="address-modal"
+                        initial={{ y: '100%' }}
+                        animate={{ y: 0 }}
+                        exit={{ y: '100%' }}
+                        transition={{ type: "spring", bounce: 0, duration: 0.4 }}
+                        className="fixed bottom-0 left-0 right-0 z-[70] bg-[#f5f5f6] rounded-t-[24px] shadow-2xl flex flex-col max-h-[90vh] md:max-w-md md:left-1/2 md:-translate-x-1/2 md:bottom-auto md:top-1/2 md:-translate-y-1/2 md:rounded-[24px]"
+                    >
                             <div className="bg-white p-4 rounded-t-[24px] border-b border-stone-100 flex items-center justify-between shrink-0">
                                 <h2 className="text-[18px] font-bold text-stone-900">Delivery Address</h2>
                                 <button onClick={() => setIsAddressDrawerOpen(false)} className="p-2 text-stone-400 hover:text-stone-900 transition-colors">
@@ -857,7 +866,6 @@ const Checkout = () => {
                                 )}
                             </div>
                         </motion.div>
-                    </>
                 )}
             </AnimatePresence>
         </div>

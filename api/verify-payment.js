@@ -1,4 +1,4 @@
-﻿import crypto from 'crypto';
+import crypto from 'crypto';
 
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
@@ -19,8 +19,11 @@ export default async function handler(req, res) {
         hmac.update(`${razorpay_order_id}|${razorpay_payment_id}`);
         const expectedSignature = hmac.digest('hex');
 
-        // Compare signatures securely
-        if (expectedSignature === razorpay_signature) {
+        // Compare signatures securely using constant-time comparison
+        const expectedBuffer = Buffer.from(expectedSignature, 'utf8');
+        const signatureBuffer = Buffer.from(razorpay_signature, 'utf8');
+
+        if (expectedBuffer.length === signatureBuffer.length && crypto.timingSafeEqual(expectedBuffer, signatureBuffer)) {
             // Payment is verified
             return res.status(200).json({ success: true, message: 'Payment verified successfully' });
         } else {

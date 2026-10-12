@@ -21,13 +21,37 @@ const DEFAULT_CATEGORIES = [
     { id: 'accessories', label: 'Accessories' }
 ];
 
+const CATEGORY_CACHE_MS = 10 * 60 * 1000; // 10 minutes
+
 export const CategoryProvider = ({ children }) => {
-    const [categories, setCategories] = useState(DEFAULT_CATEGORIES);
-    const [loading, setLoading] = useState(true);
+    const [categories, setCategories] = useState(() => {
+        try {
+            const cached = localStorage.getItem('site_categories');
+            return cached ? JSON.parse(cached) : DEFAULT_CATEGORIES;
+        } catch {
+            return DEFAULT_CATEGORIES;
+        }
+    });
+    const [loading, setLoading] = useState(() => {
+        try {
+            return !localStorage.getItem('site_categories');
+        } catch {
+            return true;
+        }
+    });
     const { addToast } = useToast();
 
-    const fetchCategories = useCallback(async () => {
+    const fetchCategories = useCallback(async (force = false) => {
         try {
+            const cached = localStorage.getItem('site_categories');
+            const cacheTime = localStorage.getItem('site_categories_ts');
+
+            // Skip DB fetch if cache is fresh (< 10 min old) unless forced
+            if (!force && cached && cacheTime && (Date.now() - Number(cacheTime)) < CATEGORY_CACHE_MS) {
+                setLoading(false);
+                return;
+            }
+
             const { data, error } = await supabase
                 .from('website_settings')
                 .select('setting_value')
@@ -48,6 +72,10 @@ export const CategoryProvider = ({ children }) => {
                 }));
 
                 setCategories(migrated);
+                try {
+                    localStorage.setItem('site_categories', JSON.stringify(migrated));
+                    localStorage.setItem('site_categories_ts', String(Date.now()));
+                } catch {}
             } else {
                 setCategories(DEFAULT_CATEGORIES);
             }
@@ -76,6 +104,10 @@ export const CategoryProvider = ({ children }) => {
             if (error) throw error;
 
             setCategories(newCategories);
+            try {
+                localStorage.setItem('site_categories', JSON.stringify(newCategories));
+                localStorage.setItem('site_categories_ts', String(Date.now()));
+            } catch {}
             addToast('Categories updated successfully', 'success');
             return true;
         } catch (error) {

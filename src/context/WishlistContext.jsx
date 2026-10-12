@@ -77,13 +77,12 @@ export const WishlistProvider = ({ children }) => {
 
     if ((currentUser?.uid || currentUser?.id)) {
         try {
-            // Check if already exists to avoid duplicate error if state out of sync
-            const { data } = await supabase.from('wishlist_items').select('id').eq('user_id', (currentUser.uid || currentUser.id)).eq('product_id', product.id).single();
-            if (!data) {
-                await supabase
-                    .from('wishlist_items')
-                    .insert({ user_id: (currentUser.uid || currentUser.id), product_id: product.id });
-            }
+            await supabase
+                .from('wishlist_items')
+                .upsert(
+                    { user_id: (currentUser.uid || currentUser.id), product_id: product.id },
+                    { onConflict: 'user_id,product_id', ignoreDuplicates: true }
+                );
         } catch (error) {
             console.error("Error adding to wishlist DB:", error);
         }

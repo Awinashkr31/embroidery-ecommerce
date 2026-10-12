@@ -28,11 +28,11 @@ export const GlobalPincodeHeader = () => {
         <>
             <button 
                 onClick={() => setIsOpen(true)}
-                className="flex items-center gap-1.5 hover:bg-stone-50 px-2.5 py-1.5 rounded-lg transition-colors group"
+                className="flex items-center gap-1.5 hover:bg-stone-100 px-3 py-1.5 rounded-full transition-colors group"
             >
-                <MapPin className="w-4 h-4 text-rose-700 shrink-0" />
+                <MapPin className="w-4 h-4 text-rose-900 shrink-0" />
                 <div className="hidden sm:flex flex-col items-start leading-tight min-h-[32px] justify-center">
-                    <span className="text-[10px] text-stone-400 font-medium">
+                    <span className="text-[10px] text-stone-500 font-medium">
                         {pincode ? 'Deliver to' : 'Select Location'}
                     </span>
                     <span className="text-xs font-bold text-stone-900 group-hover:text-rose-900 transition-colors">
@@ -41,7 +41,7 @@ export const GlobalPincodeHeader = () => {
                             : 'Enter Pincode'}
                     </span>
                 </div>
-                <span className="sm:hidden text-xs font-bold text-stone-700">
+                <span className="sm:hidden text-xs font-bold text-stone-900">
                     {pincode || '📍'}
                 </span>
             </button>
@@ -52,7 +52,7 @@ export const GlobalPincodeHeader = () => {
                     <div className="bg-white rounded-2xl w-full max-w-sm overflow-hidden shadow-2xl relative animate-in fade-in zoom-in duration-200">
                         <div className="p-4 border-b border-stone-100 flex justify-between items-center bg-stone-50">
                             <h3 className="font-heading font-medium text-lg text-stone-900 flex items-center gap-2">
-                                <MapPin className="w-5 h-5 text-rose-700" /> Choose Location
+                                <MapPin className="w-5 h-5 text-rose-900" /> Choose Location
                             </h3>
                             <button 
                                 onClick={() => setIsOpen(false)}

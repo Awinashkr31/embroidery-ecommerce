@@ -84,7 +84,8 @@ const BottomNavigation = () => {
         
         {/* Navigation Bar */}
         <nav
-          className={`pointer-events-auto bg-surface-cream/95 backdrop-blur-xl border border-border-warm shadow-[0_8px_32px_rgba(0,0,0,0.1)] transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] overflow-hidden flex-shrink-0 ${
+          aria-label="Mobile navigation"
+          className={`pointer-events-auto bg-[#faf8f5] border border-stone-200/80 shadow-[0_8px_32px_rgba(0,0,0,0.1)] transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] overflow-hidden flex-shrink-0 ${
             isShrunk ? 'w-[calc(100%-64px)] rounded-[1.5rem]' : 'w-full rounded-[2rem]'
           }`}
         >
@@ -120,14 +121,14 @@ const BottomNavigation = () => {
 
                     {/* Icon wrapper */}
                     <div className={`relative flex items-center justify-center w-[2.75rem] h-[1.75rem] rounded-2xl transition-all duration-300 ${
-                      isActive ? 'bg-primary/10' : ''
+                      isActive ? 'bg-rose-900/10' : ''
                     }`}>
                       {isProfile && currentUser ? (
-                          <div className={`w-[22px] h-[22px] rounded-full overflow-hidden flex items-center justify-center ${isActive ? 'ring-2 ring-primary ring-offset-1 ring-offset-surface' : 'border border-outline'}`}>
+                          <div className={`w-[22px] h-[22px] rounded-full overflow-hidden flex items-center justify-center ${isActive ? 'ring-2 ring-rose-900 ring-offset-1 ring-offset-white' : 'border border-stone-300'}`}>
                               {currentUser.photoURL ? (
                                   <img src={currentUser.photoURL} alt="Profile" className="w-full h-full object-cover" />
                               ) : (
-                                  <div className="w-full h-full bg-primary text-on-primary flex items-center justify-center text-[10px] font-bold uppercase">
+                                  <div className="w-full h-full bg-rose-900 text-white flex items-center justify-center text-[10px] font-bold uppercase">
                                       {currentUser.displayName ? currentUser.displayName.charAt(0) : <User size={14} />}
                                   </div>
                               )}
@@ -137,22 +138,22 @@ const BottomNavigation = () => {
                             size={20}
                             strokeWidth={isActive ? 2.5 : 2}
                             className={`transition-colors duration-300 ${
-                              isActive ? 'text-primary' : 'text-on-surface-variant'
+                              isActive ? 'text-rose-900' : 'text-stone-500'
                             }`}
                           />
                       )}
 
                       {/* Badge */}
                       {badge > 0 && (
-                        <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 bg-error text-on-error text-[9px] font-black flex items-center justify-center rounded-full border border-surface leading-none animate-badge-pop" key={`bnav-badge-${badge}`}>
+                        <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 bg-rose-900 text-white text-[10px] font-black flex items-center justify-center rounded-full border border-white leading-none animate-badge-pop" key={`bnav-badge-${badge}`}>
                           {badge > 9 ? '9+' : badge}
                         </span>
                       )}
                     </div>
 
                     {/* Label — ALWAYS visible with strong contrast */}
-                    <span className={`text-[9px] md:text-[10px] font-bold leading-none select-none transition-colors duration-300 ${
-                      isActive ? 'text-primary' : 'text-on-surface-variant'
+                    <span className={`text-[10px] font-bold leading-none select-none transition-colors duration-300 ${
+                      isActive ? 'text-rose-900' : 'text-stone-500'
                     }`}>
                       {label}
                     </span>
@@ -171,7 +172,7 @@ const BottomNavigation = () => {
         }`}>
           <button
             onClick={handleInstallClick}
-            className="w-[56px] h-[56px] rounded-2xl bg-gradient-to-br from-rose-700 to-rose-900 text-white flex flex-col items-center justify-center gap-1 shadow-lg shadow-rose-900/20 shrink-0 hover:from-rose-800 hover:to-rose-950 active:scale-90 transition-all duration-300"
+            className="w-[56px] h-[56px] rounded-full bg-rose-900 text-white flex flex-col items-center justify-center gap-1 shadow-lg shadow-rose-900/20 shrink-0 hover:bg-rose-950 active:scale-90 transition-all duration-300"
           >
             <Download size={20} className="drop-shadow-sm" />
             <span className="text-[10px] font-bold leading-none tracking-wide">Get App</span>

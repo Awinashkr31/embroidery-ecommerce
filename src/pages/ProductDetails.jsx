@@ -53,9 +53,9 @@ const getIntentDetails = (productName, category) => {
 const ProductDetails = () => {
     const { slug } = useParams();
     const id = extractProductIdFromSlug(slug);
-    const { products, fetchProducts } = useProducts();
+    const { products, fetchProducts, fetchSingleProduct } = useProducts();
     
-    // Fetch products explicitly since context no longer auto-fetches on mount
+    // Fetch products in background (cached via SWR)
     useEffect(() => {
         fetchProducts();
     }, [fetchProducts]);
@@ -284,8 +284,19 @@ const ProductDetails = () => {
                  // SEO Update
                  document.title = found.clothingInformation?.metaTitle || `${found.name} | Crochet Wali`;
             }
+        } else if (id || slug) {
+            // Fast-path for direct link landings: fetch single product directly
+            fetchSingleProduct(id || slug).then(single => {
+                if (single) {
+                    setProduct(single);
+                    setLoading(false);
+                    fetchReviews(single.id);
+                    setSelectedImage(single.image);
+                    document.title = single.clothingInformation?.metaTitle || `${single.name} | Crochet Wali`;
+                }
+            });
         }
-    }, [id, slug, products]);
+    }, [id, slug, products, fetchSingleProduct]);
 
     const fetchReviews = async (productId) => {
         try {
@@ -644,9 +655,9 @@ const ProductDetails = () => {
     const renderColorSelector = () => {
         if (!product.clothingInformation || !availableColors || availableColors.length <= 1 || hasOnlyNAColor) return null;
         return (
-            <div className="space-y-4" id="color-selector">
+            <div className="space-y-4" id="color-selector" role="group" aria-labelledby="color-label">
                 <div className="flex items-center gap-1.5">
-                    <h3 className="text-sm font-bold text-stone-900">Selected Color:</h3>
+                    <span className="text-sm font-bold text-stone-900" id="color-label">Selected Color:</span>
                     {selectedColor && <span className="text-sm text-stone-600 capitalize">{selectedColor}</span>}
                 </div>
                 <div className="flex flex-wrap gap-3">
@@ -661,6 +672,7 @@ const ProductDetails = () => {
                                     setSelectedColor(color);
                                     setColorError(false);
                                 }}
+                                aria-label={`Select color ${color}`}
                                 className={`p-1 rounded-2xl border-2 transition-all duration-300 ${
                                     isSelected 
                                         ? 'border-stone-900 shadow-sm' 
@@ -668,10 +680,10 @@ const ProductDetails = () => {
                                 }`}
                             >
                                 <div className="w-14 h-16 sm:w-16 sm:h-20 rounded-xl overflow-hidden bg-stone-100 mb-1">
-                                    <img src={colorImage} alt={color} className="w-full h-full object-cover" />
+                                    <img src={colorImage} alt="" aria-hidden="true" className="w-full h-full object-cover" />
                                 </div>
-                                <span className={`block text-[9px] sm:text-[10px] text-center font-bold capitalize leading-none pb-0.5 ${
-                                    isSelected ? 'text-stone-900' : 'text-stone-500'
+                                <span className={`block text-xs text-center font-semibold capitalize leading-none pb-0.5 ${
+                                    isSelected ? 'text-stone-900' : 'text-stone-600'
                                 }`}>
                                     {color}
                                 </span>
@@ -723,7 +735,7 @@ const ProductDetails = () => {
                                         <button 
                                             key={idx}
                                             onClick={() => setSelectedImage(img)}
-                                            className={`aspect-[2/3] lg:aspect-[4/5] rounded-[18px] overflow-hidden border-2 transition-all duration-300 ${
+                                            className={`aspect-[2/3] lg:aspect-[4/5] rounded-2xl overflow-hidden border-2 transition-all duration-300 ${
                                                 (selectedImage || displayImages[0]) === img 
                                                 ? 'border-stone-900 shadow-sm ring-2 ring-stone-900/10' 
                                                 : 'border-transparent opacity-60 hover:opacity-100 hover:border-stone-200'
@@ -737,7 +749,7 @@ const ProductDetails = () => {
                         )}
 
                         {/* Main Image Area */}
-                        <div className="flex-1 rounded-[24px] overflow-hidden relative shadow-md group bg-white aspect-[2/3] lg:aspect-[4/5]">
+                        <div className="flex-1 rounded-2xl overflow-hidden relative shadow-md group bg-white aspect-[2/3] lg:aspect-[4/5]">
                             <div className="hidden lg:block w-full h-full relative overflow-hidden"> 
                                 <AnimatePresence mode="wait">
                                     <motion.img 
@@ -756,6 +768,8 @@ const ProductDetails = () => {
                                         whileHover={{ scale: 1.1 }}
                                         whileTap={{ scale: 0.9 }}
                                         onClick={() => toggleWishlist(product)}
+                                        aria-label={isInWishlist(product.id) ? `Remove ${product.name} from wishlist` : `Add ${product.name} to wishlist`}
+                                        title={isInWishlist(product.id) ? `Remove ${product.name} from wishlist` : `Add ${product.name} to wishlist`}
                                         className="p-3 bg-white/90 backdrop-blur rounded-full shadow-sm hover:shadow-md hover:bg-white transition-all text-stone-600 hover:text-rose-600 group/btn"
                                     >
                                         <Heart className={`w-5 h-5 ${isInWishlist(product.id) ? 'fill-rose-600 text-rose-600' : ''}`} />
@@ -763,7 +777,10 @@ const ProductDetails = () => {
                                 </div>
                             </div>
                             <div 
-                                className="lg:hidden flex overflow-x-auto snap-x snap-mandatory w-full h-full no-scrollbar relative"
+                                tabIndex={0}
+                                role="region"
+                                aria-label={`${product.name} image gallery`}
+                                className="lg:hidden flex overflow-x-auto snap-x snap-mandatory w-full h-full no-scrollbar relative focus:outline-none focus:ring-2 focus:ring-stone-400"
                                 onScroll={(e) => {
                                     const scrollPos = e.target.scrollLeft;
                                     const width = e.target.clientWidth;
@@ -786,6 +803,8 @@ const ProductDetails = () => {
                             <div className="lg:hidden absolute top-4 right-4 flex flex-col items-end gap-2 z-10">
                                 <button 
                                     onClick={() => toggleWishlist(product)}
+                                    aria-label={isInWishlist(product.id) ? `Remove ${product.name} from wishlist` : `Add ${product.name} to wishlist`}
+                                    title={isInWishlist(product.id) ? `Remove ${product.name} from wishlist` : `Add ${product.name} to wishlist`}
                                     className="p-2.5 bg-white/90 backdrop-blur rounded-full shadow-sm"
                                 >
                                     <Heart className={`w-5 h-5 ${isInWishlist(product.id) ? 'fill-rose-600 text-rose-600' : 'text-stone-600'}`} />
@@ -828,7 +847,9 @@ const ProductDetails = () => {
                                                 addToast('Link copied to clipboard!', 'success');
                                             }
                                         }}
-                                        className="flex items-center gap-1.5 text-stone-400 hover:text-stone-900 transition-colors text-xs font-medium bg-stone-50 hover:bg-stone-100 px-3 py-1.5 rounded-full border border-stone-200/60"
+                                        aria-label="Share product"
+                                        title="Share product"
+                                        className="flex items-center gap-1.5 text-stone-600 hover:text-stone-900 transition-colors text-xs font-medium bg-stone-50 hover:bg-stone-100 px-3 py-1.5 rounded-full border border-stone-200/60"
                                     >
                                         <Share2 className="w-3.5 h-3.5" />
                                         <span className="hidden lg:inline">Share</span>
@@ -851,8 +872,8 @@ const ProductDetails = () => {
                                     ))}
                                 </div>
                                 <span className="text-sm font-medium text-stone-900">{averageRating}</span>
-                                <span className="text-stone-300 px-1">·</span>
-                                <a href="#reviews" className="text-sm text-stone-500 underline underline-offset-4 hover:text-stone-900 transition-colors">
+                                <span className="text-stone-400 px-1 select-none" aria-hidden="true">·</span>
+                                <a href="#reviews" className="text-sm text-stone-600 underline underline-offset-4 hover:text-stone-900 transition-colors">
                                     {reviews.length} {reviews.length === 1 ? 'Review' : 'Reviews'}
                                 </a>
                             </div>
@@ -864,33 +885,33 @@ const ProductDetails = () => {
                         </div>
 
                         {/* Price Area */}
-                        <div className="mb-4 pb-4 border-b border-stone-100 font-body-alt">
+                        <div className="mb-4 pb-4 border-b border-stone-100">
                             <div className="flex flex-col gap-1.5 mb-2">
                                 <div className="flex items-center gap-3">
-                                    <div className="flex items-center gap-2.5 bg-emerald-800 text-white pl-4 pr-3 py-1.5 rounded shadow-[0_2px_4px_rgba(6,78,59,0.3)] w-fit">
-                                        <span className="text-3xl lg:text-4xl font-sans font-bold tracking-tight">
-                                            <span className="text-lg lg:text-xl font-sans mr-0.5 ml-0.5 inline-block">₹</span>{currentPrice.toLocaleString('en-IN')}
+                                    <div className="flex items-center gap-2.5 bg-emerald-800 text-white pl-4 pr-3 py-1.5 rounded-xl shadow-[0_2px_4px_rgba(6,78,59,0.3)] w-fit">
+                                        <span className="text-3xl lg:text-4xl font-bold tracking-tight">
+                                            <span className="sr-only">Current price: </span>₹{currentPrice.toLocaleString('en-IN')}
                                         </span>
                                     </div>
                                     {product.originalPrice && product.originalPrice > currentPrice && (
-                                        <span className="text-lg lg:text-xl font-medium text-stone-400 line-through">
-                                            ₹{product.originalPrice.toLocaleString('en-IN')}
+                                        <span className="text-lg lg:text-xl font-medium text-stone-600 line-through">
+                                            <span className="sr-only">Original price: </span>₹{product.originalPrice.toLocaleString('en-IN')}
                                         </span>
                                     )}
                                 </div>
                                 {product.originalPrice && product.originalPrice > currentPrice && (
-                                    <div className="text-sm font-bold text-emerald-700 ml-1">
+                                    <div className="text-sm font-bold text-emerald-800 ml-1">
                                         Save ₹{(product.originalPrice - currentPrice).toLocaleString('en-IN')}
                                     </div>
                                 )}
                             </div>
-                            <p className="text-stone-400 text-[11px] mb-5 uppercase tracking-wider font-medium ml-1">Inclusive of all taxes</p>
+                            <p className="text-stone-600 text-xs mb-5 tracking-wide font-medium ml-1">Inclusive of all taxes</p>
                             
                             {/* CRO Low Stock Scarcity Indicator */}
                             {currentStock > 0 && currentStock <= 5 && (
-                                <div className="flex items-center gap-2 text-xs font-bold text-rose-800 bg-rose-50/80 px-4 py-2.5 rounded-xl border border-rose-100/60 w-fit mb-5">
+                                <div className="flex items-center gap-2 text-xs font-bold text-rose-850 bg-rose-50 px-4 py-2.5 rounded-xl border border-rose-200/80 w-fit mb-5">
                                     <div className="w-2 h-2 rounded-full bg-rose-600 animate-pulse"></div>
-                                    <span>Only {currentStock} left in stock - order soon!</span>
+                                    <span className="text-rose-900">Only {currentStock} left in stock - order soon!</span>
                                 </div>
                             )}
                             
@@ -903,26 +924,26 @@ const ProductDetails = () => {
                             {(() => {
                                 const intent = getIntentDetails(product.name, product.category);
                                 return (
-                                    <div className="mb-5 rounded-2xl p-4 bg-gradient-to-br from-rose-50/80 via-white to-amber-50/50 border border-rose-100 shadow-[0_2px_10px_rgba(225,29,72,0.04)] space-y-2.5">
+                                    <div className="mb-5 rounded-2xl p-4 bg-[#fffaf8] border border-rose-100 shadow-[0_2px_10px_rgba(225,29,72,0.04)] space-y-2.5">
                                         <div className="flex items-start gap-2.5">
-                                            <Sparkles className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                                            <Sparkles className="w-4 h-4 text-rose-700 shrink-0 mt-0.5" aria-hidden="true" />
                                             <div>
-                                                <span className="font-bold text-stone-900 block text-[11px] uppercase tracking-wider">Perfect Occasion</span>
-                                                <span className="text-stone-600 text-xs">{intent.occasion}</span>
+                                                <span className="font-bold text-stone-900 block text-xs">Perfect Occasion</span>
+                                                <span className="text-stone-700 text-xs">{intent.occasion}</span>
                                             </div>
                                         </div>
                                         <div className="flex items-start gap-2.5">
-                                            <Heart className="w-4 h-4 text-rose-500 shrink-0 mt-0.5" />
+                                            <Heart className="w-4 h-4 text-rose-700 shrink-0 mt-0.5" aria-hidden="true" />
                                             <div>
-                                                <span className="font-bold text-stone-900 block text-[11px] uppercase tracking-wider">Ideal Recipient</span>
-                                                <span className="text-stone-600 text-xs">{intent.bestFor}</span>
+                                                <span className="font-bold text-stone-900 block text-xs">Ideal Recipient</span>
+                                                <span className="text-stone-700 text-xs">{intent.bestFor}</span>
                                             </div>
                                         </div>
                                         <div className="flex items-start gap-2.5">
-                                            <Gift className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+                                            <Gift className="w-4 h-4 text-amber-800 shrink-0 mt-0.5" aria-hidden="true" />
                                             <div>
-                                                <span className="font-bold text-stone-900 block text-[11px] uppercase tracking-wider">Why It's Special</span>
-                                                <span className="text-stone-600 text-xs">{intent.keepsake}</span>
+                                                <span className="font-bold text-stone-900 block text-xs">Why It's Special</span>
+                                                <span className="text-stone-700 text-xs">{intent.keepsake}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -1062,7 +1083,7 @@ const ProductDetails = () => {
                                     });
                                 }}
                                 disabled={!isStockAvailable}
-                                className={`hidden lg:flex w-full h-[52px] rounded-[14px] font-bold uppercase tracking-widest text-sm transition-all duration-300 items-center justify-center gap-2 ${
+                                className={`hidden lg:flex w-full h-[52px] rounded-xl font-bold uppercase tracking-widest text-sm transition-all duration-300 items-center justify-center gap-2 ${
                                     isStockAvailable
                                     ? isInCart 
                                         ? 'bg-emerald-700 text-white hover:bg-emerald-800 shadow-md ring-4 ring-emerald-900/10' 
@@ -1092,7 +1113,7 @@ const ProductDetails = () => {
                                         }
                                 }}
                                 disabled={!isStockAvailable}
-                                className="hidden lg:flex w-full h-[52px] bg-gradient-to-r from-rose-900 to-pink-700 text-white font-bold uppercase tracking-widest text-sm rounded-[14px] hover:shadow-lg hover:shadow-rose-900/20 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed items-center justify-center gap-2"
+                                className="hidden lg:flex w-full h-[52px] bg-gradient-to-r from-rose-900 to-pink-700 text-white font-bold uppercase tracking-widest text-sm rounded-xl hover:shadow-lg hover:shadow-rose-900/20 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed items-center justify-center gap-2"
                             >
                                 Buy At ₹{currentPrice.toLocaleString()}
                             </motion.button>
@@ -1119,19 +1140,19 @@ const ProductDetails = () => {
 
                             {/* Trust Badges */}
                             <div className="grid grid-cols-2 gap-3 pt-4">
-                                <div className="flex items-center gap-2.5 p-3 bg-white rounded-[14px] border border-stone-100 shadow-sm text-stone-600">
+                                <div className="flex items-center gap-2.5 p-3 bg-white rounded-xl border border-stone-100 shadow-sm text-stone-600">
                                     <Award className="w-4 h-4 text-rose-700 shrink-0" />
                                     <span className="text-[10px] font-bold uppercase tracking-widest">Handmade<br/>in India</span>
                                 </div>
-                                <div className="flex items-center gap-2.5 p-3 bg-white rounded-[14px] border border-stone-100 shadow-sm text-stone-600">
+                                <div className="flex items-center gap-2.5 p-3 bg-white rounded-xl border border-stone-100 shadow-sm text-stone-600">
                                     <Shield className="w-4 h-4 text-emerald-600 shrink-0" />
                                     <span className="text-[10px] font-bold uppercase tracking-widest">Secure<br/>Payments</span>
                                 </div>
-                                <div className="flex items-center gap-2.5 p-3 bg-white rounded-[14px] border border-stone-100 shadow-sm text-stone-600">
+                                <div className="flex items-center gap-2.5 p-3 bg-white rounded-xl border border-stone-100 shadow-sm text-stone-600">
                                     <Truck className="w-4 h-4 text-blue-600 shrink-0" />
                                     <span className="text-[10px] font-bold uppercase tracking-widest">Fast<br/>Delivery</span>
                                 </div>
-                                <div className="flex items-center gap-2.5 p-3 bg-white rounded-[14px] border border-stone-100 shadow-sm text-stone-600">
+                                <div className="flex items-center gap-2.5 p-3 bg-white rounded-xl border border-stone-100 shadow-sm text-stone-600">
                                     <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
                                     <span className="text-[10px] font-bold uppercase tracking-widest">Premium<br/>Quality</span>
                                 </div>
@@ -1146,12 +1167,12 @@ const ProductDetails = () => {
 
                         {/* Why Handmade Strip */}
                         <div className="flex items-center gap-3 p-3.5 bg-[#f5f2eb] rounded-xl border border-stone-200/50 mb-6 lg:mb-8">
-                            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm shrink-0 text-base">
+                            <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm shrink-0 text-base" aria-hidden="true">
                                 🇮🇳
                             </div>
                             <div>
-                                <h4 className="text-xs font-bold text-stone-900 leading-tight">Handmade with love in India</h4>
-                                <p className="text-[11px] text-stone-500 leading-snug line-clamp-2 mt-0.5">
+                                <p className="text-xs font-bold text-stone-900 leading-tight">Handmade with love in India</p>
+                                <p className="text-[11px] text-stone-700 leading-snug line-clamp-2 mt-0.5">
                                     Crafted with premium materials. Because it's not mass-produced, each piece is uniquely yours.
                                 </p>
                             </div>
@@ -1160,10 +1181,10 @@ const ProductDetails = () => {
                         {/* Perfect For Section */}
                         {(info.perfectFor || !info.perfectFor) && (
                             <div className="mb-6 lg:mb-8 block">
-                                <h4 className="text-xs font-bold text-stone-400 uppercase tracking-widest mb-3">Perfect For</h4>
+                                <p className="text-xs font-bold text-stone-700 uppercase tracking-widest mb-3">Perfect For</p>
                                 <div className="flex flex-wrap gap-2">
                                     {(info.perfectFor ? info.perfectFor.split(',') : ["Birthday Gifts", "Best Friend Gifts", "Room Décor", "Bag Charms", "Car Accessories"]).map((tag, i) => (
-                                        <span key={i} className="px-3 py-1.5 bg-white border border-stone-200 rounded-lg text-xs font-medium text-stone-600 shadow-sm cursor-default hover:bg-stone-50 transition-colors">
+                                        <span key={i} className="px-3 py-1.5 bg-white border border-stone-200 rounded-lg text-xs font-medium text-stone-700 shadow-sm cursor-default hover:bg-stone-50 transition-colors">
                                             {tag.trim()}
                                         </span>
                                     ))}
@@ -1197,14 +1218,14 @@ const ProductDetails = () => {
 
                         {/* Customization Available Badge */}
                         {availableColors && availableColors.length > 1 && (
-                            <div className="mb-6 lg:mb-8 flex items-center justify-between p-4 bg-gradient-to-r from-stone-50 to-rose-50/30 rounded-xl border border-stone-100">
+                            <div className="mb-6 lg:mb-8 flex items-center justify-between p-4 bg-[#fbf9f6] rounded-xl border border-stone-200/70">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm text-rose-500">
+                                    <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center shadow-sm text-rose-600" aria-hidden="true">
                                         <Sparkles className="w-4 h-4" />
                                     </div>
                                     <div>
-                                        <h4 className="text-sm font-bold text-stone-900">Custom Colors Available</h4>
-                                        <p className="text-xs text-stone-500 mt-0.5">Mix and match to your liking.</p>
+                                        <p className="text-sm font-bold text-stone-900">Custom Colors Available</p>
+                                        <p className="text-xs text-stone-700 mt-0.5">Mix and match to your liking.</p>
                                     </div>
                                 </div>
                             </div>
@@ -1212,7 +1233,7 @@ const ProductDetails = () => {
 
                 {/* Frequently Bought Together Bundle */}
                 {relatedProducts.length > 0 && (
-                            <div className="border-t border-stone-100 pt-6 lg:pt-12 pb-6 lg:pb-8 font-body-alt">
+                            <div className="border-t border-stone-100 pt-6 lg:pt-12 pb-6 lg:pb-8">
                                 <div className="flex items-center justify-between mb-5">
                                     <div>
                                         <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-rose-50 border border-rose-100 text-rose-800 text-[10px] font-bold uppercase tracking-widest mb-2">
@@ -1223,7 +1244,7 @@ const ProductDetails = () => {
                                     </div>
                                 </div>
 
-                                <div className="bg-gradient-to-br from-stone-50 to-rose-50/20 rounded-2xl border border-stone-100 p-5 shadow-sm">
+                                <div className="bg-[#faf8f5] rounded-2xl border border-stone-200/80 p-5 shadow-sm">
                                     <div className="flex items-center gap-3 overflow-x-auto pb-5 hide-scrollbar snap-x -mx-1 px-1">
                                         {/* Current Product */}
                                         <div className="shrink-0 flex flex-col gap-2 w-28 snap-start">
@@ -1232,34 +1253,34 @@ const ProductDetails = () => {
                                             </div>
                                             <div>
                                                 <div className="text-xs font-bold text-stone-900 truncate">This Item</div>
-                                                <div className="text-[10px] text-stone-500 font-medium">₹{currentPrice.toLocaleString()}</div>
+                                                <div className="text-[10px] text-stone-700 font-medium">₹{currentPrice.toLocaleString()}</div>
                                             </div>
                                         </div>
-                                        <Plus className="w-5 h-5 text-stone-300 shrink-0" />
+                                        <Plus className="w-5 h-5 text-stone-400 shrink-0" aria-hidden="true" />
                                         
                                         {/* Related Product */}
                                         <div className="shrink-0 flex flex-col gap-2 w-28 snap-start">
                                             <Link to={getProductUrl(relatedProducts[0])} className="aspect-[4/5] rounded-xl overflow-hidden shadow-sm border border-stone-200 block hover:border-rose-300 transition-colors bg-white group relative">
                                                 <img src={relatedProducts[0].image} alt={relatedProducts[0].name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" decoding="async" />
-                                                <div className="absolute top-2 left-2 bg-white/90 backdrop-blur text-[8px] font-bold px-1.5 py-0.5 rounded shadow-sm text-stone-800">Add-on</div>
+                                                <div className="absolute top-2 left-2 bg-stone-900/90 text-white text-[8px] font-bold px-1.5 py-0.5 rounded shadow-sm">Add-on</div>
                                             </Link>
                                             <div>
                                                 <Link to={getProductUrl(relatedProducts[0])} className="text-xs font-bold text-stone-900 truncate hover:text-rose-900 transition-colors block">{relatedProducts[0].name}</Link>
-                                                <div className="text-[10px] text-stone-500 font-medium">₹{relatedProducts[0].price.toLocaleString()}</div>
+                                                <div className="text-[10px] text-stone-700 font-medium">₹{relatedProducts[0].price.toLocaleString()}</div>
                                             </div>
                                         </div>
                                         
-                                        <Plus className="w-5 h-5 text-stone-300 shrink-0" />
+                                        <Plus className="w-5 h-5 text-stone-400 shrink-0" aria-hidden="true" />
                                         
                                         {/* Premium Gift Packaging */}
                                         <div className="shrink-0 flex flex-col gap-2 w-28 snap-start">
                                             <div className="aspect-[4/5] rounded-xl overflow-hidden shadow-sm border border-rose-200 bg-rose-50 flex flex-col items-center justify-center p-3 text-center relative">
-                                                <span className="text-3xl mb-1">🎁</span>
+                                                <span className="text-3xl mb-1" aria-hidden="true">🎁</span>
                                                 <span className="text-[10px] font-bold text-rose-900 leading-tight">Gift Ready Wrap</span>
                                             </div>
                                             <div>
                                                 <div className="text-xs font-bold text-stone-900 truncate">Add-on</div>
-                                                <div className="text-[10px] text-stone-500 font-medium">₹29</div>
+                                                <div className="text-[10px] text-stone-700 font-medium">₹29</div>
                                             </div>
                                         </div>
                                     </div>
@@ -1267,13 +1288,13 @@ const ProductDetails = () => {
                                     <div className="pt-4 border-t border-stone-200">
                                         <div className="flex items-end justify-between mb-4">
                                             <div>
-                                                <div className="text-xs text-stone-500 font-medium mb-1">Total Bundle Price</div>
+                                                <div className="text-xs text-stone-700 font-medium mb-1">Total Bundle Price</div>
                                                 <div className="flex items-center gap-2">
                                                     <span className="text-2xl font-heading font-bold text-stone-900">
                                                         ₹{(currentPrice + relatedProducts[0].price + 29 - 49).toLocaleString()}
                                                     </span>
-                                                    <span className="text-sm text-stone-400 line-through">
-                                                        ₹{(currentPrice + relatedProducts[0].price + 29).toLocaleString()}
+                                                    <span className="text-sm text-stone-600 line-through">
+                                                        <span className="sr-only">Original total bundle price: </span>₹{(currentPrice + relatedProducts[0].price + 29).toLocaleString()}
                                                     </span>
                                                 </div>
                                             </div>
@@ -1423,25 +1444,25 @@ const ProductDetails = () => {
                                     onClick={() => toggleSection('faq')}
                                     className="w-full py-6 flex items-center justify-between text-left group"
                                 >
-                                    <span className="font-heading font-medium text-lg text-stone-900">Frequently Asked Questions</span>
+                                    <h2 className="font-heading font-medium text-lg text-stone-900">Frequently Asked Questions</h2>
                                     {openSection === 'faq' ? <Minus className="w-4 h-4 text-rose-900" /> : <Plus className="w-4 h-4 text-stone-400 group-hover:text-rose-900 transition-colors" />}
                                 </button>
                                 <div className={`overflow-hidden transition-all duration-300 ease-in-out ${openSection === 'faq' ? 'max-h-[2000px] opacity-100 mb-6' : 'max-h-0 opacity-0'}`}>
                                     <div className="space-y-4">
                                         <div itemScope itemProp="mainEntity" itemType="https://schema.org/Question">
-                                            <h4 itemProp="name" className="font-heading font-medium text-stone-900 text-sm">How long will my order take to arrive?</h4>
+                                            <h3 itemProp="name" className="font-heading font-medium text-stone-900 text-sm">How long will my order take to arrive?</h3>
                                             <div itemScope itemProp="acceptedAnswer" itemType="https://schema.org/Answer">
                                                 <p itemProp="text" className="text-stone-600 text-sm mt-1">Since all items are handcrafted and made-to-order, please allow 1-3 days for processing. Standard shipping across India takes an additional 3-7 business days.</p>
                                             </div>
                                         </div>
                                         <div itemScope itemProp="mainEntity" itemType="https://schema.org/Question">
-                                            <h4 itemProp="name" className="font-heading font-medium text-stone-900 text-sm">Can I request custom colors?</h4>
+                                            <h3 itemProp="name" className="font-heading font-medium text-stone-900 text-sm">Can I request custom colors?</h3>
                                             <div itemScope itemProp="acceptedAnswer" itemType="https://schema.org/Answer">
                                                 <p itemProp="text" className="text-stone-600 text-sm mt-1">Yes! Many of our crochet accessories can be customized. Feel free to contact us via WhatsApp or Email after placing your order to discuss color modifications.</p>
                                             </div>
                                         </div>
                                         <div itemScope itemProp="mainEntity" itemType="https://schema.org/Question">
-                                            <h4 itemProp="name" className="font-heading font-medium text-stone-900 text-sm">How do I care for my crochet items?</h4>
+                                            <h3 itemProp="name" className="font-heading font-medium text-stone-900 text-sm">How do I care for my crochet items?</h3>
                                             <div itemScope itemProp="acceptedAnswer" itemType="https://schema.org/Answer">
                                                 <p itemProp="text" className="text-stone-600 text-sm mt-1">For optimal longevity, hand wash gently in cold water with mild detergent and lay flat to dry. Do not wring or machine wash, as this may distort the shape of the yarn.</p>
                                             </div>
@@ -1580,7 +1601,7 @@ const ProductDetails = () => {
                                                     <Star key={`head-star-${i}`} className={`w-3.5 h-3.5 ${i < Math.round(averageRating) ? 'fill-current' : 'text-stone-200'}`} />
                                                 ))}
                                             </div>
-                                            <p className="text-[10px] text-stone-400 mt-1 font-medium">out of 5</p>
+                                            <p className="text-[10px] text-stone-600 mt-1 font-semibold">out of 5</p>
                                         </div>
                                         <div className="w-px h-12 bg-stone-200"></div>
                                         <div className="flex-1 space-y-1.5">
@@ -1589,12 +1610,12 @@ const ProductDetails = () => {
                                                 const pct = reviews.length > 0 ? (count / reviews.length) * 100 : 0;
                                                 return (
                                                     <div key={star} className="flex items-center gap-2">
-                                                        <span className="text-xs text-stone-500 w-4 text-right font-medium">{star}</span>
+                                                        <span className="text-xs text-stone-700 w-4 text-right font-medium">{star}</span>
                                                         <Star className="w-3 h-3 fill-amber-400 text-amber-400 flex-shrink-0" />
                                                         <div className="flex-1 h-1.5 bg-stone-200 rounded-full overflow-hidden">
                                                             <div className="h-full bg-amber-400 rounded-full transition-all duration-500" style={{ width: `${pct}%` }}></div>
                                                         </div>
-                                                        <span className="text-[10px] text-stone-400 w-5 font-medium">{count}</span>
+                                                        <span className="text-[10px] text-stone-700 w-5 font-semibold">{count}</span>
                                                     </div>
                                                 );
                                             })}
@@ -1604,21 +1625,21 @@ const ProductDetails = () => {
                             </div>
                             
                             {reviews.length === 0 ? (
-                                <div className="text-center py-12 bg-rose-50/50 rounded-2xl border border-rose-100 shadow-sm font-body-alt">
+                                <div className="text-center py-12 bg-rose-50/50 rounded-2xl border border-rose-100 shadow-sm">
                                     <div className="flex justify-center mb-4">
                                         <div className="flex -space-x-3">
                                             {[1,2,3,4].map(i => (
-                                                <div key={i} className={`w-10 h-10 rounded-full border-2 border-white bg-stone-200 overflow-hidden shadow-sm flex items-center justify-center text-[10px] font-bold text-stone-500`}>
+                                                <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-stone-300 overflow-hidden shadow-sm flex items-center justify-center text-xs font-bold text-stone-800" aria-hidden="true">
                                                     U{i}
                                                 </div>
                                             ))}
-                                            <div className="w-10 h-10 rounded-full border-2 border-white bg-rose-100 flex items-center justify-center text-xs font-bold text-rose-800 shadow-sm">
+                                            <div className="w-10 h-10 rounded-full border-2 border-white bg-rose-200 flex items-center justify-center text-xs font-bold text-rose-900 shadow-sm" aria-hidden="true">
                                                 +50
                                             </div>
                                         </div>
                                     </div>
                                     <p className="text-stone-900 font-heading font-medium text-xl mb-1">Loved by handmade gift buyers</p>
-                                    <p className="text-stone-500 text-sm font-light mb-5">Join our community of happy customers 💖</p>
+                                    <p className="text-stone-700 text-sm font-normal mb-5">Join our community of happy customers 💖</p>
                                     <button 
                                         onClick={() => setReviewModalOpen(true)}
                                         className="text-sm font-bold text-rose-900 underline underline-offset-4 hover:text-rose-700 transition-colors"
@@ -1632,8 +1653,8 @@ const ProductDetails = () => {
                                         <div key={review.id} className="bg-white p-5 rounded-2xl border border-stone-100 shadow-sm hover:shadow-md transition-all duration-200">
                                             <div className="flex items-start justify-between mb-3">
                                                 <div className="flex items-center gap-3 min-w-0">
-                                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-rose-100 to-rose-50 flex items-center justify-center shrink-0 ring-2 ring-rose-50">
-                                                        <span className="text-rose-800 font-bold text-sm">
+                                                    <div className="w-10 h-10 rounded-full bg-rose-100/80 flex items-center justify-center shrink-0 ring-2 ring-rose-50">
+                                                        <span className="text-rose-900 font-bold text-sm" aria-hidden="true">
                                                             {review.user_name?.charAt(0).toUpperCase() || '?'}
                                                         </span>
                                                     </div>
@@ -1642,7 +1663,7 @@ const ProductDetails = () => {
                                                             <h4 className="font-bold text-stone-900 text-sm truncate">{review.user_name}</h4>
                                                             <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-full flex-shrink-0">Verified</span>
                                                         </div>
-                                                        <span className="text-xs text-stone-400">{new Date(review.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                                                        <span className="text-xs text-stone-600 font-medium">{new Date(review.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                                                     </div>
                                                 </div>
                                                 <div className="flex text-amber-400 flex-shrink-0 ml-3">
@@ -1733,22 +1754,26 @@ const ProductDetails = () => {
                                                     e.preventDefault();
                                                     toggleWishlist(p);
                                                 }}
+                                                aria-label={isInWishlist(p.id) ? `Remove ${p.name} from wishlist` : `Add ${p.name} to wishlist`}
+                                                title={isInWishlist(p.id) ? `Remove ${p.name} from wishlist` : `Add ${p.name} to wishlist`}
                                                 className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center bg-white/90 backdrop-blur-sm rounded-full shadow-sm hover:scale-110 active:scale-95 transition-all"
                                             >
-                                                <Heart className={`w-4 h-4 ${isInWishlist(p.id) ? 'fill-rose-600 text-rose-600' : 'text-stone-400'}`} />
+                                                <Heart className={`w-4 h-4 ${isInWishlist(p.id) ? 'fill-rose-600 text-rose-600' : 'text-stone-500'}`} />
                                             </button>
                                         </div>
 
                                         <Link to={getProductUrl(p)} className="block space-y-1 px-1">
-                                            <h3 className="font-heading font-bold text-sm text-stone-900 truncate group-hover:text-rose-900 transition-colors">
+                                            <h3 className="font-heading font-bold text-sm text-stone-900 line-clamp-2 leading-snug min-h-[2.5rem] group-hover:text-rose-900 transition-colors">
                                                 {p.name}
                                             </h3>
                                             <div className="flex items-center flex-wrap gap-1.5 text-sm">
                                                 <span className="font-bold text-stone-900">₹{p.price.toLocaleString()}</span>
                                                 {p.originalPrice && (
                                                     <>
-                                                        <span className="text-stone-400 line-through text-xs">₹{p.originalPrice.toLocaleString()}</span>
-                                                        <span className="text-[10px] font-bold text-rose-700">({discount}% OFF)</span>
+                                                        <span className="text-stone-600 line-through text-xs">
+                                                            <span className="sr-only">Original price: </span>₹{p.originalPrice.toLocaleString()}
+                                                        </span>
+                                                        <span className="text-[10px] font-bold text-rose-800">({discount}% OFF)</span>
                                                     </>
                                                 )}
                                             </div>
@@ -1814,22 +1839,26 @@ const ProductDetails = () => {
                                                     e.preventDefault();
                                                     toggleWishlist(p);
                                                 }}
+                                                aria-label={isInWishlist(p.id) ? `Remove ${p.name} from wishlist` : `Add ${p.name} to wishlist`}
+                                                title={isInWishlist(p.id) ? `Remove ${p.name} from wishlist` : `Add ${p.name} to wishlist`}
                                                 className="absolute top-3 right-3 w-8 h-8 flex items-center justify-center bg-white/90 backdrop-blur-sm rounded-full shadow-sm hover:scale-110 active:scale-95 transition-all"
                                             >
-                                                <Heart className={`w-4 h-4 ${isInWishlist(p.id) ? 'fill-rose-600 text-rose-600' : 'text-stone-400'}`} />
+                                                <Heart className={`w-4 h-4 ${isInWishlist(p.id) ? 'fill-rose-600 text-rose-600' : 'text-stone-500'}`} />
                                             </button>
                                         </div>
 
                                         <Link to={getProductUrl(p)} className="block space-y-1 px-1">
-                                            <h3 className="font-heading font-bold text-sm text-stone-900 truncate group-hover:text-rose-900 transition-colors">
+                                            <h3 className="font-heading font-bold text-sm text-stone-900 line-clamp-2 leading-snug min-h-[2.5rem] group-hover:text-rose-900 transition-colors">
                                                 {p.name}
                                             </h3>
                                             <div className="flex items-center flex-wrap gap-1.5 text-sm">
                                                 <span className="font-bold text-stone-900">₹{p.price.toLocaleString()}</span>
                                                 {p.originalPrice && (
                                                     <>
-                                                        <span className="text-stone-400 line-through text-xs">₹{p.originalPrice.toLocaleString()}</span>
-                                                        <span className="text-[10px] font-bold text-rose-700">({discount}% OFF)</span>
+                                                        <span className="text-stone-600 line-through text-xs">
+                                                            <span className="sr-only">Original price: </span>₹{p.originalPrice.toLocaleString()}
+                                                        </span>
+                                                        <span className="text-[10px] font-bold text-rose-800">({discount}% OFF)</span>
                                                     </>
                                                 )}
                                             </div>
@@ -2070,7 +2099,9 @@ const ProductDetails = () => {
                 <div className="flex items-center gap-3">
                     <Link 
                         to="/cart" 
-                        className={`relative flex-shrink-0 flex items-center justify-center rounded-[12px] border border-stone-200 bg-white shadow-sm transition-all h-[52px] ${isInCart ? 'px-4' : 'w-[52px]'}`}
+                        aria-label={cartCount > 0 ? `Shopping cart with ${cartCount} items` : "Shopping cart"}
+                        title="Shopping cart"
+                        className={`relative flex-shrink-0 flex items-center justify-center rounded-xl border border-stone-200 bg-white shadow-sm transition-all h-[52px] ${isInCart ? 'px-4' : 'w-[52px]'}`}
                     >
                         <ShoppingCart className="w-5 h-5 text-stone-900 stroke-[2.5]" />
                         {isInCart && (
@@ -2084,7 +2115,7 @@ const ProductDetails = () => {
                     </Link>
                     
                     {isInCart ? (
-                        <div className="flex-1 h-[52px] bg-[#e11d48] rounded-[12px] flex items-center justify-between px-2 shadow-md">
+                        <div className="flex-1 h-[52px] bg-[#e11d48] rounded-xl flex items-center justify-between px-2 shadow-md">
                             <button 
                                 onClick={(e) => {
                                     e.preventDefault();
@@ -2116,7 +2147,7 @@ const ProductDetails = () => {
                                 await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice, variantId: selectedVariant?.id });
                             }}
                             disabled={!isStockAvailable}
-                            className={`flex-1 h-[52px] rounded-[12px] font-bold text-[15px] transition-all flex items-center justify-center gap-2 ${
+                            className={`flex-1 h-[52px] rounded-xl font-bold text-[15px] transition-all flex items-center justify-center gap-2 ${
                                 isStockAvailable
                                 ? 'bg-[#e11d48] text-white shadow-md active:scale-[0.98]'
                                 : 'bg-stone-200 text-stone-400 cursor-not-allowed'

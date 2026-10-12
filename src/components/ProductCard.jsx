@@ -6,7 +6,16 @@ import { useToast } from '../context/ToastContext';
 import { Link } from 'react-router-dom';
 import { getProductUrl } from '../utils/urlUtils';
 
-export const ProductCard = React.memo(({ product, toggleWishlist, isInWishlist, priority = false }) => {
+export const ProductCard = React.memo(({ 
+    product, 
+    toggleWishlist, 
+    isInWishlist, 
+    priority = false, 
+    showAddButton, 
+    isHome = false, 
+    targetUrl 
+}) => {
+    const shouldShowAddButton = showAddButton !== undefined ? showAddButton : !isHome;
     const { addToCart, cart, updateQuantity, removeFromCart } = useCart();
     const { addToast } = useToast();
     const [selectedVariant, setSelectedVariant] = useState(() => {
@@ -106,7 +115,17 @@ export const ProductCard = React.memo(({ product, toggleWishlist, isInWishlist, 
     }, [product.originalPrice, displayPrice]);
 
     const baseProductUrl = getProductUrl(product);
-    const productUrl = selectedVariant?.color ? `${baseProductUrl}?color=${encodeURIComponent(selectedVariant.color)}` : baseProductUrl;
+    const regularProductUrl = selectedVariant?.color ? `${baseProductUrl}?color=${encodeURIComponent(selectedVariant.color)}` : baseProductUrl;
+
+    const homeTargetUrl = useMemo(() => {
+        if (!isHome) return null;
+        const categoryPart = product.category ? `category=${encodeURIComponent(product.category)}&` : '';
+        const productPart = `product=${encodeURIComponent(product.slug || product.id)}`;
+        const colorPart = selectedVariant?.color ? `&color=${encodeURIComponent(selectedVariant.color)}` : '';
+        return `/shop?${categoryPart}${productPart}${colorPart}`;
+    }, [isHome, product.category, product.slug, product.id, selectedVariant?.color]);
+
+    const cardLinkUrl = targetUrl || (isHome ? homeTargetUrl : regularProductUrl);
 
     const cartItem = useMemo(() => {
         if (!cart) return null;
@@ -127,7 +146,7 @@ export const ProductCard = React.memo(({ product, toggleWishlist, isInWishlist, 
             {/* Image Container */}
             <div className="relative">
                 <Link 
-                    to={productUrl}
+                    to={cardLinkUrl}
                     className="relative aspect-[4/5] overflow-hidden bg-stone-50 block"
                     onMouseEnter={() => setIsHovering(true)}
                     onMouseLeave={() => { setIsHovering(false); setCurrentImageIndex(0); }}
@@ -135,9 +154,12 @@ export const ProductCard = React.memo(({ product, toggleWishlist, isInWishlist, 
                     onTouchMove={handleTouchMove}
                     onTouchEnd={handleTouchEnd}
                 >
-                    {/* Image Stack with Crossfade */}
+                    {/* Image Stack with Crossfade (only mount active and adjacent hovered images to optimize DOM) */}
                     {allImages.map((img, idx) => {
                         const isActive = idx === currentImageIndex;
+                        const isNextHover = isHovering && idx === ((currentImageIndex + 1) % allImages.length);
+                        if (!isActive && !isNextHover) return null;
+
                         return (
                             <img
                                 key={idx}
@@ -164,17 +186,15 @@ export const ProductCard = React.memo(({ product, toggleWishlist, isInWishlist, 
 
                     {/* Image Dots Indicator */}
                     {hasMultipleImages && (
-                        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1 z-20">
+                        <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1 z-20 pointer-events-none" aria-hidden="true">
                             {allImages.map((_, idx) => (
-                                <button
+                                <span
                                     key={idx}
-                                    onClick={(e) => { e.preventDefault(); e.stopPropagation(); setCurrentImageIndex(idx); }}
                                     className={`rounded-full transition-all duration-300 ${
                                         idx === currentImageIndex 
-                                            ? 'w-3 h-1.5 bg-stone-700' 
-                                            : 'w-1.5 h-1.5 bg-stone-300'
+                                            ? 'w-3 h-1.5 bg-stone-800' 
+                                            : 'w-1.5 h-1.5 bg-stone-400'
                                     }`}
-                                    aria-label={`View image ${idx + 1}`}
                                 />
                             ))}
                         </div>
@@ -192,22 +212,22 @@ export const ProductCard = React.memo(({ product, toggleWishlist, isInWishlist, 
                     {/* Badges */}
                     <div className="absolute top-2 left-2 flex flex-col items-start gap-1 z-20">
                         {product.homepage_tags?.includes('bestseller') && (
-                            <span className="bg-[#fff0e1] text-[#c2710c] text-[10px] md:text-[11px] font-bold px-2.5 py-1 rounded-full shadow-sm">
+                            <span className="bg-[#fff0e1] text-[#92400e] text-[10px] md:text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
                                 Bestseller
                             </span>
                         )}
                         {product.homepage_tags?.includes('new_arrival') && (
-                            <span className="bg-[#e11d48] text-white text-[10px] md:text-[11px] font-bold px-2.5 py-1 rounded-full shadow-sm">
+                            <span className="bg-[#e11d48] text-white text-[10px] md:text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
                                 New
                             </span>
                         )}
                         {product.homepage_tags?.includes('premium') && (
-                            <span className="bg-stone-900 text-yellow-400 text-[10px] md:text-[11px] font-bold px-2.5 py-1 rounded-full shadow-sm">
+                            <span className="bg-stone-900 text-yellow-400 text-[10px] md:text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
                                 Premium
                             </span>
                         )}
                         {product.discountPercentage > 0 && !product.homepage_tags?.includes('bestseller') && !product.homepage_tags?.includes('new_arrival') && (
-                            <span className="bg-[#e11d48] text-white text-[10px] md:text-[11px] font-bold px-2.5 py-1 rounded-full shadow-sm">
+                            <span className="bg-[#e11d48] text-white text-[10px] md:text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
                                 -{product.discountPercentage}% OFF
                             </span>
                         )}
@@ -220,7 +240,9 @@ export const ProductCard = React.memo(({ product, toggleWishlist, isInWishlist, 
                             e.stopPropagation();
                             if (toggleWishlist) toggleWishlist(product);
                         }}
-                        className="absolute top-2 right-2 p-1.5 bg-white/90 backdrop-blur rounded-full text-stone-400 hover:text-[#e11d48] transition-all z-30 flex items-center justify-center shadow-sm"
+                        className="absolute top-2 right-2 p-1.5 bg-white/90 backdrop-blur rounded-full text-stone-500 hover:text-[#e11d48] transition-all z-30 flex items-center justify-center shadow-sm"
+                        aria-label={isInWishlist && isInWishlist(product.id) ? `Remove ${product.name} from wishlist` : `Add ${product.name} to wishlist`}
+                        title={isInWishlist && isInWishlist(product.id) ? `Remove ${product.name} from wishlist` : `Add ${product.name} to wishlist`}
                     >
                         <Heart className={`w-4 h-4 ${isInWishlist && isInWishlist(product.id) ? 'fill-[#e11d48] text-[#e11d48]' : ''}`} />
                     </button>
@@ -231,19 +253,19 @@ export const ProductCard = React.memo(({ product, toggleWishlist, isInWishlist, 
             <div className="flex flex-col px-2 pt-2.5 pb-3 flex-1">
                 {/* Category */}
                 {product.category && (
-                    <span className="text-[10px] md:text-[11px] font-semibold text-stone-400 uppercase tracking-wider mb-1 truncate">
+                    <span className="text-xs font-medium text-stone-500 mb-1 leading-tight line-clamp-2">
                         {product.category}
                     </span>
                 )}
 
                 {/* Product Name */}
-                <Link to={productUrl} className="font-bold text-[13px] md:text-[14px] leading-tight text-stone-900 hover:text-[#e11d48] transition-colors line-clamp-2 mb-2">
+                <Link to={cardLinkUrl} className="font-bold text-sm leading-tight text-stone-900 hover:text-rose-900 transition-colors line-clamp-2 min-h-[24px] py-0.5 flex items-center mb-1.5">
                     {product.name}
                 </Link>
 
                 {/* Variant Swatches */}
                 {hasVariants && (
-                    <div className="flex flex-wrap gap-1.5 mb-2" onClick={e => e.preventDefault()}>
+                    <div className="flex flex-wrap items-center gap-1 mb-2" onClick={e => e.preventDefault()}>
                         {validVariants.map((variant, idx) => {
                             const isSelected = selectedVariant?.color === variant.color;
                             return (
@@ -254,12 +276,17 @@ export const ProductCard = React.memo(({ product, toggleWishlist, isInWishlist, 
                                         e.preventDefault();
                                         setSelectedVariant(variant);
                                     }}
-                                    className={`w-4 h-4 rounded-full border-2 transition-all focus:outline-none ${
-                                        isSelected ? 'border-stone-800 scale-110 ring-1 ring-offset-1 ring-stone-400' : 'border-stone-200 hover:border-stone-400'
-                                    }`}
+                                    className="w-6 h-6 rounded-full flex items-center justify-center transition-all focus:outline-none p-0.5"
                                     title={variant.color}
-                                    style={{ backgroundColor: variant.color.toLowerCase() }}
-                                />
+                                    aria-label={`Select color ${variant.color}`}
+                                >
+                                    <span 
+                                        className={`w-4 h-4 rounded-full border-2 transition-all block ${
+                                            isSelected ? 'border-stone-800 scale-110 ring-1 ring-offset-1 ring-stone-400' : 'border-stone-200 hover:border-stone-400'
+                                        }`}
+                                        style={{ backgroundColor: variant.color.toLowerCase() }}
+                                    />
+                                </button>
                             );
                         })}
                     </div>
@@ -269,75 +296,77 @@ export const ProductCard = React.memo(({ product, toggleWishlist, isInWishlist, 
                 <div className="flex-1" />
 
                 {/* Price Row */}
-                <div className="flex items-baseline gap-1.5 mb-2.5">
-                    <span className="text-[17px] md:text-[18px] font-extrabold text-stone-900">
+                <div className={`flex items-baseline gap-1.5 ${shouldShowAddButton ? 'mb-2.5' : 'mb-0'}`}>
+                    <span className="text-lg font-extrabold text-stone-900">
                         ₹{displayPrice.toLocaleString('en-IN')}
                     </span>
                     {product.originalPrice && product.originalPrice > displayPrice && (
-                        <span className="text-[12px] md:text-[13px] font-medium text-stone-400 line-through">
+                        <span className="text-xs font-medium text-stone-500 line-through">
                             ₹{product.originalPrice.toLocaleString('en-IN')}
                         </span>
                     )}
                 </div>
 
                 {/* Add to Bag Button */}
-                {cartItem ? (
-                    <div className="w-full bg-white text-[#e11d48] font-bold rounded-lg border-2 border-[#e11d48] flex items-center justify-between h-[36px] overflow-hidden">
+                {shouldShowAddButton && (
+                    cartItem ? (
+                        <div className="w-full bg-white text-rose-900 font-bold rounded-full border-2 border-rose-900 flex items-center justify-between h-[36px] overflow-hidden">
+                            <button 
+                                onClick={(e) => {
+                                    e.preventDefault(); e.stopPropagation();
+                                    if (cartItem.quantity > 1) {
+                                        updateQuantity(product.id, cartItem.quantity - 1, cartItem.selectedSize, cartItem.selectedColor, cartItem.variantId);
+                                    } else {
+                                        removeFromCart(product.id, cartItem.selectedSize, cartItem.selectedColor, cartItem.variantId);
+                                    }
+                                }}
+                                className="h-full px-3 hover:bg-rose-50 transition-colors flex items-center justify-center"
+                                disabled={isAdding}
+                            >
+                                <Minus className="w-3.5 h-3.5 stroke-[3]" />
+                            </button>
+                            <span className="text-sm font-extrabold text-rose-900 w-8 text-center">{cartItem.quantity}</span>
+                            <button 
+                                onClick={(e) => {
+                                    e.preventDefault(); e.stopPropagation();
+                                    updateQuantity(product.id, cartItem.quantity + 1, cartItem.selectedSize, cartItem.selectedColor, cartItem.variantId);
+                                }}
+                                className="h-full px-3 hover:bg-rose-50 transition-colors flex items-center justify-center"
+                                disabled={isAdding || !product.inStock}
+                            >
+                                <Plus className="w-3.5 h-3.5 stroke-[3]" />
+                            </button>
+                        </div>
+                    ) : (
                         <button 
-                            onClick={(e) => {
-                                e.preventDefault(); e.stopPropagation();
-                                if (cartItem.quantity > 1) {
-                                    updateQuantity(product.id, cartItem.quantity - 1, cartItem.selectedSize, cartItem.selectedColor, cartItem.variantId);
-                                } else {
-                                    removeFromCart(product.id, cartItem.selectedSize, cartItem.selectedColor, cartItem.variantId);
-                                }
+                            onClick={async (e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setIsAdding(true);
+                                const itemToAdd = {
+                                    ...product,
+                                    variantId: selectedVariant?.id,
+                                    selectedColor: selectedVariant?.color,
+                                    selectedSize: selectedVariant?.size,
+                                    price: displayPrice
+                                };
+                                const success = await addToCart(itemToAdd);
+                                if (success) addToast('Added to bag!', 'success');
+                                setIsAdding(false);
                             }}
-                            className="h-full px-3 hover:bg-rose-50 transition-colors flex items-center justify-center"
-                            disabled={isAdding}
+                            disabled={!product.inStock || isAdding}
+                            className="w-full h-[36px] bg-rose-900 text-white font-bold text-xs md:text-sm rounded-full border-2 border-rose-900 hover:bg-rose-800 transition-colors tracking-wide disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
                         >
-                            <Minus className="w-3.5 h-3.5 stroke-[3]" />
+                            {isAdding ? (
+                                <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                            ) : (
+                                <>
+                                    <ShoppingBag className="w-3.5 h-3.5" />
+                                    Add to Bag
+                                </>
+                            )}
                         </button>
-                        <span className="text-[14px] font-extrabold text-[#e11d48] w-8 text-center">{cartItem.quantity}</span>
-                        <button 
-                            onClick={(e) => {
-                                e.preventDefault(); e.stopPropagation();
-                                updateQuantity(product.id, cartItem.quantity + 1, cartItem.selectedSize, cartItem.selectedColor, cartItem.variantId);
-                            }}
-                            className="h-full px-3 hover:bg-rose-50 transition-colors flex items-center justify-center"
-                            disabled={isAdding || !product.inStock}
-                        >
-                            <Plus className="w-3.5 h-3.5 stroke-[3]" />
-                        </button>
-                    </div>
-                ) : (
-                    <button 
-                        onClick={async (e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            setIsAdding(true);
-                            const itemToAdd = {
-                                ...product,
-                                variantId: selectedVariant?.id,
-                                selectedColor: selectedVariant?.color,
-                                selectedSize: selectedVariant?.size,
-                                price: displayPrice
-                            };
-                            const success = await addToCart(itemToAdd);
-                            if (success) addToast('Added to bag!', 'success');
-                            setIsAdding(false);
-                        }}
-                        disabled={!product.inStock || isAdding}
-                        className="w-full h-[36px] bg-[#e11d48] text-white font-bold text-[12px] md:text-[13px] rounded-full border-2 border-[#e11d48] hover:bg-[#be123c] transition-colors tracking-wide disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
-                    >
-                        {isAdding ? (
-                            <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
-                        ) : (
-                            <>
-                                <ShoppingBag className="w-3.5 h-3.5" />
-                                Add to Bag
-                            </>
-                        )}
-                    </button>
+                    )
                 )}
             </div>
         </div>

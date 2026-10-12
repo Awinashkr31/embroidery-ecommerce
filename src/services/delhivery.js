@@ -4,6 +4,9 @@
 
 import { supabase } from '../config/supabase';
 
+// In-memory cache for pincode serviceability (persists during user session)
+const serviceabilityCache = new Map();
+
 export const DelhiveryService = {
     /**
      * Check if a pincode is serviceable
@@ -11,6 +14,15 @@ export const DelhiveryService = {
      * @returns {Promise<{serviceable: boolean, city: string, state: string, details: any}>}
      */
     checkServiceability: async (pincode) => {
+        if (!pincode || String(pincode).length !== 6) {
+            return { serviceable: false, error: 'Invalid pincode' };
+        }
+        
+        const pinKey = String(pincode);
+        if (serviceabilityCache.has(pinKey)) {
+            return serviceabilityCache.get(pinKey);
+        }
+
         try {
             const { data, error } = await supabase.functions.invoke('delhivery-api', {
                 body: { action: 'check-serviceability', payload: { pincode } }
@@ -82,7 +94,7 @@ export const DelhiveryService = {
                         ? `${minDate.getDate()}–${maxDate.getDate()} ${monthNames[maxDate.getMonth()]}`
                         : `${minDate.getDate()} ${monthNames[minDate.getMonth()]}–${maxDate.getDate()} ${monthNames[maxDate.getMonth()]}`;
 
-                    return {
+                    const result = {
                         serviceable: isServiceable,
                         city: info.district,
                         state: info.state_code, 
@@ -92,6 +104,8 @@ export const DelhiveryService = {
                         transitDays,
                         details: info
                     };
+                    serviceabilityCache.set(pinKey, result);
+                    return result;
                 }
             }
 

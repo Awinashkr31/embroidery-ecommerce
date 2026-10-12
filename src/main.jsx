@@ -10,6 +10,31 @@ import { setupGlobalErrorHandlers } from './utils/crashLogger'
 // 🔍 Setup global crash monitoring (catches errors that ErrorBoundary misses)
 setupGlobalErrorHandlers()
 
+// 🛡️ Defensive patch for DOM manipulation by translation extensions (Google Translate, Chrome/Safari Auto-Translate)
+if (typeof Node === 'function' && Node.prototype) {
+  const originalRemoveChild = Node.prototype.removeChild;
+  Node.prototype.removeChild = function (child) {
+    if (child.parentNode !== this) {
+      if (console) {
+        console.warn('[DOM Guard] Cannot remove child: parent node mismatch or already detached', this, child);
+      }
+      return child;
+    }
+    return originalRemoveChild.apply(this, arguments);
+  };
+
+  const originalInsertBefore = Node.prototype.insertBefore;
+  Node.prototype.insertBefore = function (newNode, referenceNode) {
+    if (referenceNode && referenceNode.parentNode !== this) {
+      if (console) {
+        console.warn('[DOM Guard] Cannot insert before: reference node parent mismatch', this, referenceNode);
+      }
+      return newNode;
+    }
+    return originalInsertBefore.apply(this, arguments);
+  };
+}
+
 // 📱 Capture PWA install prompt early, before React mounts
 // This ensures the event is never missed even if it fires before components mount
 window.addEventListener('beforeinstallprompt', (e) => {
