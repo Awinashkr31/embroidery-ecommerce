@@ -1,0 +1,55 @@
+# Debug/build logs — not needed in deployment
+*.log
+*.txt
+!public/robots.txt
+!public/llms.txt
+*.patch
+*.sql
+
+# Lighthouse / pagespeed reports
+lighthouse.json
+live_lh*.json
+pagespeed.json
+lint_dashboard.json
+build_crash.json
+
+# Development files
+original_pdp.txt
+diff.patch
+products_temp.json
+fetchUsers.mjs
+test_*.js
+scratch.cjs
+scratch/
+
+# Database scripts (not needed at runtime)
+database/
+5_digit_upgrade.sql
+add_cod_charge.sql
+fix_cancel_order.sql
+place_order_fix.sql
+supabase/
+
+# Build scripts (only needed during build, not deployment)
+scripts/check_*.js
+scripts/debug_*.js
+scripts/test_*.js
+scripts/simulate_*.js
+scripts/verify_*.js
+scripts/setup_*.js
+scripts/create_admin.js
+scripts/output*.log
+scripts/output*.txt
+
+# Cloudflare worker (not used on Vercel)
+cloudflare-worker/
+
+# Docs (not needed in deployment)
+ADMIN_ACCESS.md
+README.md
+
+# Unused large images
+public/logo-new-1.png
+public/logo-new-2.png
+public/favicon-transparent.png
+public/logo-transparent.png

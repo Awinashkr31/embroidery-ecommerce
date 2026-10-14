@@ -10,6 +10,8 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+temp_dist
+dev-dist
 *.local
 
 # Editor directories and files
@@ -29,3 +31,20 @@ dist-ssr
 # Graphify
 graphify-out
 graphify
+
+# Debug/build artifacts (saves ~3MB per deploy)
+build.log
+build.txt
+build_*.txt
+build_*.json
+out.txt
+real_build_error.txt
+diff.patch
+original_pdp.txt
+test-out*.txt
+
+# Lighthouse/PageSpeed reports
+lighthouse.json
+live_lh*.json
+pagespeed.json
+lint_dashboard.json
