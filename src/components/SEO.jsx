@@ -6,7 +6,7 @@ const SEO = ({ title, description, keywords, schema, url, image, noIndex, childr
     const fullTitle = title 
         ? (title.includes('Crochet Wali') ? title : `${title} | Crochet Wali`) 
         : siteTitle;
-    const metaDescription = description || "Shop Crochet Wali for handmade crochet bouquets, gajra, flower pots, parandi, keychains, hair clips & personalized gift boxes. Aesthetic handmade gifts, made to order across India.";
+    const metaDescription = description || "Buy 100% handmade crochet flower bouquets, bridal gajras, hair accessories & personalized gift boxes starting at ₹99. Everlasting aesthetic gifts made with love in India. Free shipping over ₹799! Order now.";
     const metaKeywords = keywords || "crochet wali, crochet flower bouquet, handmade gajra, crochet flower pot, crochet parandi, crochet keychain, crochet hair clips, embroidery hair clips, handmade gift box india, crochet claw clip, crochet bow, aesthetic handmade gifts india, custom crochet gifts, forever flower bouquet india";
     const metaUrl = url || (typeof window !== 'undefined' ? `https://www.crochetwali.in${window.location.pathname}` : "https://www.crochetwali.in");
     const metaImage = image || "https://www.crochetwali.in/hero-gift.png";

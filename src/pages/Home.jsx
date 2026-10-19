@@ -6,6 +6,9 @@ import { useProducts } from '../context/ProductContext';
 import { ChevronRight, Search, Leaf, Tag, ArrowRight, Sparkles } from 'lucide-react';
 import SEO from '../components/SEO';
 import { ProductCard } from '../components/ProductCard';
+import heroCrochet1 from '../assets/hero_crochet_1.webp';
+import flowerHero from '../assets/flower.webp';
+import tempHeroCrochet from '../assets/temp_hero_crochet.webp';
 
 // Mobile-first horizontal scroll container
 const HorizontalScroll = ({ children, title, actionText, actionLink }) => (
@@ -70,9 +73,9 @@ const Home = () => {
   }, [homeProducts]);
 
   const heroSlides = [
-    { image: "/assets/hero_crochet_1.webp", title: "Forever Flowers &\nHandcrafted Love", subtitle: "100% handmade crochet bouquets, accessories &..." },
-    { image: "/assets/flower.webp", title: "Custom Keepsakes &\nPersonal Gifts", subtitle: "Made to order with premium botanical-dyed yarn." },
-    { image: "/assets/temp_hero_crochet.webp", title: "Festive Drops &\nNew Arrivals", subtitle: "Explore our latest collection of handmade treasures." }
+    { image: heroCrochet1, title: "Forever Flowers &\nHandcrafted Love", subtitle: "100% handmade crochet bouquets, accessories &..." },
+    { image: flowerHero, title: "Custom Keepsakes &\nPersonal Gifts", subtitle: "Made to order with premium botanical-dyed yarn." },
+    { image: tempHeroCrochet, title: "Festive Drops &\nNew Arrivals", subtitle: "Explore our latest collection of handmade treasures." }
   ];
 
   const navigate = useNavigate();

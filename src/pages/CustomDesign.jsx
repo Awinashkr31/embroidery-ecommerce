@@ -2,6 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Sparkles, MessageCircle, MessageSquare, Palette, Scissors, Star, Camera, Check, Clock, ArrowRight } from 'lucide-react';
 import { fetchSetting } from '../utils/settingsUtils';
 import SEO from '../components/SEO';
+import defaultHeroBanner from '../assets/custom_hero_banner.webp';
+import customBouquet from '../assets/custom_bouquet.webp';
+import customHoop from '../assets/custom_hoop.webp';
+import customHairclips from '../assets/custom_hairclips.webp';
+import customKeychains from '../assets/custom_keychains.webp';
 
 const WHATSAPP_NUMBER = "917428013214";
 
@@ -39,7 +44,7 @@ const QUICK_OPTIONS = [
 ];
 
 const CustomDesign = () => {
-  const [bannerImage, setBannerImage] = useState("/custom-images/custom_hero_banner.webp");
+  const [bannerImage, setBannerImage] = useState(defaultHeroBanner);
   const [pageTitle, setPageTitle] = useState("Custom Design Request");
   const [pageSubtitle, setPageSubtitle] = useState("Let's bring your unique vision to life.");
 
@@ -86,7 +91,7 @@ const CustomDesign = () => {
       <SEO 
         title="Custom Design Request - Handmade Gifts" 
         description="Request custom handmade gifts, personalized embroidery portrait hoops, and bespoke crochet designs directly via WhatsApp from Crochet Wali."
-        image={bannerImage || "https://www.crochetwali.in/custom-images/custom_hero_banner.webp"}
+        image={bannerImage || defaultHeroBanner}
         schema={serviceSchema}
       />
       
@@ -95,7 +100,7 @@ const CustomDesign = () => {
         {/* Background */}
         <div className="absolute inset-0">
           <img 
-            src={bannerImage || "/custom-images/custom_hero_banner.webp"} 
+            src={bannerImage || defaultHeroBanner} 
             alt="Handcrafted custom crochet & embroidery design workshop" 
             className="w-full h-full object-cover" 
           />
@@ -165,10 +170,10 @@ const CustomDesign = () => {
              </div>
              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                  {[
-                    "/custom-images/custom_bouquet.webp",
-                    "/custom-images/custom_hoop.webp",
-                    "/custom-images/custom_hairclips.webp",
-                    "/custom-images/custom_keychains.webp"
+                    customBouquet,
+                    customHoop,
+                    customHairclips,
+                    customKeychains
                  ].map((src, i) => (
                     <div key={i} className="aspect-square bg-stone-100 rounded-[2rem] overflow-hidden group border border-stone-100 shadow-sm hover:shadow-xl transition-all">
                         <img src={src} alt="Custom Work" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />

@@ -704,8 +704,8 @@ const ProductDetails = () => {
     return (
         <div className="min-h-screen bg-[#fdfbf7] pt-2 md:pt-8 pb-24 lg:pb-20 font-body selection:bg-rose-100 selection:text-rose-900">
             <SEO 
-                title={product.name} 
-                description={info.shortDescription || product.description?.substring(0, 150)} 
+                title={`${product.name} (Handmade) - ₹${product.price}`} 
+                description={info.shortDescription ? `Buy ${product.name} online at ₹${product.price} in India. ${info.shortDescription} 100% handcrafted with premium yarn. Free shipping over ₹799.` : `Buy 100% handmade ${product.name} online at ₹${product.price} in India. Handcrafted with premium yarn, perfect aesthetic keepsake gift with fast doorstep delivery.`} 
                 schema={pageSchema} 
                 image={product.image} 
                 url={window.location.href} 

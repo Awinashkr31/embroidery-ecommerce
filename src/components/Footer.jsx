@@ -26,7 +26,7 @@ const Footer = () => {
                 <img 
                   src="/logo.png" 
                   alt="Crochet Wali" 
-                  className="h-16 lg:h-20 w-auto object-contain mix-blend-multiply opacity-90 hover:opacity-100 transition-opacity" 
+                  className="h-16 lg:h-20 w-auto object-contain drop-shadow-sm opacity-90 hover:opacity-100 transition-opacity" 
                   width={200}
                   height={80}
                 />

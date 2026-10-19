@@ -1,19 +1,15 @@
 {
   "functions": {
     "api/product.js": {
-      "memory": 128,
       "maxDuration": 5
     },
     "api/create-order.js": {
-      "memory": 128,
       "maxDuration": 10
     },
     "api/verify-payment.js": {
-      "memory": 128,
       "maxDuration": 5
     },
     "api/google-index.js": {
-      "memory": 128,
       "maxDuration": 10
     }
   },
@@ -216,6 +212,13 @@
   "rewrites": [
     {
       "source": "/product/:slug*",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(.*)(bot|crawler|spider|facebookexternalhit|WhatsApp|Twitterbot|Pinterest|LinkedInBot|Googlebot|bingbot|Baiduspider|YandexBot)(.*)"
+        }
+      ],
       "destination": "/api/product.js"
     },
     {
