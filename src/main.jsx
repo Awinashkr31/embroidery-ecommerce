@@ -34,11 +34,15 @@ if (typeof Node === 'function' && Node.prototype) {
     return originalInsertBefore.apply(this, arguments);
   };
 
-  // 🛡️ Global guard for React 19 / detached DOM reconciler edge cases (e.g. HostHoistable tag 26 unmount)
+  // 🛡️ Global guard for React 19 / detached DOM reconciler edge cases (e.g. HostHoistable tag 26 unmount, recoverable concurrent render retry)
   window.addEventListener('error', (event) => {
-    if (event.message && (event.message.includes("reading 'removeChild'") || event.message.includes("reading 'parentNode'"))) {
+    if (event.message && (
+      event.message.includes("reading 'removeChild'") || 
+      event.message.includes("reading 'parentNode'") ||
+      event.message.includes("Minified React error #520")
+    )) {
       event.preventDefault();
-      console.warn('[DOM Guard] Suppressed detached removeChild reconciler error:', event.message);
+      console.warn('[DOM Guard] Handled harmless recoverable runtime event:', event.message);
     }
   });
 }

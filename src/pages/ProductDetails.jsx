@@ -10,14 +10,7 @@ import { Heart, ShoppingBag, ArrowLeft, Truck, Shield, Star, Award, Search, Spar
 import SEO from '../components/SEO';
 import { PincodeChecker } from '../components/PincodeChecker';
 import { extractProductIdFromSlug, getProductUrl, slugify } from '../utils/urlUtils';
-import { 
-    FREE_SHIPPING_THRESHOLD, 
-    SHIPPING_CHARGE_BELOW_THRESHOLD, 
-    DISPATCH_DAYS, 
-    DELIVERY_DAYS, 
-    EXPRESS_OPTION, 
-    SHIPPING_SUMMARY 
-} from '../constants/shippingConfig';
+import { FREE_SHIPPING_THRESHOLD, SHIPPING_CHARGE_BELOW_THRESHOLD } from '../constants/shippingConfig';
 import { getDuplicateRedirect, getGenuineDiscount, normalizeCategory, getProductPriceDisplay } from '../utils/productSanitizer';
 
 const getIntentDetails = (productName, category) => {
@@ -1001,14 +994,9 @@ const ProductDetails = () => {
                                 )}
                             </div>
                             <p className="text-stone-500 text-xs mb-3 font-medium">Inclusive of all taxes</p>
-                            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                                <div className="inline-flex items-center gap-2 text-xs font-medium text-stone-700 bg-stone-100/90 px-3 py-1.5 rounded-full border border-stone-200/60 w-fit">
-                                    <Truck className="w-3.5 h-3.5 text-stone-600 shrink-0" />
-                                    <span>Delivery fee calculated on checkout</span>
-                                </div>
-                                <span className="text-xs text-stone-600 font-medium">
-                                    Free delivery on orders over ₹{FREE_SHIPPING_THRESHOLD}, ₹{SHIPPING_CHARGE_BELOW_THRESHOLD} delivery charge below ₹{FREE_SHIPPING_THRESHOLD}.
-                                </span>
+                            <div className="inline-flex items-center gap-2 text-xs font-medium text-stone-700 bg-stone-100/90 px-3 py-1.5 rounded-full border border-stone-200/60">
+                                <Truck className="w-3.5 h-3.5 text-stone-600 shrink-0" />
+                                <span>Delivery fee calculated on checkout</span>
                             </div>
                             {currentStock > 0 && currentStock <= 5 && (
                                 <div className="flex items-center gap-2 text-xs font-bold text-rose-850 bg-rose-50 px-3 py-1.5 rounded-lg border border-rose-200/80 w-fit mt-3">
@@ -1181,10 +1169,6 @@ const ProductDetails = () => {
                             </div>
                             <PincodeChecker />
                             <div className="pt-3 border-t border-stone-100 space-y-1.5 text-xs text-stone-600">
-                                <div className="flex items-start gap-2 text-stone-700">
-                                    <Truck className="w-4 h-4 text-rose-900 shrink-0 mt-0.5" />
-                                    <span>Free delivery on orders over ₹{FREE_SHIPPING_THRESHOLD}, ₹{SHIPPING_CHARGE_BELOW_THRESHOLD} delivery charge below ₹{FREE_SHIPPING_THRESHOLD}.</span>
-                                </div>
                                 <div className="flex items-start gap-2">
                                     <Package className="w-4 h-4 text-stone-500 shrink-0 mt-0.5" />
                                     <span><strong>Timeline:</strong> 2–4 days crafting + 4–7 business days shipping</span>

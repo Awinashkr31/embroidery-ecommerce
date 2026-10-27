@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Sparkles, MessageCircle, MessageSquare, Palette, Scissors, Star, Camera, Check, Clock, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Sparkles, MessageCircle, MessageSquare, Palette, Scissors, Star, Camera, Check, Clock } from 'lucide-react';
 import { fetchSetting } from '../utils/settingsUtils';
 import SEO from '../components/SEO';
 import defaultHeroBanner from '../assets/custom_hero_banner.webp';
@@ -10,53 +11,37 @@ import customKeychains from '../assets/custom_keychains.webp';
 
 const WHATSAPP_NUMBER = "917428013214";
 
-const QUICK_OPTIONS = [
+const FAQS = [
   {
-    icon: "🌸",
-    title: "Custom Flower Bouquet",
-    desc: "Pick your favorite flowers, colors & bouquet wrapping",
-    message: "Hi Crochet Wali, I want to customize a crochet flower bouquet (flowers, colors, wrapping)!"
+    question: "How do I order a custom design?",
+    answer: "Share your reference photo or idea on WhatsApp, choose yarn shades and size with the artisan, and the piece is handcrafted for you."
   },
   {
-    icon: "👰",
-    title: "Bridal Gajra & Parandi",
-    desc: "Custom scented/reusable floral accessories for wedding & haldi",
-    message: "Hi Crochet Wali, I am looking for custom reusable bridal gajra / parandi for wedding styling."
+    question: "What is the minimum order?",
+    answer: "MOQ is 1 piece for retail gifts; orders of 10+ pieces qualify for bulk wedding/event discounts."
   },
   {
-    icon: "🎨",
-    title: "Portrait Embroidery Hoop",
-    desc: "Turn your couple/family photo into handcrafted thread art",
-    message: "Hi Crochet Wali, I want to order a custom portrait embroidery hoop with my photo."
+    question: "How long does a custom order take?",
+    answer: "2–4 days crafting plus 4–7 business days shipping across India"
   },
   {
-    icon: "🎁",
-    title: "Bulk Wedding & Event Favors",
-    desc: "10+ pieces with custom color palettes & bulk pricing",
-    message: "Hi Crochet Wali, I want to inquire about bulk wedding / haldi favors (10+ pieces)."
+    question: "What can I customise?",
+    answer: "Custom names, dates, quotes, colour palettes, and bouquet combinations, with 30+ yarn shades to choose from."
   },
   {
-    icon: "✨",
-    title: "Something Completely Unique",
-    desc: "Share your Pinterest reference or sketch with us",
-    message: "Hi Crochet Wali, I have a unique handmade design idea I would like to discuss with you!"
+    question: "Do you deliver across India?",
+    answer: "Yes, custom orders are shipped across India in rigid gift-ready packaging."
   }
 ];
 
 const CustomDesign = () => {
   const [bannerImage, setBannerImage] = useState(defaultHeroBanner);
-  const [pageTitle, setPageTitle] = useState("Custom Design Request");
-  const [pageSubtitle, setPageSubtitle] = useState("Let's bring your unique vision to life.");
 
   useEffect(() => {
     window.scrollTo(0, 0);
     const loadSettings = async () => {
       const image = await fetchSetting('custom_design_banner_image');
       if (image) setBannerImage(image);
-      const title = await fetchSetting('custom_design_title');
-      if (title) setPageTitle(title);
-      const subtitle = await fetchSetting('custom_design_subtitle');
-      if (subtitle) setPageSubtitle(subtitle);
     };
     loadSettings();
   }, []);
@@ -72,13 +57,31 @@ const CustomDesign = () => {
   const serviceSchema = {
     "@context": "https://schema.org",
     "@type": "Service",
-    "name": "Bespoke Custom Embroidery & Crochet",
-    "description": "Order custom handmade gifts, personalized embroidery portrait hoops, and bespoke crochet designs directly via WhatsApp from Crochet Wali.",
+    "name": "Custom Crochet & Embroidery Gifts Made to Order",
+    "serviceType": "Custom crochet and embroidery gifts",
     "provider": {
-        "@type": "Organization",
-        "name": "Crochet Wali"
+      "@type": "Organization",
+      "name": "Crochet Wali",
+      "url": "https://www.crochetwali.in"
     },
-    "serviceType": "Handmade Gifts & Embroidery"
+    "areaServed": {
+      "@type": "Country",
+      "name": "India"
+    },
+    "description": "Order custom crochet gifts and personalised embroidery from Crochet Wali — handmade in India, 30+ yarn shades, MOQ just 1 piece. Share your idea today."
+  };
+
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": FAQS.map(faq => ({
+      "@type": "Question",
+      "name": faq.question,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": faq.answer
+      }
+    }))
   };
 
   const getWhatsAppUrl = (customText) => {
@@ -89,10 +92,12 @@ const CustomDesign = () => {
   return (
     <div className="bg-[#fdfbf7] min-h-screen font-body pb-24 lg:pb-20">
       <SEO 
-        title="Custom Design Request - Handmade Gifts" 
-        description="Request custom handmade gifts, personalized embroidery portrait hoops, and bespoke crochet designs directly via WhatsApp from Crochet Wali."
-        image={bannerImage || defaultHeroBanner}
-        schema={serviceSchema}
+        title="Custom Crochet Gifts & Personalized Embroidery | Crochet Wali" 
+        exactTitle={true}
+        description="Order custom crochet gifts and personalised embroidery from Crochet Wali — handmade in India, 30+ yarn shades, MOQ just 1 piece. Share your idea today."
+        url="https://www.crochetwali.in/custom-design"
+        image="https://www.crochetwali.in/custom-images/custom_bouquet.webp"
+        schema={[serviceSchema, faqSchema]}
       />
       
       {/* ─── Hero Section ─── */}
@@ -118,10 +123,18 @@ const CustomDesign = () => {
             Made Just For You
           </div>
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-heading font-bold text-white mb-4 sm:mb-6 leading-[1.15] drop-shadow-md">
-            {pageTitle}
+            Custom Crochet & Embroidery Gifts Made to Order
           </h1>
-          <p className="font-sans text-base sm:text-lg md:text-xl text-stone-200/90 max-w-xl mx-auto leading-relaxed font-normal mb-8 drop-shadow-sm">
-            {pageSubtitle}
+          <p className="font-sans text-base sm:text-lg md:text-xl text-stone-200/90 max-w-2xl mx-auto leading-relaxed font-normal mb-8 drop-shadow-sm">
+            Want a gift no one else has? Share a photo or an idea and Crochet Wali handcrafts it for you —{' '}
+            <Link to="/collections/crochet-bouquets" className="text-white font-medium underline decoration-rose-300 underline-offset-4 hover:text-rose-200 transition-colors">
+              custom crochet bouquets
+            </Link>
+            ,{' '}
+            <Link to="/collections/custom-embroidery-hoops" className="text-white font-medium underline decoration-rose-300 underline-offset-4 hover:text-rose-200 transition-colors">
+              personalised embroidery portrait hoops
+            </Link>
+            , flower hair clips, and keychains, made to order in India. Choose from 30+ yarn shades, add names, dates, or quotes, and order a single piece or 10+ pieces for weddings and events.
           </p>
           <div className="flex flex-col sm:flex-row justify-center items-center gap-3 animate-fade-in-up">
              <a 
@@ -136,7 +149,7 @@ const CustomDesign = () => {
                 onClick={() => document.getElementById('whatsapp-order-hub').scrollIntoView({ behavior: 'smooth' })}
                 className="bg-white/10 hover:bg-white/20 backdrop-blur-md text-white border border-white/30 px-6 py-4 rounded-full font-sans font-semibold text-xs sm:text-sm tracking-wide transition-all"
              >
-                View Options ↓
+                Start Custom Order ↓
              </button>
           </div>
         </div>
@@ -174,48 +187,26 @@ const CustomDesign = () => {
              </div>
              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                  {[
-                    customBouquet,
-                    customHoop,
-                    customHairclips,
-                    customKeychains
-                 ].map((src, i) => (
+                    { src: customBouquet, alt: "Custom crochet bouquet handcrafted by Crochet Wali" },
+                    { src: customHoop, alt: "Custom embroidered portrait hoop art by Crochet Wali" },
+                    { src: customHairclips, alt: "Custom crochet flower hair clips by Crochet Wali" },
+                    { src: customKeychains, alt: "Custom crochet keychains by Crochet Wali" },
+                 ].map((item, i) => (
                     <div key={i} className="aspect-square bg-stone-100 rounded-[2rem] overflow-hidden group border border-stone-100 shadow-sm hover:shadow-xl transition-all">
-                        <img src={src} alt="Custom Work" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                        <img 
+                          src={item.src} 
+                          alt={item.alt} 
+                          loading="lazy"
+                          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+                        />
                     </div>
                  ))}
              </div>
          </div>
       </div>
 
-      {/* ─── Transparent Order Specs, Timelines & MOQs ─── */}
-      <div className="container-custom px-5 max-w-4xl mb-12">
-        <h2 className="sr-only">Order Specifications and Timelines</h2>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white p-5 rounded-2xl border border-stone-200/70 shadow-sm space-y-1.5">
-            <div className="font-sans text-rose-900 font-bold text-xs">📦 Minimum Order (MOQ)</div>
-            <h3 className="font-sans font-bold text-stone-900 text-base">MOQ = 1 Piece</h3>
-            <p className="font-sans text-stone-600 text-xs leading-relaxed">No minimum required for retail gifts. 10+ pieces qualify for bulk wedding/event discounts.</p>
-          </div>
-          <div className="bg-white p-5 rounded-2xl border border-stone-200/70 shadow-sm space-y-1.5">
-            <div className="font-sans text-rose-900 font-bold text-xs">⏱️ Production Time</div>
-            <h3 className="font-sans font-bold text-stone-900 text-base">1–3 Days Crafting</h3>
-            <p className="font-sans text-stone-600 text-xs leading-relaxed">Each piece is hand-knitted from scratch with botanical-dyed milk cotton yarn.</p>
-          </div>
-          <div className="bg-white p-5 rounded-2xl border border-stone-200/70 shadow-sm space-y-1.5">
-            <div className="font-sans text-rose-900 font-bold text-xs">🎨 Customization</div>
-            <h3 className="font-sans font-bold text-stone-900 text-base">30+ Yarn Shades</h3>
-            <p className="font-sans text-stone-600 text-xs leading-relaxed">Custom names, dates, quotes, color palettes, and custom bouquet combinations.</p>
-          </div>
-          <div className="bg-white p-5 rounded-2xl border border-stone-200/70 shadow-sm space-y-1.5">
-            <div className="font-sans text-rose-900 font-bold text-xs">🚚 Delivery in India</div>
-            <h3 className="font-sans font-bold text-stone-900 text-base">4–7 Days Transit</h3>
-            <p className="font-sans text-stone-600 text-xs leading-relaxed">Shipped safely in rigid gift-ready packaging via express couriers with live tracking.</p>
-          </div>
-        </div>
-      </div>
-
       {/* ─── Direct WhatsApp Consultation Hub (Compact & Sleek) ─── */}
-      <div id="whatsapp-order-hub" className="container-custom px-4 sm:px-5 max-w-2xl scroll-m-24">
+      <div id="whatsapp-order-hub" className="container-custom px-4 sm:px-5 max-w-2xl scroll-m-24 mb-10">
         <div className="bg-white rounded-2xl sm:rounded-3xl shadow-lg border border-stone-200/80 overflow-hidden">
           {/* Header Banner — compact */}
           <div className="bg-gradient-to-r from-stone-900 via-rose-950 to-stone-900 text-white px-5 py-5 sm:px-8 sm:py-6 text-center relative overflow-hidden">
@@ -236,45 +227,8 @@ const CustomDesign = () => {
           </div>
 
           <div className="p-4 sm:p-6 space-y-4">
-            {/* Quick Option Pills */}
-            <div>
-              <p className="font-sans text-xs sm:text-sm font-semibold text-stone-700 mb-2.5 text-center sm:text-left">
-                Select an option to start chat:
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {QUICK_OPTIONS.map((opt, i) => (
-                  <a
-                    key={i}
-                    href={getWhatsAppUrl(opt.message)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`p-2.5 sm:p-3 rounded-xl border border-stone-200 bg-stone-50/70 hover:bg-emerald-50/50 hover:border-[#25D366] transition-all flex items-center justify-between group text-left hover:shadow-xs ${
-                      i === QUICK_OPTIONS.length - 1 ? 'sm:col-span-2' : ''
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <span className="text-lg shrink-0 p-1 bg-white rounded-lg shadow-2xs group-hover:scale-110 transition-transform">
-                        {opt.icon}
-                      </span>
-                      <div className="min-w-0">
-                        <span className="font-sans font-semibold text-stone-900 text-xs sm:text-sm block truncate">
-                          {opt.title}
-                        </span>
-                        {opt.desc && (
-                          <span className="font-sans text-[11px] text-stone-500 block truncate">
-                            {opt.desc}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <ArrowRight className="w-4 h-4 text-stone-400 group-hover:text-[#25D366] group-hover:translate-x-0.5 transition-all shrink-0 ml-1.5" />
-                  </a>
-                ))}
-              </div>
-            </div>
-
             {/* Primary Action Button */}
-            <div className="pt-1 text-center space-y-2">
+            <div className="text-center space-y-2">
               <a
                 href={getWhatsAppUrl("Hi Crochet Wali, I want to discuss a custom handmade order with you!")}
                 target="_blank"
@@ -319,6 +273,28 @@ const CustomDesign = () => {
         </div>
       </div>
 
+      {/* ─── Transparent Order Specs & Timelines ─── */}
+      <div className="container-custom px-5 max-w-4xl mb-12">
+        <h2 className="sr-only">Order Specifications and Timelines</h2>
+        <div className="grid sm:grid-cols-3 gap-4">
+          <div className="bg-white p-5 rounded-2xl border border-stone-200/70 shadow-sm space-y-1.5">
+            <div className="font-sans text-rose-900 font-bold text-xs">⏱️ Production Time</div>
+            <h3 className="font-sans font-bold text-stone-900 text-base">2–4 Days Crafting</h3>
+            <p className="font-sans text-stone-600 text-xs leading-relaxed">Each piece is hand-knitted from scratch with botanical-dyed milk cotton yarn.</p>
+          </div>
+          <div className="bg-white p-5 rounded-2xl border border-stone-200/70 shadow-sm space-y-1.5">
+            <div className="font-sans text-rose-900 font-bold text-xs">🎨 Customization</div>
+            <h3 className="font-sans font-bold text-stone-900 text-base">30+ Yarn Shades</h3>
+            <p className="font-sans text-stone-600 text-xs leading-relaxed">Custom names, dates, quotes, color palettes, and custom bouquet combinations.</p>
+          </div>
+          <div className="bg-white p-5 rounded-2xl border border-stone-200/70 shadow-sm space-y-1.5">
+            <div className="font-sans text-rose-900 font-bold text-xs">🚚 Delivery in India</div>
+            <h3 className="font-sans font-bold text-stone-900 text-base">4–7 Business Days Transit</h3>
+            <p className="font-sans text-stone-600 text-xs leading-relaxed">Shipped safely in rigid gift-ready packaging via trusted couriers with live tracking.</p>
+          </div>
+        </div>
+      </div>
+
       {/* ─── Testimonials ─── */}
       <div className="py-16 md:py-24 bg-[#fdfbf7] border-b border-stone-100 mt-12 mb-16">
          <div className="container-custom px-5">
@@ -356,6 +332,41 @@ const CustomDesign = () => {
              </div>
          </div>
       </div>
+
+      {/* ─── FAQ Section ─── */}
+      <section className="py-16 md:py-20 bg-white border-b border-stone-100">
+        <div className="container-custom px-5 max-w-4xl">
+          <div className="text-center mb-10">
+            <span className="font-sans text-rose-900 text-xs font-bold tracking-widest uppercase mb-2 block">Got Questions?</span>
+            <h2 className="text-3xl md:text-4xl font-heading font-bold text-stone-900 tracking-tight">Frequently Asked Questions</h2>
+            <p className="font-sans text-stone-600 text-sm md:text-base max-w-lg mx-auto mt-2">Everything you need to know about placing a custom handmade order.</p>
+          </div>
+
+          <div className="space-y-4">
+            {FAQS.map((faq, i) => (
+              <div key={i} className="bg-[#fdfbf7] p-5 sm:p-6 rounded-2xl border border-stone-200/80 shadow-xs">
+                <h3 className="font-sans font-bold text-stone-900 text-base sm:text-lg mb-2">
+                  {faq.question}
+                </h3>
+                <p className="font-sans text-stone-600 text-sm sm:text-[15px] leading-relaxed">
+                  {faq.answer}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          {/* Closing link to Shop */}
+          <div className="mt-10 text-center p-6 bg-rose-50/50 rounded-2xl border border-rose-100/70">
+            <p className="font-sans text-stone-700 text-sm sm:text-base">
+              Prefer ready-to-ship designs?{' '}
+              <Link to="/shop" className="text-rose-900 font-bold underline underline-offset-4 hover:text-rose-700 transition-colors">
+                Browse our full shop collection
+              </Link>
+              .
+            </p>
+          </div>
+        </div>
+      </section>
 
       {/* ─── Floating WhatsApp Button ─── */}
       <aside aria-label="WhatsApp Contact" className="fixed bottom-20 md:bottom-8 right-4 md:right-8 z-40 group">
