@@ -11,16 +11,16 @@ Finding a gift that feels personal, aesthetic, and fits within a budget can be c
 At **Crochet Wali**, we believe that premium gifting doesn't have to break the bank. Here are our top handmade gifts under ₹500 that offer incredible value and long-lasting charm.
 
 ### 1. Handmade Crochet Keychains
-Keychains are a classic, universally loved gift. Our [Handmade Crochet Keychains](/product/crochet-keychain) are meticulously crafted to feature adorable designs like mini flowers, hearts, and bows. They are lightweight, durable, and instantly elevate the aesthetic of any backpack, tote bag, or set of keys.
+Keychains are a classic, universally loved gift. Our [Handmade Crochet Keychains](/collections/crochet-keychains) are meticulously crafted to feature adorable designs like mini flowers, hearts, and bows. They are lightweight, durable, and instantly elevate the aesthetic of any backpack, tote bag, or set of keys.
 
 ### 2. Aesthetic Crochet Claw Clips
-A beautiful hair accessory is both practical and thoughtful. Our [Handmade Crochet Claw Hair Clips](/product/crochet-claw-clip) combine the functionality of a strong plastic claw clip with the cottagecore charm of crochet flowers. They are perfect for everyday styling and make a fantastic gift for teenage girls or women who love soft, feminine accessories.
+A beautiful hair accessory is both practical and thoughtful. Our [Handmade Crochet Claw Hair Clips](/collections/crochet-claw-clips) combine the functionality of a strong plastic claw clip with the cottagecore charm of crochet flowers. They are perfect for everyday styling and make a fantastic gift for teenage girls or women who love soft, feminine accessories.
 
 ### 3. Single Crochet Flowers
-Real flowers wilt in a few days, but a [Single Crochet Flower](/product/crochet-flowers) lasts forever. Gift a beautifully wrapped handmade rose or tulip as a sweet, enduring gesture. It's a small but deeply meaningful alternative to expensive fresh bouquets.
+Real flowers wilt in a few days, but a [Single Crochet Flower](/collections/crochet-bouquets) lasts forever. Gift a beautifully wrapped handmade rose or tulip as a sweet, enduring gesture. It's a small but deeply meaningful alternative to expensive fresh bouquets.
 
 ### 4. Handmade Crochet Bows
-Hair bows are incredibly trendy right now. Our [Handmade Crochet Bows](/product/crochet-bow) are soft, textured, and come attached to high-quality clips that stay secure in all hair types. They add an instant touch of coquette aesthetic to any outfit.
+Hair bows are incredibly trendy right now. Our [Handmade Crochet Bows](/collections/crochet-accessories) are soft, textured, and come attached to high-quality clips that stay secure in all hair types. They add an instant touch of coquette aesthetic to any outfit.
 
 ### Why Choose Handmade?
 When you buy handmade gifts under ₹500, you are not just purchasing a product; you are supporting independent artisans in India. Each piece from Crochet Wali is made slowly and carefully, ensuring high quality and sustainable production. 
@@ -41,7 +41,7 @@ Shop our full collection today and find the perfect, affordable gift that will b
     content: `
 The traditional Indian *gajra* is a timeless hair accessory that instantly elevates any ethnic look. Whether you're attending a wedding, celebrating Diwali, or performing classical dance, a gajra completes the ensemble. 
 
-However, the debate between buying fresh flower gajras and investing in a reusable [Handmade Crochet Gajra](/product/crochet-gajra) is growing. Let's break down the pros and cons to see which is the better choice for your next event.
+However, the debate between buying fresh flower gajras and investing in a reusable [Handmade Crochet Gajra](/collections/crochet-gajra) is growing. Let's break down the pros and cons to see which is the better choice for your next event.
 
 ### The Appeal of Real Flower Gajras
 There is no denying the beauty of a fresh jasmine gajra. The natural fragrance is intoxicating, and the delicate white petals offer a classic, authentic look. 
@@ -55,9 +55,9 @@ Enter the sustainable, modern alternative: the crochet gajra.
 4. **Lightweight & Comfortable:** Crochet gajras are incredibly light and feature flexible ties or elastic, making them easy to secure around buns or braids without pulling your hair.
 
 ### The Verdict
-If you prioritize the natural scent of jasmine for a one-off, highly traditional event, fresh flowers might be your choice. But if you want a beautiful, sustainable, and hassle-free accessory that you can keep in your wardrobe forever, the [Crochet Wali Handmade Gajra](/product/crochet-gajra) is the clear winner. 
+If you prioritize the natural scent of jasmine for a one-off, highly traditional event, fresh flowers might be your choice. But if you want a beautiful, sustainable, and hassle-free accessory that you can keep in your wardrobe forever, the [Crochet Wali Handmade Gajra](/collections/crochet-gajra) is the clear winner. 
 
-It offers the exact traditional aesthetic you want, without any of the maintenance. Pair it with our [Crochet Parandi](/product/crochet-parandi) for a completely stunning, evergreen ethnic hairstyle!
+It offers the exact traditional aesthetic you want, without any of the maintenance. Pair it with our [Crochet Parandi](/collections/crochet-parandi) for a completely stunning, evergreen ethnic hairstyle!
     `,
     metaTitle: "Crochet Gajra vs Real Flower Gajra | Which is Better? | Crochet Wali",
     metaDescription: "Compare the pros and cons of traditional jasmine gajras versus reusable handmade crochet gajras for Indian weddings and festivals.",
@@ -71,7 +71,7 @@ It offers the exact traditional aesthetic you want, without any of the maintenan
     date: "2026-07-10",
     excerpt: "Crochet bouquets are known as 'forever flowers', but how long do they actually last? Learn how to care for your handmade bouquet to keep it beautiful.",
     content: `
-Gifting flowers is a beautiful gesture, but it always comes with a tinge of sadness—you know they will eventually wilt and die. This is why [Handmade Crochet Flower Bouquets](/product/crochet-bouquet) have surged in popularity as the ultimate romantic and thoughtful gift. They are often called "forever flowers." But how long do they *actually* last?
+Gifting flowers is a beautiful gesture, but it always comes with a tinge of sadness—you know they will eventually wilt and die. This is why [Handmade Crochet Flower Bouquets](/collections/crochet-bouquets) have surged in popularity as the ultimate romantic and thoughtful gift. They are often called "forever flowers." But how long do they *actually* last?
 
 The short answer: **A lifetime.**
 
@@ -83,7 +83,7 @@ Our crochet bouquets at Crochet Wali are made using premium, colorfast yarn. The
 ### Care Instructions for Forever Flowers
 
 1. **Keep Away From Direct, Harsh Sunlight**
-While they don't need sunlight to survive, prolonged exposure to intense, direct UV rays can eventually cause the vibrant yarn colors to fade over the years. Display your [Crochet Flower Pot](/product/crochet-flower-pot) or bouquet in a bright room, but away from the direct glare of a window.
+While they don't need sunlight to survive, prolonged exposure to intense, direct UV rays can eventually cause the vibrant yarn colors to fade over the years. Display your [Crochet Flower Pot](/collections/crochet-bouquets) or bouquet in a bright room, but away from the direct glare of a window.
 
 2. **Dusting is Key**
 The only enemy of a crochet flower is household dust. Once a month, take a soft-bristled brush (like a clean makeup brush or a soft paintbrush) and gently dust the petals. Alternatively, you can use a hairdryer on the **cool, lowest setting** to blow away any accumulated dust.
@@ -95,7 +95,7 @@ If your bouquet accidentally gets a stain, do not throw it in the washing machin
 If the flowers get slightly squished during moving or storage, you can easily reshape them. The wire stems can be bent back into place, and you can gently manipulate the yarn petals with your fingers to restore their full, blooming appearance.
 
 ### The Perfect Sustainable Gift
-Because they last forever with minimal maintenance, a [Crochet Flower Bouquet](/product/crochet-bouquet) is a highly sustainable, eco-friendly gift. It serves as a permanent memory of anniversaries, graduations, or Valentine's Day. 
+Because they last forever with minimal maintenance, a [Crochet Flower Bouquet](/collections/crochet-bouquets) is a highly sustainable, eco-friendly gift. It serves as a permanent memory of anniversaries, graduations, or Valentine's Day. 
 
 Shop Crochet Wali today to find the perfect everlasting bouquet for your loved one.
     `,
@@ -115,22 +115,22 @@ We've all been there: it's a week before a major anniversary or birthday, and yo
 
 If you want to give a gift that genuinely evokes emotion, surprise, and appreciation, you need to step away from mass-produced items. The solution? A **Curated Handmade Gift Box**. 
 
-Here is why a [Handmade Personalized Gift Box](/product/handmade-gift-box) from Crochet Wali is the ultimate gift idea for your loved ones in India.
+Here is why a [Handmade Personalized Gift Box](/collections/crochet-gifts) from Crochet Wali is the ultimate gift idea for your loved ones in India.
 
 ### 1. It Feels Deeply Personal
 A curated gift box shows that you put thought into the present. Instead of handing over a single item in a standard shipping box, a handmade hamper is an experience. It includes beautifully arranged items nestled in premium packaging, often accompanied by a personalized handwritten note. It shows effort, and effort is what people appreciate most.
 
 ### 2. High-Quality, Aesthetic Items
 Our gift boxes are packed with our best-selling, aesthetic handmade products. You can customize the contents based on what she loves:
-- **For the Accessory Lover:** Include a set of our [Handmade Crochet Hair Clips](/product/crochet-hair-clips) and a beautiful [Crochet Claw Clip](/product/crochet-claw-clip).
-- **For the Romantic:** Pack the box with miniature crochet roses or a small [Handmade Crochet Flower Pot](/product/crochet-flower-pot).
-- **For the Practical Friend:** Add a set of durable, gentle [Crochet Rubber Bands](/product/crochet-rubber-bands) and a cute [Crochet Keychain](/product/crochet-keychain).
+- **For the Accessory Lover:** Include a set of our [Handmade Crochet Hair Clips](/collections/crochet-accessories) and a beautiful [Crochet Claw Clip](/collections/crochet-claw-clips).
+- **For the Romantic:** Pack the box with miniature crochet roses or a small [Handmade Crochet Flower Pot](/collections/crochet-bouquets).
+- **For the Practical Friend:** Add a set of durable, gentle [Crochet Rubber Bands](/collections/crochet-accessories) and a cute [Crochet Keychain](/collections/crochet-keychains).
 
 ### 3. Sustainable and Artisan-Made
 When you choose a handmade gift box, you are choosing slow fashion and sustainability. The items inside are crafted meticulously by independent artisans, meaning they are built to last and carry a unique charm that factory-made items simply cannot replicate.
 
 ### How to Order Your Custom Box
-At Crochet Wali, we make the process incredibly simple. You can order our pre-curated [Handmade Gift Box](/product/handmade-gift-box) directly from the website. If you want specific colors or a custom combination of items, simply reach out to us via email or WhatsApp after placing your order, and we will tailor the box exactly to your vision.
+At Crochet Wali, we make the process incredibly simple. You can order our pre-curated [Handmade Gift Box](/collections/crochet-gifts) directly from the website. If you want specific colors or a custom combination of items, simply reach out to us via email or WhatsApp after placing your order, and we will tailor the box exactly to your vision.
 
 Make your next anniversary or birthday unforgettable with a gift that truly matters.
     `,
@@ -151,34 +151,34 @@ When it comes to gifting your girlfriend, you want something that screams effort
 At **Crochet Wali**, we specialize in creating premium, lasting gifts. If you're searching for the perfect present, here are the **Top 10 Crochet Gift Ideas for Your Girlfriend** that will definitely win her heart.
 
 ### 1. The Classic Crochet Rose Bouquet
-Nothing says "I love you" quite like roses. Our [Crochet Rose Bouquet](/product/crochet-bouquet) is a stunning arrangement of handmade red and pink roses that will never wilt. It's the ultimate "forever flower" gift for anniversaries or Valentine's Day.
+Nothing says "I love you" quite like roses. Our [Crochet Rose Bouquet](/collections/crochet-bouquets) is a stunning arrangement of handmade red and pink roses that will never wilt. It's the ultimate "forever flower" gift for anniversaries or Valentine's Day.
 
 ### 2. Personalized Amigurumi Keychain
-Does she have a favorite animal or a beloved pet? A custom [Crochet Keychain](/product/crochet-keychain) shaped like a cat, dog, or even a cute mushroom is a small, everyday reminder of your love that she can carry everywhere.
+Does she have a favorite animal or a beloved pet? A custom [Crochet Keychain](/collections/crochet-keychains) shaped like a cat, dog, or even a cute mushroom is a small, everyday reminder of your love that she can carry everywhere.
 
 ### 3. Sunflower Crochet Pot
-For the girl who brings sunshine into your life, a [Crochet Sunflower Pot](/product/crochet-flower-pot) is perfect. It's an aesthetic piece of home decor for her desk or bedside table that requires zero watering.
+For the girl who brings sunshine into your life, a [Crochet Sunflower Pot](/collections/crochet-bouquets) is perfect. It's an aesthetic piece of home decor for her desk or bedside table that requires zero watering.
 
 ### 4. Aesthetic Crochet Hair Bows
-Coquette fashion is trending, and our [Handmade Crochet Bows](/product/crochet-bow) are the perfect accessory. They are soft, feminine, and instantly elevate any hairstyle.
+Coquette fashion is trending, and our [Handmade Crochet Bows](/collections/crochet-accessories) are the perfect accessory. They are soft, feminine, and instantly elevate any hairstyle.
 
 ### 5. Crochet Tulip Bouquet
-Tulips represent perfect and deep love. A vibrant [Crochet Tulip Bouquet](/product/crochet-bouquet) in pastel pinks and purples is a deeply romantic gesture that she can keep in her room forever.
+Tulips represent perfect and deep love. A vibrant [Crochet Tulip Bouquet](/collections/crochet-bouquets) in pastel pinks and purples is a deeply romantic gesture that she can keep in her room forever.
 
 ### 6. Handmade Gajra
-If she loves dressing up in ethnic wear, surprise her with a [Handmade Crochet Gajra](/product/crochet-gajra). It’s a sustainable, reusable alternative to fresh jasmine that she can wear for every Diwali and wedding function.
+If she loves dressing up in ethnic wear, surprise her with a [Handmade Crochet Gajra](/collections/crochet-gajra). It’s a sustainable, reusable alternative to fresh jasmine that she can wear for every Diwali and wedding function.
 
 ### 7. Custom Embroidery Hoop Art
 Want something highly personalized? Order a custom embroidery hoop featuring her name, an important date, or a tiny stitched portrait. It's a beautiful piece of wall art.
 
 ### 8. Crochet Claw Clips
-Practical yet beautiful. Our [Crochet Claw Clips](/product/crochet-claw-clip) are strong enough to hold thick hair and are adorned with cute crochet daisies. It's the perfect casual gift.
+Practical yet beautiful. Our [Crochet Claw Clips](/collections/crochet-claw-clips) are strong enough to hold thick hair and are adorned with cute crochet daisies. It's the perfect casual gift.
 
 ### 9. Daisy Crochet Hair Clips
-For a cottagecore vibe, gift her a set of delicate [Crochet Hair Clips](/product/crochet-hair-clips). They are lightweight and perfect for securing stray hairs while looking incredibly aesthetic.
+For a cottagecore vibe, gift her a set of delicate [Crochet Hair Clips](/collections/crochet-accessories). They are lightweight and perfect for securing stray hairs while looking incredibly aesthetic.
 
 ### 10. The Ultimate Handmade Gift Box
-Can't decide on just one? Go for our curated [Handmade Gift Box](/product/handmade-gift-box). You can pack it with a mix of hair accessories, a mini flower pot, and a keychain for the ultimate unboxing experience.
+Can't decide on just one? Go for our curated [Handmade Gift Box](/collections/crochet-gifts). You can pack it with a mix of hair accessories, a mini flower pot, and a keychain for the ultimate unboxing experience.
 
 **Final Tip:** When you order from Crochet Wali, you're not just buying a product—you're buying a piece of handmade art. [Shop our full collection today](/shop) to find the perfect gift for your girlfriend!
     `,
@@ -196,7 +196,7 @@ Can't decide on just one? Go for our curated [Handmade Gift Box](/product/handma
     content: `
 For centuries, fresh flower bouquets have been the go-to gift for birthdays, anniversaries, and apologies. But in recent years, a new trend has taken over the gifting industry: **Forever Flowers**.
 
-Specifically, [Handmade Crochet Flower Bouquets](/product/crochet-bouquet) have become the modern, aesthetic alternative to traditional floristry. But are they actually better than fresh flowers? Let's dive into why Crochet Wali believes handmade flowers are the superior choice.
+Specifically, [Handmade Crochet Flower Bouquets](/collections/crochet-bouquets) have become the modern, aesthetic alternative to traditional floristry. But are they actually better than fresh flowers? Let's dive into why Crochet Wali believes handmade flowers are the superior choice.
 
 ### 1. They Literally Last Forever
 The biggest drawback of a fresh bouquet is its fleeting lifespan. You spend thousands of rupees on a gorgeous arrangement, only to watch it turn brown, wilt, and die within 5 to 7 days. It’s depressing.
@@ -206,7 +206,7 @@ Crochet flowers, on the other hand, are immortal. Crafted from high-quality yarn
 ### 2. They Are Eco-Friendly and Sustainable
 The fresh cut-flower industry has a massive carbon footprint. Flowers are often grown with heavy pesticides, flown across the world in refrigerated planes, and wrapped in single-use plastics.
 
-By choosing a [Handmade Crochet Flower Pot](/product/crochet-flower-pot), you are opting for slow, sustainable fashion. Our flowers are handcrafted by artisans in India, producing zero waste and requiring no refrigeration or international flights. 
+By choosing a [Handmade Crochet Flower Pot](/collections/crochet-bouquets), you are opting for slow, sustainable fashion. Our flowers are handcrafted by artisans in India, producing zero waste and requiring no refrigeration or international flights. 
 
 ### 3. Cost-Effective in the Long Run
 While a premium handmade crochet bouquet might cost the same or slightly more than a high-end fresh bouquet initially, its value appreciates over time. You are investing in a piece of home decor that will sit on a desk or shelf for years, rather than something that will be thrown in the trash next week.
@@ -273,7 +273,7 @@ Gifting a [handmade gift](/collections/handmade-gifts) shows unparalleled though
 
 - **For Anniversaries:** A red crochet rose bouquet symbolizes eternal love.
 - **For Birthdays:** A customized mix of tulips and sunflowers.
-- **For Mother's Day:** A [crochet flower pot](/product/crochet-flower-pot) that she can keep on her bedside table forever.
+- **For Mother's Day:** A [crochet flower pot](/collections/crochet-bouquets) that she can keep on her bedside table forever.
 
 ### 5. Frequently Asked Questions (FAQ)
 
@@ -390,7 +390,7 @@ Creating a home that feels warm and inviting requires texture. While sleek moder
 ### Decorating Ideas by Room
 
 #### 1. The Home Office / Desk
-Working from home can get monotonous. A [Crochet Flower Pot](/product/crochet-flower-pot) (like a sunflower or tulip pot) sits perfectly next to a monitor. Unlike real indoor plants, it requires zero sunlight and zero watering, making it the ultimate hassle-free desk accessory.
+Working from home can get monotonous. A [Crochet Flower Pot](/collections/crochet-bouquets) (like a sunflower or tulip pot) sits perfectly next to a monitor. Unlike real indoor plants, it requires zero sunlight and zero watering, making it the ultimate hassle-free desk accessory.
 
 #### 2. The Bedroom
 To achieve a soft, Pinterest-inspired bedroom, replace standard artificial flowers with a premium [Handmade Crochet Bouquet](/collections/crochet-bouquets) displayed in a ceramic vase on your nightstand. It adds a pop of color and a deeply romantic, vintage aesthetic.
@@ -569,7 +569,7 @@ If you are tired of gifting generic coffee mugs or Amazon gift cards, here is ou
 While massive bridal bouquets can be expensive, a beautifully wrapped mini-bouquet (featuring 2-3 premium crochet flowers) falls perfectly under ₹1000. It’s the perfect [handmade gift](/collections/handmade-gifts) for a girlfriend or best friend.
 
 #### 2. Aesthetic Home Decor
-A handcrafted [Crochet Flower Pot](/product/crochet-flower-pot) is a fantastic desk accessory. It adds a pop of color to any home office or bedroom and requires absolutely zero maintenance.
+A handcrafted [Crochet Flower Pot](/collections/crochet-bouquets) is a fantastic desk accessory. It adds a pop of color to any home office or bedroom and requires absolutely zero maintenance.
 
 #### 3. Matching Accessory Sets
 You can bundle multiple smaller items to create a thoughtful hamper. For example, a matching set of a [Crochet Claw Clip](/collections/crochet-claw-clips) and a cute [Amigurumi Keychain](/collections/crochet-keychains) makes for a trendy, Pinterest-worthy gift box.

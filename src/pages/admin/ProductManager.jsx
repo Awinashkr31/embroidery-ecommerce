@@ -47,7 +47,7 @@ const ProductManager = () => {
         // 1. Basic Info
         name: '',
         brand: '',
-        category: 'Home Decor',
+        category: 'Flower Pot',
         subCategory: '',
         sku: '',
         
@@ -217,7 +217,26 @@ const ProductManager = () => {
                 keyFeatures: clothing.keyFeatures || [],
                 
                 // Variants
-                variants: product.variants || [], // New strict variants
+                variants: (() => {
+                    if (product.variants && product.variants.length > 0) {
+                        return product.variants;
+                    }
+                    const prodImgs = Array.isArray(product.images) && product.images.length > 0 
+                        ? product.images 
+                        : (product.image ? [product.image] : []);
+                    if (prodImgs.length > 0) {
+                        const padded = [...prodImgs];
+                        while (padded.length < 4) padded.push('');
+                        return [{
+                            id: crypto.randomUUID(),
+                            color: 'Standard',
+                            price: product.price || '',
+                            stock: product.stock !== undefined ? product.stock : 10,
+                            images: padded.slice(0, 4)
+                        }];
+                    }
+                    return [];
+                })(),
                 colorsInput: '', // Legacy support or just clearing it
                 
                 // Inventory
@@ -246,7 +265,7 @@ const ProductManager = () => {
             setFormData({
                 ...initialFormState,
                 isClothing: type === 'clothing',
-                category: type === 'clothing' ? 'Clothing' : 'Home Decor'
+                category: type === 'clothing' ? 'Clothing' : (categories[0] || 'Flower Pot')
             });
         }
         setActiveTab('general');
@@ -335,6 +354,36 @@ const ProductManager = () => {
              }
         }
 
+        // Auto-commit uncommitted tempVariant if images were uploaded in the editor
+        let currentVariants = [...formData.variants];
+        const hasTempImages = tempVariant.images.some(img => img && img.trim().length > 0);
+        if (hasTempImages && (editingVariantIndex > -1 || !currentVariants.some(v => v.color.toLowerCase() === (tempVariant.color.trim() || 'Standard').toLowerCase()))) {
+            const variantToSave = {
+                ...tempVariant,
+                id: tempVariant.id || crypto.randomUUID(),
+                color: tempVariant.color.trim() || 'Standard',
+                price: tempVariant.price || formData.sellingPrice,
+                stock: tempVariant.stock || formData.stockQuantity,
+                images: tempVariant.images
+            };
+            if (editingVariantIndex > -1) {
+                currentVariants[editingVariantIndex] = variantToSave;
+            } else {
+                currentVariants.push(variantToSave);
+            }
+        }
+
+        // If product has zero variants but legacy images exist, synthesize a default variant
+        if (currentVariants.length === 0 && formData.images.some(img => img)) {
+            currentVariants.push({
+                id: crypto.randomUUID(),
+                color: 'Standard',
+                price: formData.sellingPrice,
+                stock: finalStock,
+                images: formData.images
+            });
+        }
+
         const finalData = {
             name: formData.name,
             description: formData.detailedDescription,
@@ -342,13 +391,10 @@ const ProductManager = () => {
             originalPrice: formData.mrp,
             category: formData.category,
             images: (() => {
+                const varImgs = currentVariants.flatMap(v => v.images || []).filter(Boolean);
+                if (varImgs.length > 0) return varImgs;
                 const defaultImgs = formData.images.filter(img => img !== '');
                 if (defaultImgs.length > 0) return defaultImgs;
-                // Fallback to first variant image
-                if (formData.variants && formData.variants.length > 0) {
-                    const firstVarImg = formData.variants.find(v => v.images && v.images.length > 0 && v.images[0])?.images[0];
-                    if (firstVarImg) return [firstVarImg];
-                }
                 return [];
             })(), 
             stockQuantity: finalStock,
@@ -356,7 +402,7 @@ const ProductManager = () => {
             homepage_tags: formData.homepage_tags || [],
             fabric: formData.fabric, // Legacy top level
             clothingInformation: hasClothingData ? clothingInfo : null,
-            variants: formData.variants // Save the new variants structure
+            variants: currentVariants // Save the variants structure
         };
 
         try {
@@ -1136,62 +1182,6 @@ const ProductManager = () => {
                             {/* TAB: VARIANTS & MEDIA */}
                             {activeTab === 'variants' && (
                                 <div className="space-y-8">
-                                    {/* Main Product Images (Hidden if variants exist) */}
-                                    {formData.variants.length === 0 && (
-                                        <>
-                                            <div className="space-y-4">
-                                                <h3 className="section-title">Product Images</h3>
-                                                <p className="text-sm text-stone-500">Upload images for this product here. <span className="text-rose-600 font-medium">Note: If you add Color Variants below, this section will hide and you should upload images directly into the variants.</span></p>
-                                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                                    {formData.images.map((img, idx) => (
-                                                        <div key={idx} className="space-y-2">
-                                                            <div className="aspect-[2/3] bg-stone-100 rounded-xl border-2 border-dashed border-stone-200 flex items-center justify-center relative group overflow-hidden">
-                                                                {img ? (
-                                                                    <>
-                                                                        <img src={img} alt="" className="w-full h-full object-cover" />
-                                                                        <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                                                                            <button 
-                                                                                onClick={(e) => {
-                                                                                    e.stopPropagation();
-                                                                                    handleDownloadImage(img, `product-${idx}.jpg`);
-                                                                                }} 
-                                                                                className="bg-white/90 p-1.5 rounded-full text-stone-600 hover:text-stone-900 shadow-sm"
-                                                                                title="Download"
-                                                                            >
-                                                                                <Download className="w-4 h-4" />
-                                                                            </button>
-                                                                            <button 
-                                                                                onClick={(e) => {
-                                                                                    e.stopPropagation();
-                                                                                    const newImages = [...formData.images];
-                                                                                    newImages[idx] = '';
-                                                                                    setFormData({...formData, images: newImages});
-                                                                                }} 
-                                                                                className="bg-white/90 p-1.5 rounded-full text-red-500 hover:text-red-700 shadow-sm"
-                                                                                title="Delete"
-                                                                            >
-                                                                                <Trash2 className="w-4 h-4" />
-                                                                            </button>
-                                                                        </div>
-                                                                    </>
-                                                                ) : (
-                                                                    <div className="text-center text-stone-400">
-                                                                        <ImageIcon className="w-6 h-6 mx-auto mb-2 opacity-50" />
-                                                                        <span className="text-xs font-bold uppercase">View {idx + 1}</span>
-                                                                    </div>
-                                                                )}
-                                                                <label className="absolute inset-0 cursor-pointer">
-                                                                    <input type="file" className="hidden" onChange={e => handleImageSelect(e, 'images', idx)} />
-                                                                </label>
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                            <hr className="border-stone-100" />
-                                        </>
-                                    )}
-
                                     {/* Color Variants Manager */}
                                     <div className="space-y-6">
                                         <div className="flex justify-between items-center">
@@ -1289,15 +1279,13 @@ const ProductManager = () => {
                                                 <button 
                                                     type="button"
                                                     onClick={() => {
-                                                        if (!tempVariant.color) {
-                                                            addToast("Color name is required", "error");
-                                                            return;
-                                                        }
+                                                        const colorName = tempVariant.color.trim() || 'Standard';
                                                         
                                                         // Generate ID if new
                                                         const variantToSave = {
                                                             ...tempVariant,
                                                             id: tempVariant.id || crypto.randomUUID(),
+                                                            color: colorName,
                                                             // Filter empty images
                                                             images: tempVariant.images
                                                         };

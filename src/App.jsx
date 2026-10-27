@@ -134,6 +134,7 @@ function App() {
                     <Route path="users" element={<AdminUsers />} />
                     <Route path="design-requests" element={<AdminDesignRequests />} />
                     <Route path="notifications" element={<AdminNotifications />} />
+                    <Route path="messages" element={<AdminMessages />} />
                     <Route path="coupons" element={<AdminCoupons />} />
                     <Route path="settings" element={<Settings />} />
                   </Route>

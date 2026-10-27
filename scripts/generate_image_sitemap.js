@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
+import { sanitizeProductName, isDuplicateProduct } from '../src/utils/productSanitizer.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -32,7 +33,7 @@ async function generateImageSitemap() {
   console.log('Fetching products from Supabase...');
   const { data: products, error } = await supabase
     .from('products')
-    .select('id, name, description, variants, images');
+    .select('id, name, description, variants, images, clothing_information');
 
   if (error) {
     console.error('Error fetching products:', error);
@@ -44,8 +45,11 @@ async function generateImageSitemap() {
   xml += `        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">\n`;
 
   for (const product of products) {
-    const productSlug = slugify(product.name) || product.id;
-    const productUrl = `https://www.crochetwali.in/product/${productSlug}`;
+    if (isDuplicateProduct(product.id)) continue;
+    const cleanName = sanitizeProductName(product.name);
+    const cleanSlug = product.clothing_information?.slug || slugify(cleanName);
+    const productSlug = cleanSlug || product.id;
+    const productUrl = `https://www.crochetwali.in/product/${productSlug}-${product.id}`;
     
     // Collect all unique images from product and variants
     const allImages = new Set();
@@ -76,7 +80,7 @@ async function generateImageSitemap() {
         }
         xml += `    <image:image>\n`;
         xml += `      <image:loc>${absoluteImgUrl}</image:loc>\n`;
-        xml += `      <image:title>${product.name.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</image:title>\n`;
+        xml += `      <image:title>${cleanName.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</image:title>\n`;
         xml += `    </image:image>\n`;
       }
       xml += `  </url>\n`;

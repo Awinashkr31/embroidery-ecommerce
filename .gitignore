@@ -48,3 +48,8 @@ lighthouse.json
 live_lh*.json
 pagespeed.json
 lint_dashboard.json
+# Scratch & local utilities
+scratch/
+scratch.cjs
+.vercel
+.env*

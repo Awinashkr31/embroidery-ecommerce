@@ -103,6 +103,10 @@ const CustomDesign = () => {
             src={bannerImage || defaultHeroBanner} 
             alt="Handcrafted custom crochet & embroidery design workshop" 
             className="w-full h-full object-cover" 
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = defaultHeroBanner;
+            }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-stone-900 via-stone-900/60 to-transparent opacity-90" />
         </div>

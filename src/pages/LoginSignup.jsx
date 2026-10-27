@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useSettings } from '../context/SettingsContext';
-import SEO from '../components/SEO';
+import { FREE_SHIPPING_THRESHOLD } from '../constants/shippingConfig';
 import { AlertTriangle, Sparkles, Shield, Truck, RefreshCw, ChevronLeft } from 'lucide-react';
 
 const LoginSignup = () => {
@@ -13,7 +13,7 @@ const LoginSignup = () => {
 
   const PERKS = [
     { icon: Sparkles, text: 'Exclusive member-only deals' },
-    { icon: Truck,    text: `Free shipping on orders ₹${settings?.shipping_free_delivery_threshold || 499}+` },
+    { icon: Truck,    text: `Free shipping on orders ₹${settings?.shipping_free_delivery_threshold || FREE_SHIPPING_THRESHOLD}+` },
     { icon: Shield,   text: 'Easy 7-day returns' },
     { icon: RefreshCw,text: 'Real-time order tracking' },
   ];
@@ -65,9 +65,9 @@ const LoginSignup = () => {
           </button>
 
           {/* Title (no logo here — shown in white card instead) */}
-          <h1 className="relative z-10 text-2xl font-heading font-bold text-white text-center leading-snug mb-2">
+          <p className="relative z-10 text-2xl font-heading font-bold text-white text-center leading-snug mb-2" role="heading" aria-level="2">
             Welcome back 👋
-          </h1>
+          </p>
           <p className="relative z-10 text-stone-400 text-sm text-center max-w-xs">
             Sign in to track orders, save favourites &amp; get exclusive deals.
           </p>

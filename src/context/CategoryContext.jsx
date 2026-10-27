@@ -12,13 +12,14 @@ const slugify = (text) =>
     text.toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
 const DEFAULT_CATEGORIES = [
-    { id: 'crochet-gifts', label: 'Crochet Gifts' },
-    { id: 'crochet-flowers', label: 'Crochet Flowers' },
-    { id: 'custom-embroidery-hoops', label: 'Custom Embroidery Hoops' },
-    { id: 'handmade-gifts', label: 'Handmade Gifts' },
-    { id: 'gifts', label: 'Gifts' },
-    { id: 'home-decor', label: 'Home Decor' },
-    { id: 'accessories', label: 'Accessories' }
+    { id: 'flower-pot', label: 'Flower Pot' },
+    { id: 'gift-box', label: 'Gift Hampers' },
+    { id: 'bouquet', label: 'Bouquet' },
+    { id: 'handmade-keychain', label: 'Keychain & Bag Charm' },
+    { id: 'hair-accessories', label: 'Hair Accessories' },
+    { id: 'flowers', label: "Flower's" },
+    { id: 'toys', label: 'Toys' },
+    { id: 'bags--pouches', label: 'Bags & Pouches' }
 ];
 
 const CATEGORY_CACHE_MS = 10 * 60 * 1000; // 10 minutes
@@ -65,11 +66,14 @@ export const CategoryProvider = ({ children }) => {
                 const parsed = Array.isArray(data.setting_value) ? data.setting_value : JSON.parse(data.setting_value);
 
                 // Migrate legacy categories: if id === label (old format), assign a stable slug id
-                const migrated = parsed.map(cat => ({
-                    ...cat,
-                    id: cat.id === cat.label ? slugify(cat.label) : cat.id,
-                    label: cat.label.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ')
-                }));
+                // Ensure "Home Decor" is never present (owner confirmed on 2026-10-27 that Home Decor is NOT a category)
+                const migrated = parsed
+                    .filter(cat => slugify(cat.id) !== 'home-decor' && slugify(cat.label) !== 'home-decor')
+                    .map(cat => ({
+                        ...cat,
+                        id: cat.id === cat.label ? slugify(cat.label) : cat.id,
+                        label: cat.label.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ')
+                    }));
 
                 setCategories(migrated);
                 try {

@@ -140,14 +140,23 @@ const Dashboard = () => {
     const rtoOrders = orders.filter(o => ['ndr', 'rto', 'return_requested', 'return_approved'].includes(o.status?.toLowerCase())).length;
     
     // Average Delivery Time
-    const deliveredOrdersList = orders.filter(o => ['delivered', 'completed'].includes(o.status?.toLowerCase()));
-    const avgDeliveryTime = deliveredOrdersList.length > 0 
-      ? deliveredOrdersList.reduce((acc, o) => {
-          const start = new Date(o.created_at);
-          // Just approximation since actual delivered_at isn't guaranteed to be present on 'order' currently, we'd need logs
-          const end = new Date(); // Replace with actual delivered time if tracked
-          return acc + ((end - start) / (1000 * 60 * 60 * 24));
-        }, 0) / deliveredOrdersList.length 
+    // Only calculate from realistic recorded timestamps (o.delivered_at or o.updated_at)
+    const validDeliveredTimes = orders
+      .filter(o => ['delivered', 'completed'].includes(o.status?.toLowerCase()))
+      .map(o => {
+        if (!o.created_at) return null;
+        const endStr = o.delivered_at || o.updated_at;
+        if (!endStr) return null;
+        const start = new Date(o.created_at).getTime();
+        const end = new Date(endStr).getTime();
+        if (isNaN(start) || isNaN(end) || end <= start) return null;
+        const diffDays = (end - start) / (1000 * 60 * 60 * 24);
+        return (diffDays >= 0.5 && diffDays <= 30) ? diffDays : null;
+      })
+      .filter(t => t !== null);
+
+    const avgDeliveryTime = validDeliveredTimes.length > 0 
+      ? validDeliveredTimes.reduce((acc, t) => acc + t, 0) / validDeliveredTimes.length 
       : 0;
 
     const lowStock = products.filter(p => (p.stock_quantity ?? 0) < 5);

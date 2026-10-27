@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useCategories } from '../context/CategoryContext';
 import { useCart } from '../context/CartContext';
 import { useProducts } from '../context/ProductContext';
+import { useSettings } from '../context/SettingsContext';
+import { FREE_SHIPPING_THRESHOLD } from '../constants/shippingConfig';
 import { ChevronRight, Search, Leaf, Tag, ArrowRight, Sparkles } from 'lucide-react';
 import SEO from '../components/SEO';
 import { ProductCard } from '../components/ProductCard';
@@ -33,6 +35,7 @@ const Home = () => {
   const { categories } = useCategories();
   const { FREE_DELIVERY_THRESHOLD } = useCart();
   const { products, fetchProducts } = useProducts();
+  const { settings } = useSettings();
 
   useEffect(() => {
     fetchProducts();
@@ -72,11 +75,54 @@ const Home = () => {
     };
   }, [homeProducts]);
 
-  const heroSlides = [
-    { image: heroCrochet1, title: "Forever Flowers &\nHandcrafted Love", subtitle: "100% handmade crochet bouquets, accessories &..." },
-    { image: flowerHero, title: "Custom Keepsakes &\nPersonal Gifts", subtitle: "Made to order with premium botanical-dyed yarn." },
-    { image: tempHeroCrochet, title: "Festive Drops &\nNew Arrivals", subtitle: "Explore our latest collection of handmade treasures." }
-  ];
+  const heroSlides = useMemo(() => {
+    const rawSlides = settings?.home_slides_data;
+    let customSlides = [];
+    if (Array.isArray(rawSlides)) {
+      customSlides = rawSlides;
+    } else if (typeof rawSlides === 'string') {
+      try { customSlides = JSON.parse(rawSlides); } catch { customSlides = []; }
+    }
+
+    const defaultSlides = [
+      { image: heroCrochet1, title: "Forever Flowers &\nHandcrafted Love", subtitle: "100% handmade crochet bouquets, accessories &...", link: '/shop' },
+      { image: flowerHero, title: "Custom Keepsakes &\nPersonal Gifts", subtitle: "Made to order with premium botanical-dyed yarn.", link: '/shop' },
+      { image: tempHeroCrochet, title: "Festive Drops &\nNew Arrivals", subtitle: "Explore our latest collection of handmade treasures.", link: '/shop' }
+    ];
+
+    const isInvalidUrl = (url) => {
+      if (!url || typeof url !== 'string' || !url.trim()) return true;
+      // Stale deleted Supabase storage paths that return 400
+      if (url.includes('1770652799530') || url.includes('1770652749048') || url.includes('1770652725905') || url.includes('home_hero_image_1770014013753')) {
+        return true;
+      }
+      return false;
+    };
+
+    const validCustom = customSlides.filter(s => s && ((s.desktopImage && !isInvalidUrl(s.desktopImage)) || (s.mobileImage && !isInvalidUrl(s.mobileImage))));
+    if (validCustom.length > 0) {
+      return validCustom.map((s, idx) => ({
+        image: (!isInvalidUrl(s.desktopImage) ? s.desktopImage : s.mobileImage) || defaultSlides[idx % defaultSlides.length].image,
+        title: idx === 0 ? "Forever Flowers &\nHandcrafted Love" : (idx === 1 ? "Custom Keepsakes &\nPersonal Gifts" : "Festive Drops &\nNew Arrivals"),
+        subtitle: idx === 0 ? "100% handmade crochet bouquets, accessories &..." : (idx === 1 ? "Made to order with premium botanical-dyed yarn." : "Explore our latest collection of handmade treasures."),
+        link: s.link || '/shop'
+      }));
+    }
+
+    const s1 = !isInvalidUrl(settings?.home_slider_image_1) ? settings.home_slider_image_1 : null;
+    const s2 = !isInvalidUrl(settings?.home_slider_image_2) ? settings.home_slider_image_2 : null;
+    const s3 = !isInvalidUrl(settings?.home_slider_image_3) ? settings.home_slider_image_3 : null;
+
+    if (s1 || s2 || s3) {
+      const slides = [];
+      if (s1) slides.push({ image: s1, title: "Forever Flowers &\nHandcrafted Love", subtitle: "100% handmade crochet bouquets, accessories &...", link: '/shop' });
+      if (s2) slides.push({ image: s2, title: "Custom Keepsakes &\nPersonal Gifts", subtitle: "Made to order with premium botanical-dyed yarn.", link: '/shop' });
+      if (s3) slides.push({ image: s3, title: "Festive Drops &\nNew Arrivals", subtitle: "Explore our latest collection of handmade treasures.", link: '/shop' });
+      if (slides.length > 0) return slides;
+    }
+
+    return defaultSlides;
+  }, [settings]);
 
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
@@ -132,7 +178,22 @@ const Home = () => {
           {heroSlides.map((slide, idx) => (
             <div key={idx} className="relative flex shrink-0 w-[92vw] sm:w-[85vw] md:w-[600px] bg-stone-900 rounded-2xl overflow-hidden shadow-sm h-[320px] snap-center">
               {/* Background Image & Overlay */}
-              <img src={slide.image} loading={idx === 0 ? "eager" : "lazy"} fetchPriority={idx === 0 ? "high" : "auto"} decoding="async" className="absolute inset-0 w-full h-full object-cover z-0" alt={`${slide.title.replace(/\n/g, ' ')} - Crochet Wali`} />
+              <img 
+                src={slide.image} 
+                loading={idx === 0 ? "eager" : "lazy"} 
+                fetchPriority={idx === 0 ? "high" : "auto"} 
+                decoding="async" 
+                className="absolute inset-0 w-full h-full object-cover z-0" 
+                alt={`${slide.title.replace(/\n/g, ' ')} - Crochet Wali`} 
+                onError={(e) => {
+                  const fallbacks = [heroCrochet1, flowerHero, tempHeroCrochet];
+                  const fallback = fallbacks[idx % fallbacks.length];
+                  if (e.currentTarget.src !== fallback) {
+                    e.currentTarget.onerror = null;
+                    e.currentTarget.src = fallback;
+                  }
+                }}
+              />
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-10" />
 
               {/* Content Overlay */}
@@ -174,7 +235,7 @@ const Home = () => {
             <span className="text-2xl animate-[bounce_2s_ease-in-out_infinite]">🚚</span>
             <div>
               <p className="text-sm font-bold text-stone-900">Free Shipping</p>
-              <p className="text-xs text-stone-600">on orders over <span className="font-bold text-rose-900">₹{FREE_DELIVERY_THRESHOLD || 799}</span></p>
+              <p className="text-xs text-stone-600">on orders over <span className="font-bold text-rose-900">₹{FREE_SHIPPING_THRESHOLD}</span></p>
             </div>
           </div>
           <Link to="/shop" className="bg-rose-900 text-white text-xs font-bold px-4 py-2 rounded-full flex items-center gap-1 shadow-sm hover:bg-rose-800 transition-colors whitespace-nowrap relative z-10 hover:scale-105 active:scale-95 transition-transform">
@@ -200,7 +261,18 @@ const Home = () => {
             <Link key={cat.id || i} to={`/shop?category=${encodeURIComponent(cat.label)}`} className="flex flex-col items-center gap-1.5 group w-full md:w-[76px] shrink-0 snap-start">
               <div className="w-[15vw] h-[15vw] max-w-[64px] max-h-[64px] md:w-[76px] md:h-[76px] rounded-full p-[1px] md:p-[2px] bg-gradient-to-tr from-[#e5a0a6] to-[#f4d1d4] shadow-sm shrink-0">
                 <div className="w-full h-full rounded-full border-[2px] border-white overflow-hidden bg-stone-100">
-                  <img src={cat.image} loading="lazy" decoding="async" alt="" aria-hidden="true" className="w-full h-full object-cover" />
+                  <img 
+                    src={cat.image} 
+                    loading="lazy" 
+                    decoding="async" 
+                    alt="" 
+                    aria-hidden="true" 
+                    className="w-full h-full object-cover" 
+                    onError={(e) => {
+                      e.currentTarget.onerror = null;
+                      e.currentTarget.src = heroCrochet1;
+                    }}
+                  />
                 </div>
               </div>
               <span className="text-xs font-bold text-stone-900 text-center leading-tight whitespace-normal w-full px-0.5">

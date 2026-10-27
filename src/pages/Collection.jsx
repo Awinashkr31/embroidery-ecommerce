@@ -41,10 +41,10 @@ const COLLECTION_SEO_CONTENT = {
         text: 'Add a touch of handmade elegance to your everyday style with our crochet accessories india. Handcrafted with precision, our collection features beautifully designed crochet hair accessories, aesthetic crochet decor, and delicate fashion items. Crochet fashion is making a massive comeback, and our products blend traditional craftsmanship with cute aesthetic gifts. Whether you are dressing up for a casual day out or looking for a unique accessory to complete your outfit, our cute handmade accessories are the perfect choice. Made with premium yarns and intricate patterns, they are durable, stylish, and eco-friendly.',
     },
     'embroidery-hoops': {
-        title: 'Handmade Crochet Gifts Hoops India | Custom Embroidery Gifts',
-        description: 'Shop Handmade Crochet Gifts hoops, personalized embroidery hoops, floral embroidery hoops, and embroidery hoop art. Custom embroidery gifts and embroidery room decor in India.',
-        h1: 'Handmade Crochet Gifts Hoops',
-        text: 'Discover the finest Handmade Crochet Gifts hoops in India. Our custom embroidery hoop collection features personalized embroidery hoops with names, dates, and floral patterns. Each embroidery hoop gift is a piece of aesthetic embroidery art — perfect as embroidery room decor, embroidery wall decor, or an embroidery handmade gift. We offer floral embroidery hoops, embroidery name hoops, and embroidery decorative hoops for every occasion. Whether you need an embroidery anniversary gift, embroidery birthday gift, or embroidery wedding gift, our embroidery hoop art is handcrafted with premium quality threads and embroidery personalized decor that will impress.',
+        title: 'Handmade Keepsake Embroidery Hoops | Custom Wall Art | Crochet Wali',
+        description: 'Shop bespoke personalized embroidery hoops, wedding portrait stitching, and floral wall art handcrafted in New Delhi, India.',
+        h1: 'Handmade Keepsake Embroidery Hoops',
+        text: 'Discover our heirloom collection of custom embroidery hoops handcrafted in India. Featuring personalized names, significant dates, and delicate floral stitching on natural wooden frames, each hoop is a meaningful keepsake. Whether celebrating a wedding, anniversary, or welcoming a newborn, our custom embroidery hoop art turns your cherished memories into timeless handmade wall decor.',
     },
     'crochet-gifts': {
         title: 'Crochet Gifts India | Unique Handmade Gifts | Crochet Wali',

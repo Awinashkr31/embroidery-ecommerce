@@ -95,7 +95,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: null, // We will manually register in main.jsx to catch promise rejections
-      includeAssets: ['favicon.png', 'logo.png', 'robots.txt'],
+      includeAssets: ['favicon.ico', 'favicon-48x48.png', 'favicon-96x96.png', 'favicon-192.png', 'favicon-512.png', 'apple-touch-icon.png', 'logo.png', 'robots.txt'],
       workbox: {
         globIgnores: ['**/admin/**', '**/Admin*', '**/labelPrinter*', '**/Users*', '**/html2pdf*'],
         navigateFallbackDenylist: [/^\/sadmin/, /^\/api/]
@@ -116,12 +116,12 @@ export default defineConfig({
         categories: ['shopping', 'lifestyle'],
         icons: [
           {
-            src: '/favicon.png',
+            src: '/favicon-192.png',
             sizes: '192x192',
             type: 'image/png'
           },
           {
-            src: '/favicon.png',
+            src: '/favicon-512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any maskable'

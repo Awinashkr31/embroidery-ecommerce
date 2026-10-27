@@ -125,25 +125,23 @@ const Shop = () => {
     }, [isMobileFiltersOpen]);
 
     const allFilteredProducts = useMemo(() => {
-        let flattened = [];
-        products.forEach(prod => {
-            const validVariants = prod.variants?.filter(v => v.color && v.images && v.images.length > 0) || [];
-            if (validVariants.length > 0) {
-                validVariants.forEach(v => {
-                    flattened.push({
-                        ...prod,
-                        uniqueId: `${prod.id}-${slugify(v.color)}`,
-                        preselectedVariant: v,
-                        price: v.price ? Number(v.price) : prod.price,
-                    });
-                });
-            } else {
-                flattened.push({
-                    ...prod,
-                    uniqueId: String(prod.id),
-                    preselectedVariant: null,
-                });
+        // Problem 2 Fix: One card per product, not one card per colour variant
+        const targetProductParam = searchParams.get('product') || searchParams.get('productId');
+        const targetColorParam = searchParams.get('color');
+
+        const uniqueProducts = products.map(prod => {
+            let preselectedVariant = null;
+            if (targetProductParam && (String(prod.id) === String(targetProductParam) || prod.slug === targetProductParam)) {
+                if (targetColorParam && prod.variants) {
+                    preselectedVariant = prod.variants.find(v => slugify(v.color) === slugify(targetColorParam)) || null;
+                }
             }
+            return {
+                ...prod,
+                uniqueId: String(prod.id),
+                preselectedVariant,
+                price: Number(prod.price),
+            };
         });
 
         // Pre-calculate selected category slugs
@@ -159,23 +157,28 @@ const Shop = () => {
             });
         }
 
-        const targetProductParam = searchParams.get('product') || searchParams.get('productId');
-        const targetColorParam = searchParams.get('color');
-
         const isTarget = (item) => {
             if (!targetProductParam) return false;
             const matchesId = String(item.id) === String(targetProductParam);
             const matchesSlug = item.slug && String(item.slug).toLowerCase() === String(targetProductParam).toLowerCase();
             const matchesUnique = String(item.uniqueId).toLowerCase() === String(targetProductParam).toLowerCase();
-            if (!(matchesId || matchesSlug || matchesUnique)) return false;
-
-            if (targetColorParam && item.preselectedVariant?.color) {
-                return slugify(item.preselectedVariant.color) === slugify(targetColorParam);
-            }
-            return true;
+            return matchesId || matchesSlug || matchesUnique;
         };
 
-        return flattened.filter(product => {
+        return uniqueProducts.filter(product => {
+            // Problem 1 Fix: REAL category filtering
+            if (selectedCategories.length > 0) {
+                const prodCat = product.category || '';
+                const prodCatSlug = slugify(prodCat);
+                const matchesCategory = selectedSlugs.has(prodCatSlug) || 
+                    selectedCategories.some(catId => 
+                        catId === prodCat || 
+                        slugify(catId) === prodCatSlug || 
+                        slugify(catId) === slugify(prodCat)
+                    );
+                if (!matchesCategory) return false;
+            }
+
             // Price Range Filter
             if (priceRange !== 'all') {
                 if (priceRange === 'under-199' && product.price >= 199) return false;
@@ -189,20 +192,12 @@ const Shop = () => {
 
             return true;
         }).sort((a, b) => {
-            // 1. Same product clicked on card appears at the VERY top
+            // Target product clicked on card appears at the VERY top
             const aTarget = isTarget(a);
             const bTarget = isTarget(b);
             if (aTarget && !bTarget) return -1;
             if (!aTarget && bTarget) return 1;
 
-            // 2. Rest of products in that category come next
-            const aIsSelected = selectedCategories.length > 0 && selectedSlugs.has(slugify(a.category));
-            const bIsSelected = selectedCategories.length > 0 && selectedSlugs.has(slugify(b.category));
-
-            if (aIsSelected && !bIsSelected) return -1;
-            if (!aIsSelected && bIsSelected) return 1;
-
-            // 3. Other category products come afterwards (sorted by chosen sortBy)
             switch (sortBy) {
                 case 'price-low': return (a.price - b.price) || String(a.uniqueId).localeCompare(String(b.uniqueId));
                 case 'price-high': return (b.price - a.price) || String(a.uniqueId).localeCompare(String(b.uniqueId));
@@ -252,10 +247,32 @@ const Shop = () => {
         };
     }, [handleObserver, isMobile]);
 
-    const categories = [
-        { id: 'all', label: 'All Creations' },
-        ...contextCategories
-    ];
+    const categories = useMemo(() => {
+        const list = [{ id: 'all', label: 'All Creations' }];
+        const seen = new Set();
+        seen.add('all');
+
+        (contextCategories || []).forEach(cat => {
+            const slug = slugify(cat.label || cat.id);
+            if (!seen.has(slug)) {
+                seen.add(slug);
+                list.push(cat);
+            }
+        });
+
+        // Ensure every category used by any product is in the filter list (e.g. Home Decor)
+        (products || []).forEach(p => {
+            if (p.category) {
+                const slug = slugify(p.category);
+                if (!seen.has(slug)) {
+                    seen.add(slug);
+                    list.push({ id: slug, label: p.category });
+                }
+            }
+        });
+
+        return list;
+    }, [contextCategories, products]);
 
     const priceRanges = [
         { id: 'all', label: 'All Prices' },
@@ -690,12 +707,7 @@ const Shop = () => {
                                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 4xl:grid-cols-7 gap-x-4 gap-y-8 md:gap-x-8 md:gap-y-14 xl:gap-x-10 xl:gap-y-16 3xl:gap-x-12 3xl:gap-y-20 animate-fade-in">
                                     {paginatedProducts.map((product) => (
                                         <div key={product.uniqueId} className="animate-fade-up">
-                                            <Link 
-                                                to={`${getProductUrl(product)}${product.preselectedVariant ? `?color=${encodeURIComponent(product.preselectedVariant.color)}` : ''}`}
-                                                className="group block"
-                                            >
-                                                <ProductCardWithVariants product={product} toggleWishlist={toggleWishlist} isInWishlist={isInWishlist} />
-                                            </Link>
+                                            <ProductCardWithVariants product={product} toggleWishlist={toggleWishlist} isInWishlist={isInWishlist} />
                                         </div>
                                     ))}
                                 </div>

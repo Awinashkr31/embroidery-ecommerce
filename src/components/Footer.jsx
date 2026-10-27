@@ -37,7 +37,7 @@ const Footer = () => {
               that bring a touch of heritage and elegance to your special moments.
             </p>
             <div className="flex gap-3 pt-2">
-               <SocialLink href="https://www.instagram.com/embroidery_by__sana" icon={<Instagram size={16} />} label="Instagram" />
+               <SocialLink href="https://www.instagram.com/crochetwali.in" icon={<Instagram size={16} />} label="Instagram" />
                <SocialLink href="https://wa.me/917428013214" icon={<MessageCircle size={16} />} label="WhatsApp" />
                <SocialLink href="mailto:support@crochetwali.in" icon={<Mail size={16} />} label="Email" />
             </div>

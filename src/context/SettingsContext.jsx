@@ -1,5 +1,10 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { supabase } from '../config/supabase';
+import { 
+  FREE_SHIPPING_THRESHOLD, 
+  SHIPPING_CHARGE_BELOW_THRESHOLD, 
+  MINIMUM_ORDER_VALUE 
+} from '../constants/shippingConfig';
 
 const SettingsContext = createContext();
 
@@ -18,26 +23,26 @@ const DEFAULT_SETTINGS = {
         backgroundImage: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1920&q=80"
     },
     site_name: "Crochet Wali",
-    contact_email: "support@Crochet Wali.com",
-    contact_phone: "7428013214",
-    address: "Ashok Nagar, Delhi, Delhi",
+    contact_email: "support@crochetwali.in",
+    contact_phone: "+91 74280 13214",
+    address: "Hauz Khas Village, Near Fort, New Delhi, Delhi 110016",
     social_links: {
-        instagram: "https://instagram.com/Crochet Wali",
-        facebook: "https://facebook.com/Crochet Wali",
+        instagram: "https://instagram.com/crochetwali.in",
+        facebook: "https://facebook.com/crochetwali",
         whatsapp: "917428013214"
     },
     about: {
         title: "Our Story",
-        description: "We are passionate about bringing traditional embroidery to modern fashion."
+        description: "We are passionate about handcrafted crochet gifts, forever bouquets and artisanal keepsakes."
     },
     categories: [
-        { id: '1', name: "Traditional", link: "/category/traditional" },
-        { id: '2', name: "Modern", link: "/category/modern" },
-        { id: '3', name: "Bridal", link: "/category/bridal" }
+        { id: '1', name: "Bouquets", link: "/shop?category=Bouquet" },
+        { id: '2', name: "Accessories", link: "/shop?category=Hair+Accessories" },
+        { id: '3', name: "Keychains", link: "/shop?category=Keychain" }
     ],
     policies: {
-        return_policy: "We accept returns within 7 days of delivery. Custom items are non-returnable.",
-        shipping_policy: "Free shipping on orders over ₹1000. Standard delivery takes 3-5 business days.",
+        return_policy: "We accept replacements within 5 days of delivery with parcel unboxing video.",
+        shipping_policy: `Free shipping on orders over ₹${FREE_SHIPPING_THRESHOLD}. Standard delivery takes 4–7 business days across India.`,
         privacy_policy: "Your privacy is important to us. We do not share your data.",
         terms_of_service: "By using our site, you agree to these terms..."
     },
@@ -48,7 +53,7 @@ const DEFAULT_SETTINGS = {
     razorpay_key_id: "",
     razorpay_key_secret: "",
     admin_approval_required: false,
-    shipping_delivery_charge: 50,
+    shipping_delivery_charge: SHIPPING_CHARGE_BELOW_THRESHOLD,
     home_hero_image: "https://images.unsplash.com/photo-1620799140408-ed5341cd2431?q=80&w=1920",
     home_slides_data: [
         {
@@ -110,8 +115,8 @@ const DEFAULT_SETTINGS = {
         { id: 5, name: "Neha G.", rating: 5, text: "Custom design karwaya tha rakhi ke liye, Sana ne exactly waise hi banaya jaisa maine bola tha. Gift wrapping bhi bahut sundar thi. Highly recommend!", photo: "" },
         { id: 6, name: "Simran T.", rating: 5, text: "Rubber band set liya beti ke liye, itna soft aur comfortable hai. School mein sab friends ne bhi manga address. Quality ke liye price bilkul sahi hai.", photo: "" },
     ],
-    shipping_min_order_value: 200,
-    shipping_free_delivery_threshold: 499,
+    shipping_min_order_value: MINIMUM_ORDER_VALUE,
+    shipping_free_delivery_threshold: FREE_SHIPPING_THRESHOLD,
 };
 
 export const SettingsProvider = ({ children }) => {

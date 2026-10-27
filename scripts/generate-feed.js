@@ -3,6 +3,7 @@ import path from 'path';
 import { createClient } from '@supabase/supabase-js';
 import dotenv from 'dotenv';
 import { fileURLToPath } from 'url';
+import { sanitizeProductName, isDuplicateProduct } from '../src/utils/productSanitizer.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -34,7 +35,8 @@ const slugify = (text) => {
 };
 
 const getProductUrl = (product) => {
-    const slug = slugify(product.name);
+    const cleanName = sanitizeProductName(product.name);
+    const slug = slugify(cleanName);
     return `https://www.crochetwali.in/product/${slug}-${product.id}`;
 };
 
@@ -72,8 +74,10 @@ async function generateFeed() {
 `;
 
         products.forEach(product => {
+            if (isDuplicateProduct(product.id)) return;
+            const cleanName = sanitizeProductName(product.name);
             const url = getProductUrl(product);
-            const title = escapeXml(product.name);
+            const title = escapeXml(cleanName);
             const description = escapeXml(product.description || title);
             
             // Parse images

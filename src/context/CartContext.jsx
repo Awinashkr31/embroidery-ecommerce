@@ -3,6 +3,11 @@ import { supabase } from '../../config/supabase';
 import { useAuth } from './AuthContext';
 import { useToast } from './ToastContext';
 import { useSettings } from './SettingsContext';
+import { 
+  FREE_SHIPPING_THRESHOLD, 
+  SHIPPING_CHARGE_BELOW_THRESHOLD, 
+  MINIMUM_ORDER_VALUE 
+} from '../constants/shippingConfig';
 
 const CartContext = createContext();
 
@@ -351,7 +356,9 @@ export const CartProvider = ({ children }) => {
          availableStock = product.stock !== undefined ? product.stock : (product.stock_quantity !== undefined ? product.stock_quantity : 100);
     }
 
-    if (currentQty + 1 > availableStock) {
+    const addQty = Math.max(1, Number(product.quantity) || 1);
+
+    if (currentQty + addQty > availableStock) {
         addToast(`Cannot add more. Only ${availableStock} items in stock.`, 'error');
         return false;
     }
@@ -367,7 +374,7 @@ export const CartProvider = ({ children }) => {
       if (existingItem) {
         return prevCart.map(item =>
           (item.id === product.id && (item.variantId || null) === (product.variantId || null) && (item.selectedSize || null) === normalizedSize && (item.selectedColor || null) === normalizedColor)
-            ? { ...item, quantity: item.quantity + 1 }
+            ? { ...item, quantity: item.quantity + addQty }
             : item
         );
       }
@@ -377,7 +384,7 @@ export const CartProvider = ({ children }) => {
           selectedSize: normalizedSize,
           selectedColor: normalizedColor,
           variantId: product.variantId || null,
-          quantity: 1,
+          quantity: addQty,
           isSynced: false // Default to false until DB confirms
       }];
     });
@@ -389,7 +396,7 @@ export const CartProvider = ({ children }) => {
             const { error } = await supabase.rpc('upsert_cart_item', {
                  p_user_id: (currentUser.uid || currentUser.id),
                  p_product_id: product.id,
-                 p_quantity: 1,
+                 p_quantity: addQty,
                  p_selected_size: normalizedSize,
                  p_selected_color: normalizedColor,
                  p_variant_id: product.variantId || null
@@ -1040,9 +1047,9 @@ export const CartProvider = ({ children }) => {
       return Math.round(discount);
   })() : 0;
   // Shipping Rules
-  const MIN_ORDER_VALUE = Number(settings?.shipping_min_order_value) || 200;
-  const FREE_DELIVERY_THRESHOLD = Number(settings?.shipping_free_delivery_threshold) || 499;
-  const DELIVERY_CHARGE = Number(settings?.shipping_delivery_charge) || 50;
+  const MIN_ORDER_VALUE = Number(settings?.shipping_min_order_value) || MINIMUM_ORDER_VALUE;
+  const FREE_DELIVERY_THRESHOLD = Number(settings?.shipping_free_delivery_threshold) || FREE_SHIPPING_THRESHOLD;
+  const DELIVERY_CHARGE = Number(settings?.shipping_delivery_charge) || SHIPPING_CHARGE_BELOW_THRESHOLD;
   const COD_EXTRA_CHARGE = Number(settings?.cod_extra_charge) || 0;
   const COD_STATUS = settings?.cod_status || 'active';
   const CHATBOT_ENABLED = String(settings?.chatbot_enabled) === 'true';

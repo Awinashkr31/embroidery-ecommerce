@@ -41,7 +41,7 @@ const NewArrivals = () => {
 
   return (
     <div className="bg-white min-h-screen pb-24 font-body selection:bg-stone-900 selection:text-white pt-20">
-      <SEO title="New Arrivals" description="Discover the newest creations at Sana's Hand Embroidery." />
+      <SEO title="New Arrivals | Crochet Wali" description="Discover the newest handmade crochet creations and keepsake gifts at Crochet Wali." />
 
       <div className="container-custom">
         <div className="mb-6 pb-4 border-b border-stone-100 flex items-center justify-between">

@@ -11,6 +11,9 @@
     },
     "api/google-index.js": {
       "maxDuration": 10
+    },
+    "api/shop.js": {
+      "maxDuration": 10
     }
   },
   "redirects": [
@@ -45,6 +48,26 @@
         }
       ],
       "destination": "https://www.crochetwali.in/$1",
+      "permanent": true
+    },
+    {
+      "source": "/product/(.*)c8817e89-bd13-4b44-80d9-e93a7dfb8ce8(.*)",
+      "destination": "https://www.crochetwali.in/product/crochet-parandi-4fdb8975-eac9-4ecf-bb82-61526f2625a1",
+      "permanent": true
+    },
+    {
+      "source": "/product/(.*)b847a5ce-57c4-4b9b-862d-fb305a50c102(.*)",
+      "destination": "https://www.crochetwali.in/product/sunflower-keychain-a3464d61-a5da-4471-93d4-b7615de02e8f",
+      "permanent": true
+    },
+    {
+      "source": "/product/(.*)b93361d2-1709-421e-b98b-443bffd21cfb(.*)",
+      "destination": "https://www.crochetwali.in/product/crochet-wrist-gajra-bracelet-pair-f6439b6e-b495-4d17-95f2-7bcd7d7fdd26",
+      "permanent": true
+    },
+    {
+      "source": "/product/(.*)e6d2aa67-4a7d-4dfb-ad09-ec1fd25f6bc2(.*)",
+      "destination": "https://www.crochetwali.in/product/crochet-wrist-gajra-bracelet-pair-f6439b6e-b495-4d17-95f2-7bcd7d7fdd26",
       "permanent": true
     }
   ],
@@ -216,10 +239,34 @@
         {
           "type": "header",
           "key": "user-agent",
-          "value": "(.*)(bot|crawler|spider|facebookexternalhit|WhatsApp|Twitterbot|Pinterest|LinkedInBot|Googlebot|bingbot|Baiduspider|YandexBot)(.*)"
+          "value": "(.*)(bot|crawler|spider|facebookexternalhit|WhatsApp|Twitterbot|Pinterest|LinkedInBot|Googlebot|bingbot|Baiduspider|YandexBot|curl|wget|slurp|DuckDuckBot|PostmanRuntime|Screaming|Lighthouse|HeadlessChrome|Google-InspectionTool)(.*)"
         }
       ],
-      "destination": "/api/product.js"
+      "destination": "/api/product.js?slug=:slug*"
+    },
+    {
+      "source": "/product/:slug*",
+      "has": [
+        {
+          "type": "query",
+          "key": "crawler"
+        }
+      ],
+      "destination": "/api/product.js?slug=:slug*"
+    },
+    {
+      "source": "/product/:slug*",
+      "has": [
+        {
+          "type": "query",
+          "key": "bot"
+        }
+      ],
+      "destination": "/api/product.js?slug=:slug*"
+    },
+    {
+      "source": "/shop",
+      "destination": "/api/shop.js"
     },
     {
       "source": "/(.*)",

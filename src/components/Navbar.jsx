@@ -134,7 +134,7 @@ const Navbar = React.memo(() => {
 
       if (pathname.startsWith('/about')) return 'About';
       if (pathname.startsWith('/support')) return 'Support';
-      return 'Crochet Wali By Sana';
+      return 'Crochet Wali';
   };
 
   if (location.pathname === '/checkout') {

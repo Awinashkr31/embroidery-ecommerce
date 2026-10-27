@@ -2,6 +2,40 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
 import { Star, Heart, CheckCircle, Package, Truck, ArrowRight, Sparkles } from 'lucide-react';
+import { 
+  FREE_SHIPPING_THRESHOLD, 
+  SHIPPING_CHARGE_BELOW_THRESHOLD, 
+  DISPATCH_DAYS, 
+  DELIVERY_DAYS, 
+  EXPRESS_OPTION 
+} from '../constants/shippingConfig';
+
+const FAQS = [
+  {
+    q: "What is Crochet Wali?",
+    a: "Crochet Wali is India's premier destination for premium handmade crochet gifts, specializing in forever crochet flower bouquets, traditional gajras, cute keychains, and aesthetic home decor. Every piece is handcrafted with love by skilled artisans."
+  },
+  {
+    q: "Why buy Crochet gifts instead of fresh flowers?",
+    a: "Unlike fresh flowers that wither in a few days, handmade crochet flowers last forever. They act as a permanent keepsake and a memory of your special occasion, making them a more sustainable and meaningful gift for anniversaries, birthdays, and Valentine's Day."
+  },
+  {
+    q: "How are Crochet Gifts made?",
+    a: "Each crochet gift is meticulously hand-knit using premium quality, soft, and durable yarn. The process involves hours of careful looping, stitching, and shaping by skilled artisans to create lifelike flowers and adorable plushies."
+  },
+  {
+    q: "Are Crochet Flowers washable?",
+    a: "Yes, crochet flowers are washable! We recommend gentle hand washing with cold water and mild detergent. Do not wring them; simply press out the excess water and let them air dry flat to maintain their beautiful shape."
+  },
+  {
+    q: "Do Crochet Gifts make good presents for anniversaries?",
+    a: "Absolutely! A crochet rose bouquet or customized amigurumi pair makes for a deeply personal and unique anniversary gift. It symbolizes a love that lasts forever, just like the yarn used to create the gift."
+  },
+  {
+    q: "How long does shipping take and what are the rates?",
+    a: `All our products are handmade to order. Standard orders are dispatched within ${DISPATCH_DAYS}, with doorstep delivery in ${DELIVERY_DAYS} across India. We offer free shipping on orders over ₹${FREE_SHIPPING_THRESHOLD} (₹${SHIPPING_CHARGE_BELOW_THRESHOLD} shipping for orders below ₹${FREE_SHIPPING_THRESHOLD}). ${EXPRESS_OPTION}`
+  }
+];
 
 const LandingPage = () => {
   const landingSchema = {
@@ -18,48 +52,14 @@ const LandingPage = () => {
   const faqSchema = {
     "@context": "https://schema.org",
     "@type": "FAQPage",
-    "mainEntity": [
-      {
-        "@type": "Question",
-        "name": "What is Crochet Wali?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Crochet Wali is India's premier destination for premium handmade crochet gifts, specializing in forever crochet flower bouquets, traditional gajras, cute keychains, and aesthetic home decor. Every piece is handcrafted with love."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Why buy Crochet gifts instead of fresh flowers?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Unlike fresh flowers that wither in a few days, handmade crochet flowers last forever. They act as a permanent keepsake and a memory of your special occasion, making them a more sustainable and meaningful gift."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "How are Crochet Gifts made?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Each crochet gift is meticulously hand-knit using premium quality, soft, and durable yarn. The process involves hours of careful looping, stitching, and shaping by skilled artisans to create lifelike flowers and adorable plushies."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Are Crochet Flowers washable?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Yes, crochet flowers are washable! We recommend gentle hand washing with cold water and mild detergent. Do not wring them; simply press out the excess water and let them air dry to maintain their shape."
-        }
-      },
-      {
-        "@type": "Question",
-        "name": "Do Crochet Gifts make good presents for anniversaries?",
-        "acceptedAnswer": {
-          "@type": "Answer",
-          "text": "Absolutely! A crochet rose bouquet or customized amigurumi pair makes for a deeply personal and unique anniversary gift. It symbolizes a love that lasts forever, just like the yarn used to create the gift."
-        }
+    "mainEntity": FAQS.map(faq => ({
+      "@type": "Question",
+      "name": faq.q,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": faq.a
       }
-    ]
+    }))
   };
 
   return (
@@ -249,35 +249,12 @@ const LandingPage = () => {
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl md:text-4xl font-heading font-bold text-[#6e132b] mb-8 text-center">Frequently Asked Questions</h2>
           <div className="space-y-6">
-            
-            <div className="bg-white p-6 rounded-xl shadow-sm">
-              <h3 className="text-xl font-bold text-[#6e132b] mb-3">What is Crochet Wali?</h3>
-              <p className="text-stone-700 leading-relaxed">
-                <strong>Crochet Wali</strong> is India's premier destination for premium handmade crochet gifts, specializing in forever crochet flower bouquets, traditional gajras, cute keychains, and aesthetic home decor. Every piece is handcrafted with love by skilled artisans.
-              </p>
-            </div>
-
-            <div className="bg-white p-6 rounded-xl shadow-sm">
-              <h3 className="text-xl font-bold text-[#6e132b] mb-3">Why buy Crochet gifts instead of fresh flowers?</h3>
-              <p className="text-stone-700 leading-relaxed">
-                Unlike fresh flowers that wither in a few days, handmade crochet flowers last forever. They act as a permanent keepsake and a memory of your special occasion, making them a more sustainable and meaningful gift for anniversaries, birthdays, and Valentine's Day.
-              </p>
-            </div>
-
-            <div className="bg-white p-6 rounded-xl shadow-sm">
-              <h3 className="text-xl font-bold text-[#6e132b] mb-3">Are Crochet Flowers washable?</h3>
-              <p className="text-stone-700 leading-relaxed">
-                Yes, crochet flowers are washable! We recommend gentle hand washing with cold water and mild detergent. Do not wring them; simply press out the excess water and let them air dry flat to maintain their beautiful shape.
-              </p>
-            </div>
-
-            <div className="bg-white p-6 rounded-xl shadow-sm">
-              <h3 className="text-xl font-bold text-[#6e132b] mb-3">How long does shipping take?</h3>
-              <p className="text-stone-700 leading-relaxed">
-                Since all our products are handmade to order, please allow 2-4 days for crafting. Once dispatched, standard shipping across India takes approximately 4-7 business days depending on your location. We provide tracking information for all orders.
-              </p>
-            </div>
-
+            {FAQS.map((faq, idx) => (
+              <div key={idx} className="bg-white p-6 rounded-xl shadow-sm">
+                <h3 className="text-xl font-bold text-[#6e132b] mb-3">{faq.q}</h3>
+                <p className="text-stone-700 leading-relaxed">{faq.a}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>

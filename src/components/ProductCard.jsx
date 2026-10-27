@@ -109,6 +109,36 @@ export const ProductCard = React.memo(({
         return Number(product.price);
     }, [selectedVariant, product.price]);
 
+    // Price range for products whose variants genuinely differ in price:
+    // Task 3: Show lowest variant price as "₹X se" (from ₹X)
+    const priceRangeDisplay = useMemo(() => {
+        if (!hasVariants) return null;
+        const prices = validVariants
+            .map(v => v.price ? Number(v.price) : Number(product.price))
+            .filter(p => !isNaN(p) && p > 0);
+        if (prices.length <= 1) return null;
+        const min = Math.min(...prices);
+        const max = Math.max(...prices);
+        if (min === max) return null;
+        return `₹${min.toLocaleString('en-IN')} se`;
+    }, [hasVariants, validVariants, product.price]);
+
+    // Problem 6 Honest Badges:
+    // "New" = listed within last 30 days only
+    const isNew = useMemo(() => {
+        if (!product.created_at) return false;
+        const createdDate = new Date(product.created_at);
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        return createdDate >= thirtyDaysAgo;
+    }, [product.created_at]);
+
+    // "Bestseller" = actually among top-selling / flagged products
+    const isBestseller = Boolean(product.homepage_tags?.includes('bestseller') || product.featured);
+
+    // Strike-through MRP & discount only when genuine earlier price (< 35% discount)
+    const isGenuineDiscount = Boolean(product.discountPercentage > 0 && product.discountPercentage <= 35);
+
     const discountAmount = useMemo(() => {
         if (!product.originalPrice || product.originalPrice <= displayPrice) return 0;
         return product.originalPrice - displayPrice;
@@ -117,15 +147,8 @@ export const ProductCard = React.memo(({
     const baseProductUrl = getProductUrl(product);
     const regularProductUrl = selectedVariant?.color ? `${baseProductUrl}?color=${encodeURIComponent(selectedVariant.color)}` : baseProductUrl;
 
-    const homeTargetUrl = useMemo(() => {
-        if (!isHome) return null;
-        const categoryPart = product.category ? `category=${encodeURIComponent(product.category)}&` : '';
-        const productPart = `product=${encodeURIComponent(product.slug || product.id)}`;
-        const colorPart = selectedVariant?.color ? `&color=${encodeURIComponent(selectedVariant.color)}` : '';
-        return `/shop?${categoryPart}${productPart}${colorPart}`;
-    }, [isHome, product.category, product.slug, product.id, selectedVariant?.color]);
-
-    const cardLinkUrl = targetUrl || (isHome ? homeTargetUrl : regularProductUrl);
+    // Direct navigation to canonical product page across all views (Home, Shop, Collections)
+    const cardLinkUrl = targetUrl || regularProductUrl;
 
     const cartItem = useMemo(() => {
         if (!cart) return null;
@@ -209,14 +232,14 @@ export const ProductCard = React.memo(({
                         </div>
                     )}
 
-                    {/* Badges */}
+                    {/* Badges - Honest rules */}
                     <div className="absolute top-2 left-2 flex flex-col items-start gap-1 z-20">
-                        {product.homepage_tags?.includes('bestseller') && (
+                        {isBestseller && (
                             <span className="bg-[#fff0e1] text-[#92400e] text-[10px] md:text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
                                 Bestseller
                             </span>
                         )}
-                        {product.homepage_tags?.includes('new_arrival') && (
+                        {isNew && !isBestseller && (
                             <span className="bg-[#e11d48] text-white text-[10px] md:text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
                                 New
                             </span>
@@ -226,7 +249,7 @@ export const ProductCard = React.memo(({
                                 Premium
                             </span>
                         )}
-                        {product.discountPercentage > 0 && !product.homepage_tags?.includes('bestseller') && !product.homepage_tags?.includes('new_arrival') && (
+                        {isGenuineDiscount && !isBestseller && !isNew && (
                             <span className="bg-[#e11d48] text-white text-[10px] md:text-xs font-bold px-2.5 py-1 rounded-full shadow-sm">
                                 -{product.discountPercentage}% OFF
                             </span>
@@ -249,21 +272,44 @@ export const ProductCard = React.memo(({
                 </Link>
             </div>
 
-            {/* Product Info */}
+            {/* Product Info (Task 1 order: name -> category -> price/MRP/savings -> colour dots -> rating -> stock state) */}
             <div className="flex flex-col px-2 pt-2.5 pb-3 flex-1">
+                {/* Product Name */}
+                <Link to={cardLinkUrl} className="font-bold text-sm leading-tight text-stone-900 hover:text-rose-900 transition-colors line-clamp-2 min-h-[24px] py-0.5 flex items-center mb-1">
+                    {product.name}
+                </Link>
+
                 {/* Category */}
                 {product.category && (
-                    <span className="text-xs font-medium text-stone-500 mb-1 leading-tight line-clamp-2">
+                    <span className="text-xs font-medium text-stone-500 mb-2 leading-tight">
                         {product.category}
                     </span>
                 )}
 
-                {/* Product Name */}
-                <Link to={cardLinkUrl} className="font-bold text-sm leading-tight text-stone-900 hover:text-rose-900 transition-colors line-clamp-2 min-h-[24px] py-0.5 flex items-center mb-1.5">
-                    {product.name}
-                </Link>
+                {/* Price Row: Selling Price (bold), struck-through MRP (genuine only), discount / Save ₹X (genuine only) */}
+                <div className="flex flex-wrap items-baseline gap-1.5 mb-2">
+                    {priceRangeDisplay && !selectedVariant ? (
+                        <span className="text-lg font-extrabold text-stone-900">
+                            {priceRangeDisplay}
+                        </span>
+                    ) : (
+                        <span className="text-lg font-extrabold text-stone-900">
+                            ₹{displayPrice.toLocaleString('en-IN')}
+                        </span>
+                    )}
+                    {isGenuineDiscount && product.originalPrice && product.originalPrice > displayPrice && (
+                        <span className="text-xs font-medium text-stone-500 line-through">
+                            ₹{product.originalPrice.toLocaleString('en-IN')}
+                        </span>
+                    )}
+                    {isGenuineDiscount && discountAmount > 0 && (
+                        <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">
+                            Save ₹{discountAmount.toLocaleString('en-IN')}
+                        </span>
+                    )}
+                </div>
 
-                {/* Variant Swatches */}
+                {/* Variant Swatches (Colour Dots) */}
                 {hasVariants && (
                     <div className="flex flex-wrap items-center gap-1 mb-2" onClick={e => e.preventDefault()}>
                         {validVariants.map((variant, idx) => {
@@ -292,20 +338,17 @@ export const ProductCard = React.memo(({
                     </div>
                 )}
 
+                {/* Rating only when real reviews exist */}
+                {product.reviews && product.reviews.length > 0 && (
+                    <div className="flex items-center gap-1 text-xs text-stone-600 mb-2">
+                        <span className="text-amber-500">★</span>
+                        <span className="font-bold">{product.rating || '5.0'}</span>
+                        <span className="text-stone-400">({product.reviews.length})</span>
+                    </div>
+                )}
+
                 {/* Spacer */}
                 <div className="flex-1" />
-
-                {/* Price Row */}
-                <div className={`flex items-baseline gap-1.5 ${shouldShowAddButton ? 'mb-2.5' : 'mb-0'}`}>
-                    <span className="text-lg font-extrabold text-stone-900">
-                        ₹{displayPrice.toLocaleString('en-IN')}
-                    </span>
-                    {product.originalPrice && product.originalPrice > displayPrice && (
-                        <span className="text-xs font-medium text-stone-500 line-through">
-                            ₹{product.originalPrice.toLocaleString('en-IN')}
-                        </span>
-                    )}
-                </div>
 
                 {/* Add to Bag Button */}
                 {shouldShowAddButton && (
@@ -359,6 +402,8 @@ export const ProductCard = React.memo(({
                         >
                             {isAdding ? (
                                 <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                            ) : !product.inStock ? (
+                                'Out of Stock'
                             ) : (
                                 <>
                                     <ShoppingBag className="w-3.5 h-3.5" />

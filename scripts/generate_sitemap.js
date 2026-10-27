@@ -4,6 +4,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import { blogPosts } from '../src/pages/Blog/posts.js';
+import { sanitizeProductName, isDuplicateProduct } from '../src/utils/productSanitizer.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -105,8 +106,9 @@ async function generateSitemap() {
 
   // 3. Products (all active items)
   products.forEach(product => {
-    const cleanSlug = product.clothing_information?.slug || slugify(product.name);
-    // Include both canonical format with ID fallback so both old and new URLs are valid
+    if (isDuplicateProduct(product.id)) return;
+    const cleanName = sanitizeProductName(product.name);
+    const cleanSlug = product.clothing_information?.slug || slugify(cleanName);
     const productUrl = `https://www.crochetwali.in/product/${cleanSlug}-${product.id}`;
     const modDate = product.created_at ? new Date(product.created_at).toISOString().split('T')[0] : today;
 

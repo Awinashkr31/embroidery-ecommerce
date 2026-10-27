@@ -74,8 +74,7 @@ const Contact = () => {
       ],
       "opens": "10:00",
       "closes": "19:00"
-    },
-    "priceRange": "$$"
+    }
   };
 
   return (
@@ -157,7 +156,7 @@ const Contact = () => {
                <div className="absolute bottom-0 right-0 w-32 h-32 bg-rose-900 rounded-full blur-2xl translate-y-1/3 translate-x-1/3 opacity-40"></div>
               <h3 className="text-2xl font-heading font-bold mb-6">Connect on Social</h3>
               <div className="flex space-x-4">
-                <a href="https://www.instagram.com/Crochet Wali" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Instagram" className="p-4 bg-white/10 rounded-2xl hover:bg-white/20 transition-all hover:-translate-y-1 backdrop-blur-sm">
+                <a href="https://www.instagram.com/crochetwali.in" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Instagram" className="p-4 bg-white/10 rounded-2xl hover:bg-white/20 transition-all hover:-translate-y-1 backdrop-blur-sm">
                   <Instagram className="w-6 h-6" />
                 </a>
                 <a href="https://www.pinterest.com/Crochet Wali" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Pinterest" className="p-4 bg-white/10 rounded-2xl hover:bg-white/20 transition-all hover:-translate-y-1 backdrop-blur-sm flex items-center justify-center font-bold text-lg leading-none">

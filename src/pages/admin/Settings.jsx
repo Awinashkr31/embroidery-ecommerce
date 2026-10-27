@@ -25,16 +25,16 @@ const Settings = () => {
 
     const [settings, setSettings] = useState({
         // General
-        contactEmail: '',
-        contactPhone: '',
-        address: '',
-        facebookUrl: '',
-        instagramUrl: '',
+        contactEmail: 'support@crochetwali.in',
+        contactPhone: '+91 74280 13214',
+        address: 'Hauz Khas Village, Near Fort, New Delhi, Delhi 110016',
+        facebookUrl: 'https://facebook.com/crochetwali',
+        instagramUrl: 'https://instagram.com/crochetwali.in',
         twitterUrl: '',
 
         // Store / Shipping Settings
-        shipping_min_order_value: 200,
-        shipping_free_delivery_threshold: 499,
+        shipping_min_order_value: 99,
+        shipping_free_delivery_threshold: 999,
         shipping_delivery_charge: 50,
         cod_extra_charge: 0,
         cod_status: 'active',
@@ -103,6 +103,15 @@ const Settings = () => {
                         settingsObj[item.setting_key] = item.setting_value;
                     }
                 });
+                // Wire contact defaults if empty in database
+                if (!settingsObj.contactEmail) settingsObj.contactEmail = 'support@crochetwali.in';
+                if (!settingsObj.contactPhone) settingsObj.contactPhone = '+91 74280 13214';
+                if (!settingsObj.address) settingsObj.address = 'Hauz Khas Village, Near Fort, New Delhi, Delhi 110016';
+                if (!settingsObj.instagramUrl) settingsObj.instagramUrl = 'https://instagram.com/crochetwali.in';
+                if (settingsObj.cod_status === 'coming_soon') settingsObj.cod_status = 'active';
+                if (!settingsObj.shipping_free_delivery_threshold) settingsObj.shipping_free_delivery_threshold = 999;
+                if (!settingsObj.shipping_min_order_value) settingsObj.shipping_min_order_value = 99;
+
                 setSettings(prev => ({ ...prev, ...settingsObj }));
             }
         } catch (error) {
@@ -286,11 +295,20 @@ const Settings = () => {
 
     const homeSlides = React.useMemo(() => {
         try {
-            return Array.isArray(settings.home_slides_data) ? settings.home_slides_data : JSON.parse(settings.home_slides_data || '[]');
+            const raw = Array.isArray(settings.home_slides_data) ? settings.home_slides_data : JSON.parse(settings.home_slides_data || '[]');
+            if (raw && raw.length > 0) return raw;
         } catch {
-            return [];
+            // fallback
         }
-    }, [settings.home_slides_data]);
+        if (settings.home_slider_image_1 || settings.home_slider_image_2 || settings.home_slider_image_3) {
+            const list = [];
+            if (settings.home_slider_image_1) list.push({ id: 1, desktopImage: settings.home_slider_image_1, mobileImage: '', link: '/shop' });
+            if (settings.home_slider_image_2) list.push({ id: 2, desktopImage: settings.home_slider_image_2, mobileImage: '', link: '/shop' });
+            if (settings.home_slider_image_3) list.push({ id: 3, desktopImage: settings.home_slider_image_3, mobileImage: '', link: '/shop' });
+            if (list.length > 0) return list;
+        }
+        return [];
+    }, [settings.home_slides_data, settings.home_slider_image_1, settings.home_slider_image_2, settings.home_slider_image_3]);
 
     const handleSlideChange = (index, field, value) => {
         const slides = [...homeSlides];
@@ -536,7 +554,7 @@ const Settings = () => {
                                     value={settings.shipping_min_order_value}
                                     onChange={handleChange}
                                     isEditing={isEditing}
-                                    placeholder="200"
+                                    placeholder="99"
                                     type="number"
                                 />
                                 <EditableInput 
@@ -545,7 +563,7 @@ const Settings = () => {
                                     value={settings.shipping_free_delivery_threshold}
                                     onChange={handleChange}
                                     isEditing={isEditing}
-                                    placeholder="499"
+                                    placeholder="999"
                                     type="number"
                                 />
                                 <EditableInput 
@@ -671,250 +689,6 @@ const Settings = () => {
                                 {homeSlides.length === 0 && (
                                     <p className="text-sm text-stone-500 italic text-center py-4">No slides added yet.</p>
                                 )}
-                            </div>
-                        </div>
-
-
-                        {/* Promotional Banner */}
-                        <div className="bg-white p-6 rounded-xl border-0 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] space-y-6">
-                            <h3 className="font-bold text-lg text-stone-900 flex items-center gap-2">
-                                <ImageIcon className="w-5 h-5 text-rose-900" /> Secondary Promo Banner (Summer Edit)
-                            </h3>
-                            <div className="grid md:grid-cols-3 gap-4">
-                                <ImageUploader 
-                                    label="Promo Banner (Desktop 1920x400)"
-                                    url={settings.home_promo_banner_image} 
-                                    uploading={uploading}
-                                    onUpload={(e) => handleImageUpload(e, 'home_promo_banner_image')}
-                                    onDelete={() => handleImageDelete('home_promo_banner_image')}
-                                    isEditing={isEditing}
-                                />
-                                <ImageUploader 
-                                    label="Promo Banner (Mobile 800x260)"
-                                    url={settings.home_promo_banner_image_mobile} 
-                                    uploading={uploading}
-                                    onUpload={(e) => handleImageUpload(e, 'home_promo_banner_image_mobile')}
-                                    onDelete={() => handleImageDelete('home_promo_banner_image_mobile')}
-                                    isEditing={isEditing}
-                                />
-                                <EditableInput 
-                                    label="Banner Link URL"
-                                    name="home_promo_banner_link"
-                                    value={settings.home_promo_banner_link}
-                                    onChange={handleChange}
-                                    isEditing={isEditing}
-                                />
-                            </div>
-                        </div>
-
-                        {/* Premium Collections (Masonry) */}
-                        <div className="bg-white p-6 rounded-xl border-0 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] space-y-6">
-                            <h3 className="font-bold text-lg text-stone-900 flex items-center gap-2">
-                                <LayoutTemplate className="w-5 h-5 text-rose-900" /> Premium Collections (Grid)
-                            </h3>
-                            
-                            <div className="space-y-8">
-                                {/* Masonry 1 */}
-                                <div className="p-4 border border-stone-200 rounded-lg space-y-4">
-                                    <h4 className="font-bold text-sm text-stone-700">Left Tall Banner (Collection 1)</h4>
-                                    <div className="grid md:grid-cols-2 gap-4">
-                                        <ImageUploader 
-                                            label="Desktop Image (900x1200)"
-                                            url={settings.home_masonry_1_image} 
-                                            uploading={uploading}
-                                            onUpload={(e) => handleImageUpload(e, 'home_masonry_1_image')}
-                                            onDelete={() => handleImageDelete('home_masonry_1_image')}
-                                            isEditing={isEditing}
-                                        />
-                                        <ImageUploader 
-                                            label="Mobile Image (800x800)"
-                                            url={settings.home_masonry_1_image_mobile} 
-                                            uploading={uploading}
-                                            onUpload={(e) => handleImageUpload(e, 'home_masonry_1_image_mobile')}
-                                            onDelete={() => handleImageDelete('home_masonry_1_image_mobile')}
-                                            isEditing={isEditing}
-                                        />
-                                        <EditableInput 
-                                            label="Overlay Text"
-                                            name="home_masonry_1_text"
-                                            value={settings.home_masonry_1_text}
-                                            onChange={handleChange}
-                                            isEditing={isEditing}
-                                        />
-                                        <EditableInput 
-                                            label="Link URL"
-                                            name="home_masonry_1_link"
-                                            value={settings.home_masonry_1_link}
-                                            onChange={handleChange}
-                                            isEditing={isEditing}
-                                        />
-                                    </div>
-                                </div>
-
-                                {/* Masonry 2 */}
-                                <div className="p-4 border border-stone-200 rounded-lg space-y-4">
-                                    <h4 className="font-bold text-sm text-stone-700">Top Right Banner (Collection 2)</h4>
-                                    <div className="grid md:grid-cols-2 gap-4">
-                                        <ImageUploader 
-                                            label="Desktop Image (1200x800)"
-                                            url={settings.home_masonry_2_image} 
-                                            uploading={uploading}
-                                            onUpload={(e) => handleImageUpload(e, 'home_masonry_2_image')}
-                                            onDelete={() => handleImageDelete('home_masonry_2_image')}
-                                            isEditing={isEditing}
-                                        />
-                                        <ImageUploader 
-                                            label="Mobile Image (800x800)"
-                                            url={settings.home_masonry_2_image_mobile} 
-                                            uploading={uploading}
-                                            onUpload={(e) => handleImageUpload(e, 'home_masonry_2_image_mobile')}
-                                            onDelete={() => handleImageDelete('home_masonry_2_image_mobile')}
-                                            isEditing={isEditing}
-                                        />
-                                        <EditableInput 
-                                            label="Overlay Text"
-                                            name="home_masonry_2_text"
-                                            value={settings.home_masonry_2_text}
-                                            onChange={handleChange}
-                                            isEditing={isEditing}
-                                        />
-                                        <EditableInput 
-                                            label="Link URL"
-                                            name="home_masonry_2_link"
-                                            value={settings.home_masonry_2_link}
-                                            onChange={handleChange}
-                                            isEditing={isEditing}
-                                        />
-                                    </div>
-                                </div>
-
-                                {/* Masonry 3 */}
-                                <div className="p-4 border border-stone-200 rounded-lg space-y-4">
-                                    <h4 className="font-bold text-sm text-stone-700">Bottom Right Banner (Collection 3)</h4>
-                                    <div className="grid md:grid-cols-2 gap-4">
-                                        <ImageUploader 
-                                            label="Desktop Image (1200x800)"
-                                            url={settings.home_masonry_3_image} 
-                                            uploading={uploading}
-                                            onUpload={(e) => handleImageUpload(e, 'home_masonry_3_image')}
-                                            onDelete={() => handleImageDelete('home_masonry_3_image')}
-                                            isEditing={isEditing}
-                                        />
-                                        <ImageUploader 
-                                            label="Mobile Image (800x800)"
-                                            url={settings.home_masonry_3_image_mobile} 
-                                            uploading={uploading}
-                                            onUpload={(e) => handleImageUpload(e, 'home_masonry_3_image_mobile')}
-                                            onDelete={() => handleImageDelete('home_masonry_3_image_mobile')}
-                                            isEditing={isEditing}
-                                        />
-                                        <EditableInput 
-                                            label="Overlay Text"
-                                            name="home_masonry_3_text"
-                                            value={settings.home_masonry_3_text}
-                                            onChange={handleChange}
-                                            isEditing={isEditing}
-                                        />
-                                        <EditableInput 
-                                            label="Link URL"
-                                            name="home_masonry_3_link"
-                                            value={settings.home_masonry_3_link}
-                                            onChange={handleChange}
-                                            isEditing={isEditing}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Brand Highlights & Craftsmanship */}
-                        <div className="bg-white p-6 rounded-xl border-0 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] space-y-6">
-                            <h3 className="font-bold text-lg text-stone-900 flex items-center gap-2">
-                                <ImageIcon className="w-5 h-5 text-rose-900" /> Additional Banners
-                            </h3>
-                            
-                            <div className="grid md:grid-cols-2 gap-6">
-                                <div className="space-y-4 border border-stone-200 p-4 rounded-lg">
-                                    <h4 className="font-bold text-sm text-stone-700">Craftsmanship Banner</h4>
-                                    <div className="grid md:grid-cols-2 gap-4">
-                                        <ImageUploader 
-                                            label="Desktop (1920x820)"
-                                            url={settings.home_craftsmanship_image} 
-                                            uploading={uploading}
-                                            onUpload={(e) => handleImageUpload(e, 'home_craftsmanship_image')}
-                                            onDelete={() => handleImageDelete('home_craftsmanship_image')}
-                                            isEditing={isEditing}
-                                        />
-                                        <ImageUploader 
-                                            label="Mobile (800x800)"
-                                            url={settings.home_craftsmanship_image_mobile} 
-                                            uploading={uploading}
-                                            onUpload={(e) => handleImageUpload(e, 'home_craftsmanship_image_mobile')}
-                                            onDelete={() => handleImageDelete('home_craftsmanship_image_mobile')}
-                                            isEditing={isEditing}
-                                        />
-                                    </div>
-                                    <EditableInput 
-                                        label="Link URL"
-                                        name="home_craftsmanship_link"
-                                        value={settings.home_craftsmanship_link}
-                                        onChange={handleChange}
-                                        isEditing={isEditing}
-                                    />
-                                </div>
-                                <div className="space-y-4 border border-stone-200 p-4 rounded-lg">
-                                    <h4 className="font-bold text-sm text-stone-700">Premium Collection Banner</h4>
-                                    <div className="grid md:grid-cols-2 gap-4">
-                                        <ImageUploader 
-                                            label="Desktop (1920x820)"
-                                            url={settings.home_premium_banner_image} 
-                                            uploading={uploading}
-                                            onUpload={(e) => handleImageUpload(e, 'home_premium_banner_image')}
-                                            onDelete={() => handleImageDelete('home_premium_banner_image')}
-                                            isEditing={isEditing}
-                                        />
-                                        <ImageUploader 
-                                            label="Mobile (800x800)"
-                                            url={settings.home_premium_banner_image_mobile} 
-                                            uploading={uploading}
-                                            onUpload={(e) => handleImageUpload(e, 'home_premium_banner_image_mobile')}
-                                            onDelete={() => handleImageDelete('home_premium_banner_image_mobile')}
-                                            isEditing={isEditing}
-                                        />
-                                    </div>
-                                    <EditableInput 
-                                        label="Link URL"
-                                        name="home_premium_banner_link"
-                                        value={settings.home_premium_banner_link}
-                                        onChange={handleChange}
-                                        isEditing={isEditing}
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Brand Story Images */}
-                        <div className="bg-white p-6 rounded-xl border-0 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] space-y-6">
-                            <h3 className="font-bold text-lg text-stone-900 flex items-center gap-2">
-                                <ImageIcon className="w-5 h-5 text-rose-900" /> Brand Story Images
-                            </h3>
-                            <div className="grid md:grid-cols-2 gap-6">
-                                <ImageUploader 
-                                    label="Story Image 1 (Left)"
-                                    url={settings.home_brand_story_image_1} 
-                                    uploading={uploading}
-                                    onUpload={(e) => handleImageUpload(e, 'home_brand_story_image_1')}
-                                    onDelete={() => handleImageDelete('home_brand_story_image_1')}
-                                    isEditing={isEditing}
-                                />
-                                <ImageUploader 
-                                    label="Story Image 2 (Right)"
-                                    url={settings.home_brand_story_image_2} 
-                                    uploading={uploading}
-                                    onUpload={(e) => handleImageUpload(e, 'home_brand_story_image_2')}
-                                    onDelete={() => handleImageDelete('home_brand_story_image_2')}
-                                    isEditing={isEditing}
-                                />
                             </div>
                         </div>
                     </div>

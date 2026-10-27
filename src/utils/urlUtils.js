@@ -1,3 +1,5 @@
+import { sanitizeProductName } from './productSanitizer';
+
 /**
  * Converts a string into a URL-friendly slug.
  * @param {string} str 
@@ -12,24 +14,29 @@ export const slugify = (str) => {
 };
 
 /**
- * Generates an SEO-friendly URL slug for a product.
- * Format: purely human readable (no UUID)
+ * Generates the canonical URL for a product: /product/<slug>-<uuid>
+ * Aligns sitemap, internal links, and social crawlers on a single canonical format.
  * @param {Object} product 
  * @returns {string}
  */
 export const getProductUrl = (product) => {
     if (!product) return '#';
-    const slug = product.clothing_information?.slug || slugify(product.name);
-    return `/product/${slug}`;
+    const cleanName = sanitizeProductName(product.name);
+    const slug = product.clothing_information?.slug || slugify(cleanName);
+    return `/product/${slug}-${product.id}`;
 };
 
 /**
- * Legacy UUID extraction - kept for backwards compatibility if a user visits an old URL
+ * UUID extraction from slug.
+ * Supports /product/<slug>-<uuid>, /product/<uuid>, or trailing UUID.
  * @param {string} slug 
  * @returns {string|null}
  */
 export const extractProductIdFromSlug = (slug) => {
     if (!slug) return null;
+    const match = slug.match(/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i);
+    if (match) return match[1];
+
     const parts = slug.split('-');
     if (parts.length > 1) {
         const potentialId = parts.slice(-5).join('-');

@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useRef, useCallback } from 'react';
 import { supabase } from '../../config/supabase';
 import { deleteImage } from '../utils/uploadUtils';
+import { sanitizeProductName, isDuplicateProduct, getUnifiedPriceData, getGenuineDiscount, normalizeCategory } from '../utils/productSanitizer';
 
 const ProductContext = createContext();
 
@@ -20,19 +21,28 @@ const mapProductRecord = (p) => {
     if (typeof parsedVariants === 'string') {
         try { parsedVariants = JSON.parse(parsedVariants); } catch (e) { parsedVariants = []; }
     }
+    if ((!Array.isArray(parsedImages) || parsedImages.length === 0) && Array.isArray(parsedVariants) && parsedVariants.length > 0) {
+        parsedImages = parsedVariants.flatMap(v => v.images || []).filter(Boolean);
+    }
     
+    const cleanName = sanitizeProductName(p.name);
+    const { price, variants } = getUnifiedPriceData({ ...p, variants: parsedVariants });
+    const { originalPrice, discountPercentage } = getGenuineDiscount(price, p.original_price);
+    const category = normalizeCategory(p.category);
+
     return {
         ...p,
+        name: cleanName,
+        category,
+        price,
+        originalPrice,
+        discountPercentage,
         images: Array.isArray(parsedImages) ? parsedImages : [],
         image: (Array.isArray(parsedImages) && parsedImages.length > 0) ? parsedImages[0] : 'https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=500',
         inStock: (p.stock_quantity || 0) > 0,
         stock: p.stock_quantity,
         clothingInformation: p.clothing_information,
-        originalPrice: p.original_price,
-        discountPercentage: (p.original_price && p.original_price > p.price)
-            ? Math.round(((p.original_price - p.price) / p.original_price) * 100)
-            : 0,
-        variants: Array.isArray(parsedVariants) ? parsedVariants : [],
+        variants,
         homepage_tags: Array.isArray(p.homepage_tags) ? p.homepage_tags : []
     };
 };
@@ -95,7 +105,9 @@ export const ProductProvider = ({ children }) => {
 
             if (error) throw error;
 
-            const mappedProducts = (data || []).map(mapProductRecord);
+            const mappedProducts = (data || [])
+                .filter(p => !isDuplicateProduct(p))
+                .map(mapProductRecord);
 
             setProducts(mappedProducts);
             lastFetchTime.current = now;
