@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { getOptimizedImageUrl } from '../utils/imageUtils';
-import { Package, Heart, Search, ChevronDown, Sparkles, ChevronLeft, ChevronRight, SlidersHorizontal } from 'lucide-react';
+import { Package, Heart, Search, ChevronDown, Sparkles, ChevronLeft, ChevronRight, SlidersHorizontal, X } from 'lucide-react';
 import { useProducts } from '../context/ProductContext';
 import { useCategories } from '../context/CategoryContext';
 import { useWishlist } from '../context/WishlistContext';
@@ -21,7 +21,81 @@ const Shop = () => {
         fetchProducts();
     }, [fetchProducts]);
     const { categories: contextCategories } = useCategories();
-    const [searchParams] = useSearchParams();
+    const [searchParams, setSearchParams] = useSearchParams();
+    const urlSearchQuery = useMemo(() => {
+        return (searchParams.get('search') || searchParams.get('q') || '').trim();
+    }, [searchParams]);
+
+    const [searchInput, setSearchInput] = useState(urlSearchQuery);
+    const searchTimeoutRef = useRef(null);
+
+    // Keep searchInput in sync when URL query changes (e.g. from homepage search box or navigation)
+    useEffect(() => {
+        setSearchInput(urlSearchQuery);
+    }, [urlSearchQuery]);
+
+    useEffect(() => {
+        return () => {
+            if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+        };
+    }, []);
+
+    const handleSearchChange = (val) => {
+        setSearchInput(val);
+        if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+        searchTimeoutRef.current = setTimeout(() => {
+            const params = new URLSearchParams(searchParams);
+            const trimmed = val.trim();
+            if (trimmed) {
+                params.set('search', trimmed);
+                params.delete('q');
+            } else {
+                params.delete('search');
+                params.delete('q');
+            }
+            params.delete('page');
+            setSearchParams(params, { replace: true });
+        }, 250);
+    };
+
+    const handleSearchKeyDown = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+            const params = new URLSearchParams(searchParams);
+            const trimmed = searchInput.trim();
+            if (trimmed) {
+                params.set('search', trimmed);
+                params.delete('q');
+            } else {
+                params.delete('search');
+                params.delete('q');
+            }
+            params.delete('page');
+            setSearchParams(params, { replace: true });
+        }
+    };
+
+    const handleClearSearch = () => {
+        if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+        setSearchInput('');
+        const params = new URLSearchParams(searchParams);
+        params.delete('search');
+        params.delete('q');
+        params.delete('page');
+        setSearchParams(params, { replace: true });
+    };
+
+    const handleResetAll = () => {
+        if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+        setSearchInput('');
+        setSelectedCategories([]);
+        setPriceRange('all');
+        setInStockOnly(false);
+        setIsSaleOnly(false);
+        setSortBy('featured');
+        setSearchParams(new URLSearchParams(), { replace: true });
+    };
 
     const { toggleWishlist, isInWishlist } = useWishlist();
 
@@ -111,7 +185,7 @@ const Shop = () => {
 
     useEffect(() => {
         setCurrentPage(1);
-    }, [selectedCategories, sortBy, priceRange, inStockOnly, isSaleOnly]);
+    }, [selectedCategories, sortBy, priceRange, inStockOnly, isSaleOnly, urlSearchQuery]);
 
     useEffect(() => {
         if (isMobileFiltersOpen) {
@@ -127,8 +201,7 @@ const Shop = () => {
     const allFilteredProducts = useMemo(() => {
         // Problem 2 Fix: One card per product, not one card per colour variant
         const targetProductParam = searchParams.get('product') || searchParams.get('productId');
-        const targetColorParam = searchParams.get('color');
-        const searchQuery = (searchParams.get('search') || searchParams.get('q') || '').toLowerCase().trim();
+        const searchQuery = urlSearchQuery.toLowerCase();
 
         const uniqueProducts = products.map(prod => {
             let preselectedVariant = null;
@@ -191,12 +264,11 @@ const Shop = () => {
             if (inStockOnly && !product.inStock) return false;
             if (isSaleOnly && (!product.originalPrice || product.price >= product.originalPrice)) return false;
 
-            // Search Query Filter
+            // Search Query Filter: match product names (case-insensitive, partial matches allowed)
             if (searchQuery) {
                 const pName = (product.name || '').toLowerCase();
-                const pCat = (product.category || '').toLowerCase();
-                const pDesc = (product.description || '').toLowerCase();
-                const matchesSearch = pName.includes(searchQuery) || pCat.includes(searchQuery) || pDesc.includes(searchQuery);
+                const words = searchQuery.split(/\s+/).filter(Boolean);
+                const matchesSearch = pName.includes(searchQuery) || (words.length > 1 && words.every(w => pName.includes(w)));
                 if (!matchesSearch) return false;
             }
 
@@ -219,7 +291,7 @@ const Shop = () => {
                     return String(a.uniqueId).localeCompare(String(b.uniqueId));
             }
         });
-    }, [products, selectedCategories, contextCategories, priceRange, inStockOnly, isSaleOnly, sortBy, searchParams]);
+    }, [products, selectedCategories, contextCategories, priceRange, inStockOnly, isSaleOnly, sortBy, urlSearchQuery, searchParams]);
 
 
     const totalPages = Math.ceil(allFilteredProducts.length / ITEMS_PER_PAGE);
@@ -339,6 +411,42 @@ const Shop = () => {
                 
                 {/* AEO Semantic Heading for AI context */}
                 <h1 className="sr-only">Crochet Wali Shop – Buy Handmade Crochet Gifts, Flower Bouquets, Gajra & Hair Accessories Online India</h1>
+
+                {/* Mobile Search Bar */}
+                <div className="md:hidden mb-4">
+                    <div className="relative flex items-center">
+                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 pointer-events-none" />
+                        <input 
+                            type="text"
+                            placeholder="Search in collection..."
+                            value={searchInput}
+                            onChange={(e) => handleSearchChange(e.target.value)}
+                            onKeyDown={handleSearchKeyDown}
+                            className="w-full pl-9 pr-9 py-2.5 bg-white border border-stone-200 rounded-full text-sm text-stone-900 placeholder:text-stone-400 font-medium shadow-sm focus:outline-none focus:border-rose-900 focus:ring-1 focus:ring-rose-900 transition-all"
+                        />
+                        {searchInput && (
+                            <button
+                                type="button"
+                                onClick={handleClearSearch}
+                                aria-label="Clear search"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center text-stone-400 hover:text-stone-700 rounded-full hover:bg-stone-100 transition-colors"
+                            >
+                                <X className="w-3.5 h-3.5" />
+                            </button>
+                        )}
+                    </div>
+                    {urlSearchQuery && (
+                        <div className="flex items-center justify-between text-xs text-stone-500 mt-2 px-1">
+                            <span>Showing <strong className="text-stone-800">{allFilteredProducts.length}</strong> results for <strong className="text-stone-800">"{urlSearchQuery}"</strong></span>
+                            <button 
+                                onClick={handleClearSearch}
+                                className="text-rose-900 font-semibold underline underline-offset-2 hover:text-rose-700"
+                            >
+                                Clear search
+                            </button>
+                        </div>
+                    )}
+                </div>
 
                 {/* Mobile Category Circles */}
                 <div className="lg:hidden mb-4 overflow-x-auto no-scrollbar py-2 -mx-4 px-4">
@@ -652,11 +760,15 @@ const Shop = () => {
                         {/* Sticky Toolbar: Search, Sort, & Count */}
                         <div className="sticky top-[60px] lg:top-24 z-30 bg-white/80 md:bg-white/90 backdrop-blur-md py-2 md:py-3 mb-3 md:mb-8 border-b border-stone-200/60 shadow-sm md:shadow-[0_8px_30px_rgb(0,0,0,0.04)] md:border md:border-stone-100 hidden md:flex flex-row justify-between items-center gap-3 md:gap-4 transition-all duration-300 -mx-4 px-4 md:mx-0 md:px-6 md:rounded-2xl">
                              {/* Result Count (Desktop) */}
-                            <div className="hidden md:block text-sm font-medium text-stone-500 pl-4">
-                                Showing {allFilteredProducts.length} results
+                            <div className="hidden md:block text-sm font-medium text-stone-500 pl-4 whitespace-nowrap">
+                                {urlSearchQuery ? (
+                                    <span>Showing <strong className="text-stone-900">{allFilteredProducts.length}</strong> results for <strong className="text-stone-900">"{urlSearchQuery}"</strong></span>
+                                ) : (
+                                    <span>Showing {allFilteredProducts.length} results</span>
+                                )}
                             </div>
 
-                            <div className="flex items-center gap-3 w-full md:w-auto md:pr-4">
+                            <div className="flex items-center gap-3 w-full md:w-auto md:pr-4 flex-1 justify-end">
                                 {/* Mobile Filters Button */}
                                 <button
                                     onClick={() => setIsMobileFiltersOpen(true)}
@@ -672,10 +784,31 @@ const Shop = () => {
                                     )}
                                 </button>
 
-                                {/* Search Removed */}
+                                {/* Search Input on Desktop */}
+                                <div className="relative w-56 lg:w-72 group">
+                                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-stone-400 group-focus-within:text-rose-900 transition-colors pointer-events-none" />
+                                    <input 
+                                        type="text"
+                                        placeholder="Search in collection..."
+                                        value={searchInput}
+                                        onChange={(e) => handleSearchChange(e.target.value)}
+                                        onKeyDown={handleSearchKeyDown}
+                                        className="w-full pl-9 pr-8 py-2 bg-stone-100/70 border border-stone-200 rounded-lg md:rounded-full text-sm text-stone-900 placeholder:text-stone-400 font-medium focus:outline-none focus:border-rose-900 focus:bg-white focus:ring-1 focus:ring-rose-900 transition-all hover:border-stone-300"
+                                    />
+                                    {searchInput && (
+                                        <button
+                                            type="button"
+                                            onClick={handleClearSearch}
+                                            aria-label="Clear search"
+                                            className="absolute right-2.5 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center text-stone-400 hover:text-stone-700 rounded-full hover:bg-stone-200/50 transition-colors"
+                                        >
+                                            <X className="w-3.5 h-3.5" />
+                                        </button>
+                                    )}
+                                </div>
                                 
                                 {/* Sort */}
-                                <div className="relative group flex-1 md:min-w-[160px]">
+                                <div className="relative group min-w-[150px]">
                                     <select
                                         value={sortBy}
                                         onChange={(e) => setSortBy(e.target.value)}
@@ -702,15 +835,32 @@ const Shop = () => {
                                 ))}
                             </div>
                         ) : allFilteredProducts.length === 0 ? (
-                            <div className="text-center py-32">
-                                <Sparkles className="w-8 h-8 text-stone-300 mx-auto mb-4" />
-                                <h3 className="text-2xl font-heading text-stone-900 mb-2">No results found</h3>
-                                <button 
-                                    onClick={() => {setSelectedCategories([]); setPriceRange('all'); setInStockOnly(false); setIsSaleOnly(false);}}
-                                    className="text-rose-900 underline underline-offset-4 hover:text-rose-700 text-sm font-medium"
-                                >
-                                    Reset collection
-                                </button>
+                            <div className="text-center py-20 px-4 bg-white rounded-3xl border border-stone-100 shadow-sm my-6 animate-fade-in">
+                                <div className="w-14 h-14 bg-rose-50 text-rose-900 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <Search className="w-7 h-7 text-rose-900" />
+                                </div>
+                                <h3 className="text-2xl font-heading font-bold text-stone-900 mb-2">No matching products found</h3>
+                                <p className="text-stone-500 text-sm max-w-md mx-auto mb-6">
+                                    {urlSearchQuery 
+                                        ? `We couldn't find any products matching "${urlSearchQuery}". Try checking your spelling or clearing filters.`
+                                        : `No products match the selected filters. Try broadening your criteria.`}
+                                </p>
+                                <div className="flex flex-wrap items-center justify-center gap-3">
+                                    {urlSearchQuery && (
+                                        <button 
+                                            onClick={handleClearSearch}
+                                            className="px-5 py-2.5 bg-rose-900 text-white rounded-full text-sm font-semibold hover:bg-rose-800 transition-colors shadow-sm"
+                                        >
+                                            Clear Search
+                                        </button>
+                                    )}
+                                    <button 
+                                        onClick={handleResetAll}
+                                        className="px-5 py-2.5 bg-stone-100 text-stone-700 rounded-full text-sm font-semibold hover:bg-stone-200 transition-colors"
+                                    >
+                                        View Full Collection
+                                    </button>
+                                </div>
                             </div>
                         ) : (
                             <>

@@ -59,6 +59,15 @@ const Navbar = React.memo(() => {
     }
   }, [isSearchOpen]);
 
+  // Sync navbar search input with URL search parameter when on /shop
+  useEffect(() => {
+    if (location.pathname === '/shop') {
+      const params = new URLSearchParams(location.search);
+      const q = params.get('search') || params.get('q') || '';
+      setSearchQuery(q);
+    }
+  }, [location.search, location.pathname]);
+
   // Click Outside Handlers
   useEffect(() => {
     function handleClickOutside(event) {
