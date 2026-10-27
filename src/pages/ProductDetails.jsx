@@ -18,7 +18,7 @@ import {
     EXPRESS_OPTION, 
     SHIPPING_SUMMARY 
 } from '../constants/shippingConfig';
-import { getDuplicateRedirect, getGenuineDiscount, normalizeCategory } from '../utils/productSanitizer';
+import { getDuplicateRedirect, getGenuineDiscount, normalizeCategory, getProductPriceDisplay } from '../utils/productSanitizer';
 
 const getIntentDetails = (productName, category) => {
     const pName = (productName || '').toLowerCase();
@@ -231,6 +231,7 @@ const ProductDetails = () => {
         }
     }, [selectedColor, selectedVariant, product]);
 
+
     // Find the exact item in cart
     const cartItem = useMemo(() => {
         if (!product || !cart) return null;
@@ -320,9 +321,6 @@ const ProductDetails = () => {
             if (found) {
                  fetchReviews(found.id);
                  setSelectedImage(found.image);
-                 
-                 // SEO Update
-                 document.title = found.clothingInformation?.metaTitle || `${found.name} | Crochet Wali`;
 
                  // Enforce canonical /product/<slug>-<uuid> URL format via client-side replace
                  const canonicalSlug = `${slugify(found.name)}-${found.id}`;
@@ -338,7 +336,6 @@ const ProductDetails = () => {
                     setLoading(false);
                     fetchReviews(single.id);
                     setSelectedImage(single.image);
-                    document.title = single.clothingInformation?.metaTitle || `${single.name} | Crochet Wali`;
 
                     const canonicalSlug = `${slugify(single.name)}-${single.id}`;
                     if (slug !== canonicalSlug) {
@@ -708,6 +705,13 @@ const ProductDetails = () => {
     const handleColorChange = (color) => {
         setSelectedColor(color);
         setColorError(false);
+        const v = variants.find(item => (item.color || '').toLowerCase() === color.toLowerCase());
+        const vImgs = (v?.images || []).filter(img => typeof img === 'string' && img.trim().length > 5);
+        if (vImgs.length > 0) {
+            setSelectedImage(vImgs[0]);
+        } else if (product?.image) {
+            setSelectedImage(product.image);
+        }
         const newParams = new URLSearchParams(window.location.search);
         newParams.set('color', color);
         navigate(`?${newParams.toString()}`, { replace: true });
@@ -1436,7 +1440,8 @@ const ProductDetails = () => {
                             className="grid grid-cols-2 md:grid-cols-4 gap-4 px-4 lg:px-0 lg:gap-6 pb-6"
                         >
                             {relatedCategoryProducts.map(p => {
-                                const genuine = getGenuineDiscount(p.price, p.originalPrice);
+                                const priceInfo = getProductPriceDisplay(p);
+                                const genuine = getGenuineDiscount(priceInfo.price, p.originalPrice);
                                 return (
                                     <motion.div 
                                         key={p.id} 
@@ -1483,7 +1488,7 @@ const ProductDetails = () => {
                                                 {p.name}
                                             </h3>
                                             <div className="flex items-center flex-wrap gap-1.5 text-sm">
-                                                <span className="font-bold text-stone-900">₹{p.price.toLocaleString('en-IN')}</span>
+                                                <span className="font-bold text-stone-900">{priceInfo.text}</span>
                                                 {genuine.isGenuine && (
                                                     <>
                                                         <span className="text-stone-600 line-through text-xs">

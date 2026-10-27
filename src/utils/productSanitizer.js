@@ -212,3 +212,41 @@ export function normalizeCategory(category) {
     return trimmed;
 }
 
+/**
+ * Calculates the live display price and formatted text for product cards and rails.
+ * Rule: When a product's variants have differing prices, display the lowest price as "₹<min> se" (From ₹<min>).
+ * Otherwise, display the single price "₹<price>".
+ */
+export function getProductPriceDisplay(product) {
+    if (!product) return { text: '₹0', price: 0, isRange: false };
+    const variants = Array.isArray(product.variants) ? product.variants : [];
+    const validVariants = variants.filter(v => v && v.color);
+
+    if (validVariants.length > 1) {
+        const prices = validVariants
+            .map(v => (v.price !== undefined && v.price !== '' && v.price !== null) ? Number(v.price) : Number(product.price))
+            .filter(pr => !isNaN(pr) && pr > 0);
+        if (prices.length > 1) {
+            const min = Math.min(...prices);
+            const max = Math.max(...prices);
+            if (min !== max) {
+                return {
+                    text: `₹${min.toLocaleString('en-IN')} se`,
+                    price: min,
+                    isRange: true
+                };
+            }
+        }
+    }
+
+    const fallbackPrice = (validVariants.length > 0 && validVariants[0].price)
+        ? Number(validVariants[0].price)
+        : (Number(product.price) || 0);
+
+    return {
+        text: `₹${fallbackPrice.toLocaleString('en-IN')}`,
+        price: fallbackPrice,
+        isRange: false
+    };
+}
+

@@ -10,6 +10,7 @@ import { useProducts } from '../context/ProductContext';
 import { useToast } from '../context/ToastContext';
 import { getEstimatedDeliveryDate } from '../utils/dateUtils';
 import { getProductUrl } from '../utils/urlUtils';
+import { getProductPriceDisplay } from '../utils/productSanitizer';
 import FloatingInput from '../components/FloatingInput';
 
 const Cart = () => {
@@ -510,7 +511,7 @@ const Cart = () => {
                                             </Link>
                                             <Link to={getProductUrl(prod)} className="block">
                                                 <h4 className="text-[13px] font-medium text-stone-800 line-clamp-1 group-hover:text-rose-900 transition-colors leading-tight mb-1">{prod.name}</h4>
-                                                <p className="text-[14px] font-bold text-stone-900">₹{prod.price}</p>
+                                                <p className="text-[14px] font-bold text-stone-900">{getProductPriceDisplay(prod).text}</p>
                                             </Link>
                                             <button onClick={(e) => handleQuickAdd(e, prod)} className="absolute bottom-2 right-2 bg-[#F8F5F2] text-stone-800 hover:bg-rose-900 hover:text-white transition-all duration-250 w-7 h-7 rounded-full flex items-center justify-center shadow-sm active:scale-90">
                                                 <Plus className="w-4 h-4" />

@@ -5,6 +5,7 @@ import { useCart } from '../context/CartContext';
 import { useToast } from '../context/ToastContext';
 import { Link } from 'react-router-dom';
 import { getProductUrl } from '../utils/urlUtils';
+import { getProductPriceDisplay } from '../utils/productSanitizer';
 
 export const ProductCard = React.memo(({ 
     product, 
@@ -102,27 +103,24 @@ export const ProductCard = React.memo(({
         }
     }, [hasMultipleImages, allImages.length]);
 
+    const priceDisplayInfo = useMemo(() => getProductPriceDisplay(product), [product]);
+
     // Determine current display price
     const displayPrice = useMemo(() => {
         if (selectedVariant && selectedVariant.price) {
             return Number(selectedVariant.price);
         }
-        return Number(product.price);
-    }, [selectedVariant, product.price]);
+        return priceDisplayInfo.price;
+    }, [selectedVariant, priceDisplayInfo.price]);
 
     // Price range for products whose variants genuinely differ in price:
-    // Task 3: Show lowest variant price as "₹X se" (from ₹X)
+    // Show lowest variant price as "₹X se" (from ₹X)
     const priceRangeDisplay = useMemo(() => {
-        if (!hasVariants) return null;
-        const prices = validVariants
-            .map(v => v.price ? Number(v.price) : Number(product.price))
-            .filter(p => !isNaN(p) && p > 0);
-        if (prices.length <= 1) return null;
-        const min = Math.min(...prices);
-        const max = Math.max(...prices);
-        if (min === max) return null;
-        return `₹${min.toLocaleString('en-IN')} se`;
-    }, [hasVariants, validVariants, product.price]);
+        if (priceDisplayInfo.isRange) {
+            return priceDisplayInfo.text;
+        }
+        return null;
+    }, [priceDisplayInfo]);
 
     // Problem 6 Honest Badges:
     // "New" = listed within last 30 days only

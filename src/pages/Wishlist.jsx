@@ -5,6 +5,7 @@ import SEO from '../components/SEO';
 import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
 import { getProductUrl } from '../utils/urlUtils';
+import { getProductPriceDisplay } from '../utils/productSanitizer';
 
 const Wishlist = () => {
     const { wishlist, removeFromWishlist } = useWishlist();
@@ -119,7 +120,7 @@ const Wishlist = () => {
                                         </h3>
                                     </div>
                                     <div className="flex items-center flex-wrap gap-2">
-                                        <span className="text-sm font-bold text-stone-900">₹{product.price.toLocaleString()}</span>
+                                        <span className="text-sm font-bold text-stone-900">{getProductPriceDisplay(product).text}</span>
                                         {product.originalPrice && (
                                             <span className="text-xs text-stone-400 line-through">₹{product.originalPrice.toLocaleString()}</span>
                                         )}

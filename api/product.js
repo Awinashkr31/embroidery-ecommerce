@@ -399,6 +399,7 @@ export default async function handler(req, res) {
     if (product?.id === 'f6439b6e-b495-4d17-95f2-7bcd7d7fdd26') rawPrice = 349;
     if (product?.id === 'baa8e02e-b1a3-4b18-8006-f37ff660d575') rawPrice = 149;
     if (product?.id === '289ef890-cabb-42b7-be84-e06cf1545d80') rawPrice = 499;
+    if (product?.id === '79f79a0c-3ede-485b-b5a9-afff84b1e459') rawPrice = 299;
 
     const price = String(rawPrice);
     const { originalPrice, hasCompareAt } = getGenuineDiscount(rawPrice, product?.original_price);
@@ -457,7 +458,7 @@ export default async function handler(req, res) {
 
     // Descriptions & Titles
     const metaTitle = product?.clothing_information?.metaTitle?.trim();
-    const title = metaTitle || `${name} (Handmade) - ₹${price} | Crochet Wali`;
+    const title = (metaTitle && metaTitle.includes('₹')) ? metaTitle : `${name} (Handmade) - ₹${price} | Crochet Wali`;
 
     const metaDesc = product?.clothing_information?.metaDescription?.trim();
     const shortDesc = product?.clothing_information?.shortDescription?.trim();
