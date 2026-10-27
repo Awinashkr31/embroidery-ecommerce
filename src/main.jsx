@@ -43,6 +43,12 @@ window.addEventListener('beforeinstallprompt', (e) => {
   console.log('[PWA] beforeinstallprompt captured early');
 });
 
+// 🔄 Auto-recover from stale chunks after a redeployment
+window.addEventListener('vite:preloadError', (event) => {
+  console.warn('[Vite] Preload error detected (stale chunk after redeployment). Reloading...', event);
+  window.location.reload();
+});
+
 // Register Service Worker and gracefully handle errors to prevent Unhandled Promise Rejection crashes
 import { registerSW } from 'virtual:pwa-register';
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import SEO from '../../components/SEO';
@@ -8,19 +8,49 @@ import { ArrowLeft } from 'lucide-react';
 const BlogPost = () => {
     const { slug } = useParams();
     const navigate = useNavigate();
-    const [post, setPost] = useState(null);
+    const post = useMemo(() => blogPosts.find(p => p.slug === slug), [slug]);
 
     useEffect(() => {
         window.scrollTo(0, 0);
-        const found = blogPosts.find(p => p.slug === slug);
-        if (found) {
-            setPost(found);
-        } else {
+        if (!post) {
             navigate('/blog', { replace: true });
         }
-    }, [slug, navigate]);
+    }, [post, navigate]);
 
     if (!post) return null;
+
+    const articleUrl = `https://www.crochetwali.in/blog/${post.slug}`;
+    const imageUrl = post.image 
+        ? (post.image.startsWith('http') ? post.image : `https://www.crochetwali.in${post.image.startsWith('/') ? '' : '/'}${post.image}`)
+        : null;
+
+    const articleSchema = {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": post.title,
+        "description": post.metaDescription || post.excerpt,
+        "datePublished": post.date,
+        "dateModified": post.date,
+        "author": {
+            "@type": "Organization",
+            "name": "Crochet Wali",
+            "url": "https://www.crochetwali.in"
+        },
+        "publisher": {
+            "@type": "Organization",
+            "name": "Crochet Wali",
+            "logo": {
+                "@type": "ImageObject",
+                "url": "https://www.crochetwali.in/logo.png"
+            }
+        },
+        "url": articleUrl,
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": articleUrl
+        },
+        ...(imageUrl ? { "image": [imageUrl] } : {})
+    };
 
     return (
         <div className="min-h-screen bg-[#fdfbf7] pt-8 md:pt-12 pb-24 font-body">
@@ -28,31 +58,9 @@ const BlogPost = () => {
                 title={post.metaTitle}
                 description={post.metaDescription}
                 keywords={post.keywords}
-                image={post.image}
-                url={window.location.href}
-                schema={[{
-                    "@context": "https://schema.org",
-                    "@type": "Article",
-                    "headline": post.title,
-                    "image": [
-                        `https://www.crochetwali.in${post.image}`
-                    ],
-                    "datePublished": post.date,
-                    "dateModified": post.date,
-                    "author": [{
-                        "@type": "Person",
-                        "name": "Sana (Founder & Lead Artisan)",
-                        "url": "https://www.crochetwali.in/about"
-                    }],
-                    "publisher": {
-                        "@type": "Organization",
-                        "name": "Crochet Wali",
-                        "logo": {
-                            "@type": "ImageObject",
-                            "url": "https://www.crochetwali.in/logo.png"
-                        }
-                    }
-                }]}
+                image={imageUrl || "https://www.crochetwali.in/hero-gift.png"}
+                url={articleUrl}
+                schema={articleSchema}
             />
 
             <article className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">

@@ -11,7 +11,7 @@ const BlogIndex = () => {
                 title="Blog | Handmade Gifting & Crochet Guides | Crochet Wali"
                 description="Read the latest articles on handmade gifts, crochet care guides, and sustainable gifting ideas from Crochet Wali."
                 keywords="crochet blog, handmade gifts guide, crochet wali blog"
-                url={window.location.href}
+                url="https://www.crochetwali.in/blog"
             />
             
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

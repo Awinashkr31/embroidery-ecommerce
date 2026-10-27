@@ -48,7 +48,8 @@ function buildSeoHtml({
     reviewCount, 
     brand, 
     name, 
-    sku 
+    sku,
+    createdAt
 }) {
     const jsonLd = {
         "@context": "https://schema.org/",
@@ -68,6 +69,7 @@ function buildSeoHtml({
             "priceCurrency": "INR",
             "price": String(price),
             "priceValidUntil": "2027-12-31",
+            ...(createdAt ? { "validFrom": new Date(createdAt).toISOString().split('T')[0] } : {}),
             "itemCondition": "https://schema.org/NewCondition",
             "availability": inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
             "seller": {
@@ -325,7 +327,7 @@ export default async function handler(req, res) {
             const uuid = extractUuid(slug);
             if (uuid) {
                 const response = await fetch(
-                    `${supabaseUrl}/rest/v1/products?id=eq.${uuid}&select=id,name,description,images,price,original_price,category,stock_quantity,clothing_information,variants,active`,
+                    `${supabaseUrl}/rest/v1/products?id=eq.${uuid}&select=id,name,description,images,price,original_price,category,stock_quantity,clothing_information,variants,active,created_at`,
                     { headers }
                 );
                 if (response.ok) {
@@ -339,7 +341,7 @@ export default async function handler(req, res) {
             // 2. If not found by UUID, resolve by slug or name matching across active products
             if (!product) {
                 const response = await fetch(
-                    `${supabaseUrl}/rest/v1/products?select=id,name,description,images,price,original_price,category,stock_quantity,clothing_information,variants,active&active=eq.true`,
+                    `${supabaseUrl}/rest/v1/products?select=id,name,description,images,price,original_price,category,stock_quantity,clothing_information,variants,active,created_at&active=eq.true`,
                     { headers }
                 );
                 if (response.ok) {
@@ -458,7 +460,7 @@ export default async function handler(req, res) {
 
     // Descriptions & Titles
     const metaTitle = product?.clothing_information?.metaTitle?.trim();
-    const title = (metaTitle && metaTitle.includes('₹')) ? metaTitle : `${name} (Handmade) - ₹${price} | Crochet Wali`;
+    const title = metaTitle || `${name} (Handmade) - ₹${price} | Crochet Wali`;
 
     const metaDesc = product?.clothing_information?.metaDescription?.trim();
     const shortDesc = product?.clothing_information?.shortDescription?.trim();
@@ -498,7 +500,8 @@ export default async function handler(req, res) {
         reviewCount,
         brand,
         name,
-        sku
+        sku,
+        createdAt: product?.created_at
     });
 
     // Cache edge response for 24h, stale up to 7 days

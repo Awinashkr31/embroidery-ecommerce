@@ -19,19 +19,6 @@
             <g:identifier_exists>no</g:identifier_exists>
         </item>
         <item>
-            <g:id>12be210d-24a1-4581-8b35-cee50a72d3b8</g:id>
-            <g:title>Bow Hairclip</g:title>
-            <g:description>Handcrafted with love by skilled artisans, the Baw Hairclip is an exquisite fusion of traditional Indian embroidery and modern style. Adorn your hair with intricate patterns and delicate motifs, perfect for a wedding, special occasion, or everyday wear. A thoughtful gesture to yourself or a loved one, this hairclip is a true masterpiece of Indian craftsmanship.</g:description>
-            <g:link>https://www.crochetwali.in/product/bow-hairclip-12be210d-24a1-4581-8b35-cee50a72d3b8</g:link>
-            <g:image_link>https://yqtrlqkmitgnaehbawdm.supabase.co/storage/v1/object/public/images/products/1778561418212-f22ixf.webp</g:image_link>
-            <g:condition>new</g:condition>
-            <g:availability>in_stock</g:availability>
-            <g:price>119 INR</g:price>
-            <g:brand>Crochet Wali</g:brand>
-            <g:google_product_category>Apparel &amp; Accessories &gt; Clothing Accessories &gt; Hair Accessories &gt; Hair Pins, Claw Clips &amp; Clips</g:google_product_category>
-            <g:identifier_exists>no</g:identifier_exists>
-        </item>
-        <item>
             <g:id>9ecdb565-d7a1-4cf1-aa54-95bdf2ae43bf</g:id>
             <g:title>Crochet Flower Hair Clutcher</g:title>
             <g:description>Keep your hair pretty and gentle with this handmade crochet flower scrunchie in pink and white, finished with a soft green band. Each flower is carefully crocheted by hand, giving it a soft, textured finish that looks lovely in any hairstyle. The soft band holds your hair comfortably without pulling, making it a great pick for everyday styling, festive looks and gifting. A sweet handmade accessory that adds a playful pop of colour to your hair.</g:description>
@@ -84,6 +71,19 @@
             <g:identifier_exists>no</g:identifier_exists>
         </item>
         <item>
+            <g:id>859e8646-a02c-4a3f-8de7-a040b98a8479</g:id>
+            <g:title>Hair Tie</g:title>
+            <g:description>Add a cheerful handmade touch to your hairstyles with this set of crochet flower hair accessories, carefully crafted with soft, textured yarn. Each piece is decorated with a chunky three-dimensional crochet flower, showing off visible crochet stitches that highlight the handmade finish. The set includes royal blue, bright pink, deep red, and vibrant orange and yellow flowers — most with white crochet centres, while the pink flower has a distinctive green centre. These cute, colourful accessories are perfect for everyday hairstyles, festive looks and gifting, and also make sweet return gifts for birthdays.</g:description>
+            <g:link>https://www.crochetwali.in/product/hair-tie-859e8646-a02c-4a3f-8de7-a040b98a8479</g:link>
+            <g:image_link>https://yqtrlqkmitgnaehbawdm.supabase.co/storage/v1/object/public/images/products/1789454433433-n87mu.webp</g:image_link>
+            <g:condition>new</g:condition>
+            <g:availability>in_stock</g:availability>
+            <g:price>50 INR</g:price>
+            <g:brand>Crochet Wali</g:brand>
+            <g:google_product_category>Apparel &amp; Accessories &gt; Clothing Accessories &gt; Hair Accessories &gt; Hair Pins, Claw Clips &amp; Clips</g:google_product_category>
+            <g:identifier_exists>no</g:identifier_exists>
+        </item>
+        <item>
             <g:id>f6439b6e-b495-4d17-95f2-7bcd7d7fdd26</g:id>
             <g:title>Crochet Wrist Gajra Bracelet (Pair)</g:title>
             <g:description>Add a touch of traditional charm to your look with this Handmade Crochet Marigold Wrist Gajra Bracelet Set. Inspired by classic Indian floral jewelry, these beautiful handcrafted crochet bracelets are lightweight, comfortable, and perfect for festive and ethnic wear.
@@ -96,32 +96,6 @@ Upgrade your ethnic outfit with these eco-friendly, reusable, and stylish floral
             <g:condition>new</g:condition>
             <g:availability>in_stock</g:availability>
             <g:price>349 INR</g:price>
-            <g:brand>Crochet Wali</g:brand>
-            <g:google_product_category>Apparel &amp; Accessories &gt; Clothing Accessories &gt; Hair Accessories &gt; Hair Pins, Claw Clips &amp; Clips</g:google_product_category>
-            <g:identifier_exists>no</g:identifier_exists>
-        </item>
-        <item>
-            <g:id>26dcf7c3-ae22-410c-9e76-92c416898705</g:id>
-            <g:title>Crochet Flower Claw Hair Clip</g:title>
-            <g:description>Our artisans in India meticulously handcraft these stunning floral hair clips using delicate crochet threads, infusing each piece with love and care. Adorned with intricate flowers, these clips add a touch of elegance to any outfit. Whether you&apos;re dressing up or dressing down, these hair clips are a must-have accessory for any Indian woman&apos;s wardrobe.</g:description>
-            <g:link>https://www.crochetwali.in/product/crochet-flower-claw-hair-clip-26dcf7c3-ae22-410c-9e76-92c416898705</g:link>
-            <g:image_link>https://yqtrlqkmitgnaehbawdm.supabase.co/storage/v1/object/public/images/products/1778591771459-b51eeg.webp</g:image_link>
-            <g:condition>new</g:condition>
-            <g:availability>in_stock</g:availability>
-            <g:price>149 INR</g:price>
-            <g:brand>Crochet Wali</g:brand>
-            <g:google_product_category>Apparel &amp; Accessories &gt; Clothing Accessories &gt; Hair Accessories &gt; Hair Pins, Claw Clips &amp; Clips</g:google_product_category>
-            <g:identifier_exists>no</g:identifier_exists>
-        </item>
-        <item>
-            <g:id>859e8646-a02c-4a3f-8de7-a040b98a8479</g:id>
-            <g:title>Hair Tie</g:title>
-            <g:description>Add a cheerful handmade touch to your hairstyles with this set of crochet flower hair accessories, carefully crafted with soft, textured yarn. Each piece is decorated with a chunky three-dimensional crochet flower, showing off visible crochet stitches that highlight the handmade finish. The set includes royal blue, bright pink, deep red, and vibrant orange and yellow flowers — most with white crochet centres, while the pink flower has a distinctive green centre. These cute, colourful accessories are perfect for everyday hairstyles, festive looks and gifting, and also make sweet return gifts for birthdays.</g:description>
-            <g:link>https://www.crochetwali.in/product/hair-tie-859e8646-a02c-4a3f-8de7-a040b98a8479</g:link>
-            <g:image_link>https://yqtrlqkmitgnaehbawdm.supabase.co/storage/v1/object/public/images/products/1789454433433-n87mu.webp</g:image_link>
-            <g:condition>new</g:condition>
-            <g:availability>in_stock</g:availability>
-            <g:price>50 INR</g:price>
             <g:brand>Crochet Wali</g:brand>
             <g:google_product_category>Apparel &amp; Accessories &gt; Clothing Accessories &gt; Hair Accessories &gt; Hair Pins, Claw Clips &amp; Clips</g:google_product_category>
             <g:identifier_exists>no</g:identifier_exists>
@@ -153,19 +127,6 @@ Upgrade your ethnic outfit with these eco-friendly, reusable, and stylish floral
             <g:identifier_exists>no</g:identifier_exists>
         </item>
         <item>
-            <g:id>6b9057bf-fd2f-42da-9118-777c96540241</g:id>
-            <g:title>Double Flower Crochet Claw Clip</g:title>
-            <g:description>This exquisite Double Flower Crochet Claw Clip is a masterpiece of Indian embroidery, featuring delicate floral patterns and vibrant colors. Perfect for adding a touch of elegance to your hair, it&apos;s ideal for special occasions and everyday wear alike. Handcrafted with love and care, each piece is a unique work of art.</g:description>
-            <g:link>https://www.crochetwali.in/product/double-flower-crochet-claw-clip-6b9057bf-fd2f-42da-9118-777c96540241</g:link>
-            <g:image_link>https://yqtrlqkmitgnaehbawdm.supabase.co/storage/v1/object/public/images/products/1779996612778-qpo1bh.webp</g:image_link>
-            <g:condition>new</g:condition>
-            <g:availability>in_stock</g:availability>
-            <g:price>69 INR</g:price>
-            <g:brand>Crochet Wali</g:brand>
-            <g:google_product_category>Apparel &amp; Accessories &gt; Clothing Accessories &gt; Hair Accessories &gt; Hair Pins, Claw Clips &amp; Clips</g:google_product_category>
-            <g:identifier_exists>no</g:identifier_exists>
-        </item>
-        <item>
             <g:id>5a495bb8-1088-4f14-8f7b-e53d3e64e19e</g:id>
             <g:title>Gift Hamper</g:title>
             <g:description>Our exquisite gift hampers are meticulously crafted with love and care, featuring stunning Indian embroidery that adds an extra layer of elegance. Each hamper is carefully curated to evoke the warmth and beauty of Indian culture. Whether it&apos;s a wedding, a milestone birthday, or a thoughtful gesture, our gift hampers make a lasting impression. Handmade with premium materials and attention to detail, these hampers are a true reflection of Indian craftsmanship.</g:description>
@@ -176,6 +137,19 @@ Upgrade your ethnic outfit with these eco-friendly, reusable, and stylish floral
             <g:price>599 INR</g:price>
             <g:brand>Crochet Wali</g:brand>
             <g:google_product_category>Home &amp; Garden &gt; Decor &gt; Artificial Flora</g:google_product_category>
+            <g:identifier_exists>no</g:identifier_exists>
+        </item>
+        <item>
+            <g:id>6b9057bf-fd2f-42da-9118-777c96540241</g:id>
+            <g:title>Double Flower Crochet Claw Clip</g:title>
+            <g:description>This exquisite Double Flower Crochet Claw Clip is a masterpiece of Indian embroidery, featuring delicate floral patterns and vibrant colors. Perfect for adding a touch of elegance to your hair, it&apos;s ideal for special occasions and everyday wear alike. Handcrafted with love and care, each piece is a unique work of art.</g:description>
+            <g:link>https://www.crochetwali.in/product/double-flower-crochet-claw-clip-6b9057bf-fd2f-42da-9118-777c96540241</g:link>
+            <g:image_link>https://yqtrlqkmitgnaehbawdm.supabase.co/storage/v1/object/public/images/products/1779996612778-qpo1bh.webp</g:image_link>
+            <g:condition>new</g:condition>
+            <g:availability>in_stock</g:availability>
+            <g:price>69 INR</g:price>
+            <g:brand>Crochet Wali</g:brand>
+            <g:google_product_category>Apparel &amp; Accessories &gt; Clothing Accessories &gt; Hair Accessories &gt; Hair Pins, Claw Clips &amp; Clips</g:google_product_category>
             <g:identifier_exists>no</g:identifier_exists>
         </item>
         <item>
@@ -192,32 +166,6 @@ Upgrade your ethnic outfit with these eco-friendly, reusable, and stylish floral
             <g:identifier_exists>no</g:identifier_exists>
         </item>
         <item>
-            <g:id>bb664585-423f-41a5-ac58-44af04e2c526</g:id>
-            <g:title>Flower Hair Rubber Band</g:title>
-            <g:description>Elevate your child&apos;s style with our enchanting Flower hair rubber band, delicately hand-embroidered with intricate floral patterns. Made from high-quality materials, this charming accessory is both functional and fashionable. Perfect for everyday wear or special occasions, our Flower hair rubber band adds a touch of whimsy and elegance to any outfit.</g:description>
-            <g:link>https://www.crochetwali.in/product/flower-hair-rubber-band-bb664585-423f-41a5-ac58-44af04e2c526</g:link>
-            <g:image_link>https://yqtrlqkmitgnaehbawdm.supabase.co/storage/v1/object/public/images/products/1778600913275-meftse.webp</g:image_link>
-            <g:condition>new</g:condition>
-            <g:availability>in_stock</g:availability>
-            <g:price>59 INR</g:price>
-            <g:brand>Crochet Wali</g:brand>
-            <g:google_product_category>Apparel &amp; Accessories &gt; Clothing Accessories &gt; Hair Accessories &gt; Hair Pins, Claw Clips &amp; Clips</g:google_product_category>
-            <g:identifier_exists>no</g:identifier_exists>
-        </item>
-        <item>
-            <g:id>ff17a9aa-593b-40fd-bf33-5a73bc1b150d</g:id>
-            <g:title>Handmade Crochet Bow Keychain</g:title>
-            <g:description>This charming Handmade Crochet Bow Keychain is a testament to Indian craftsmanship, featuring delicate crochet details and a striking bow design. Perfect for adding a touch of elegance to your outfit, it&apos;s an ideal gift for friends and family. Wear it as a statement piece or attach it to your bag, the possibilities are endless.</g:description>
-            <g:link>https://www.crochetwali.in/product/handmade-crochet-bow-keychain-ff17a9aa-593b-40fd-bf33-5a73bc1b150d</g:link>
-            <g:image_link>https://yqtrlqkmitgnaehbawdm.supabase.co/storage/v1/object/public/images/products/1778558046902-bdkz34.webp</g:image_link>
-            <g:condition>new</g:condition>
-            <g:availability>in_stock</g:availability>
-            <g:price>149 INR</g:price>
-            <g:brand>Crochet Wali</g:brand>
-            <g:google_product_category>Apparel &amp; Accessories &gt; Handbag &amp; Wallet Accessories &gt; Keychains</g:google_product_category>
-            <g:identifier_exists>no</g:identifier_exists>
-        </item>
-        <item>
             <g:id>ea89c2ba-2dc9-4a8f-aab8-fbb3e4ea7bc7</g:id>
             <g:title>Crochet Bunny</g:title>
             <g:description>Adorable handmade crochet bunny doll crafted with soft white yarn and finished with a bright red bow, red outfit and matching details. Each bunny is carefully crocheted by hand, giving it a soft, textured finish full of character. The cute bunny features floppy ears, a sweet pink nose and soft plush texture, making it a lovely companion for little ones. A charming room décor piece and thoughtful handmade gift for birthdays and festive occasions.</g:description>
@@ -231,6 +179,19 @@ Upgrade your ethnic outfit with these eco-friendly, reusable, and stylish floral
             <g:identifier_exists>no</g:identifier_exists>
         </item>
         <item>
+            <g:id>26dcf7c3-ae22-410c-9e76-92c416898705</g:id>
+            <g:title>Crochet Flower Claw Hair Clip</g:title>
+            <g:description>Our artisans in India meticulously handcraft these stunning floral hair clips using delicate crochet threads, infusing each piece with love and care. Adorned with intricate flowers, these clips add a touch of elegance to any outfit. Whether you&apos;re dressing up or dressing down, these hair clips are a must-have accessory for any Indian woman&apos;s wardrobe.</g:description>
+            <g:link>https://www.crochetwali.in/product/crochet-flower-claw-hair-clip-26dcf7c3-ae22-410c-9e76-92c416898705</g:link>
+            <g:image_link>https://yqtrlqkmitgnaehbawdm.supabase.co/storage/v1/object/public/images/products/1778591771459-b51eeg.webp</g:image_link>
+            <g:condition>new</g:condition>
+            <g:availability>out_of_stock</g:availability>
+            <g:price>149 INR</g:price>
+            <g:brand>Crochet Wali</g:brand>
+            <g:google_product_category>Apparel &amp; Accessories &gt; Clothing Accessories &gt; Hair Accessories &gt; Hair Pins, Claw Clips &amp; Clips</g:google_product_category>
+            <g:identifier_exists>no</g:identifier_exists>
+        </item>
+        <item>
             <g:id>314035ce-5e96-451b-86a3-ec79043177f4</g:id>
             <g:title>Crochet Rose Round Bag</g:title>
             <g:description>Add a touch of handmade charm to your everyday look with this round crochet bag, decorated with a red rose and finished with a delicate pearl chain. Each bag is carefully crocheted by hand, giving it a soft, textured finish that feels as good as it looks. The pearl chain adds an elegant touch, making it perfect for outings, festive occasions and gifting. A timeless handmade accessory that pairs beautifully with both traditional and modern outfits.</g:description>
@@ -241,19 +202,6 @@ Upgrade your ethnic outfit with these eco-friendly, reusable, and stylish floral
             <g:price>1499 INR</g:price>
             <g:brand>Crochet Wali</g:brand>
             <g:google_product_category>Home &amp; Garden &gt; Decor &gt; Artificial Flora</g:google_product_category>
-            <g:identifier_exists>no</g:identifier_exists>
-        </item>
-        <item>
-            <g:id>6a2006cf-5e8d-45d6-a865-eb758f058383</g:id>
-            <g:title>Crochet Cherry Keychain</g:title>
-            <g:description>Our crochet cherry keychain is a testament to the beauty of Indian craftsmanship, featuring intricate hand-stitched cherry motifs on a delicate crochet base. Perfect for adding a touch of cultural flair to your everyday look, this charming keychain is a thoughtful gift or a stylish accessory for yourself. Whether you&apos;re running errands or attending a special occasion, this keychain is sure to make a statement.</g:description>
-            <g:link>https://www.crochetwali.in/product/crochet-cherry-keychain-6a2006cf-5e8d-45d6-a865-eb758f058383</g:link>
-            <g:image_link>https://yqtrlqkmitgnaehbawdm.supabase.co/storage/v1/object/public/images/products/1778559230707-2oz9g.webp</g:image_link>
-            <g:condition>new</g:condition>
-            <g:availability>in_stock</g:availability>
-            <g:price>99 INR</g:price>
-            <g:brand>Crochet Wali</g:brand>
-            <g:google_product_category>Apparel &amp; Accessories &gt; Handbag &amp; Wallet Accessories &gt; Keychains</g:google_product_category>
             <g:identifier_exists>no</g:identifier_exists>
         </item>
         <item>
@@ -296,6 +244,19 @@ Upgrade your ethnic outfit with these eco-friendly, reusable, and stylish floral
             <g:identifier_exists>no</g:identifier_exists>
         </item>
         <item>
+            <g:id>6af7ce17-9a06-423b-8e38-c2fba7d16efa</g:id>
+            <g:title>Blossom Pearl Crochet Keychain</g:title>
+            <g:description>Handcrafted with love, this Blossom Pearl Crochet Keychain showcases intricate Indian embroidery and a touch of subtle sparkle. Perfect for everyday wear or as a thoughtful gift, its delicate charm adds a touch of whimsy to any outfit. Made from high-quality materials, it&apos;s designed to last, making it a treasured possession for years to come.</g:description>
+            <g:link>https://www.crochetwali.in/product/blossom-pearl-crochet-keychain-6af7ce17-9a06-423b-8e38-c2fba7d16efa</g:link>
+            <g:image_link>https://yqtrlqkmitgnaehbawdm.supabase.co/storage/v1/object/public/images/products/1778557778392-c4xh3i.webp</g:image_link>
+            <g:condition>new</g:condition>
+            <g:availability>in_stock</g:availability>
+            <g:price>149 INR</g:price>
+            <g:brand>Crochet Wali</g:brand>
+            <g:google_product_category>Apparel &amp; Accessories &gt; Handbag &amp; Wallet Accessories &gt; Keychains</g:google_product_category>
+            <g:identifier_exists>no</g:identifier_exists>
+        </item>
+        <item>
             <g:id>baa8e02e-b1a3-4b18-8006-f37ff660d575</g:id>
             <g:title>Crochet Bunny Heart Keychain</g:title>
             <g:description>a cute handmade touch to your keys, handbag, backpack, or purse with this adorable crochet bunny heart keychain. Carefully handcrafted with soft cream-colored yarn, floppy bunny ears, a sweet pink nose, and a pink heart held at the front. The lightweight design makes it a charming everyday accessory and a thoughtful handmade gift.</g:description>
@@ -306,6 +267,19 @@ Upgrade your ethnic outfit with these eco-friendly, reusable, and stylish floral
             <g:price>149 INR</g:price>
             <g:brand>Crochet Wali</g:brand>
             <g:google_product_category>Apparel &amp; Accessories &gt; Handbag &amp; Wallet Accessories &gt; Keychains</g:google_product_category>
+            <g:identifier_exists>no</g:identifier_exists>
+        </item>
+        <item>
+            <g:id>bb664585-423f-41a5-ac58-44af04e2c526</g:id>
+            <g:title>Flower Hair Rubber Band</g:title>
+            <g:description>Elevate your child&apos;s style with our enchanting Flower hair rubber band, delicately hand-embroidered with intricate floral patterns. Made from high-quality materials, this charming accessory is both functional and fashionable. Perfect for everyday wear or special occasions, our Flower hair rubber band adds a touch of whimsy and elegance to any outfit.</g:description>
+            <g:link>https://www.crochetwali.in/product/flower-hair-rubber-band-bb664585-423f-41a5-ac58-44af04e2c526</g:link>
+            <g:image_link>https://yqtrlqkmitgnaehbawdm.supabase.co/storage/v1/object/public/images/products/1778601002161-98a76.webp</g:image_link>
+            <g:condition>new</g:condition>
+            <g:availability>in_stock</g:availability>
+            <g:price>59 INR</g:price>
+            <g:brand>Crochet Wali</g:brand>
+            <g:google_product_category>Apparel &amp; Accessories &gt; Clothing Accessories &gt; Hair Accessories &gt; Hair Pins, Claw Clips &amp; Clips</g:google_product_category>
             <g:identifier_exists>no</g:identifier_exists>
         </item>
         <item>
@@ -354,19 +328,6 @@ Whether you&apos;re celebrating a birthday, anniversary, Mother&apos;s Day, Vale
             <g:identifier_exists>no</g:identifier_exists>
         </item>
         <item>
-            <g:id>a3464d61-a5da-4471-93d4-b7615de02e8f</g:id>
-            <g:title>Sunflower Keychain</g:title>
-            <g:description>Adorn your home or gift it to a loved one with this exquisite sunflower keychain, hand-stitched with love by skilled artisans in India. This beautiful piece combines classic style with modern charm, making it a perfect addition to any room. Use it as a keychain, zipper pull, or even as a bag charm – the possibilities are endless!</g:description>
-            <g:link>https://www.crochetwali.in/product/sunflower-keychain-a3464d61-a5da-4471-93d4-b7615de02e8f</g:link>
-            <g:image_link>https://yqtrlqkmitgnaehbawdm.supabase.co/storage/v1/object/public/images/products/1778556158957-3sczma.webp</g:image_link>
-            <g:condition>new</g:condition>
-            <g:availability>in_stock</g:availability>
-            <g:price>119 INR</g:price>
-            <g:brand>Crochet Wali</g:brand>
-            <g:google_product_category>Apparel &amp; Accessories &gt; Handbag &amp; Wallet Accessories &gt; Keychains</g:google_product_category>
-            <g:identifier_exists>no</g:identifier_exists>
-        </item>
-        <item>
             <g:id>d66359e0-fb77-47c7-8840-08d9f8a73da2</g:id>
             <g:title>Crochet Chick Keychain</g:title>
             <g:description>Add a cute handmade touch to your everyday accessories with this adorable crochet chick keychain. Handcrafted with soft yellow yarn, this charming chick features tiny wings, orange feet, a cute beak, a red crochet cap detail, and a green stem accent. Each chick is carefully crocheted by hand, giving it a soft, textured finish full of character. Its lightweight design makes it perfect for keys, handbags, backpacks, pouches and gifting.</g:description>
@@ -410,6 +371,19 @@ Its delicate lace-style design and elegant handmade finish make it an ideal acce
             <g:identifier_exists>no</g:identifier_exists>
         </item>
         <item>
+            <g:id>6a2006cf-5e8d-45d6-a865-eb758f058383</g:id>
+            <g:title>Crochet Cherry Keychain</g:title>
+            <g:description>Our crochet cherry keychain is a testament to the beauty of Indian craftsmanship, featuring intricate hand-stitched cherry motifs on a delicate crochet base. Perfect for adding a touch of cultural flair to your everyday look, this charming keychain is a thoughtful gift or a stylish accessory for yourself. Whether you&apos;re running errands or attending a special occasion, this keychain is sure to make a statement.</g:description>
+            <g:link>https://www.crochetwali.in/product/crochet-cherry-keychain-6a2006cf-5e8d-45d6-a865-eb758f058383</g:link>
+            <g:image_link>https://yqtrlqkmitgnaehbawdm.supabase.co/storage/v1/object/public/images/products/1778559230707-2oz9g.webp</g:image_link>
+            <g:condition>new</g:condition>
+            <g:availability>in_stock</g:availability>
+            <g:price>99 INR</g:price>
+            <g:brand>Crochet Wali</g:brand>
+            <g:google_product_category>Apparel &amp; Accessories &gt; Handbag &amp; Wallet Accessories &gt; Keychains</g:google_product_category>
+            <g:identifier_exists>no</g:identifier_exists>
+        </item>
+        <item>
             <g:id>3dd45e41-0666-499b-83ef-9902139c772c</g:id>
             <g:title>Crochet Flower Bouquet Keychain</g:title>
             <g:description>A cute handmade crochet flower bouquet keychain featuring a beautiful white flower with a green center, wrapped in bright pink crochet yarn and finished with a decorative pink bow. Each flower is carefully crocheted by hand, giving it a soft, textured finish full of character. Lightweight and charming, it is perfect for adding a handmade floral touch to keys, handbags, backpacks and pouches. A sweet small gift for birthdays, anniversaries and festive occasions.</g:description>
@@ -444,7 +418,7 @@ Whether you&apos;re looking for a thoughtful gift or a unique piece of handmade 
             <g:title>Hair Ties (Set of 2)</g:title>
             <g:description>These exquisite hair ties are carefully crafted by skilled artisans in India, blending traditional techniques with modern style. Featuring intricate crochet flowers, delicate pearls, and a classic charm, they&apos;re perfect for adding a whimsical touch to any outfit. From casual gatherings to special occasions, these hair ties will make you feel like a true Indian beauty.</g:description>
             <g:link>https://www.crochetwali.in/product/hair-ties-set-of-2-0042901d-4aa2-4c1c-a854-5e8bc2ac272c</g:link>
-            <g:image_link>https://yqtrlqkmitgnaehbawdm.supabase.co/storage/v1/object/public/images/products/1778560433688-wmgqvq.webp</g:image_link>
+            <g:image_link>https://yqtrlqkmitgnaehbawdm.supabase.co/storage/v1/object/public/images/products/1784380368498-38pdm4.webp</g:image_link>
             <g:condition>new</g:condition>
             <g:availability>in_stock</g:availability>
             <g:price>149 INR</g:price>
@@ -466,19 +440,6 @@ Whether you&apos;re looking for a thoughtful gift or a unique piece of handmade 
             <g:identifier_exists>no</g:identifier_exists>
         </item>
         <item>
-            <g:id>80b55433-3b1f-43e2-9f82-dc7bad036a80</g:id>
-            <g:title>Single Flower Crochet Claw Hair Clip</g:title>
-            <g:description>This exquisite hair clip is handcrafted with precision and love by skilled artisans from India, featuring a intricate single flower motif in crochet embroidery. Perfect for adding a touch of understated elegance to any outfit, whether you&apos;re dressing up or dressing down. Its delicate charm is sure to complement your natural beauty.</g:description>
-            <g:link>https://www.crochetwali.in/product/single-flower-crochet-claw-hair-clip-80b55433-3b1f-43e2-9f82-dc7bad036a80</g:link>
-            <g:image_link>https://yqtrlqkmitgnaehbawdm.supabase.co/storage/v1/object/public/images/products/1778592193810-qtqzur.webp</g:image_link>
-            <g:condition>new</g:condition>
-            <g:availability>in_stock</g:availability>
-            <g:price>49 INR</g:price>
-            <g:brand>Crochet Wali</g:brand>
-            <g:google_product_category>Apparel &amp; Accessories &gt; Clothing Accessories &gt; Hair Accessories &gt; Hair Pins, Claw Clips &amp; Clips</g:google_product_category>
-            <g:identifier_exists>no</g:identifier_exists>
-        </item>
-        <item>
             <g:id>f83d87f0-631f-47a9-a2bd-9f354254c1b4</g:id>
             <g:title>Crochet Sunflower Hair Clip</g:title>
             <g:description>Brighten up your hairstyle with this handmade crochet sunflower hair clip, complete with a green leaf. Each sunflower is carefully crocheted by hand, giving it a soft, textured finish with a cheerful, sunny look. The sturdy clip holds your hair gently in place, making it a lovely pick for everyday styling, festive looks and gifting. A sweet handmade accessory that adds a pop of sunshine to any hairstyle.</g:description>
@@ -487,6 +448,19 @@ Whether you&apos;re looking for a thoughtful gift or a unique piece of handmade 
             <g:condition>new</g:condition>
             <g:availability>in_stock</g:availability>
             <g:price>179 INR</g:price>
+            <g:brand>Crochet Wali</g:brand>
+            <g:google_product_category>Apparel &amp; Accessories &gt; Clothing Accessories &gt; Hair Accessories &gt; Hair Pins, Claw Clips &amp; Clips</g:google_product_category>
+            <g:identifier_exists>no</g:identifier_exists>
+        </item>
+        <item>
+            <g:id>80b55433-3b1f-43e2-9f82-dc7bad036a80</g:id>
+            <g:title>Single Flower Crochet Claw Hair Clip</g:title>
+            <g:description>This exquisite hair clip is handcrafted with precision and love by skilled artisans from India, featuring a intricate single flower motif in crochet embroidery. Perfect for adding a touch of understated elegance to any outfit, whether you&apos;re dressing up or dressing down. Its delicate charm is sure to complement your natural beauty.</g:description>
+            <g:link>https://www.crochetwali.in/product/single-flower-crochet-claw-hair-clip-80b55433-3b1f-43e2-9f82-dc7bad036a80</g:link>
+            <g:image_link>https://yqtrlqkmitgnaehbawdm.supabase.co/storage/v1/object/public/images/products/1778592193810-qtqzur.webp</g:image_link>
+            <g:condition>new</g:condition>
+            <g:availability>in_stock</g:availability>
+            <g:price>49 INR</g:price>
             <g:brand>Crochet Wali</g:brand>
             <g:google_product_category>Apparel &amp; Accessories &gt; Clothing Accessories &gt; Hair Accessories &gt; Hair Pins, Claw Clips &amp; Clips</g:google_product_category>
             <g:identifier_exists>no</g:identifier_exists>
@@ -518,16 +492,29 @@ Whether you&apos;re looking for a thoughtful gift or a unique piece of handmade 
             <g:identifier_exists>no</g:identifier_exists>
         </item>
         <item>
-            <g:id>6af7ce17-9a06-423b-8e38-c2fba7d16efa</g:id>
-            <g:title>Blossom Pearl Crochet Keychain</g:title>
-            <g:description>Handcrafted with love, this Blossom Pearl Crochet Keychain showcases intricate Indian embroidery and a touch of subtle sparkle. Perfect for everyday wear or as a thoughtful gift, its delicate charm adds a touch of whimsy to any outfit. Made from high-quality materials, it&apos;s designed to last, making it a treasured possession for years to come.</g:description>
-            <g:link>https://www.crochetwali.in/product/blossom-pearl-crochet-keychain-6af7ce17-9a06-423b-8e38-c2fba7d16efa</g:link>
-            <g:image_link>https://yqtrlqkmitgnaehbawdm.supabase.co/storage/v1/object/public/images/products/1778557778392-c4xh3i.webp</g:image_link>
+            <g:id>a3464d61-a5da-4471-93d4-b7615de02e8f</g:id>
+            <g:title>Sunflower Keychain</g:title>
+            <g:description>Adorn your home or gift it to a loved one with this exquisite sunflower keychain, hand-stitched with love by skilled artisans in India. This beautiful piece combines classic style with modern charm, making it a perfect addition to any room. Use it as a keychain, zipper pull, or even as a bag charm – the possibilities are endless!</g:description>
+            <g:link>https://www.crochetwali.in/product/sunflower-keychain-a3464d61-a5da-4471-93d4-b7615de02e8f</g:link>
+            <g:image_link>https://yqtrlqkmitgnaehbawdm.supabase.co/storage/v1/object/public/images/products/1778556158957-3sczma.webp</g:image_link>
             <g:condition>new</g:condition>
             <g:availability>in_stock</g:availability>
-            <g:price>149 INR</g:price>
+            <g:price>119 INR</g:price>
             <g:brand>Crochet Wali</g:brand>
             <g:google_product_category>Apparel &amp; Accessories &gt; Handbag &amp; Wallet Accessories &gt; Keychains</g:google_product_category>
+            <g:identifier_exists>no</g:identifier_exists>
+        </item>
+        <item>
+            <g:id>12be210d-24a1-4581-8b35-cee50a72d3b8</g:id>
+            <g:title>Bow Hairclip</g:title>
+            <g:description>Handcrafted with love by skilled artisans, the Baw Hairclip is an exquisite fusion of traditional Indian embroidery and modern style. Adorn your hair with intricate patterns and delicate motifs, perfect for a wedding, special occasion, or everyday wear. A thoughtful gesture to yourself or a loved one, this hairclip is a true masterpiece of Indian craftsmanship.</g:description>
+            <g:link>https://www.crochetwali.in/product/bow-hairclip-12be210d-24a1-4581-8b35-cee50a72d3b8</g:link>
+            <g:image_link>https://yqtrlqkmitgnaehbawdm.supabase.co/storage/v1/object/public/images/products/1778561418212-f22ixf.webp</g:image_link>
+            <g:condition>new</g:condition>
+            <g:availability>in_stock</g:availability>
+            <g:price>119 INR</g:price>
+            <g:brand>Crochet Wali</g:brand>
+            <g:google_product_category>Apparel &amp; Accessories &gt; Clothing Accessories &gt; Hair Accessories &gt; Hair Pins, Claw Clips &amp; Clips</g:google_product_category>
             <g:identifier_exists>no</g:identifier_exists>
         </item>
         <item>
@@ -619,6 +606,19 @@ Whether you&apos;re looking for a thoughtful gift or a unique piece of handmade 
             <g:price>299 INR</g:price>
             <g:brand>Crochet Wali</g:brand>
             <g:google_product_category>Apparel &amp; Accessories &gt; Clothing Accessories &gt; Hair Accessories &gt; Hair Pins, Claw Clips &amp; Clips</g:google_product_category>
+            <g:identifier_exists>no</g:identifier_exists>
+        </item>
+        <item>
+            <g:id>ff17a9aa-593b-40fd-bf33-5a73bc1b150d</g:id>
+            <g:title>Handmade Crochet Bow Keychain</g:title>
+            <g:description>This charming Handmade Crochet Bow Keychain is a testament to Indian craftsmanship, featuring delicate crochet details and a striking bow design. Perfect for adding a touch of elegance to your outfit, it&apos;s an ideal gift for friends and family. Wear it as a statement piece or attach it to your bag, the possibilities are endless.</g:description>
+            <g:link>https://www.crochetwali.in/product/handmade-crochet-bow-keychain-ff17a9aa-593b-40fd-bf33-5a73bc1b150d</g:link>
+            <g:image_link>https://yqtrlqkmitgnaehbawdm.supabase.co/storage/v1/object/public/images/products/1778558046902-bdkz34.webp</g:image_link>
+            <g:condition>new</g:condition>
+            <g:availability>in_stock</g:availability>
+            <g:price>149 INR</g:price>
+            <g:brand>Crochet Wali</g:brand>
+            <g:google_product_category>Apparel &amp; Accessories &gt; Handbag &amp; Wallet Accessories &gt; Keychains</g:google_product_category>
             <g:identifier_exists>no</g:identifier_exists>
         </item>
     </channel>

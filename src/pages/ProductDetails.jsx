@@ -172,7 +172,7 @@ const ProductDetails = () => {
     };
 
     // Helpers for Clothing Info
-    const info = product?.clothingInformation || {};
+    const info = product?.clothingInformation || product?.clothing_information || {};
     const sizes = info.sizes || {};
     const hasSizes = Object.keys(sizes).length > 0;
     
@@ -570,6 +570,7 @@ const ProductDetails = () => {
             "availability": isStockAvailable ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
             "itemCondition": "https://schema.org/NewCondition",
             "priceValidUntil": new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().split('T')[0],
+            ...(product.created_at ? { "validFrom": new Date(product.created_at).toISOString().split('T')[0] } : {}),
             "hasMerchantReturnPolicy": {
                 "@type": "MerchantReturnPolicy",
                 "applicableCountry": "IN",
@@ -782,11 +783,14 @@ const ProductDetails = () => {
         );
     };
 
+    const adminSeoTitle = (info?.metaTitle || product?.clothing_information?.metaTitle || product?.clothingInformation?.metaTitle || '').trim();
+    const productTitle = adminSeoTitle || `${product.name} (Handmade) - ₹${currentPrice} | Crochet Wali`;
 
     return (
         <div className="min-h-screen bg-[#fdfbf7] pt-2 md:pt-8 pb-24 lg:pb-20 font-body selection:bg-rose-100 selection:text-rose-900">
             <SEO 
-                title={`${product.name} (Handmade) - ₹${currentPrice}`} 
+                title={productTitle} 
+                exactTitle={true}
                 description={info.shortDescription ? `Buy ${product.name} online at ₹${currentPrice} in India. ${info.shortDescription} 100% handcrafted with premium yarn. Delivery fee calculated on checkout.` : `Buy 100% handmade ${product.name} online at ₹${currentPrice} in India. Handcrafted with premium yarn, perfect aesthetic keepsake gift with fast doorstep delivery.`} 
                 schema={pageSchema} 
                 image={selectedImage || displayImages[0] || product.image} 

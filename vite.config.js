@@ -97,8 +97,16 @@ export default defineConfig({
       injectRegister: null, // We will manually register in main.jsx to catch promise rejections
       includeAssets: ['favicon.ico', 'favicon-48x48.png', 'favicon-96x96.png', 'favicon-192.png', 'favicon-512.png', 'apple-touch-icon.png', 'logo.png', 'robots.txt'],
       workbox: {
-        globIgnores: ['**/admin/**', '**/Admin*', '**/labelPrinter*', '**/Users*', '**/html2pdf*'],
-        navigateFallbackDenylist: [/^\/sadmin/, /^\/api/]
+        globIgnores: ['**/admin/**', '**/Admin*', '**/labelPrinter*', '**/Users*', '**/html2pdf*', '**/*.xml'],
+        navigateFallbackDenylist: [
+          /^\/sadmin/,
+          /^\/api/,
+          /\.xml$/,
+          /\.txt$/,
+          /^\/sitemap/,
+          /^\/robots\.txt/,
+          /^\/merchant-feed/
+        ]
       },
       devOptions: {
         enabled: true // Enable SW in dev mode so beforeinstallprompt fires

@@ -2,6 +2,7 @@
 // Delivers complete server-rendered product grid, counts, filters, and Schema.org ItemList for Googlebot, crawlers, and initial HTML response.
 import dotenv from 'dotenv';
 dotenv.config();
+import { getCategorySeoData } from '../src/utils/categorySeo.js';
 
 export const config = {
     maxDuration: 10,
@@ -276,15 +277,19 @@ export default async function handler(req, res) {
         return true;
     });
 
-    const activeCategoryLabel = categoryParam && categoryParam !== 'all' 
-        ? (categories.find(c => slugify(c.id) === slugify(categoryParam) || slugify(c.label) === slugify(categoryParam))?.label || categoryParam)
+    const activeCategoryMeta = categoryParam && categoryParam !== 'all' 
+        ? getCategorySeoData(categoryParam, categories)
         : null;
 
-    const pageTitle = activeCategoryLabel 
-        ? `${activeCategoryLabel} | Crochet Wali`
+    const pageTitle = activeCategoryMeta 
+        ? activeCategoryMeta.title 
         : 'Shop All Handmade Crochet Gifts | Crochet Wali';
 
-    const pageDesc = "Shop Crochet Wali's complete collection of handmade crochet gifts — forever flower bouquets, gajra, hair clips, keychains, parandi, claw clips, and personalized gift boxes. 100% handmade in India.";
+    const pageDesc = activeCategoryMeta
+        ? activeCategoryMeta.metaDescription
+        : "Shop Crochet Wali's complete collection of handmade crochet gifts — forever flower bouquets, gajra, hair clips, keychains, parandi, claw clips, and personalized gift boxes. 100% handmade in India.";
+
+    const categoryCanonicalUrl = `https://www.crochetwali.in/shop${categoryParam && categoryParam !== 'all' ? `?category=${encodeURIComponent(categoryParam)}` : ''}`;
 
     // Schema.org ItemList JSON-LD
     const itemListJsonLd = {
@@ -300,6 +305,38 @@ export default async function handler(req, res) {
             "url": `https://www.crochetwali.in/product/${slugify(p.name)}-${p.id}`,
             "image": p.image
         }))
+    };
+
+    // Schema.org FAQPage JSON-LD
+    const faqJsonLd = {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+            {
+                "@type": "Question",
+                "name": "Are all products listed here handmade?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Yes, every single product listed on our shop is meticulously handcrafted by skilled artisans. We specialize in crochet and embroidery, ensuring high quality and a personal touch in every order."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "How long does shipping take for crochet gifts?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Because our products are made-to-order to guarantee perfection, please allow 2-4 days for crafting. Standard shipping across India usually takes an additional 4-7 business days."
+                }
+            },
+            {
+                "@type": "Question",
+                "name": "Do you take bulk orders for wedding return gifts?",
+                "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Yes, we take bulk orders for weddings, baby showers, and corporate events. Our crochet keychains and mini flower bouquets are very popular as return gifts. Please contact us via the Custom Design page for bulk pricing."
+                }
+            }
+        ]
     };
 
     // Build Product Cards HTML
@@ -403,7 +440,7 @@ export default async function handler(req, res) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${escapeHtml(pageTitle)}</title>
   <meta name="description" content="${escapeHtml(pageDesc)}">
-  <link rel="canonical" href="https://www.crochetwali.in/shop${categoryParam ? `?category=${encodeURIComponent(categoryParam)}` : ''}">
+  <link rel="canonical" href="${escapeHtml(categoryCanonicalUrl)}">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png">
   <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
@@ -412,7 +449,7 @@ export default async function handler(req, res) {
 
   <!-- Open Graph -->
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://www.crochetwali.in/shop">
+  <meta property="og:url" content="${escapeHtml(categoryCanonicalUrl)}">
   <meta property="og:title" content="${escapeHtml(pageTitle)}">
   <meta property="og:description" content="${escapeHtml(pageDesc)}">
   <meta property="og:image" content="https://www.crochetwali.in/hero-gift.png">
@@ -420,6 +457,11 @@ export default async function handler(req, res) {
   <!-- Google Schema ItemList -->
   <script type="application/ld+json">
   ${JSON.stringify(itemListJsonLd, null, 2)}
+  </script>
+
+  <!-- Google Schema FAQPage -->
+  <script type="application/ld+json">
+  ${JSON.stringify(faqJsonLd, null, 2)}
   </script>
 
   <!-- Preload fonts -->
@@ -452,8 +494,9 @@ export default async function handler(req, res) {
 
     <main class="container">
       <div style="margin:20px 0 16px;">
-        <h1 style="font-size:32px;font-weight:800;color:#1c1917;margin:0 0 8px;">${escapeHtml(activeCategoryLabel || 'Handmade Crochet Gifts & Collection')}</h1>
-        <p style="color:#78716c;font-size:15px;margin:0 0 20px;">100% handmade crochet flowers, bridal gajra, hair accessories & personalized gifts crafted in India.</p>
+        <h1 style="font-size:32px;font-weight:800;color:#1c1917;margin:0 0 8px;">${escapeHtml(activeCategoryMeta ? activeCategoryMeta.h1 : 'Handmade Crochet Gifts & Collection')}</h1>
+        <p style="color:#78716c;font-size:15px;margin:0 0 8px;">${escapeHtml(activeCategoryMeta ? activeCategoryMeta.subheading : '100% handmade crochet flowers, bridal gajra, hair accessories & personalized gifts crafted in India.')}</p>
+        <p style="color:#57534e;font-size:14px;line-height:1.6;margin:0 0 20px;max-width:800px;">${escapeHtml(activeCategoryMeta ? activeCategoryMeta.intro : 'Explore our extensive range of personalized handmade gifts, from intricate embroidery hoops to eternal crochet flower bouquets. Every piece is meticulously crafted with love, making them perfect for anniversaries, birthdays, or as unique aesthetic additions to your home.')}</p>
         
         <!-- Category Filters -->
         <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px;">
@@ -473,7 +516,7 @@ export default async function handler(req, res) {
 
       <!-- FAQ Section -->
       <section style="margin-top:64px;padding-top:40px;border-top:1px solid #e7e5e4;max-width:800px;">
-        <h2 style="font-size:24px;font-weight:800;margin-bottom:24px;">Shop Handmade Crochet Gifts - FAQ</h2>
+        <h2 style="font-size:24px;font-weight:800;margin-bottom:24px;">${escapeHtml(activeCategoryMeta ? `${activeCategoryMeta.label} - Frequently Asked Questions` : 'Shop Handmade Crochet Gifts - FAQ')}</h2>
         <div style="display:flex;flex-direction:column;gap:16px;">
           <div style="background:#fff;padding:20px;border-radius:12px;border:1px solid #f5f5f4;">
             <h3 style="margin:0 0 8px;font-size:16px;font-weight:700;">Are all products listed here handmade?</h3>
@@ -485,7 +528,7 @@ export default async function handler(req, res) {
           </div>
           <div style="background:#fff;padding:20px;border-radius:12px;border:1px solid #f5f5f4;">
             <h3 style="margin:0 0 8px;font-size:16px;font-weight:700;">Do you take bulk orders for wedding return gifts?</h3>
-            <p style="margin:0;color:#57534e;font-size:14px;line-height:1.6;">Yes, we take bulk orders for weddings, baby showers, and corporate events. Our crochet keychains and mini flower bouquets are very popular as return gifts.</p>
+            <p style="margin:0;color:#57534e;font-size:14px;line-height:1.6;">Yes, we take bulk orders for weddings, baby showers, and corporate events. Our crochet keychains and mini flower bouquets are very popular as return gifts. Please contact us via the Custom Design page for bulk pricing.</p>
           </div>
         </div>
       </section>

@@ -33,7 +33,8 @@ async function generateImageSitemap() {
   console.log('Fetching products from Supabase...');
   const { data: products, error } = await supabase
     .from('products')
-    .select('id, name, description, variants, images, clothing_information');
+    .select('id, name, description, variants, images, clothing_information')
+    .eq('active', true);
 
   if (error) {
     console.error('Error fetching products:', error);
@@ -92,6 +93,13 @@ async function generateImageSitemap() {
   const outputPath = path.resolve(__dirname, '../public/sitemap_images.xml');
   fs.writeFileSync(outputPath, xml, 'utf8');
   console.log(`Successfully generated Image Sitemap at: ${outputPath}`);
+
+  const distDir = path.resolve(__dirname, '../dist');
+  if (fs.existsSync(distDir)) {
+    const distDest = path.resolve(distDir, 'sitemap_images.xml');
+    fs.writeFileSync(distDest, xml, 'utf8');
+    console.log(`Saved ${distDest}`);
+  }
 }
 
 generateImageSitemap();

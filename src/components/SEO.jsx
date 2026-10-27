@@ -1,21 +1,31 @@
 import React, { useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
 
-const SEO = ({ title, description, keywords, schema, url, image, noIndex, children }) => {
-    const siteTitle = "Crochet Wali | Handmade Crochet Flowers, Gajra, Hair Clips & Gifts India";
-    const fullTitle = title 
-        ? (title.includes('Crochet Wali') ? title : `${title} | Crochet Wali`) 
-        : siteTitle;
+const SEO = ({ title, description, keywords, schema, url, image, noIndex, exactTitle, children }) => {
+    const siteTitle = "Crochet Wali | Handmade Crochet Flowers & Artisanal Keepsakes";
+    const fullTitle = exactTitle 
+        ? (title || siteTitle) 
+        : (title 
+            ? (title.includes('Crochet Wali') ? title : `${title} | Crochet Wali`) 
+            : siteTitle);
     const metaDescription = description || "Buy 100% handmade crochet flower bouquets, bridal gajras, hair accessories & personalized gift boxes starting at ₹99. Everlasting aesthetic gifts made with love in India. Free shipping over ₹999! Order now.";
-    const metaKeywords = keywords || "crochet wali, crochet flower bouquet, handmade gajra, crochet flower pot, crochet parandi, crochet keychain, crochet hair clips, embroidery hair clips, handmade gift box india, crochet claw clip, crochet bow, aesthetic handmade gifts india, custom crochet gifts, forever flower bouquet india";
     const metaUrl = url || (typeof window !== 'undefined' ? `https://www.crochetwali.in${window.location.pathname}` : "https://www.crochetwali.in");
     const metaImage = image || "https://www.crochetwali.in/hero-gift.png";
 
     useEffect(() => {
         if (typeof document === 'undefined') return;
 
-        // 1. Direct document title update for instant tab text update
+        // 1. Direct document title update for instant tab text update & single title tag enforcement
         document.title = fullTitle;
+        const titleEls = document.head.querySelectorAll('title');
+        if (titleEls.length > 1) {
+            for (let i = 1; i < titleEls.length; i++) {
+                titleEls[i].remove();
+            }
+        }
+        if (titleEls.length > 0) {
+            titleEls[0].textContent = fullTitle;
+        }
 
         // 2. Direct single meta description update in-place (NEVER remove DOM nodes to prevent React 19 reconciler crashes)
         const descEl = document.querySelector('meta[name="description"]');
@@ -23,17 +33,24 @@ const SEO = ({ title, description, keywords, schema, url, image, noIndex, childr
             descEl.setAttribute('content', metaDescription);
         }
 
-        // 3. Direct canonical link update in-place
+        // 3. Remove obsolete keyword-stuffed meta keywords tag site-wide
+        const kwEls = document.head.querySelectorAll('meta[name="keywords"]');
+        kwEls.forEach(el => el.remove());
+
+        // 4. Direct canonical link update in-place
         const canonicalEl = document.querySelector('link[rel="canonical"]');
         if (canonicalEl) {
             canonicalEl.setAttribute('href', metaUrl);
         }
 
-        // 4. Update OpenGraph and Twitter tags in place
+        // 5. Update OpenGraph and Twitter tags in place & remove any stale duplicates
         const updateMetaAttr = (selector, val) => {
-            const el = document.querySelector(selector);
-            if (el) {
-                el.setAttribute('content', val);
+            const els = document.head.querySelectorAll(selector);
+            if (els.length > 0) {
+                els[0].setAttribute('content', val);
+                for (let i = 1; i < els.length; i++) {
+                    els[i].remove();
+                }
             }
         };
 
@@ -50,9 +67,7 @@ const SEO = ({ title, description, keywords, schema, url, image, noIndex, childr
     return (
         <Helmet>
             {children}
-            <title>{fullTitle}</title>
             <meta name="description" content={metaDescription} />
-            <meta name="keywords" content={metaKeywords} />
             <meta name="robots" content={noIndex ? "noindex, follow" : "index, follow"} />
             <link rel="canonical" href={metaUrl} />
             

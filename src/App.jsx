@@ -72,8 +72,20 @@ const NotFound = lazy(() => import('./pages/NotFound'));
 
 import ProtectedRoute from './components/admin/ProtectedRoute'
 import ConditionalLayout from './components/ConditionalLayout'
-const LoginBottomSheet = lazy(() => import('./components/LoginBottomSheet'));
-const ChatWidget = lazy(() => import('./components/ChatWidget'));
+// Resilient lazy loader for non-critical UI overlays so chunk mismatch or network failure never crashes page rendering
+const resilientLazy = (factory) => {
+  return lazy(async () => {
+    try {
+      return await factory();
+    } catch (err) {
+      console.warn('[LazyLoad] Non-critical chunk load failed, continuing without overlay:', err);
+      return { default: () => null };
+    }
+  });
+};
+
+const LoginBottomSheet = resilientLazy(() => import('./components/LoginBottomSheet'));
+const ChatWidget = resilientLazy(() => import('./components/ChatWidget'));
 
 // Defer non-critical utilities
 import ScrollToTop from './components/ScrollToTop';
@@ -97,6 +109,14 @@ const PageLoader = () => (
     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-stone-800"></div>
   </div>
 );
+
+// Fallback to force direct network request for XML sitemaps if caught by React Router
+const StaticXmlRedirect = () => {
+  React.useEffect(() => {
+    window.location.replace(window.location.pathname);
+  }, []);
+  return null;
+};
 
 function App() {
   return (
@@ -202,6 +222,8 @@ function App() {
                 <Route path="/shipping-policy" element={<ShippingPolicy />} />
                 <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                 <Route path="/terms-of-service" element={<TermsOfService />} />
+                <Route path="/sitemap.xml" element={<StaticXmlRedirect />} />
+                <Route path="/sitemap_images.xml" element={<StaticXmlRedirect />} />
                 <Route path="*" element={<NotFound />} />
               </Route>
             </Routes>

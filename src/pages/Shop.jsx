@@ -12,6 +12,7 @@ const slugify = (str) => (str || '').toLowerCase().trim().replace(/\s+/g, '-').r
 import { ProductCard as ProductCardWithVariants } from '../components/ProductCard';
 import { getProductUrl } from '../utils/urlUtils';
 import SEO from '../components/SEO';
+import { getCategorySeoData } from '../utils/categorySeo';
 
 const Shop = () => {
     const { products, loading: productsLoading, fetchProducts } = useProducts();
@@ -113,18 +114,24 @@ const Shop = () => {
     }, [selectedCategories]);
 
     const toggleCategory = (catId) => {
+        const params = new URLSearchParams(searchParams);
+        params.delete('page');
         if (catId === 'all') {
             setSelectedCategories([]);
+            params.delete('category');
+            setSearchParams(params, { replace: true });
             return;
         }
         // At a time select one circle: replace the array instead of appending
-        setSelectedCategories(prev => {
-            const alreadySelected = prev.some(c => c === catId || slugify(c) === slugify(catId));
-            if (alreadySelected) {
-                return [];
-            }
-            return [catId];
-        });
+        const alreadySelected = selectedCategories.some(c => c === catId || slugify(c) === slugify(catId));
+        if (alreadySelected) {
+            setSelectedCategories([]);
+            params.delete('category');
+        } else {
+            setSelectedCategories([catId]);
+            params.set('category', slugify(catId));
+        }
+        setSearchParams(params, { replace: true });
     };
     const [sortBy, setSortBy] = useState('featured');
     const [priceRange, setPriceRange] = useState('all');
@@ -379,6 +386,36 @@ const Shop = () => {
                 "position": index + 1,
                 "url": `https://www.crochetwali.in/product/${product.id}`
             }))
+        },
+        {
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            "mainEntity": [
+                {
+                    "@type": "Question",
+                    "name": "Are all products listed here handmade?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Yes, every single product listed on our shop is meticulously handcrafted by skilled artisans. We specialize in crochet and embroidery, ensuring high quality and a personal touch in every order."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "How long does shipping take for crochet gifts?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Because our products are made-to-order to guarantee perfection, please allow 2-4 days for crafting. Standard shipping across India usually takes an additional 4-7 business days."
+                    }
+                },
+                {
+                    "@type": "Question",
+                    "name": "Do you take bulk orders for wedding return gifts?",
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": "Yes, we take bulk orders for weddings, baby showers, and corporate events. Our crochet keychains and mini flower bouquets are very popular as return gifts. Please contact us via the Custom Design page for bulk pricing."
+                    }
+                }
+            ]
         }
     ];
 
@@ -394,14 +431,30 @@ const Shop = () => {
     };
 
     const prevUrl = currentPage > 1 ? getPaginationUrl(currentPage - 1) : null;
-    const nextUrl = currentPage < totalPages ? getPaginationUrl(currentPage + 1) : null;
+    const activeCategoryParam = searchParams.get('category');
+    const activeCategoryId = (selectedCategories.length === 1 
+        ? selectedCategories[0] 
+        : (activeCategoryParam && activeCategoryParam !== 'all' ? activeCategoryParam : null));
+
+    const activeCategoryMeta = useMemo(() => {
+        return getCategorySeoData(activeCategoryId, contextCategories);
+    }, [activeCategoryId, contextCategories]);
+
+    const categoryCanonicalUrl = useMemo(() => {
+        if (activeCategoryMeta) {
+            const rawParam = searchParams.get('category') || activeCategoryMeta.slug;
+            return `https://www.crochetwali.in/shop?category=${encodeURIComponent(rawParam)}`;
+        }
+        return 'https://www.crochetwali.in/shop';
+    }, [activeCategoryMeta, searchParams]);
 
     return (
         <div className="bg-[#fdfbf7] min-h-screen pb-32 font-body selection:bg-rose-100 selection:text-rose-900">
             <SEO 
-                title={selectedCategories.length > 0 ? `${selectedCategories.map(c => c.charAt(0).toUpperCase() + c.slice(1)).join(', ')} | Crochet Wali` : "Shop All Handmade Crochet Gifts | Crochet Wali"} 
-                description="Shop Crochet Wali's complete collection of handmade crochet gifts — forever flower bouquets, gajra, hair clips, keychains, parandi, claw clips, and personalized gift boxes. 100% handmade in India. Buy crochet gifts online."
-                keywords="crochet wali shop, buy crochet gifts online, crochet wali collection, handmade crochet gifts india, crochet flower bouquet, crochet hair clips, crochet keychain, crochet gajra"
+                title={activeCategoryMeta ? activeCategoryMeta.title : "Shop All Handmade Crochet Gifts | Crochet Wali"} 
+                description={activeCategoryMeta ? activeCategoryMeta.metaDescription : "Shop Crochet Wali's complete collection of handmade crochet gifts — forever flower bouquets, gajra, hair clips, keychains, parandi, claw clips, and personalized gift boxes. 100% handmade in India. Buy crochet gifts online."}
+                keywords={activeCategoryMeta ? `${activeCategoryMeta.label.toLowerCase()}, crochet ${activeCategoryMeta.label.toLowerCase()}, buy crochet gifts online, crochet wali collection` : "crochet wali shop, buy crochet gifts online, crochet wali collection, handmade crochet gifts india, crochet flower bouquet, crochet hair clips, crochet keychain, crochet gajra"}
+                url={categoryCanonicalUrl}
                 schema={pageSchema} 
             >
                 {prevUrl && <link rel="prev" href={prevUrl} />}
@@ -410,7 +463,9 @@ const Shop = () => {
             <div className="container-custom pb-20 pt-4 md:pt-8">
                 
                 {/* AEO Semantic Heading for AI context */}
-                <h1 className="sr-only">Crochet Wali Shop – Buy Handmade Crochet Gifts, Flower Bouquets, Gajra & Hair Accessories Online India</h1>
+                <h1 className="sr-only">
+                    {activeCategoryMeta ? activeCategoryMeta.h1 : "Crochet Wali Shop – Buy Handmade Crochet Gifts, Flower Bouquets, Gajra & Hair Accessories Online India"}
+                </h1>
 
                 {/* Mobile Search Bar */}
                 <div className="md:hidden mb-4">
@@ -447,6 +502,14 @@ const Shop = () => {
                         </div>
                     )}
                 </div>
+
+                {/* Mobile Category Header */}
+                {activeCategoryMeta && (
+                    <div className="lg:hidden mb-4 px-1">
+                        <h2 className="font-heading text-xl font-bold text-stone-900 mb-1">{activeCategoryMeta.h1}</h2>
+                        <p className="text-stone-600 text-xs leading-relaxed">{activeCategoryMeta.intro}</p>
+                    </div>
+                )}
 
                 {/* Mobile Category Circles */}
                 <div className="lg:hidden mb-4 overflow-x-auto no-scrollbar py-2 -mx-4 px-4">
@@ -752,9 +815,15 @@ const Shop = () => {
                     <div className="flex-1 w-full relative min-w-0">
                         {/* Desktop Header */}
                         <div className="hidden md:block mb-8">
-                            <h2 className="font-heading text-3xl lg:text-4xl font-bold text-stone-900 mb-2">Handmade Crochet Gifts & Crochet Collection</h2>
-                            <p className="text-stone-500 text-sm lg:text-base mb-2">Discover hand-crafted embroidery pieces tailored for you.</p>
-                            <p className="text-stone-600 text-sm max-w-3xl leading-relaxed">Explore our extensive range of personalized handmade gifts, from intricate embroidery hoops to eternal crochet flower bouquets. Every piece is meticulously crafted with love, making them perfect for anniversaries, birthdays, or as unique aesthetic additions to your home.</p>
+                            <h2 className="font-heading text-3xl lg:text-4xl font-bold text-stone-900 mb-2">
+                                {activeCategoryMeta ? activeCategoryMeta.h1 : "Handmade Crochet Gifts & Crochet Collection"}
+                            </h2>
+                            <p className="text-stone-500 text-sm lg:text-base mb-2">
+                                {activeCategoryMeta ? activeCategoryMeta.subheading : "Discover hand-crafted embroidery pieces tailored for you."}
+                            </p>
+                            <p className="text-stone-600 text-sm max-w-3xl leading-relaxed">
+                                {activeCategoryMeta ? activeCategoryMeta.intro : "Explore our extensive range of personalized handmade gifts, from intricate embroidery hoops to eternal crochet flower bouquets. Every piece is meticulously crafted with love, making them perfect for anniversaries, birthdays, or as unique aesthetic additions to your home."}
+                            </p>
                         </div>
 
                         {/* Sticky Toolbar: Search, Sort, & Count */}
