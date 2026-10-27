@@ -82,9 +82,28 @@ function isDuplicateProduct(p) {
     return DUPLICATE_PRODUCT_IDS.has(id);
 }
 
+const DELETED_STORAGE_URLS = new Set([
+    'https://yqtrlqkmitgnaehbawdm.supabase.co/storage/v1/object/public/images/products/1772016571524-0mv6d.jpg',
+    'https://yqtrlqkmitgnaehbawdm.supabase.co/storage/v1/object/public/images/products/1772016593285-5771nk.jpg',
+]);
+
+function isBrokenImageUrl(url) {
+    if (!url || typeof url !== 'string') return true;
+    const trimmed = url.trim();
+    if (trimmed.length < 5) return true;
+    if (DELETED_STORAGE_URLS.has(trimmed)) return true;
+    return false;
+}
+
 function getUnifiedPriceData(product) {
     let price = Number(product.price) || 0;
     let variants = Array.isArray(product.variants) ? [...product.variants] : [];
+
+    // Filter out deleted/empty images across all variants
+    variants = variants.map(v => ({
+        ...v,
+        images: Array.isArray(v.images) ? v.images.filter(img => !isBrokenImageUrl(img)) : []
+    }));
 
     if (product.id === 'a3464d61-a5da-4471-93d4-b7615de02e8f') {
         price = 119;
@@ -178,6 +197,8 @@ async function loadCatalog(supabaseUrl, supabaseKey) {
             const { originalPrice, discountPercentage } = getGenuineDiscount(price, p.original_price);
             const category = normalizeCategory(p.category);
 
+            const cleanImages = (Array.isArray(parsedImages) ? parsedImages : []).filter(img => !isBrokenImageUrl(img));
+
             return {
                 ...p,
                 name: cleanName,
@@ -185,8 +206,8 @@ async function loadCatalog(supabaseUrl, supabaseKey) {
                 price,
                 originalPrice,
                 discountPercentage,
-                images: Array.isArray(parsedImages) ? parsedImages : [],
-                image: (Array.isArray(parsedImages) && parsedImages.length > 0) ? parsedImages[0] : 'https://www.crochetwali.in/hero-gift.png',
+                images: cleanImages,
+                image: (cleanImages.length > 0) ? cleanImages[0] : 'https://www.crochetwali.in/hero-gift.png',
                 inStock: (p.stock_quantity || 0) > 0,
                 variants,
             };

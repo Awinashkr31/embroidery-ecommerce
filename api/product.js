@@ -220,6 +220,19 @@ const TYPO_MAP = {
     'crochet flower hair clutcher': 'Crochet Flower Hair Clutcher',
 };
 
+const DELETED_STORAGE_URLS = new Set([
+    'https://yqtrlqkmitgnaehbawdm.supabase.co/storage/v1/object/public/images/products/1772016571524-0mv6d.jpg',
+    'https://yqtrlqkmitgnaehbawdm.supabase.co/storage/v1/object/public/images/products/1772016593285-5771nk.jpg',
+]);
+
+function isBrokenImageUrl(url) {
+    if (!url || typeof url !== 'string') return true;
+    const trimmed = url.trim();
+    if (trimmed.length < 5) return true;
+    if (DELETED_STORAGE_URLS.has(trimmed)) return true;
+    return false;
+}
+
 function toTitleCase(str) {
     if (!str) return '';
     return str.trim().split(/\s+/).map(w => {
@@ -429,12 +442,13 @@ export default async function handler(req, res) {
         variants.forEach(v => {
             if (v.images && Array.isArray(v.images)) {
                 v.images.forEach(img => {
-                    if (img && !images.includes(img)) images.push(img);
+                    if (img && !images.includes(img) && !isBrokenImageUrl(img)) images.push(img);
                 });
             }
         });
     }
-    if (!images.length && product?.image) {
+    images = images.filter(img => !isBrokenImageUrl(img));
+    if (!images.length && product?.image && !isBrokenImageUrl(product.image)) {
         images = [product.image];
     }
     const imageUrl = (images.length > 0 && typeof images[0] === 'string' && images[0].trim())

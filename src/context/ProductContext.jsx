@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useRef, useCallback } from 'react';
 import { supabase } from '../../config/supabase';
 import { deleteImage } from '../utils/uploadUtils';
-import { sanitizeProductName, isDuplicateProduct, getUnifiedPriceData, getGenuineDiscount, normalizeCategory } from '../utils/productSanitizer';
+import { sanitizeProductName, isDuplicateProduct, getUnifiedPriceData, getGenuineDiscount, normalizeCategory, isBrokenImageUrl } from '../utils/productSanitizer';
 
 const ProductContext = createContext();
 
@@ -22,13 +22,14 @@ const mapProductRecord = (p) => {
         try { parsedVariants = JSON.parse(parsedVariants); } catch (e) { parsedVariants = []; }
     }
     if ((!Array.isArray(parsedImages) || parsedImages.length === 0) && Array.isArray(parsedVariants) && parsedVariants.length > 0) {
-        parsedImages = parsedVariants.flatMap(v => v.images || []).filter(Boolean);
+        parsedImages = parsedVariants.flatMap(v => v.images || []).filter(img => !isBrokenImageUrl(img));
     }
     
     const cleanName = sanitizeProductName(p.name);
     const { price, variants } = getUnifiedPriceData({ ...p, variants: parsedVariants });
     const { originalPrice, discountPercentage } = getGenuineDiscount(price, p.original_price);
     const category = normalizeCategory(p.category);
+    const cleanImages = (Array.isArray(parsedImages) ? parsedImages : []).filter(img => !isBrokenImageUrl(img));
 
     return {
         ...p,
@@ -37,8 +38,8 @@ const mapProductRecord = (p) => {
         price,
         originalPrice,
         discountPercentage,
-        images: Array.isArray(parsedImages) ? parsedImages : [],
-        image: (Array.isArray(parsedImages) && parsedImages.length > 0) ? parsedImages[0] : 'https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=500',
+        images: cleanImages,
+        image: cleanImages.length > 0 ? cleanImages[0] : (p.image && !isBrokenImageUrl(p.image) ? p.image : 'https://images.unsplash.com/photo-1515377905703-c4788e51af15?w=500'),
         inStock: (p.stock_quantity || 0) > 0,
         stock: p.stock_quantity,
         clothingInformation: p.clothing_information,

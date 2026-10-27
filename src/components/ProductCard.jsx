@@ -41,23 +41,24 @@ export const ProductCard = React.memo(({
 
     const variants = product.variants || [];
     
-    // Only consider variants that have at least one image and a color
-    const validVariants = variants.filter(v => v.color && v.images && v.images.length > 0);
+    // Consider variants that have a color (with image fallback to product main image)
+    const validVariants = variants.filter(v => v.color);
     const hasVariants = validVariants.length > 1;
 
     // Get all images for the current view
     const allImages = useMemo(() => {
-        if (selectedVariant && selectedVariant.images && selectedVariant.images.length > 0) {
-            return selectedVariant.images.filter(Boolean);
+        const validVariantImages = (selectedVariant?.images || []).filter(img => typeof img === 'string' && img.trim().length > 5);
+        if (validVariantImages.length > 0) {
+            return validVariantImages;
         }
         let imgs = [];
         if (product.image) imgs.push(product.image);
         if (product.images && product.images.length > 0) {
             product.images.forEach(img => {
-                if (img && !imgs.includes(img)) imgs.push(img);
+                if (img && !imgs.includes(img) && img.trim().length > 5) imgs.push(img);
             });
         }
-        return imgs;
+        return imgs.length > 0 ? imgs : ['/logo.png'];
     }, [selectedVariant, product.images, product.image]);
 
     const hasMultipleImages = allImages.length > 1;

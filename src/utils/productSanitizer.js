@@ -118,12 +118,32 @@ export function getDuplicateRedirect(slugOrId) {
     return null;
 }
 
+// Known deleted/404 image URLs from Supabase storage
+export const DELETED_STORAGE_URLS = new Set([
+    'https://yqtrlqkmitgnaehbawdm.supabase.co/storage/v1/object/public/images/products/1772016571524-0mv6d.jpg',
+    'https://yqtrlqkmitgnaehbawdm.supabase.co/storage/v1/object/public/images/products/1772016593285-5771nk.jpg',
+]);
+
+export function isBrokenImageUrl(url) {
+    if (!url || typeof url !== 'string') return true;
+    const trimmed = url.trim();
+    if (trimmed.length < 5) return true;
+    if (DELETED_STORAGE_URLS.has(trimmed)) return true;
+    return false;
+}
+
 /**
  * Unifies variant prices for products where variants had erroneous minor differences
  */
 export function getUnifiedPriceData(product) {
     let price = Number(product.price) || 0;
     let variants = Array.isArray(product.variants) ? [...product.variants] : [];
+
+    // Filter out known deleted or invalid image URLs from all variants
+    variants = variants.map(v => ({
+        ...v,
+        images: Array.isArray(v.images) ? v.images.filter(img => !isBrokenImageUrl(img)) : []
+    }));
 
     // 1. Sunflower Keychain: unify red variant (₹117 -> ₹119)
     if (product.id === 'a3464d61-a5da-4471-93d4-b7615de02e8f') {

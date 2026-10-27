@@ -223,10 +223,13 @@ const ProductDetails = () => {
 
     // Derived state for Image Update
     useEffect(() => {
-        if (selectedVariant && selectedVariant.images && selectedVariant.images.length > 0) {
-            setSelectedImage(selectedVariant.images[0]);
+        const validVariantImages = (selectedVariant?.images || []).filter(img => typeof img === 'string' && img.trim().length > 5);
+        if (validVariantImages.length > 0) {
+            setSelectedImage(validVariantImages[0]);
+        } else if (product?.image) {
+            setSelectedImage(product.image);
         }
-    }, [selectedColor, selectedVariant]);
+    }, [selectedColor, selectedVariant, product]);
 
     // Find the exact item in cart
     const cartItem = useMemo(() => {
@@ -462,14 +465,15 @@ const ProductDetails = () => {
      const effectiveSize = selectedSize || (!hasSizes ? 'Standard' : null);
      
      // Variant-Specific Images for Display
-     const rawDisplayImages = (selectedVariant && selectedVariant.images && selectedVariant.images.length > 0 && selectedVariant.images[0])
-        ? selectedVariant.images
+     const validVariantImages = (selectedVariant?.images || []).filter(img => typeof img === 'string' && img.trim().length > 5);
+     const rawDisplayImages = validVariantImages.length > 0
+        ? validVariantImages
         : (() => {
             let imgs = [];
             if (product.image) imgs.push(product.image);
             if (product.images && product.images.length > 0) {
                 product.images.forEach(img => {
-                    if (img && !imgs.includes(img)) imgs.push(img);
+                    if (img && !imgs.includes(img) && img.trim().length > 5) imgs.push(img);
                 });
             }
             return imgs.length > 0 ? imgs : ['https://via.placeholder.com/500'];
@@ -721,7 +725,8 @@ const ProductDetails = () => {
                     {availableColors.map((color) => {
                         const isSelected = selectedColor?.toLowerCase() === color.toLowerCase();
                         const variantForColor = variants.find(v => (v.color || '').toLowerCase() === color.toLowerCase());
-                        const colorImage = variantForColor?.images?.[0] || product.image;
+                        const validColorImages = (variantForColor?.images || []).filter(img => typeof img === 'string' && img.trim().length > 5);
+                        const colorImage = (validColorImages.length > 0 ? validColorImages[0] : null) || product.image;
                         const isColorInStock = variantForColor ? (variantForColor.stock === undefined || Number(variantForColor.stock) > 0) : true;
                         return (
                             <button
@@ -738,7 +743,17 @@ const ProductDetails = () => {
                                 }`}
                             >
                                 <div className="w-14 h-16 sm:w-16 sm:h-20 rounded-xl overflow-hidden bg-stone-100 relative">
-                                    <img src={colorImage} alt="" aria-hidden="true" className="w-full h-full object-cover" />
+                                    <img 
+                                        src={colorImage} 
+                                        alt={color} 
+                                        aria-hidden="true" 
+                                        className="w-full h-full object-cover" 
+                                        onError={(e) => {
+                                            if (product?.image && e.target.src !== product.image) {
+                                                e.target.src = product.image;
+                                            }
+                                        }}
+                                    />
                                     {!isColorInStock && (
                                         <div className="absolute inset-0 bg-white/70 flex items-center justify-center">
                                             <span className="text-[9px] font-bold text-stone-600 bg-white px-1 py-0.5 rounded shadow-xs">Out of Stock</span>
@@ -804,7 +819,18 @@ const ProductDetails = () => {
                                                 : 'border-transparent opacity-60 hover:opacity-100 hover:border-stone-200'
                                             }`}
                                         >
-                                            <img src={img} alt={`${product.name} - View ${idx + 1}`} className="w-full h-full object-cover object-top" width="800" height="800" />
+                                            <img 
+                                                src={img} 
+                                                alt={`${product.name} - View ${idx + 1}`} 
+                                                className="w-full h-full object-cover object-top" 
+                                                width="800" 
+                                                height="800" 
+                                                onError={(e) => {
+                                                    if (product?.image && e.target.src !== product.image) {
+                                                        e.target.src = product.image;
+                                                    }
+                                                }}
+                                            />
                                         </button>
                                     )
                                 ))}
@@ -824,6 +850,11 @@ const ProductDetails = () => {
                                         src={selectedImage || displayImages[0] || product.image || 'https://via.placeholder.com/500'} 
                                         alt={product.name} 
                                         className="w-full h-full object-cover object-top" 
+                                        onError={(e) => {
+                                            if (product?.image && e.target.src !== product.image) {
+                                                e.target.src = product.image;
+                                            }
+                                        }}
                                     />
                                 </AnimatePresence>
                                 <div className="absolute top-4 right-4 flex flex-col gap-3 z-10">
@@ -857,6 +888,11 @@ const ProductDetails = () => {
                                             src={img} 
                                             alt={`${product.name} - View ${idx + 1}`} 
                                             className="w-full h-full object-cover object-top" 
+                                            onError={(e) => {
+                                                if (product?.image && e.target.src !== product.image) {
+                                                    e.target.src = product.image;
+                                                }
+                                            }}
                                         />
                                     </div>
                                 ))}
