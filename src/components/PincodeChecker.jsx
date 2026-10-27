@@ -68,7 +68,6 @@ export const PincodeChecker = () => {
                         onChange={(e) => setLocalPincode(e.target.value.replace(/\D/g, ''))}
                         placeholder="Enter 6-digit Pincode"
                         className="flex-1 px-3 py-2 text-sm border border-stone-200 rounded-lg focus:outline-none focus:border-rose-300 bg-white"
-                        autoFocus={!globalPincode}
                     />
                     <button 
                         type="submit" 

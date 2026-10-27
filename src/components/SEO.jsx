@@ -18,11 +18,6 @@ const SEO = ({ title, description, keywords, schema, url, image, noIndex, exactT
         // 1. Direct document title update for instant tab text update & single title tag enforcement
         document.title = fullTitle;
         const titleEls = document.head.querySelectorAll('title');
-        if (titleEls.length > 1) {
-            for (let i = 1; i < titleEls.length; i++) {
-                titleEls[i].remove();
-            }
-        }
         if (titleEls.length > 0) {
             titleEls[0].textContent = fullTitle;
         }
@@ -33,25 +28,16 @@ const SEO = ({ title, description, keywords, schema, url, image, noIndex, exactT
             descEl.setAttribute('content', metaDescription);
         }
 
-        // 3. Remove obsolete keyword-stuffed meta keywords tag site-wide
-        const kwEls = document.head.querySelectorAll('meta[name="keywords"]');
-        kwEls.forEach(el => el.remove());
-
-        // 4. Direct canonical link update in-place
+        // 3. Direct canonical link update in-place
         const canonicalEl = document.querySelector('link[rel="canonical"]');
         if (canonicalEl) {
             canonicalEl.setAttribute('href', metaUrl);
         }
 
-        // 5. Update OpenGraph and Twitter tags in place & remove any stale duplicates
+        // 4. Update OpenGraph and Twitter tags in place (NEVER remove DOM nodes)
         const updateMetaAttr = (selector, val) => {
             const els = document.head.querySelectorAll(selector);
-            if (els.length > 0) {
-                els[0].setAttribute('content', val);
-                for (let i = 1; i < els.length; i++) {
-                    els[i].remove();
-                }
-            }
+            els.forEach(el => el.setAttribute('content', val));
         };
 
         updateMetaAttr('meta[property="og:title"]', fullTitle);

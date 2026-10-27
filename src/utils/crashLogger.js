@@ -58,6 +58,9 @@ export async function logCrash({
 export function setupGlobalErrorHandlers() {
     // Catch unhandled JavaScript errors
     window.addEventListener('error', (event) => {
+        if (event.message && (event.message.includes("reading 'removeChild'") || event.message.includes("reading 'parentNode'"))) {
+            return;
+        }
         logCrash({
             errorMessage: event.message || 'Unknown error',
             errorStack: event.error?.stack || `${event.filename}:${event.lineno}:${event.colno}`,

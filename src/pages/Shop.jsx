@@ -431,6 +431,7 @@ const Shop = () => {
     };
 
     const prevUrl = currentPage > 1 ? getPaginationUrl(currentPage - 1) : null;
+    const nextUrl = currentPage < totalPages ? getPaginationUrl(currentPage + 1) : null;
     const activeCategoryParam = searchParams.get('category');
     const activeCategoryId = (selectedCategories.length === 1 
         ? selectedCategories[0] 

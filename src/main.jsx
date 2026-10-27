@@ -33,6 +33,14 @@ if (typeof Node === 'function' && Node.prototype) {
     }
     return originalInsertBefore.apply(this, arguments);
   };
+
+  // 🛡️ Global guard for React 19 / detached DOM reconciler edge cases (e.g. HostHoistable tag 26 unmount)
+  window.addEventListener('error', (event) => {
+    if (event.message && (event.message.includes("reading 'removeChild'") || event.message.includes("reading 'parentNode'"))) {
+      event.preventDefault();
+      console.warn('[DOM Guard] Suppressed detached removeChild reconciler error:', event.message);
+    }
+  });
 }
 
 // 📱 Capture PWA install prompt early, before React mounts

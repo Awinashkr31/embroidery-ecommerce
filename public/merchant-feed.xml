@@ -179,19 +179,6 @@ Upgrade your ethnic outfit with these eco-friendly, reusable, and stylish floral
             <g:identifier_exists>no</g:identifier_exists>
         </item>
         <item>
-            <g:id>26dcf7c3-ae22-410c-9e76-92c416898705</g:id>
-            <g:title>Crochet Flower Claw Hair Clip</g:title>
-            <g:description>Our artisans in India meticulously handcraft these stunning floral hair clips using delicate crochet threads, infusing each piece with love and care. Adorned with intricate flowers, these clips add a touch of elegance to any outfit. Whether you&apos;re dressing up or dressing down, these hair clips are a must-have accessory for any Indian woman&apos;s wardrobe.</g:description>
-            <g:link>https://www.crochetwali.in/product/crochet-flower-claw-hair-clip-26dcf7c3-ae22-410c-9e76-92c416898705</g:link>
-            <g:image_link>https://yqtrlqkmitgnaehbawdm.supabase.co/storage/v1/object/public/images/products/1778591771459-b51eeg.webp</g:image_link>
-            <g:condition>new</g:condition>
-            <g:availability>out_of_stock</g:availability>
-            <g:price>149 INR</g:price>
-            <g:brand>Crochet Wali</g:brand>
-            <g:google_product_category>Apparel &amp; Accessories &gt; Clothing Accessories &gt; Hair Accessories &gt; Hair Pins, Claw Clips &amp; Clips</g:google_product_category>
-            <g:identifier_exists>no</g:identifier_exists>
-        </item>
-        <item>
             <g:id>314035ce-5e96-451b-86a3-ec79043177f4</g:id>
             <g:title>Crochet Rose Round Bag</g:title>
             <g:description>Add a touch of handmade charm to your everyday look with this round crochet bag, decorated with a red rose and finished with a delicate pearl chain. Each bag is carefully crocheted by hand, giving it a soft, textured finish that feels as good as it looks. The pearl chain adds an elegant touch, making it perfect for outings, festive occasions and gifting. A timeless handmade accessory that pairs beautifully with both traditional and modern outfits.</g:description>
@@ -254,6 +241,19 @@ Upgrade your ethnic outfit with these eco-friendly, reusable, and stylish floral
             <g:price>149 INR</g:price>
             <g:brand>Crochet Wali</g:brand>
             <g:google_product_category>Apparel &amp; Accessories &gt; Handbag &amp; Wallet Accessories &gt; Keychains</g:google_product_category>
+            <g:identifier_exists>no</g:identifier_exists>
+        </item>
+        <item>
+            <g:id>26dcf7c3-ae22-410c-9e76-92c416898705</g:id>
+            <g:title>Crochet Flower Claw Hair Clip</g:title>
+            <g:description>Our artisans in India meticulously handcraft these stunning floral hair clips using delicate crochet threads, infusing each piece with love and care. Adorned with intricate flowers, these clips add a touch of elegance to any outfit. Whether you&apos;re dressing up or dressing down, these hair clips are a must-have accessory for any Indian woman&apos;s wardrobe.</g:description>
+            <g:link>https://www.crochetwali.in/product/crochet-flower-claw-hair-clip-26dcf7c3-ae22-410c-9e76-92c416898705</g:link>
+            <g:image_link>https://yqtrlqkmitgnaehbawdm.supabase.co/storage/v1/object/public/images/products/1778591771459-b51eeg.webp</g:image_link>
+            <g:condition>new</g:condition>
+            <g:availability>in_stock</g:availability>
+            <g:price>149 INR</g:price>
+            <g:brand>Crochet Wali</g:brand>
+            <g:google_product_category>Apparel &amp; Accessories &gt; Clothing Accessories &gt; Hair Accessories &gt; Hair Pins, Claw Clips &amp; Clips</g:google_product_category>
             <g:identifier_exists>no</g:identifier_exists>
         </item>
         <item>
