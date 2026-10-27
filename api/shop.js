@@ -223,6 +223,7 @@ export default async function handler(req, res) {
     const categoryParam = query.category || null;
     const maxPriceParam = query.maxPrice ? Number(query.maxPrice) : null;
     const isSaleOnly = query.sale === 'true';
+    const searchParam = (query.search || query.q || '').toLowerCase().trim();
 
     // Filter products
     let filtered = products.filter(p => {
@@ -243,6 +244,14 @@ export default async function handler(req, res) {
         }
         if (maxPriceParam && p.price > maxPriceParam) return false;
         if (isSaleOnly && (!p.originalPrice || p.price >= p.originalPrice)) return false;
+        if (searchParam) {
+            const pName = (p.name || '').toLowerCase();
+            const pCat = (p.category || '').toLowerCase();
+            const pDesc = (p.description || '').toLowerCase();
+            if (!pName.includes(searchParam) && !pCat.includes(searchParam) && !pDesc.includes(searchParam)) {
+                return false;
+            }
+        }
         return true;
     });
 

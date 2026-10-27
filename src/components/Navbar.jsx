@@ -48,7 +48,7 @@ const Navbar = React.memo(() => {
       e.preventDefault();
       if (searchQuery.trim()) {
           setIsSearchOpen(false);
-          navigate('/shop');
+          navigate(`/shop?search=${encodeURIComponent(searchQuery.trim())}`);
       }
   };
 

@@ -128,6 +128,7 @@ const Shop = () => {
         // Problem 2 Fix: One card per product, not one card per colour variant
         const targetProductParam = searchParams.get('product') || searchParams.get('productId');
         const targetColorParam = searchParams.get('color');
+        const searchQuery = (searchParams.get('search') || searchParams.get('q') || '').toLowerCase().trim();
 
         const uniqueProducts = products.map(prod => {
             let preselectedVariant = null;
@@ -189,6 +190,15 @@ const Shop = () => {
             // Availability & Sale Filters
             if (inStockOnly && !product.inStock) return false;
             if (isSaleOnly && (!product.originalPrice || product.price >= product.originalPrice)) return false;
+
+            // Search Query Filter
+            if (searchQuery) {
+                const pName = (product.name || '').toLowerCase();
+                const pCat = (product.category || '').toLowerCase();
+                const pDesc = (product.description || '').toLowerCase();
+                const matchesSearch = pName.includes(searchQuery) || pCat.includes(searchQuery) || pDesc.includes(searchQuery);
+                if (!matchesSearch) return false;
+            }
 
             return true;
         }).sort((a, b) => {

@@ -217,6 +217,7 @@ const TYPO_MAP = {
     'hair taiy': 'Hair Tie',
     'baw hairclip': 'Bow Hairclip',
     'crochet parandi': 'Crochet Parandi',
+    'crochet flower hair clutcher': 'Crochet Flower Hair Clutcher',
 };
 
 function toTitleCase(str) {
