@@ -29,9 +29,10 @@ import {
 const menuItems = [
   { icon: LayoutDashboard, label: 'Dashboard',       path: '/sadmin/dashboard' },
   { icon: ShoppingBag,     label: 'Product Listing', path: '/sadmin/products' },
+  { icon: FileText,        label: 'Blog',            path: '/sadmin/blog' },
   { icon: ShoppingCart,    label: 'Orders',          path: '/sadmin/orders' },
   { icon: Package,         label: 'Returns & NDR',   path: '/sadmin/returns-ndr' },
-  { icon: FileText,        label: 'Bulk Shipments',  path: '/sadmin/bulk-shipments' },
+  { icon: Download,        label: 'Bulk Shipments',  path: '/sadmin/bulk-shipments' },
   { icon: User,            label: 'Users',           path: '/sadmin/users' },
   { icon: Palette,         label: 'Design Requests', path: '/sadmin/design-requests' },
   { icon: Star,            label: 'Reviews',         path: '/sadmin/reviews' },

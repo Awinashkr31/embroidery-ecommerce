@@ -68,6 +68,7 @@ const AdminNotifications = lazy(() => import('./pages/admin/AdminNotifications')
 const Reviews = lazy(() => import('./pages/admin/Reviews'));
 const AdminDesignRequests = lazy(() => import('./pages/admin/AdminDesignRequests'));
 const Settings = lazy(() => import('./pages/admin/Settings'));
+const AdminBlog = lazy(() => import('./pages/admin/AdminBlog'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 
 import ProtectedRoute from './components/admin/ProtectedRoute'
@@ -147,6 +148,7 @@ function App() {
                     <Route index element={<Navigate to="/sadmin/dashboard" replace />} />
                     <Route path="dashboard" element={<Dashboard />} />
                     <Route path="products" element={<ProductManager />} />
+                    <Route path="blog" element={<AdminBlog />} />
                     <Route path="orders" element={<AdminOrders />} />
                     <Route path="returns-ndr" element={<AdminNDRManager />} />
                     <Route path="bulk-shipments" element={<AdminBulkShipments />} />

@@ -1,21 +1,69 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import SEO from '../../components/SEO';
-import { blogPosts } from './posts';
-import { ArrowLeft } from 'lucide-react';
+import { supabase } from '../../config/supabase';
+import { ArrowLeft, Loader } from 'lucide-react';
+import { blogPosts as fallbackPosts } from './posts';
 
 const BlogPost = () => {
     const { slug } = useParams();
     const navigate = useNavigate();
-    const post = useMemo(() => blogPosts.find(p => p.slug === slug), [slug]);
+    const [post, setPost] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         window.scrollTo(0, 0);
-        if (!post) {
-            navigate('/blog', { replace: true });
-        }
-    }, [post, navigate]);
+
+        const fetchPost = async () => {
+            let foundPost = null;
+
+            try {
+                const { data, error } = await supabase
+                    .from('blog_posts')
+                    .select('*')
+                    .eq('slug', slug)
+                    .eq('status', 'published')
+                    .maybeSingle();
+
+                if (!error && data) {
+                    foundPost = data;
+                }
+            } catch (err) {
+                console.warn('Supabase post fetch failed, trying fallback:', err);
+            }
+
+            // Fallback to static post if not found in Supabase
+            if (!foundPost) {
+                const fallback = fallbackPosts.find(p => p.slug === slug);
+                if (fallback) {
+                    foundPost = {
+                        ...fallback,
+                        publish_date: fallback.date ? `${fallback.date}T00:00:00+05:30` : new Date().toISOString(),
+                        meta_title: fallback.metaTitle,
+                        meta_description: fallback.metaDescription,
+                        status: 'published'
+                    };
+                }
+            }
+
+            if (!foundPost) {
+                navigate('/blog', { replace: true });
+            } else {
+                setPost(foundPost);
+            }
+            setLoading(false);
+        };
+        fetchPost();
+    }, [slug, navigate]);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-[#fdfbf7]">
+                <Loader className="w-8 h-8 animate-spin text-stone-400" />
+            </div>
+        );
+    }
 
     if (!post) return null;
 
@@ -24,13 +72,19 @@ const BlogPost = () => {
         ? (post.image.startsWith('http') ? post.image : `https://www.crochetwali.in${post.image.startsWith('/') ? '' : '/'}${post.image}`)
         : null;
 
+    const publishDate = post.publish_date
+        ? new Date(post.publish_date).toISOString().split('T')[0]
+        : new Date(post.created_at).toISOString().split('T')[0];
+
     const articleSchema = {
         "@context": "https://schema.org",
         "@type": "Article",
         "headline": post.title,
-        "description": post.metaDescription || post.excerpt,
-        "datePublished": post.date,
-        "dateModified": post.date,
+        "description": post.meta_description || post.excerpt,
+        "datePublished": publishDate,
+        "dateModified": post.updated_at
+            ? new Date(post.updated_at).toISOString().split('T')[0]
+            : publishDate,
         "author": {
             "@type": "Organization",
             "name": "Crochet Wali",
@@ -55,8 +109,8 @@ const BlogPost = () => {
     return (
         <div className="min-h-screen bg-[#fdfbf7] pt-8 md:pt-12 pb-24 font-body">
             <SEO 
-                title={post.metaTitle}
-                description={post.metaDescription}
+                title={post.meta_title || post.title}
+                description={post.meta_description || post.excerpt}
                 keywords={post.keywords}
                 image={imageUrl || "https://www.crochetwali.in/hero-gift.png"}
                 url={articleUrl}
@@ -70,7 +124,7 @@ const BlogPost = () => {
 
                 <div className="mb-10 text-center">
                     <span className="text-rose-900 text-sm font-bold tracking-widest uppercase mb-4 block">
-                        {new Date(post.date).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })}
+                        {new Date(post.publish_date || post.created_at).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })}
                     </span>
                     <h1 className="text-3xl md:text-5xl font-heading font-bold text-stone-900 mb-6 leading-tight">
                         {post.title}

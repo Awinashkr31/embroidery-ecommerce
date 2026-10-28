@@ -3,8 +3,9 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
-import { blogPosts } from '../src/pages/Blog/posts.js';
+
 import { sanitizeProductName, isDuplicateProduct } from '../src/utils/productSanitizer.js';
+import { blogPosts as fallbackPosts } from '../src/pages/Blog/posts.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -120,11 +121,46 @@ async function generateSitemap() {
     xml += `  </url>\n`;
   });
 
-  // 4. Blog Posts
-  blogPosts.forEach(post => {
+  // 4. Blog Posts (published only, from database with fallback)
+  let dbPosts = [];
+  try {
+    const { data: blogPosts, error: blogError } = await supabase
+      .from('blog_posts')
+      .select('slug, publish_date, updated_at')
+      .eq('status', 'published')
+      .order('publish_date', { ascending: false });
+
+    if (!blogError && blogPosts) {
+      dbPosts = blogPosts;
+    }
+  } catch (e) {
+    console.warn('Note: Could not query Supabase blog_posts, using fallback.');
+  }
+
+  // Combine fallback posts and DB posts by slug
+  const postMap = new Map();
+  // Fallback posts (all 16 original posts)
+  fallbackPosts.forEach(post => {
+    postMap.set(post.slug, {
+      slug: post.slug,
+      publish_date: post.date ? `${post.date}T00:00:00+05:30` : today,
+      updated_at: null
+    });
+  });
+  // Overlay DB posts (any newly published or edited in DB)
+  dbPosts.forEach(post => {
+    postMap.set(post.slug, post);
+  });
+
+  const finalPosts = Array.from(postMap.values());
+
+  finalPosts.forEach(post => {
+    const modDate = post.updated_at
+      ? new Date(post.updated_at).toISOString().split('T')[0]
+      : (post.publish_date ? new Date(post.publish_date).toISOString().split('T')[0] : today);
     xml += `  <url>\n`;
     xml += `    <loc>https://www.crochetwali.in/blog/${post.slug}</loc>\n`;
-    xml += `    <lastmod>${post.publishDate || today}</lastmod>\n`;
+    xml += `    <lastmod>${modDate}</lastmod>\n`;
     xml += `    <changefreq>monthly</changefreq>\n`;
     xml += `    <priority>0.7</priority>\n`;
     xml += `  </url>\n`;
@@ -134,7 +170,7 @@ async function generateSitemap() {
 
   const publicDest = path.resolve(__dirname, '../public/sitemap.xml');
   fs.writeFileSync(publicDest, xml, 'utf8');
-  console.log(`Saved ${publicDest} with ${STATIC_ROUTES.length + COLLECTION_ROUTES.length + products.length + blogPosts.length} URLs`);
+  console.log(`Saved ${publicDest} with ${STATIC_ROUTES.length + COLLECTION_ROUTES.length + products.length + finalPosts.length} URLs`);
 
   const distDir = path.resolve(__dirname, '../dist');
   if (fs.existsSync(distDir)) {
