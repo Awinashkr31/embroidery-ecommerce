@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { Home, Sparkles, Scissors, User, LayoutGrid, X } from 'lucide-react';
+import { Home, Sparkles, Palette, User, LayoutGrid, X } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -20,32 +20,29 @@ const BottomNavigation = () => {
   // Persistent state so we don't repeat the animation on route changes or re-renders
   const [hasAnimated, setHasAnimated] = useState(false);
 
-  // Animation trigger for Home Page
+  const isHome = location.pathname === '/';
+
+  // Animation trigger for Home Page ONLY
   React.useEffect(() => {
-    // If not installable, just mark as animated so it starts compact
-    if (!isInstallable) {
-      setHasAnimated(true);
+    // If not installable or not on Home, don't show the button
+    if (!isInstallable || !isHome) {
+      setHasAnimated(false);
       return;
     }
     
-    if (location.pathname === '/') {
-      // Start large every time we visit Home
-      setHasAnimated(false);
-      
-      // Animate to compact after delay
-      const timer = setTimeout(() => {
-        setHasAnimated(true);
-      }, 1000); // 1000ms delay for the large -> compact transition
-      
-      return () => clearTimeout(timer);
-    } else {
-      // On other pages, stay compact
+    // Start large every time we visit Home
+    setHasAnimated(false);
+    
+    // Animate to compact after delay
+    const timer = setTimeout(() => {
       setHasAnimated(true);
-    }
-  }, [location.pathname, isInstallable]);
+    }, 1000); // 1000ms delay for the large -> compact transition
+    
+    return () => clearTimeout(timer);
+  }, [location.pathname, isInstallable, isHome]);
 
-  // isShrunk means we are in the "compact" phase and we have a button to show
-  const isShrunk = hasAnimated && isInstallable;
+  // isShrunk means we are on Home page, in the "compact" phase and we have a button to show
+  const isShrunk = isHome && hasAnimated && isInstallable;
 
   const handleInstallClick = async () => {
     const success = await promptInstall();
@@ -74,8 +71,7 @@ const BottomNavigation = () => {
     { to: '/',             label: 'Home',     Icon: Home,        end: true,  id: 'home' },
     { to: '/categories',   label: 'Category', Icon: LayoutGrid,  end: false, id: 'category' },
     { to: '/new-arrivals', label: 'New',      Icon: Sparkles,    end: false, id: 'new' },
-    { to: '/custom-design',label: 'Custom',   Icon: Scissors,    end: false, id: 'custom' },
-    { to: '/profile',      label: 'Profile',  Icon: User,        end: false, id: 'profile' },
+    { to: '/custom-design',label: 'Custom',   Icon: Palette,     end: false, id: 'custom' },
   ];
 
   return (
@@ -166,7 +162,8 @@ const BottomNavigation = () => {
         </div>
         </nav>
 
-        {/* PWA Install Button Container - Always rendered, animates in/out */}
+        {/* PWA Install Button Container - Only rendered on Home Page */}
+        {isHome && (
         <div className={`pointer-events-auto flex items-end justify-end transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] overflow-hidden origin-bottom-right ${
           isShrunk ? 'w-[56px] opacity-100 scale-100 translate-y-0 translate-x-0' : 'w-0 opacity-0 scale-50 translate-y-4 translate-x-4'
         }`}>
@@ -178,6 +175,7 @@ const BottomNavigation = () => {
             <span className="text-[10px] font-bold leading-none tracking-wide">Get App</span>
           </button>
         </div>
+        )}
       </div>
 
     </>

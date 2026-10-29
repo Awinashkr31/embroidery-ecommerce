@@ -69,6 +69,16 @@
       "source": "/product/(.*)e6d2aa67-4a7d-4dfb-ad09-ec1fd25f6bc2(.*)",
       "destination": "https://www.crochetwali.in/product/crochet-wrist-gajra-bracelet-pair-f6439b6e-b495-4d17-95f2-7bcd7d7fdd26",
       "permanent": true
+    },
+    {
+      "source": "/collections/embroidery-hoops",
+      "destination": "https://www.crochetwali.in/shop",
+      "permanent": true
+    },
+    {
+      "source": "/collections/custom-embroidery-hoops",
+      "destination": "https://www.crochetwali.in/shop",
+      "permanent": true
     }
   ],
   "headers": [

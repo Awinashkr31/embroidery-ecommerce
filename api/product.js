@@ -2,6 +2,7 @@
 // Delivers Schema.org Product Rich Snippets (price, stock, reviews) & indexable HTML for Googlebot and social bots.
 import dotenv from 'dotenv';
 dotenv.config();
+import { viteAssets } from './viteAssets.js';
 
 export const config = {
     maxDuration: 10,
@@ -171,45 +172,56 @@ function buildSeoHtml({
   <script type="application/ld+json">
   ${JSON.stringify(jsonLd, null, 2)}
   </script>
+  ${viteAssets?.headTags || ''}
 </head>
-<body style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 24px; background: #fdfbf7; color: #1c1917;">
-  <header style="border-bottom: 1px solid #e7e5e4; padding-bottom: 16px; margin-bottom: 24px;">
-    <a href="https://www.crochetwali.in/" style="text-decoration: none; font-size: 24px; font-weight: bold; color: #881337;">Crochet Wali</a>
-    <p style="margin: 4px 0 0; font-size: 13px; color: #78716c;">Handmade Crochet & Artisanal Keepsakes India</p>
-  </header>
-  <main style="max-width: 800px; margin: 0 auto;">
-    <article>
-      <h1 style="font-size: 28px; line-height: 1.2; color: #1c1917; margin-bottom: 10px;">${escapeHtml(name)}</h1>
-      <div style="font-size: 22px; font-weight: bold; color: #881337; margin-bottom: 16px;">
-        ₹${escapeHtml(price)} ${hasCompareAt ? `<span style="text-decoration: line-through; color: #78716c; font-size: 16px; margin-left: 8px;">₹${escapeHtml(originalPrice)}</span>` : ''}
-        <span style="font-size: 14px; color: #15803d; margin-left: 12px; font-weight: 600;">${inStock ? '✓ In Stock • Ready to Dispatch' : 'Made to Order'}</span>
-      </div>
-      <p style="color: #44403c; line-height: 1.6; font-size: 16px;">${escapeHtml(cleanDescription)}</p>
-      <div style="margin: 24px 0;">
-        <img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(name)}" style="max-width: 100%; height: auto; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);" />
-      </div>
-      <div style="background: #fff; border: 1px solid #e7e5e4; border-radius: 12px; padding: 16px; margin: 20px 0;">
-        <h3 style="margin: 0 0 8px; font-size: 15px; color: #1c1917;">✨ Why Shop from Crochet Wali?</h3>
-        <ul style="margin: 0; padding-left: 20px; color: #57534e; font-size: 14px; line-height: 1.6;">
-          <li>100% Handcrafted by skilled Indian artisans using premium yarn</li>
-          <li>Free Shipping on orders above ₹999</li>
-          <li>Eco-friendly forever flowers that never wilt</li>
-          <li>Safe & secure payments (Razorpay, UPI, Cards)</li>
-        </ul>
-      </div>
-      <div style="margin-top: 24px;">
-        <a href="${escapeHtml(productUrl)}?ref=organic_bot" style="display: inline-block; background: #881337; color: #fff; padding: 14px 28px; border-radius: 9999px; text-decoration: none; font-weight: bold; font-size: 16px;">
-          Shop Now on Crochet Wali →
-        </a>
-      </div>
-    </article>
-  </main>
-  <script>
-    // Smooth redirect for real human visitors who clicked through directly
-    if (typeof window !== 'undefined' && !window.location.search.includes('nobot')) {
-      window.location.replace("${escapeHtml(productUrl)}");
-    }
-  </script>
+<body style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background: #fdfbf7; color: #1c1917;">
+  <div id="root">
+    <header style="background: #fff; border-bottom: 1px solid #e7e5e4; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between;">
+      <a href="https://www.crochetwali.in/" style="text-decoration: none; font-size: 22px; font-weight: bold; color: #881337;">Crochet Wali</a>
+      <nav style="display: flex; gap: 16px; font-size: 14px; font-weight: 600;">
+        <a href="/shop" style="color: #44403c; text-decoration: none;">Shop</a>
+        <a href="/gifts" style="color: #44403c; text-decoration: none;">Gifts</a>
+        <a href="/custom-design" style="color: #44403c; text-decoration: none;">Custom Design</a>
+      </nav>
+    </header>
+    <main style="max-width: 900px; margin: 0 auto; padding: 24px 16px;">
+      <!-- Breadcrumbs -->
+      <nav aria-label="Breadcrumb" style="font-size: 13px; color: #78716c; margin-bottom: 16px;">
+        <a href="/" style="color: #78716c; text-decoration: none;">Home</a> / 
+        <a href="/shop" style="color: #78716c; text-decoration: none;">Shop</a> / 
+        <span style="color: #1c1917; font-weight: 500;">${escapeHtml(name)}</span>
+      </nav>
+
+      <article>
+        <h1 style="font-size: 28px; line-height: 1.2; color: #1c1917; margin-bottom: 10px;">${escapeHtml(name)}</h1>
+        <div style="font-size: 22px; font-weight: bold; color: #881337; margin-bottom: 16px;">
+          ₹${escapeHtml(price)} ${hasCompareAt ? `<span style="text-decoration: line-through; color: #78716c; font-size: 16px; margin-left: 8px;">₹${escapeHtml(originalPrice)}</span>` : ''}
+          <span style="font-size: 14px; color: #15803d; margin-left: 12px; font-weight: 600;">${inStock ? '✓ In Stock • Ready to Dispatch' : 'Made to Order'}</span>
+        </div>
+        <div style="margin: 24px 0; text-align: center;">
+          <img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(name)}" style="max-width: 100%; max-height: 500px; height: auto; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); object-fit: cover;" />
+        </div>
+        <p style="color: #44403c; line-height: 1.6; font-size: 16px;">${escapeHtml(cleanDescription)}</p>
+        <div style="background: #fff; border: 1px solid #e7e5e4; border-radius: 12px; padding: 16px; margin: 20px 0;">
+          <h3 style="margin: 0 0 8px; font-size: 15px; color: #1c1917;">✨ Why Shop from Crochet Wali?</h3>
+          <ul style="margin: 0; padding-left: 20px; color: #57534e; font-size: 14px; line-height: 1.6;">
+            <li>100% Handcrafted by skilled Indian artisans using premium yarn</li>
+            <li>Free Shipping on orders above ₹999</li>
+            <li>Eco-friendly forever flowers that never wilt</li>
+            <li>Safe & secure payments (Razorpay, UPI, Cards)</li>
+          </ul>
+        </div>
+        <div style="margin-top: 24px;">
+          <a href="/checkout" style="display: inline-block; background: #881337; color: #fff; padding: 14px 28px; border-radius: 9999px; text-decoration: none; font-weight: bold; font-size: 16px;">
+            Order on Crochet Wali →
+          </a>
+        </div>
+      </article>
+    </main>
+  </div>
+
+  <!-- Vite entrypoint for instant client hydration -->
+  ${viteAssets?.scriptTags || ''}
 </body>
 </html>`;
 }

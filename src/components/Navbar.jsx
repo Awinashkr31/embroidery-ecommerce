@@ -240,7 +240,7 @@ const Navbar = React.memo(() => {
                                 <h4 className="font-heading font-bold text-stone-900 mb-3 text-[11px] tracking-widest uppercase border-b border-stone-100 pb-2">By Category</h4>
                                 <ul className="space-y-2">
                                     <li><Link to="/shop?category=crochet" className="text-sm text-stone-600 hover:text-rose-900 transition-colors">Crochet Bouquets</Link></li>
-                                    <li><Link to="/shop?category=embroidery" className="text-sm text-stone-600 hover:text-rose-900 transition-colors">Embroidery Hoops</Link></li>
+                                    <li><Link to="/shop?category=flower-pot" className="text-sm text-stone-600 hover:text-rose-900 transition-colors">Flower Pots</Link></li>
                                     <li><Link to="/shop?category=accessories" className="text-sm text-stone-600 hover:text-rose-900 transition-colors">Accessories</Link></li>
                                 </ul>
                             </div>
@@ -436,6 +436,19 @@ const Navbar = React.memo(() => {
                             {link.name}
                         </Link>
                     ))}
+                    {/* Profile shifted from Bottom Bar */}
+                    <Link 
+                        to="/profile"
+                        className={`flex items-center gap-3 text-base font-body font-medium transition-all py-3 px-4 ${
+                            isActive('/profile') 
+                                ? 'text-rose-900 font-semibold bg-rose-50/50 rounded-r-full border-l-4 border-rose-900' 
+                                : 'text-stone-600 hover:text-stone-900 hover:bg-stone-50 rounded-r-full border-l-4 border-transparent'
+                        }`}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                        <User className="w-5 h-5 text-stone-500" />
+                        <span>Profile</span>
+                    </Link>
                 </div>
 
                 <div className="border-t border-stone-100 pt-6 px-4 pb-4">

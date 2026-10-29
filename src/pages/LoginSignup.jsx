@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useSettings } from '../context/SettingsContext';
 import { FREE_SHIPPING_THRESHOLD } from '../constants/shippingConfig';
 import { AlertTriangle, Sparkles, Shield, Truck, RefreshCw, ChevronLeft } from 'lucide-react';
+import SEO from '../components/SEO';
 
 const LoginSignup = () => {
   const navigate = useNavigate();

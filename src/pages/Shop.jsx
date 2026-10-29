@@ -160,10 +160,24 @@ const Shop = () => {
         const targetProductParam = searchParams.get('product') || searchParams.get('productId');
 
         if (categoryParam && categoryParam !== 'all') {
-            const matched = contextCategories.find(c => 
-                slugify(c.id) === slugify(categoryParam) || 
-                slugify(c.label) === slugify(categoryParam)
-            );
+            const sParam = slugify(categoryParam);
+            const cleanParam = sParam.replace(/-+/g, '-');
+            const paramSingular = cleanParam.replace(/s$/, '');
+
+            const matched = contextCategories.find(c => {
+                const sId = slugify(c.id);
+                const sLabel = slugify(c.label);
+                const cleanId = sId.replace(/-+/g, '-');
+                const cleanLabel = sLabel.replace(/-+/g, '-');
+                return sId === sParam ||
+                    sLabel === sParam ||
+                    cleanId === cleanParam ||
+                    cleanLabel === cleanParam ||
+                    cleanLabel.includes(paramSingular) ||
+                    cleanId.includes(paramSingular) ||
+                    cleanParam.includes(cleanId.replace(/s$/, '')) ||
+                    cleanParam.includes(cleanLabel.replace(/s$/, ''));
+            });
             setSelectedCategories([matched ? matched.id : categoryParam]);
         } else if (targetProductParam && products.length > 0) {
             const prod = products.find(p => 
@@ -230,10 +244,13 @@ const Shop = () => {
         if (selectedCategories.length > 0) {
             selectedCategories.forEach(catId => {
                 selectedSlugs.add(slugify(catId));
+                selectedSlugs.add(slugify(catId).replace(/-+/g, '-'));
                 const catObj = contextCategories.find(c => c.id === catId || slugify(c.label) === slugify(catId));
                 if (catObj) {
                     selectedSlugs.add(slugify(catObj.id));
                     selectedSlugs.add(slugify(catObj.label));
+                    selectedSlugs.add(slugify(catObj.id).replace(/-+/g, '-'));
+                    selectedSlugs.add(slugify(catObj.label).replace(/-+/g, '-'));
                 }
             });
         }
@@ -251,12 +268,16 @@ const Shop = () => {
             if (selectedCategories.length > 0) {
                 const prodCat = product.category || '';
                 const prodCatSlug = slugify(prodCat);
+                const cleanProdCatSlug = prodCatSlug.replace(/-+/g, '-');
                 const matchesCategory = selectedSlugs.has(prodCatSlug) || 
-                    selectedCategories.some(catId => 
-                        catId === prodCat || 
-                        slugify(catId) === prodCatSlug || 
-                        slugify(catId) === slugify(prodCat)
-                    );
+                    selectedSlugs.has(cleanProdCatSlug) ||
+                    selectedCategories.some(catId => {
+                        const sCatId = slugify(catId);
+                        const cleanCatId = sCatId.replace(/-+/g, '-');
+                        return catId === prodCat || 
+                            sCatId === prodCatSlug || 
+                            cleanCatId === cleanProdCatSlug;
+                    });
                 if (!matchesCategory) return false;
             }
 

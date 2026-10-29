@@ -537,7 +537,7 @@ At Crochet Wali, we allow you to fully customize your [Anniversary Gifts](/colle
 Does she love a specific shade of lavender? We can crochet a mixed bouquet featuring lavender tulips and white daisies. 
 
 ### Pair it with Personalized Keepsakes
-If you want to go the extra mile, pair the bouquet with a [Custom Embroidery Hoop](/collections/custom-embroidery-hoops). You can have your wedding date, your initials, or a special quote hand-embroidered onto a beautiful fabric canvas that she can hang in the bedroom.
+If you want to go the extra mile, pair the bouquet with a Custom Embroidery Hoop. You can have your wedding date, your initials, or a special quote hand-embroidered onto a beautiful fabric canvas that she can hang in the bedroom.
 
 ### Frequently Asked Questions (FAQ)
 

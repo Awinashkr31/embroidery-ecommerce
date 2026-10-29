@@ -47,11 +47,9 @@ const STATIC_ROUTES = [
 
 const COLLECTION_ROUTES = [
   'crochet-bouquets',
-  'custom-embroidery-hoops',
   'handmade-gifts',
   'personalized-gifts',
   'crochet-accessories',
-  'embroidery-hoops',
   'crochet-gifts',
   'gifts-under-500',
   'gifts-under-1000',

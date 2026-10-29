@@ -12,6 +12,25 @@ const SEO = ({ title, description, keywords, schema, url, image, noIndex, exactT
     const metaUrl = url || (typeof window !== 'undefined' ? `https://www.crochetwali.in${window.location.pathname}` : "https://www.crochetwali.in");
     const metaImage = image || "https://www.crochetwali.in/hero-gift.png";
 
+    let formattedSchema = null;
+    if (schema) {
+        if (Array.isArray(schema)) {
+            formattedSchema = {
+                "@context": "https://schema.org",
+                "@graph": schema.map(item => {
+                    if (item && typeof item === 'object') {
+                        const { "@context": _, ...rest } = item;
+                        return rest;
+                    }
+                    return item;
+                })
+            };
+        } else {
+            formattedSchema = schema;
+        }
+    }
+    const schemaJsonString = formattedSchema ? JSON.stringify(formattedSchema) : '';
+
     useEffect(() => {
         if (typeof document === 'undefined') return;
 
@@ -48,7 +67,21 @@ const SEO = ({ title, description, keywords, schema, url, image, noIndex, exactT
         updateMetaAttr('meta[name="twitter:description"]', metaDescription);
         updateMetaAttr('meta[name="twitter:url"]', metaUrl);
         updateMetaAttr('meta[name="twitter:image"]', metaImage);
-    }, [fullTitle, metaDescription, metaUrl, metaImage]);
+
+        // 5. Direct single page-specific Schema.org JSON-LD update in-place (NEVER remove DOM nodes)
+        let pageSchemaEl = document.getElementById('page-jsonld-schema');
+        if (schemaJsonString) {
+            if (!pageSchemaEl) {
+                pageSchemaEl = document.createElement('script');
+                pageSchemaEl.id = 'page-jsonld-schema';
+                pageSchemaEl.type = 'application/ld+json';
+                document.head.appendChild(pageSchemaEl);
+            }
+            pageSchemaEl.textContent = schemaJsonString;
+        } else if (pageSchemaEl) {
+            pageSchemaEl.textContent = '';
+        }
+    }, [fullTitle, metaDescription, metaUrl, metaImage, schemaJsonString]);
 
     return (
         <Helmet>
@@ -84,10 +117,12 @@ const SEO = ({ title, description, keywords, schema, url, image, noIndex, exactT
             <meta name="twitter:image" content={metaImage} />
 
             {/* Schema.org JSON-LD */}
-            {schema && (
-                <script type="application/ld+json">
-                    {JSON.stringify(schema)}
-                </script>
+            {schemaJsonString && (
+                <script 
+                    type="application/ld+json" 
+                    id="page-jsonld-schema"
+                    dangerouslySetInnerHTML={{ __html: schemaJsonString }}
+                />
             )}
         </Helmet>
     );

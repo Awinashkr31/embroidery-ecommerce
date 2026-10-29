@@ -16,12 +16,6 @@ const COLLECTION_SEO_CONTENT = {
         h1: 'Handmade Crochet Bouquets',
         text: 'Welcome to our exclusive collection of handmade crochet bouquets. Every piece is meticulously crafted by skilled artisans in India, ensuring that your floral gift lasts forever. Our aesthetic crochet flowers are perfect for anniversaries, birthdays, or simply as an aesthetic home decor piece. Unlike real flowers that wither in a few days, a forever flower bouquet retains its charm and vibrant colors for a lifetime. Choose from a variety of styles, from delicate single roses to grand mixed floral arrangements. Whether you are looking for a unique crochet bouquet for girlfriend or a personalized present for a best friend, our handmade flower bouquets offer an emotional and everlasting gifting experience.',
     },
-    'custom-embroidery-hoops': {
-        title: 'Custom Embroidery Hoops | Personalized Handmade Gifts India',
-        description: 'Order custom embroidery hoops for weddings, anniversaries, and baby announcements. 100% aesthetic handmade gifts in India with premium quality threads and aesthetic designs.',
-        h1: 'Custom Embroidery Hoops',
-        text: 'Discover the art of personalized gifting with our custom embroidery hoops. Handcrafted in India, these delicate pieces of art capture your most cherished memories in thread and fabric. Perfect for a handmade anniversary gift, romantic handmade gifts, baby announcements, or aesthetic room decor handmade, our embroidery hoops are designed to wow. We use premium cotton threads, high-quality wooden hoops, and aesthetic floral patterns to bring your ideas to life. You can customize the names, dates, quotes, and color palettes to perfectly match the occasion. A custom embroidery hoop is not just a gift; it is a personalized aesthetic gift that holds emotional value for years to come.',
-    },
     'handmade-gifts': {
         title: 'Handmade Gifts India | Aesthetic & Personalized Gifting',
         description: 'Shop the best handmade gifts in India. From custom embroidery to aesthetic crochet accessories, find the perfect personalized handmade gifts for any occasion.',
@@ -39,12 +33,6 @@ const COLLECTION_SEO_CONTENT = {
         description: 'Elevate your style with our aesthetic handmade crochet accessories. Shop crochet bags, hair clips, and fashion accessories made in India.',
         h1: 'Aesthetic Crochet Accessories',
         text: 'Add a touch of handmade elegance to your everyday style with our crochet accessories india. Handcrafted with precision, our collection features beautifully designed crochet hair accessories, aesthetic crochet decor, and delicate fashion items. Crochet fashion is making a massive comeback, and our products blend traditional craftsmanship with cute aesthetic gifts. Whether you are dressing up for a casual day out or looking for a unique accessory to complete your outfit, our cute handmade accessories are the perfect choice. Made with premium yarns and intricate patterns, they are durable, stylish, and eco-friendly.',
-    },
-    'embroidery-hoops': {
-        title: 'Handmade Keepsake Embroidery Hoops | Custom Wall Art | Crochet Wali',
-        description: 'Shop bespoke personalized embroidery hoops, wedding portrait stitching, and floral wall art handcrafted in New Delhi, India.',
-        h1: 'Handmade Keepsake Embroidery Hoops',
-        text: 'Discover our heirloom collection of custom embroidery hoops handcrafted in India. Featuring personalized names, significant dates, and delicate floral stitching on natural wooden frames, each hoop is a meaningful keepsake. Whether celebrating a wedding, anniversary, or welcoming a newborn, our custom embroidery hoop art turns your cherished memories into timeless handmade wall decor.',
     },
     'crochet-gifts': {
         title: 'Crochet Gifts India | Unique Handmade Gifts | Crochet Wali',
@@ -159,9 +147,18 @@ const Collection = () => {
             // Keyword specific filter (e.g. gajra, parandi, clip, keychain, bouquet, sunflower, rose)
             const targetKeywords = keywords.filter(k => k !== 'crochet' && k !== 'handmade' && k !== 'gifts' && k !== 'custom');
             if (targetKeywords.length > 0) {
-                return targetKeywords.some(k => productSlug.includes(k) || titleSlug.includes(k));
+                return targetKeywords.some(k => {
+                    const singular = k.endsWith('s') ? k.slice(0, -1) : k;
+                    return productSlug.includes(k) || 
+                           titleSlug.includes(k) || 
+                           productSlug.includes(singular) || 
+                           titleSlug.includes(singular);
+                });
             }
-            return productSlug.includes(keywords[0]) || titleSlug.includes(keywords[0]);
+            const firstKw = keywords[0];
+            const firstSingular = firstKw ? (firstKw.endsWith('s') ? firstKw.slice(0, -1) : firstKw) : '';
+            return productSlug.includes(firstKw) || titleSlug.includes(firstKw) || 
+                   (firstSingular && (productSlug.includes(firstSingular) || titleSlug.includes(firstSingular)));
         });
     }, [products, slug]);
 

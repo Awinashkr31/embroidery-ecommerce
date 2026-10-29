@@ -196,7 +196,8 @@ function App() {
                 <Route path="/bulk-crochet-gifts" element={<Navigate to="/custom-design" replace />} />
                 <Route path="/collections/aesthetic-gifts" element={<Navigate to="/collections/crochet-gifts" replace />} />
                 <Route path="/collections/occasion-gifts" element={<Navigate to="/gifts" replace />} />
-                <Route path="/collections/embroidery-hoops" element={<Navigate to="/collections/custom-embroidery-hoops" replace />} />
+                <Route path="/collections/embroidery-hoops" element={<Navigate to="/shop" replace />} />
+                <Route path="/collections/custom-embroidery-hoops" element={<Navigate to="/shop" replace />} />
                 <Route path="/collections/handmade" element={<Navigate to="/collections/handmade-gifts" replace />} />
                 <Route path="/collections/:slug" element={<Collection />} />
                 <Route path="/new-arrivals" element={<NewArrivals />} />

@@ -3,6 +3,7 @@
 import dotenv from 'dotenv';
 dotenv.config();
 import { getCategorySeoData } from '../src/utils/categorySeo.js';
+import { viteAssets } from './viteAssets.js';
 
 export const config = {
     maxDuration: 10,
@@ -468,7 +469,7 @@ export default async function handler(req, res) {
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/src/index.css">
+  ${viteAssets?.headTags || '<link rel="stylesheet" href="/src/index.css">'}
 
   <style>
     body { font-family: 'Outfit', system-ui, sans-serif; background: #fdfbf7; color: #1c1917; margin: 0; padding: 0; }
@@ -536,7 +537,7 @@ export default async function handler(req, res) {
   </div>
 
   <!-- Vite entrypoint for instant client hydration -->
-  <script type="module" src="/src/main.jsx"></script>
+  ${viteAssets?.scriptTags || '<script type="module" src="/src/main.jsx"></script>'}
 </body>
 </html>`;
 

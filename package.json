@@ -7,7 +7,7 @@
     "dev": "vite",
     "feed": "node scripts/generate-feed.js",
     "sitemap": "node scripts/generate_sitemap.js && node scripts/generate_image_sitemap.js",
-    "build": "npm run feed && npm run sitemap && vite build",
+    "build": "npm run feed && npm run sitemap && vite build && node scripts/prerender.js",
     "lint": "eslint .",
     "preview": "vite preview"
   },
