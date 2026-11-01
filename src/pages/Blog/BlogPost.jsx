@@ -7,14 +7,48 @@ import { ArrowLeft, Loader } from 'lucide-react';
 import { getOptimizedImageUrl } from '../../utils/imageUtils';
 import { blogPosts as fallbackPosts } from './posts';
 
+const getFallbackPost = (targetSlug) => {
+    const fallback = fallbackPosts.find(p => p.slug === targetSlug);
+    if (!fallback) return null;
+    return {
+        ...fallback,
+        publish_date: fallback.date ? `${fallback.date}T00:00:00+05:30` : new Date().toISOString(),
+        meta_title: fallback.metaTitle,
+        meta_description: fallback.metaDescription,
+        status: 'published'
+    };
+};
+
 const BlogPost = () => {
     const { slug } = useParams();
     const navigate = useNavigate();
-    const [post, setPost] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [post, setPost] = useState(() => getFallbackPost(slug));
+    const [loading, setLoading] = useState(() => !getFallbackPost(slug));
+
+    const normalizedContent = useMemo(() => {
+        if (!post?.content) return '';
+        // If markdown starts with H3s but lacks H2s, promote H4 -> H3 and H3 -> H2 to ensure valid heading hierarchy (WCAG 1.3.1)
+        const hasH2 = /^##\s+/m.test(post.content);
+        if (!hasH2 && /^###\s+/m.test(post.content)) {
+            return post.content.replace(/^(#{3,4})\s+(.*$)/gm, (match, hashes, title) => {
+                if (hashes === '####') return `### ${title}`;
+                if (hashes === '###') return `## ${title}`;
+                return match;
+            });
+        }
+        return post.content;
+    }, [post?.content]);
 
     useEffect(() => {
         window.scrollTo(0, 0);
+
+        const currentFallback = getFallbackPost(slug);
+        if (currentFallback) {
+            setPost(currentFallback);
+            setLoading(false);
+        } else {
+            setLoading(true);
+        }
 
         const fetchPost = async () => {
             let foundPost = null;
@@ -36,16 +70,7 @@ const BlogPost = () => {
 
             // Fallback to static post if not found in Supabase
             if (!foundPost) {
-                const fallback = fallbackPosts.find(p => p.slug === slug);
-                if (fallback) {
-                    foundPost = {
-                        ...fallback,
-                        publish_date: fallback.date ? `${fallback.date}T00:00:00+05:30` : new Date().toISOString(),
-                        meta_title: fallback.metaTitle,
-                        meta_description: fallback.metaDescription,
-                        status: 'published'
-                    };
-                }
+                foundPost = getFallbackPost(slug);
             }
 
             if (!foundPost) {
@@ -69,13 +94,18 @@ const BlogPost = () => {
     if (!post) return null;
 
     const articleUrl = `https://www.crochetwali.in/blog/${post.slug}`;
-    const imageUrl = post.image 
+    const imageUrl = post.image
         ? (post.image.startsWith('http') ? post.image : `https://www.crochetwali.in${post.image.startsWith('/') ? '' : '/'}${post.image}`)
         : null;
 
-    const publishDate = post.publish_date
-        ? new Date(post.publish_date).toISOString().split('T')[0]
-        : new Date(post.created_at).toISOString().split('T')[0];
+    const formatDate = (dateStr) => {
+        if (!dateStr) return '';
+        const d = new Date(dateStr);
+        return isNaN(d.getTime()) ? '' : d.toISOString().split('T')[0];
+    };
+
+    const publishDate = formatDate(post.publish_date) || formatDate(post.created_at) || new Date().toISOString().split('T')[0];
+    const modifiedDate = formatDate(post.updated_at) || publishDate;
 
     const articleSchema = {
         "@context": "https://schema.org",
@@ -83,9 +113,7 @@ const BlogPost = () => {
         "headline": post.title,
         "description": post.meta_description || post.excerpt,
         "datePublished": publishDate,
-        "dateModified": post.updated_at
-            ? new Date(post.updated_at).toISOString().split('T')[0]
-            : publishDate,
+        "dateModified": modifiedDate,
         "author": {
             "@type": "Organization",
             "name": "Crochet Wali",
@@ -107,23 +135,16 @@ const BlogPost = () => {
         ...(imageUrl ? { "image": [imageUrl] } : {})
     };
 
-    const normalizedContent = useMemo(() => {
-        if (!post?.content) return '';
-        // If markdown starts with H3s but lacks H2s, promote H4 -> H3 and H3 -> H2 to ensure valid heading hierarchy (WCAG 1.3.1)
-        const hasH2 = /^##\s+/m.test(post.content);
-        if (!hasH2 && /^###\s+/m.test(post.content)) {
-            return post.content.replace(/^(#{3,4})\s+(.*$)/gm, (match, hashes, title) => {
-                if (hashes === '####') return `### ${title}`;
-                if (hashes === '###') return `## ${title}`;
-                return match;
-            });
-        }
-        return post.content;
-    }, [post?.content]);
+    const displayDate = (() => {
+        const d = new Date(post.publish_date || post.created_at || Date.now());
+        return isNaN(d.getTime())
+            ? ''
+            : d.toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
+    })();
 
     return (
         <div className="min-h-screen bg-[#fdfbf7] pt-8 md:pt-12 pb-24 font-body">
-            <SEO 
+            <SEO
                 title={post.meta_title || post.title}
                 description={post.meta_description || post.excerpt}
                 keywords={post.keywords}
@@ -139,7 +160,7 @@ const BlogPost = () => {
 
                 <div className="mb-10 text-center">
                     <span className="text-rose-900 text-sm font-bold tracking-widest uppercase mb-4 block">
-                        {new Date(post.publish_date || post.created_at).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })}
+                        {displayDate}
                     </span>
                     <h1 className="text-3xl md:text-5xl font-heading font-bold text-stone-900 mb-6 leading-tight">
                         {post.title}
@@ -147,8 +168,8 @@ const BlogPost = () => {
                 </div>
 
                 <div className="aspect-[16/9] w-full rounded-2xl overflow-hidden mb-12 shadow-sm">
-                    <img 
-                        src={getOptimizedImageUrl(post.image, { width: 720, quality: 75 })} 
+                    <img
+                        src={getOptimizedImageUrl(post.image, { width: 720, quality: 75 })}
                         alt={post.title}
                         className="w-full h-full object-cover"
                         loading="eager"
@@ -163,9 +184,9 @@ const BlogPost = () => {
                 {/* Author / Artisan Bio for E-E-A-T */}
                 <div className="mt-16 pt-8 border-t border-stone-200">
                     <div className="bg-white rounded-2xl p-6 md:p-8 border border-stone-100 shadow-sm flex flex-col sm:flex-row items-center sm:items-start gap-5">
-                        <img 
-                            src="/logo.png" 
-                            alt="Sana - Founder & Lead Artisan" 
+                        <img
+                            src="/logo.png"
+                            alt="Sana - Founder & Lead Artisan"
                             className="w-16 h-16 rounded-full object-contain bg-rose-50 border border-rose-100 p-2 shrink-0"
                         />
                         <div className="text-center sm:text-left">
