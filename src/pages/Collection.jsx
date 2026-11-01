@@ -17,6 +17,12 @@ const COLLECTION_SEO_CONTENT = {
         h1: 'Buy Crochet Bouquet Online India',
         text: 'Welcome to Crochet Wali, the premier place to buy crochet bouquet online India. If you are checking crochet bouquet price options, our handcrafted forever flower arrangements offer everlasting botanical charm starting from ₹99. Each bouquet is meticulously hand-knitted with premium milk cotton yarn to preserve its vibrant bloom forever without wilting. Explore our flower-specific collections including rose bouquets, sunflowers, and tulips. Handcrafted to order in India with confirmed delivery: 2–4 days crafting + 4–7 business days shipping across India.',
     },
+    'crochet-bags': {
+        title: 'Handmade Crochet Bags India | Granny Square & Rose Bags | Crochet Wali',
+        description: 'Shop handmade crochet bags in India. Discover artisan granny square shoulder bags, round rose bags, and 3D floral handbags from ₹1,499. Handcrafted in India.',
+        h1: 'Handmade Crochet Bags & Artisanal Totes',
+        text: 'Discover our exclusive collection of handmade crochet bags in India. Handcrafted using premium soft yarn, our artisanal bag collection features retro granny square totes, 3D rose statement bags, and elegant round rose handbags with pearl and golden chain accents. Perfect for outings, festive styling, and thoughtful handmade gifts. Handcrafted to order in India: 2–4 days crafting + 4–7 business days shipping across India.',
+    },
     'handmade-gifts': {
         title: 'Handmade Gifts India | Aesthetic & Personalized Gifting',
         description: 'Shop the best handmade gifts in India. From custom embroidery to aesthetic crochet accessories, find the perfect personalized handmade gifts for any occasion.',
@@ -171,6 +177,14 @@ const Collection = () => {
             const keywords = slug.split('-');
 
             // Recipient & Occasion special matching
+            if (slug === 'crochet-bags') {
+                return (
+                    product.id === '314035ce-5e96-451b-86a3-ec79043177f4' ||
+                    product.id === 'cbb84c37-ca75-41a2-b7e0-bf03f167512a' ||
+                    product.id === '70f2e066-81dc-4f8d-bebf-93d066d4e999' ||
+                    (titleSlug.includes('bag') && !titleSlug.includes('charm') && !titleSlug.includes('pouch') && !titleSlug.includes('keychain'))
+                );
+            }
             if (slug === 'crochet-plushies') {
                 return (product.category && product.category.toLowerCase().includes('toy')) || productSlug.includes('toy');
             }
@@ -307,7 +321,40 @@ const Collection = () => {
                 {/* Header */}
                 <div className="mb-10 md:mb-16 text-center max-w-3xl mx-auto">
                     <h1 className="font-heading text-3xl md:text-5xl font-bold text-stone-900 mb-6">{collectionData.h1}</h1>
-                    {slug === 'crochet-gift-hampers' ? (
+                    {slug === 'crochet-bags' ? (
+                        <div className="text-stone-600 text-sm md:text-base leading-relaxed space-y-4 text-left bg-white p-6 md:p-8 rounded-2xl border border-stone-100 shadow-sm">
+                            <p>
+                                Welcome to our artisanal <strong>crochet bags</strong> collection. If you are looking for aesthetic handmade bags in India, our handcrafted creations blend nostalgic granny square patterns with romantic floral crochet craftsmanship.
+                            </p>
+                            <p>
+                                <strong>What this collection contains:</strong> Exactly three distinct handmade statement pieces—the <em>Crochet Rose Round Bag</em> featuring a central red rose embellishment and delicate pearl chain strap, the <em>3D Rose Granny Square Bag (Red)</em> with textured three-dimensional roses and a chic golden chain, and the classic <em>Granny Square Bag</em> hand-assembled from cheerful cream, pink, and yellow floral motifs.
+                            </p>
+                            <p>
+                                <strong>Who it is for:</strong> Designed for women, teens, and fashion lovers who appreciate artisanal, tactile fashion. Perfect for brunch dates, casual weekend outings, festive occasions, and meaningful heirloom gifting.
+                            </p>
+                            <p>
+                                <strong>Available Styles &amp; Colours:</strong>
+                            </p>
+                            <ul className="list-disc pl-5 space-y-1 text-sm">
+                                <li><strong>Granny Square Bag:</strong> Cream base with vibrant pink and yellow square motifs (soft crochet handle).</li>
+                                <li><strong>3D Rose Granny Square Bag:</strong> Bold red with dimensional hand-crocheted roses and elegant golden chain strap.</li>
+                                <li><strong>Crochet Rose Round Bag:</strong> Classic red with centered botanical rose and refined pearl chain strap.</li>
+                                <li><em>Note: Interior capacity and exact bag dimensions are to be verified with the artisan team (TODO: Owner to update dimensions).</em></li>
+                            </ul>
+                            <p>
+                                <strong>Materials &amp; Craftsmanship:</strong> Handcrafted with premium soft crochet yarn, durable stitching, and accent chains. Each bag is made one stitch at a time in India.
+                            </p>
+                            <p>
+                                <strong>Care Basics:</strong> Hand wash gently in cool water with mild detergent and lay flat on a clean towel to dry in shade. Do not wring, machine wash, or iron directly.
+                            </p>
+                            <p>
+                                <strong>Delivery:</strong> Handcrafted to order in India with confirmed delivery: 2–4 days crafting + 4–7 business days shipping across India.
+                            </p>
+                            <p className="pt-2 text-sm text-stone-500">
+                                Looking for matching handmade accents? Explore our related <Link to="/collections/crochet-accessories" className="text-rose-900 font-semibold underline hover:text-rose-700">crochet accessories</Link>, <Link to="/collections/gifts-under-1000" className="text-rose-900 font-semibold underline hover:text-rose-700">gifts under ₹1000</Link>, and <Link to="/collections/gifts-under-500" className="text-rose-900 font-semibold underline hover:text-rose-700">gifts under ₹500</Link>. For care instructions and styling inspiration, visit the <Link to="/blog" className="text-rose-900 font-semibold underline hover:text-rose-700">Crochet Wali Blog &amp; Guides</Link>.
+                            </p>
+                        </div>
+                    ) : slug === 'crochet-gift-hampers' ? (
                         <div className="text-stone-600 text-sm md:text-base leading-relaxed space-y-4 text-left bg-white p-6 md:p-8 rounded-2xl border border-stone-100 shadow-sm">
                             <p>
                                 Welcome to our curated <strong>crochet gift hamper</strong> collection. If you are searching for a thoughtful <strong>handmade gift hamper India</strong> delivery, our hampers bring together authentic Indian embroidery and delicate handcrafted crochet florals.
