@@ -143,8 +143,8 @@ export default defineConfig({
       output: {
         manualChunks: {
           vendor: ['react', 'react-dom', 'react-router-dom', 'react-helmet-async'],
-          icons: ['lucide-react'],
-          firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore', 'firebase/storage'],
+
+
           supabase: ['@supabase/supabase-js']
           // framer-motion & recharts intentionally excluded — they'll be code-split
           // into page chunks that actually use them (Checkout, ProductDetails, Admin)

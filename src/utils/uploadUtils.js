@@ -1,5 +1,5 @@
 import { supabase } from '../config/supabase';
-import imageCompression from 'browser-image-compression';
+
 
 /**
  * Compresses an image file to ensure it's optimized for web (max 200KB)
@@ -13,13 +13,16 @@ export const compressImage = async (file, maxWidth = 1920) => {
       console.warn("File is very large (>5MB), compression might take time.");
     }
 
+    const imageCompressionModule = await import('browser-image-compression');
+    const imageCompression = imageCompressionModule.default || imageCompressionModule;
+
     const options = {
       maxSizeMB: 0.08,         // 80KB max size
       maxWidthOrHeight: maxWidth,
       useWebWorker: true,
       fileType: 'image/webp'   // Standardized on webp
     };
-    
+
     const compressedFile = await imageCompression(file, options);
     return compressedFile;
   } catch (error) {
@@ -41,9 +44,9 @@ export const uploadImage = async (file, bucketName = 'images', folder = '') => {
 
     // 1. Compress
     const compressedFile = await compressImage(file);
-    
+
     // 2. Create unique file name to avoid collisions
-    const fileExt = 'webp'; 
+    const fileExt = 'webp';
     const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
     const filePath = folder ? `${folder}/${fileName}` : fileName;
 
@@ -102,64 +105,64 @@ export const uploadImage = async (file, bucketName = 'images', folder = '') => {
  * @returns {Promise<boolean>} - Success status
  */
 export const deleteImage = async (publicUrl, bucketName) => {
-    if (!publicUrl) return false;
+  if (!publicUrl) return false;
 
-    try {
-        const workerUrl = import.meta.env.VITE_CLOUDFLARE_WORKER_URL;
-        
-        // If it's a Cloudflare R2 image and worker is configured
-        if (workerUrl && !publicUrl.includes('supabase.co')) {
-            // Extract the path after the domain
-            const urlObj = new URL(publicUrl);
-            const filePath = urlObj.pathname.substring(1); // remove leading slash
-            
-            const response = await fetch(workerUrl, {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ filePath })
-            });
-            
-            return response.ok;
-        }
+  try {
+    const workerUrl = import.meta.env.VITE_CLOUDFLARE_WORKER_URL;
 
-        // --- SUPABASE STORAGE DELETE (Fallback) ---
-        // Auto-detect bucket from URL if not provided.
-        // URL format: https://{project}.supabase.co/storage/v1/object/public/{bucket}/{path}
-        let bucket = bucketName;
-        let filePath;
+    // If it's a Cloudflare R2 image and worker is configured
+    if (workerUrl && !publicUrl.includes('supabase.co')) {
+      // Extract the path after the domain
+      const urlObj = new URL(publicUrl);
+      const filePath = urlObj.pathname.substring(1); // remove leading slash
 
-        if (!bucket) {
-            const storagePrefix = '/storage/v1/object/public/';
-            const storageIndex = publicUrl.indexOf(storagePrefix);
-            if (storageIndex === -1) return false;
+      const response = await fetch(workerUrl, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filePath })
+      });
 
-            const afterPrefix = publicUrl.slice(storageIndex + storagePrefix.length);
-            const slashIndex = afterPrefix.indexOf('/');
-            if (slashIndex === -1) return false;
-
-            bucket = afterPrefix.slice(0, slashIndex);
-            filePath = afterPrefix.slice(slashIndex + 1);
-        } else {
-            // Use provided bucket, extract path after bucket segment
-            const bucketSegment = `/public/${bucket}/`;
-            const pathIndex = publicUrl.indexOf(bucketSegment);
-            if (pathIndex === -1) return false;
-            filePath = publicUrl.slice(pathIndex + bucketSegment.length);
-        }
-
-        if (!filePath) return false;
-
-        const { error } = await supabase.storage
-            .from(bucket)
-            .remove([filePath]);
-
-        if (error) {
-            console.error('Error deleting image:', error);
-            return false;
-        }
-        return true;
-    } catch (error) {
-        console.error('Delete exception:', error);
-        return false;
+      return response.ok;
     }
+
+    // --- SUPABASE STORAGE DELETE (Fallback) ---
+    // Auto-detect bucket from URL if not provided.
+    // URL format: https://{project}.supabase.co/storage/v1/object/public/{bucket}/{path}
+    let bucket = bucketName;
+    let filePath;
+
+    if (!bucket) {
+      const storagePrefix = '/storage/v1/object/public/';
+      const storageIndex = publicUrl.indexOf(storagePrefix);
+      if (storageIndex === -1) return false;
+
+      const afterPrefix = publicUrl.slice(storageIndex + storagePrefix.length);
+      const slashIndex = afterPrefix.indexOf('/');
+      if (slashIndex === -1) return false;
+
+      bucket = afterPrefix.slice(0, slashIndex);
+      filePath = afterPrefix.slice(slashIndex + 1);
+    } else {
+      // Use provided bucket, extract path after bucket segment
+      const bucketSegment = `/public/${bucket}/`;
+      const pathIndex = publicUrl.indexOf(bucketSegment);
+      if (pathIndex === -1) return false;
+      filePath = publicUrl.slice(pathIndex + bucketSegment.length);
+    }
+
+    if (!filePath) return false;
+
+    const { error } = await supabase.storage
+      .from(bucket)
+      .remove([filePath]);
+
+    if (error) {
+      console.error('Error deleting image:', error);
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error('Delete exception:', error);
+    return false;
+  }
 };

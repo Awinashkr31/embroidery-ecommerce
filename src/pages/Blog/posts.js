@@ -319,7 +319,7 @@ When deciding between a store-bought perfume and a handmade gift, consider the e
 2. **Cute Accessories:** Items like [Crochet Claw Clips](/collections/crochet-claw-clips) and [Crochet Keychains](/collections/crochet-keychains) make for perfect, budget-friendly return gifts or tokens of appreciation under ₹500.
 3. **Personalized Gifts:** We offer [customized crochet items](/collections/personalized-gifts) where you can dictate the exact color palette or design to match the recipient's personality.
 
-### Frequently Asked Questions (FAQ)
+## Frequently Asked Questions (FAQ)
 
 **Can I order a custom crochet gift online?**
 Yes. At Crochet Wali, you can request custom colors and specific flower arrangements. Simply place an order for a custom box or bouquet and message us your preferences.
@@ -610,7 +610,7 @@ Enter the modern ethnic revolution: **Handmade Crochet Gajras**.
 
 At [Crochet Wali](/collections/crochet-gajra), our artisanal floral gajras have become one of the most requested accessories for Indian weddings and festive celebrations.
 
-### Why Choose a Crochet Gajra Over Fresh Flowers?
+## Why Choose a Crochet Gajra Over Fresh Flowers?
 
 | Feature | Fresh Mogra Gajra | Reusable Crochet Gajra |
 |---|---|---|
@@ -620,21 +620,21 @@ At [Crochet Wali](/collections/crochet-gajra), our artisanal floral gajras have 
 | **Staining** | Flower sap can stain silk sarees | **100% clean, milk cotton yarn** |
 | **Post-Event Value** | Discarded in trash | **Rewear for Diwali, Rakhi, and Puja** |
 
-### How to Style Your Crochet Gajra
+## How to Style Your Crochet Gajra
 
-#### 1. The Classic Low Bun
+### 1. The Classic Low Bun
 Wrap a double-layered [white jasmine crochet gajra](/collections/reusable-bridal-gajra) around your hair bun and pin it with U-pins. It gives a full, neat, symmetrical frame that looks flawless from every camera angle.
 
-#### 2. The South Indian Half-Moon (Ardhachandra) Style
+### 2. The South Indian Half-Moon (Ardhachandra) Style
 Place the gajra along the upper curve of the bun for a subtle, regal touch that pairs beautifully with Kanjeevaram and Banarasi sarees.
 
-#### 3. Braid Accent with Parandi
+### 3. Braid Accent with Parandi
 Intertwine smaller crochet floral clips down a traditional long braid or pair with our handcrafted [Crochet Parandi](/collections/crochet-parandi) for a vibrant Punjabi bridal look.
 
-### The Secret Tip: Spraying Attar or Perfume
+## The Secret Tip: Spraying Attar or Perfume
 Unlike plastic artificial flowers which can react poorly to alcohol-based sprays, our milk cotton yarn fibers absorb scents naturally. Lightly mist your signature jasmine attar or floral perfume over the gajra 10 minutes before wearing. The fibers will release a gentle fragrance throughout your event!
 
-### Frequently Asked Questions (FAQ)
+## Frequently Asked Questions (FAQ)
 
 **Can I wash my crochet gajra if it gets dirty?**
 Yes! You can gently hand-wash it in lukewarm water with mild liquid detergent. Reshape the petals with your fingers and lay it flat on a clean towel to dry.

@@ -4,6 +4,7 @@ import { useWishlist } from '../context/WishlistContext';
 import { ProductCard } from '../components/ProductCard';
 import { Link } from 'react-router-dom';
 import SEO from '../components/SEO';
+import { isDuplicateProduct } from '../utils/productSanitizer';
 import { getProductUrl } from '../utils/urlUtils';
 
 const NewArrivals = () => {
@@ -17,26 +18,16 @@ const NewArrivals = () => {
 
   const newArrivals = useMemo(() => {
     // Flatten and sort products to get the newest (similar to Home.jsx)
-    let flattened = [];
-    products.forEach(prod => {
-      const validVariants = prod.variants?.filter(v => v.color && v.images && v.images.length > 0) || [];
-      if (validVariants.length > 0) {
-        flattened.push({
-          ...prod,
-          uniqueId: `${prod.id}-${validVariants[0].color}`,
-          preselectedVariant: validVariants[0],
-          price: validVariants[0].price ? Number(validVariants[0].price) : prod.price,
-        });
-      } else {
-        flattened.push({
-          ...prod,
-          uniqueId: prod.id,
-          preselectedVariant: null,
-        });
-      }
-    });
-    // Sort by ID descending to simulate "newest"
-    return flattened.sort((a, b) => String(b.id).localeCompare(String(a.id))).slice(0, 20); // Top 20 new arrivals
+    return (products || [])
+      .filter(prod => !isDuplicateProduct(prod))
+      .map(prod => ({
+        ...prod,
+        uniqueId: String(prod.id),
+        preselectedVariant: null,
+        price: Number(prod.price),
+      }))
+      .sort((a, b) => String(b.id).localeCompare(String(a.id)))
+      .slice(0, 20);
   }, [products]);
 
   return (

@@ -53,12 +53,16 @@
   <noscript><link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&display=swap" rel="stylesheet"></noscript>
 
   <!-- Preload LCP Hero Image -->
-  <link rel="preload" as="image" href="/assets/temp_hero_crochet.webp" fetchpriority="high">
+  <link rel="preload" as="image" href="/assets/hero_crochet_1.webp" fetchpriority="high">
+  <link rel="preload" as="image" href="/category-images/flower-pot.webp">
+  <link rel="preload" as="image" href="/category-images/gift-hampers.webp">
+  <link rel="preload" as="image" href="/category-images/bouquet.webp">
+  <link rel="preload" as="image" href="/category-images/keychain-bag-charm.webp">
 
   <!-- Heading font (Cormorant Garamond + Playfair Display fallback) — non-blocking -->
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
   <noscript>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
   </noscript>
   <!-- Global AI/GEO Schema (Organization & WebSite) -->
   <script type="application/ld+json">
@@ -85,7 +89,7 @@
           },
           "alternateName": "Embroidery by Sana",
           "sameAs": [
-            "https://www.instagram.com/crochetwali",
+            "https://www.instagram.com/crochetwali.in",
             "https://www.pinterest.com/crochetwali"
           ],
           "contactPoint": {
@@ -110,18 +114,6 @@
             },
             "query-input": "required name=search_term_string"
           }
-        },
-        {
-          "@type": "BreadcrumbList",
-          "@id": "https://www.crochetwali.in/#breadcrumb",
-          "itemListElement": [
-            { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.crochetwali.in/" },
-            { "@type": "ListItem", "position": 2, "name": "Shop", "item": "https://www.crochetwali.in/shop" },
-            { "@type": "ListItem", "position": 3, "name": "Gifts", "item": "https://www.crochetwali.in/gifts" },
-            { "@type": "ListItem", "position": 4, "name": "Custom Design", "item": "https://www.crochetwali.in/custom-design" },
-            { "@type": "ListItem", "position": 5, "name": "About", "item": "https://www.crochetwali.in/about" },
-            { "@type": "ListItem", "position": 6, "name": "Blog", "item": "https://www.crochetwali.in/blog" }
-          ]
         }
       ]
     }
@@ -129,7 +121,7 @@
 </head>
 <body>
   <noscript>
-    <h1>Crochet Wali – Handmade Crochet Gifts Made with Love</h1>
+    <p style="font-size: 20px; font-weight: bold; color: #881337; margin-bottom: 12px;">Crochet Wali – Handmade Crochet Gifts Made with Love</p>
     <p>Welcome to Crochet Wali, India's premier handmade crochet gift shop. Shop forever crochet flower bouquets, handmade gajra, crochet hair clips, crochet keychains, crochet parandi, crochet claw clips, tulip flower pots, and personalized gift boxes. Every product at Crochet Wali is 100% handmade with premium quality yarn.</p>
     <p>Crochet Wali (Embroidery by Sana) delivers aesthetic handmade gifts across India. Perfect for birthdays, anniversaries, rakhi, Valentine's Day, and special occasions.</p>
     <h2>Categories</h2>
@@ -188,7 +180,7 @@
       window.addEventListener('scroll', loadAnalytics, { once: true, passive: true });
       document.addEventListener('click', loadAnalytics, { once: true });
       document.addEventListener('touchstart', loadAnalytics, { once: true, passive: true });
-      setTimeout(loadAnalytics, 8000);
+      if ('requestIdleCallback' in window) { requestIdleCallback(function() { setTimeout(loadAnalytics, 15000); }); } else { setTimeout(loadAnalytics, 15000); }
     })();
   </script>
 </body>

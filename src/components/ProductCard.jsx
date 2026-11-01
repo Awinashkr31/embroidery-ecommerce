@@ -185,11 +185,14 @@ export const ProductCard = React.memo(({
                         return (
                             <img
                                 key={idx}
-                                src={getOptimizedImageUrl(img, { width: 400, quality: 80 })}
+                                src={getOptimizedImageUrl(img, { width: 360, quality: 75 })}
+                                srcSet={`${getOptimizedImageUrl(img, { width: 240, quality: 75 })} 240w, ${getOptimizedImageUrl(img, { width: 360, quality: 75 })} 360w, ${getOptimizedImageUrl(img, { width: 480, quality: 75 })} 480w`}
+                                sizes="(max-width: 640px) 48vw, (max-width: 1024px) 33vw, 280px"
                                 alt={`${product.name} - View ${idx + 1}`}
-                                width={400}
-                                height={500}
+                                width={360}
+                                height={450}
                                 loading={priority && idx === 0 ? 'eager' : 'lazy'}
+                                fetchPriority={priority && idx === 0 ? 'high' : 'auto'}
                                 decoding="async"
                                 style={{
                                     transition: 'opacity 300ms ease-in-out',

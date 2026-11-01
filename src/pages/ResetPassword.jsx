@@ -11,7 +11,7 @@ export default function ResetPassword() {
   
   // Firebase sends the code in the 'oobCode' query parameter
   const oobCode = searchParams.get('oobCode');
-  const mode = searchParams.get('mode'); // 'resetPassword'
+  const _mode = searchParams.get('mode'); // 'resetPassword'
 
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');

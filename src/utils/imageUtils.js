@@ -9,7 +9,9 @@
  * @param {number} options.quality - Image quality (0-100), default 80
  * @param {string} options.format - 'origin' | 'webp' | 'avif', default 'webp'
  */
-export const getOptimizedImageUrl = (url, { width, height, quality, format = 'webp' } = {}) => {
+export const getOptimizedImageUrl = (url, rawOpts = {}) => {
+    const opts = typeof rawOpts === 'number' ? { width: rawOpts } : (rawOpts || {});
+    const { width, height, quality, format = 'webp' } = opts;
     if (!url) return '';
 
     // Skip data URIs, blob URIs, and local paths
@@ -42,7 +44,7 @@ export const getOptimizedImageUrl = (url, { width, height, quality, format = 'we
  * @param {object} options - Same as getOptimizedImageUrl
  * @returns {string} AVIF-optimized URL (empty string for remote URLs)
  */
-export const getAvifImageUrl = (url, options = {}) => {
+export const getAvifImageUrl = (url) => {
     // wsrv.nl doesn't support AVIF, so only return for local files
     if (url && (url.startsWith('/') || url.startsWith('data:'))) {
         return url.replace(/\.(png|jpg|jpeg)$/i, '.avif');

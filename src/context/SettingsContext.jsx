@@ -27,7 +27,7 @@ const DEFAULT_SETTINGS = {
     contact_phone: "+91 74280 13214",
     address: "Hauz Khas Village, Near Fort, New Delhi, Delhi 110016",
     social_links: {
-        instagram: "https://instagram.com/crochetwali.in",
+        instagram: "https://www.instagram.com/crochetwali.in",
         facebook: "https://facebook.com/crochetwali",
         whatsapp: "917428013214"
     },
@@ -41,7 +41,7 @@ const DEFAULT_SETTINGS = {
         { id: '3', name: "Keychains", link: "/shop?category=Keychain" }
     ],
     policies: {
-        return_policy: "We accept replacements within 5 days of delivery with parcel unboxing video.",
+        return_policy: "No returns or refunds. 5-day replacement policy exclusively for transit-damaged goods with mandatory unboxing video.",
         shipping_policy: `Free shipping on orders over ₹${FREE_SHIPPING_THRESHOLD}. Standard delivery takes 4–7 business days across India.`,
         privacy_policy: "Your privacy is important to us. We do not share your data.",
         terms_of_service: "By using our site, you agree to these terms..."

@@ -108,7 +108,7 @@ function buildSeoHtml({
                 "@type": "MerchantReturnPolicy",
                 "applicableCountry": "IN",
                 "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
-                "merchantReturnDays": 7,
+                "merchantReturnDays": 5,
                 "returnMethod": "https://schema.org/ReturnByMail",
                 "returnFees": "https://schema.org/FreeReturn"
             }

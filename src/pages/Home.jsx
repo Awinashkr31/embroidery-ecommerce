@@ -8,6 +8,7 @@ import { FREE_SHIPPING_THRESHOLD } from '../constants/shippingConfig';
 import { ChevronRight, Search, Leaf, Tag, ArrowRight, Sparkles } from 'lucide-react';
 import SEO from '../components/SEO';
 import { ProductCard } from '../components/ProductCard';
+import { getOptimizedImageUrl } from '../utils/imageUtils';
 import heroCrochet1 from '../assets/hero_crochet_1.webp';
 import flowerHero from '../assets/flower.webp';
 import tempHeroCrochet from '../assets/temp_hero_crochet.webp';
@@ -46,14 +47,16 @@ const Home = () => {
   const dynamicCategories = useMemo(() => {
     return categories.map(cat => {
       const cleanName = cat.label.toLowerCase().trim().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
-      const categoryProduct = homeProducts.find(p => (p.category === cat.id || p.category === cat.label) && p.image && !p.image.includes('unsplash'));
+      const localImage = `/category-images/${cleanName}.webp`;
+      const fallbackImage = `/category-images/${cat.id}.webp`;
       return {
         id: cat.id,
         label: cat.label,
-        image: categoryProduct?.image || `/category-images/${cleanName}.webp`
+        image: localImage,
+        fallbackImage: fallbackImage
       };
     });
-  }, [categories, homeProducts]);
+  }, [categories]);
 
   const { newArrivals, bestsellers, festiveSpecials, perfectGifts, trendingNow } = useMemo(() => {
     const na = homeProducts.filter(p => p.homepage_tags?.includes('new_arrival')).slice(0, 8);
@@ -85,9 +88,9 @@ const Home = () => {
     }
 
     const defaultSlides = [
-      { image: heroCrochet1, title: "Forever Flowers &\nHandcrafted Love", subtitle: "100% handmade crochet bouquets, accessories &...", link: '/shop' },
-      { image: flowerHero, title: "Custom Keepsakes &\nPersonal Gifts", subtitle: "Made to order with premium botanical-dyed yarn.", link: '/shop' },
-      { image: tempHeroCrochet, title: "Festive Drops &\nNew Arrivals", subtitle: "Explore our latest collection of handmade treasures.", link: '/shop' }
+      { image: '/assets/hero_crochet_1.webp', title: "Forever Flowers &\nHandcrafted Love", subtitle: "100% handmade crochet bouquets, accessories &...", link: '/shop' },
+      { image: '/assets/flower.webp', title: "Custom Keepsakes &\nPersonal Gifts", subtitle: "Made to order with premium botanical-dyed yarn.", link: '/shop' },
+      { image: '/assets/temp_hero_crochet.webp', title: "Festive Drops &\nNew Arrivals", subtitle: "Explore our latest collection of handmade treasures.", link: '/shop' }
     ];
 
     const isInvalidUrl = (url) => {
@@ -179,7 +182,7 @@ const Home = () => {
             <div key={idx} className="relative flex shrink-0 w-[92vw] sm:w-[85vw] md:w-[600px] bg-stone-900 rounded-2xl overflow-hidden shadow-sm h-[320px] snap-center">
               {/* Background Image & Overlay */}
               <img 
-                src={slide.image} 
+                src={slide.image?.startsWith('http') ? getOptimizedImageUrl(slide.image, { width: 800, quality: 80 }) : slide.image} 
                 loading={idx === 0 ? "eager" : "lazy"} 
                 fetchPriority={idx === 0 ? "high" : "auto"} 
                 decoding="async" 
@@ -194,7 +197,7 @@ const Home = () => {
                   }
                 }}
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-10" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/30 z-10" />
 
               {/* Content Overlay */}
               <div className="relative z-20 w-full p-5 flex flex-col justify-end h-full pb-6">
@@ -217,7 +220,11 @@ const Home = () => {
                   <Link to="/shop" className="bg-rose-900 text-white text-xs font-bold px-5 py-2.5 rounded-full flex items-center justify-center gap-1 shadow-md hover:bg-rose-800 transition-colors whitespace-nowrap">
                     Shop Now
                   </Link>
-                  <Link to="/custom-design" className="bg-stone-950/80 backdrop-blur-md text-white border border-white/80 text-xs font-bold px-5 py-2.5 rounded-full shadow-md text-center hover:bg-stone-900 transition-colors whitespace-nowrap">
+                  <Link 
+                    to="/custom-design" 
+                    aria-label="Order custom crochet gifts"
+                    className="bg-stone-950 text-white border border-stone-600 text-xs font-bold px-5 py-2.5 rounded-full shadow-md text-center hover:bg-stone-900 transition-colors whitespace-nowrap"
+                  >
                     Custom
                   </Link>
                 </div>
@@ -260,17 +267,23 @@ const Home = () => {
           {dynamicCategories.slice(0, 9).map((cat, i) => (
             <Link key={cat.id || i} to={`/shop?category=${encodeURIComponent(cat.label)}`} className="flex flex-col items-center gap-1.5 group w-full md:w-[76px] shrink-0 snap-start">
               <div className="w-[15vw] h-[15vw] max-w-[64px] max-h-[64px] md:w-[76px] md:h-[76px] rounded-full p-[1px] md:p-[2px] bg-gradient-to-tr from-[#e5a0a6] to-[#f4d1d4] shadow-sm shrink-0">
-                <div className="w-full h-full rounded-full border-[2px] border-white overflow-hidden bg-stone-100">
+                <div className="w-full h-full rounded-full border-[2px] border-white overflow-hidden bg-rose-50/80">
                   <img 
                     src={cat.image} 
-                    loading="lazy" 
+                    loading="eager" 
+                    fetchPriority={i < 4 ? "high" : "auto"}
                     decoding="async" 
-                    alt="" 
-                    aria-hidden="true" 
-                    className="w-full h-full object-cover" 
+                    width={64}
+                    height={64}
+                    alt={cat.label} 
+                    className="w-full h-full object-cover transition-opacity duration-300" 
                     onError={(e) => {
-                      e.currentTarget.onerror = null;
-                      e.currentTarget.src = heroCrochet1;
+                      if (e.currentTarget.src !== cat.fallbackImage) {
+                        e.currentTarget.src = cat.fallbackImage;
+                      } else {
+                        e.currentTarget.onerror = null;
+                        e.currentTarget.src = '/assets/hero_crochet_1.webp';
+                      }
                     }}
                   />
                 </div>

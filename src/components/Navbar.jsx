@@ -169,8 +169,8 @@ const Navbar = React.memo(() => {
           <div className="flex items-center gap-2 lg:flex-1">
             {/* Desktop Logo (Always visible on lg) */}
             <Link to="/" className="hidden lg:flex flex-col group" aria-label="Home">
-                <picture>
-                  <img src="/logo.png" alt="Crochet Wali" className="h-16 lg:h-20 w-auto object-contain drop-shadow-sm hover:drop-shadow-md transition-all hover:scale-105" width={180} height={80} fetchpriority="high" loading="eager" />
+                <picture><source srcSet="/logo.webp" type="image/webp" />
+                  <img src="/logo.png" alt="Crochet Wali" className="h-16 lg:h-20 w-auto object-contain drop-shadow-sm hover:drop-shadow-md transition-all hover:scale-105" width={180} height={80} fetchPriority="high" loading="eager" />
                 </picture>
             </Link>
 
@@ -188,8 +188,8 @@ const Navbar = React.memo(() => {
                         <Menu className="w-6 h-6" />
                     </button>
                     <Link to="/" className="absolute left-1/2 -translate-x-1/2 flex flex-col group lg:hidden z-0" aria-label="Home">
-                        <picture>
-                          <img src="/logo.png" alt="Crochet Wali" className="h-14 w-auto object-contain mt-1 drop-shadow-sm" width={120} height={56} fetchpriority="high" loading="eager" />
+                        <picture><source srcSet="/logo.webp" type="image/webp" />
+                          <img src="/logo.png" alt="Crochet Wali" className="h-14 w-auto object-contain mt-1 drop-shadow-sm" width={120} height={56} fetchPriority="high" loading="eager" />
                         </picture>
                     </Link>
                 </>
@@ -204,8 +204,8 @@ const Navbar = React.memo(() => {
                         <ArrowLeft className="w-5 h-5" strokeWidth={2.5} />
                     </button>
                     <Link to="/" className="absolute left-1/2 -translate-x-1/2 flex shrink-0 z-0">
-                        <picture>
-                          <img src="/logo.png" alt="Crochet Wali" className="h-12 w-auto object-contain mt-1 drop-shadow-sm" width={100} height={48} fetchpriority="high" loading="eager" />
+                        <picture><source srcSet="/logo.webp" type="image/webp" />
+                          <img src="/logo.png" alt="Crochet Wali" className="h-12 w-auto object-contain mt-1 drop-shadow-sm" width={100} height={48} fetchPriority="high" loading="eager" />
                         </picture>
                     </Link>
                 </div>
@@ -239,17 +239,17 @@ const Navbar = React.memo(() => {
                             <div>
                                 <h4 className="font-heading font-bold text-stone-900 mb-3 text-[11px] tracking-widest uppercase border-b border-stone-100 pb-2">By Category</h4>
                                 <ul className="space-y-2">
-                                    <li><Link to="/shop?category=crochet" className="text-sm text-stone-600 hover:text-rose-900 transition-colors">Crochet Bouquets</Link></li>
-                                    <li><Link to="/shop?category=flower-pot" className="text-sm text-stone-600 hover:text-rose-900 transition-colors">Flower Pots</Link></li>
-                                    <li><Link to="/shop?category=accessories" className="text-sm text-stone-600 hover:text-rose-900 transition-colors">Accessories</Link></li>
+                                    <li><Link to="/collections/crochet-bouquets" className="text-sm text-stone-600 hover:text-rose-900 transition-colors">Crochet Bouquets</Link></li>
+                                    <li><Link to="/collections/crochet-flowers" className="text-sm text-stone-600 hover:text-rose-900 transition-colors">Forever Flower Pots</Link></li>
+                                    <li><Link to="/collections/crochet-accessories" className="text-sm text-stone-600 hover:text-rose-900 transition-colors">Hair Accessories</Link></li>
                                 </ul>
                             </div>
                             <div>
                                 <h4 className="font-heading font-bold text-stone-900 mb-3 text-xs tracking-widest uppercase border-b border-stone-100 pb-2">By Occasion</h4>
                                 <ul className="space-y-2">
-                                    <li><Link to="/gifts#anniversary" className="text-sm text-stone-600 hover:text-rose-900 transition-colors">Anniversary</Link></li>
-                                    <li><Link to="/gifts#girlfriend" className="text-sm text-stone-600 hover:text-rose-900 transition-colors">For Her</Link></li>
-                                    <li><Link to="/gifts#budget" className="text-sm text-stone-600 hover:text-rose-900 transition-colors">Under ₹999</Link></li>
+                                    <li><Link to="/collections/anniversary-gifts" className="text-sm text-stone-600 hover:text-rose-900 transition-colors">Anniversary Gifts</Link></li>
+                                    <li><Link to="/collections/gifts-for-girlfriend" className="text-sm text-stone-600 hover:text-rose-900 transition-colors">Gifts for Girlfriend</Link></li>
+                                    <li><Link to="/collections/gifts-under-500" className="text-sm text-stone-600 hover:text-rose-900 transition-colors">Gifts Under ₹500</Link></li>
                                 </ul>
                             </div>
                             <div className="bg-[#fffaf3] p-4 rounded-xl flex flex-col items-center justify-center text-center">
@@ -412,7 +412,7 @@ const Navbar = React.memo(() => {
             <div className="p-6 h-full flex flex-col">
                 <div className="flex items-center justify-between mb-10">
                     <Link to="/" className="flex flex-col" onClick={() => setIsMobileMenuOpen(false)}>
-                        <picture>
+                        <picture><source srcSet="/logo.webp" type="image/webp" />
                           <img src="/logo.png" alt="Crochet Wali" className="h-16 w-auto object-contain" width={160} height={64} />
                         </picture>
                     </Link>

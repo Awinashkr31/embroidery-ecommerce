@@ -18,7 +18,7 @@ const TermsOfService = () => {
           <p>Welcome to Crochet Wali. By accessing or using our website, you agree to be bound by these Terms of Service. If you do not agree to all the terms and conditions of this agreement, then you may not access the website or use any services.</p>
           
           <h2 className="text-xl font-heading font-semibold text-stone-900 mt-8 mb-4">2. Products and Services</h2>
-          <p>Certain products or services may be available exclusively online through the website. These products or services may have limited quantities and are subject to replacement only according to our Return Policy (No returns are permitted; only 5-day replacements for damaged goods with a mandatory unboxing video).</p>
+          <p>Certain products or services may be available exclusively online through the website. These products or services may have limited quantities and are subject to replacement only according to our Return Policy: No returns or refunds are permitted. In the event of transit-damaged or defective goods, a 5-day replacement is provided subject to a mandatory parcel unboxing video.</p>
           <p>We have made every effort to display as accurately as possible the colors and images of our products that appear at the store. We cannot guarantee that your computer monitor's display of any color will be accurate.</p>
 
           <h2 className="text-xl font-heading font-semibold text-stone-900 mt-8 mb-4">3. Accuracy of Billing and Account Information</h2>

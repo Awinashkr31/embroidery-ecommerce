@@ -29,7 +29,7 @@ const Settings = () => {
         contactPhone: '+91 74280 13214',
         address: 'Hauz Khas Village, Near Fort, New Delhi, Delhi 110016',
         facebookUrl: 'https://facebook.com/crochetwali',
-        instagramUrl: 'https://instagram.com/crochetwali.in',
+        instagramUrl: 'https://www.instagram.com/crochetwali.in',
         twitterUrl: '',
 
         // Store / Shipping Settings
@@ -107,7 +107,7 @@ const Settings = () => {
                 if (!settingsObj.contactEmail) settingsObj.contactEmail = 'support@crochetwali.in';
                 if (!settingsObj.contactPhone) settingsObj.contactPhone = '+91 74280 13214';
                 if (!settingsObj.address) settingsObj.address = 'Hauz Khas Village, Near Fort, New Delhi, Delhi 110016';
-                if (!settingsObj.instagramUrl) settingsObj.instagramUrl = 'https://instagram.com/crochetwali.in';
+                if (!settingsObj.instagramUrl) settingsObj.instagramUrl = 'https://www.instagram.com/crochetwali.in';
                 if (settingsObj.cod_status === 'coming_soon') settingsObj.cod_status = 'active';
                 if (!settingsObj.shipping_free_delivery_threshold) settingsObj.shipping_free_delivery_threshold = 999;
                 if (!settingsObj.shipping_min_order_value) settingsObj.shipping_min_order_value = 99;

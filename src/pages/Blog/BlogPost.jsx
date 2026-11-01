@@ -1,9 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import SEO from '../../components/SEO';
 import { supabase } from '../../config/supabase';
 import { ArrowLeft, Loader } from 'lucide-react';
+import { getOptimizedImageUrl } from '../../utils/imageUtils';
 import { blogPosts as fallbackPosts } from './posts';
 
 const BlogPost = () => {
@@ -106,6 +107,20 @@ const BlogPost = () => {
         ...(imageUrl ? { "image": [imageUrl] } : {})
     };
 
+    const normalizedContent = useMemo(() => {
+        if (!post?.content) return '';
+        // If markdown starts with H3s but lacks H2s, promote H4 -> H3 and H3 -> H2 to ensure valid heading hierarchy (WCAG 1.3.1)
+        const hasH2 = /^##\s+/m.test(post.content);
+        if (!hasH2 && /^###\s+/m.test(post.content)) {
+            return post.content.replace(/^(#{3,4})\s+(.*$)/gm, (match, hashes, title) => {
+                if (hashes === '####') return `### ${title}`;
+                if (hashes === '###') return `## ${title}`;
+                return match;
+            });
+        }
+        return post.content;
+    }, [post?.content]);
+
     return (
         <div className="min-h-screen bg-[#fdfbf7] pt-8 md:pt-12 pb-24 font-body">
             <SEO 
@@ -118,7 +133,7 @@ const BlogPost = () => {
             />
 
             <article className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-                <Link to="/blog" className="inline-flex items-center text-stone-500 hover:text-rose-900 transition-colors mb-8 text-sm font-medium">
+                <Link to="/blog" className="inline-flex items-center text-stone-700 hover:text-rose-900 transition-colors mb-8 text-sm font-medium">
                     <ArrowLeft className="w-4 h-4 mr-2" /> Back to Blog
                 </Link>
 
@@ -133,7 +148,7 @@ const BlogPost = () => {
 
                 <div className="aspect-[16/9] w-full rounded-2xl overflow-hidden mb-12 shadow-sm">
                     <img 
-                        src={post.image} 
+                        src={getOptimizedImageUrl(post.image, { width: 720, quality: 75 })} 
                         alt={post.title}
                         className="w-full h-full object-cover"
                         loading="eager"
@@ -141,8 +156,8 @@ const BlogPost = () => {
                     />
                 </div>
 
-                <div className="prose prose-stone prose-rose max-w-none prose-headings:font-heading prose-headings:font-bold prose-h3:text-2xl prose-a:text-rose-700 prose-a:no-underline hover:prose-a:underline prose-img:rounded-xl">
-                    <ReactMarkdown>{post.content}</ReactMarkdown>
+                <div className="prose prose-stone prose-rose max-w-none prose-headings:font-heading prose-headings:font-bold prose-h2:text-2xl prose-h3:text-xl prose-a:text-rose-700 prose-a:no-underline hover:prose-a:underline prose-img:rounded-xl">
+                    <ReactMarkdown>{normalizedContent}</ReactMarkdown>
                 </div>
 
                 {/* Author / Artisan Bio for E-E-A-T */}

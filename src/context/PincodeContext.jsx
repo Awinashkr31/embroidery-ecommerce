@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { DelhiveryService } from '../services/delhivery';
+
 
 export const PincodeContext = createContext(null);
 
@@ -24,6 +24,7 @@ export const PincodeProvider = ({ children }) => {
         if (showLoading) setLoading(true);
         
         try {
+            const { DelhiveryService } = await import('../services/delhivery');
             const data = await DelhiveryService.checkServiceability(newPincode);
             if (data.serviceable) {
                 setPincode(newPincode);

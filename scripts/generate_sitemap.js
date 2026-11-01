@@ -48,9 +48,11 @@ const STATIC_ROUTES = [
 const COLLECTION_ROUTES = [
   'crochet-bouquets',
   'handmade-gifts',
-  'personalized-gifts',
   'crochet-accessories',
   'crochet-gifts',
+  'crochet-gift-hampers',
+  'crochet-flower-pots',
+  'crochet-plushies',
   'gifts-under-500',
   'gifts-under-1000',
   'crochet-keychains',

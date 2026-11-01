@@ -1,4 +1,6 @@
 {
+  "cleanUrls": true,
+  "trailingSlash": false,
   "functions": {
     "api/product.js": {
       "maxDuration": 5
@@ -77,6 +79,11 @@
     },
     {
       "source": "/collections/custom-embroidery-hoops",
+      "destination": "https://www.crochetwali.in/shop",
+      "permanent": true
+    },
+    {
+      "source": "/collections/personalized-gifts",
       "destination": "https://www.crochetwali.in/shop",
       "permanent": true
     }

@@ -12,45 +12,30 @@ import { PincodeChecker } from '../components/PincodeChecker';
 import { extractProductIdFromSlug, getProductUrl, slugify } from '../utils/urlUtils';
 import { FREE_SHIPPING_THRESHOLD, SHIPPING_CHARGE_BELOW_THRESHOLD } from '../constants/shippingConfig';
 import { getDuplicateRedirect, getGenuineDiscount, normalizeCategory, getProductPriceDisplay } from '../utils/productSanitizer';
+import { getOptimizedImageUrl } from '../utils/imageUtils';
 
-const getIntentDetails = (productName, category) => {
-    const pName = (productName || '').toLowerCase();
-    const cat = (category || '').toLowerCase();
-    
-    if (pName.includes('gajra') || pName.includes('parandi')) {
-        return {
-            occasion: "Weddings, Haldi, Mehendi, Sangeet & Festive Dressing",
-            bestFor: "Brides, Bridesmaids, Saree & Ethnic Styling",
-            keepsake: "Forever Keepsake • Fragrance-sprayable & Non-wilting"
-        };
+const findInitialProduct = (list, targetSlug, targetId) => {
+    if (!list || !list.length) return null;
+    if (targetId) {
+        const found = list.find(p => p.id === targetId || String(p.id) === String(targetId));
+        if (found) return found;
     }
-    if (pName.includes('clip') || pName.includes('claw') || pName.includes('band') || cat.includes('accessories')) {
-        return {
-            occasion: "Daily Styling, College, Work & Casual Outings",
-            bestFor: "Girls, Teens, Sisters, Aesthetic Accessory Lovers",
-            keepsake: "100% Hand-Knitted Yarn • Snag-free & Gentle on Hair"
-        };
+    if (targetSlug) {
+        const clean = targetSlug.toLowerCase().trim();
+        const found = list.find(p => 
+            (p.clothing_information?.slug && p.clothing_information.slug.toLowerCase() === clean) ||
+            (slugify(p.name) === clean) ||
+            (p.id === clean)
+        );
+        if (found) return found;
+        const uuidMatch = targetSlug.match(/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})/i);
+        if (uuidMatch) {
+            return list.find(p => p.id === uuidMatch[1]) || null;
+        }
     }
-    if (pName.includes('bouquet') || pName.includes('rose') || pName.includes('tulip') || pName.includes('flower') || pName.includes('pot') || cat.includes('bouquet') || cat.includes('flower')) {
-        return {
-            occasion: "Anniversaries, Birthdays, Valentine's & Everlasting Keepsakes",
-            bestFor: "Girlfriend, Wife, Best Friend, Desk & Room Decor",
-            keepsake: "Eternal Bloom • 100% Milk Cotton Yarn, Never Wilts"
-        };
-    }
-    if (pName.includes('keychain') || pName.includes('charm') || cat.includes('keychain')) {
-        return {
-            occasion: "Surprise Gifts, Birthday Favors & Daily Keepsakes",
-            bestFor: "Besties, Bag Charm Lovers, Car Key Decor",
-            keepsake: "Durable Hand-Stitched Amigurumi"
-        };
-    }
-    return {
-        occasion: "Birthdays, Special Anniversaries & Festive Gifting",
-        bestFor: "Loved Ones, Handmade Art Enthusiasts",
-        keepsake: "100% Artisanal Craft • Made with Premium Yarn in India"
-    };
+    return null;
 };
+
 
 const ProductDetails = () => {
     const { slug } = useParams();
@@ -61,19 +46,38 @@ const ProductDetails = () => {
     useEffect(() => {
         fetchProducts();
     }, [fetchProducts]);
-    const { addToCart, updateQuantity, removeFromCart, cart, FREE_DELIVERY_THRESHOLD, isGiftWrapped, setIsGiftWrapped, cartCount } = useCart();
+    const { addToCart, updateQuantity, removeFromCart, cart, FREE_DELIVERY_THRESHOLD, isGiftWrapped, cartCount } = useCart();
     const { toggleWishlist, isInWishlist } = useWishlist();
     const { addToast } = useToast();
     const navigate = useNavigate();
     
-    const [product, setProduct] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const initialProduct = useMemo(() => {
+        if (typeof window !== 'undefined' && window.__INITIAL_PRODUCT__) {
+            const initP = window.__INITIAL_PRODUCT__;
+            if (initP.id === id || initP.clothing_information?.slug === slug || slugify(initP.name) === slug || initP.id === slug) {
+                return initP;
+            }
+        }
+        if (products && products.length > 0) {
+            const found = findInitialProduct(products, slug, id);
+            if (found) return found;
+        }
+        try {
+            const cached = JSON.parse(localStorage.getItem('cw_products_cache') || sessionStorage.getItem('cw_products_cache') || '[]');
+            return findInitialProduct(cached, slug, id);
+        } catch {
+            return null;
+        }
+    }, [slug, id, products]);
+
+    const [product, setProduct] = useState(initialProduct);
+    const [loading, setLoading] = useState(!initialProduct);
     const [reviews, setReviews] = useState([]);
     
     // Clothing Support
     const [selectedSize, setSelectedSize] = useState(null);
     const [sizeError, setSizeError] = useState(false);
-    const [searchParams, setSearchParams] = useSearchParams();
+    const [searchParams] = useSearchParams();
     const initialColor = searchParams.get('color');
     const [selectedColor, setSelectedColor] = useState(initialColor || null);
     const [colorError, setColorError] = useState(false);
@@ -93,12 +97,10 @@ const ProductDetails = () => {
 
     // ML Recommendation State
     const [recommendedIds, setRecommendedIds] = useState([]);
-    const [youMayAlsoLikeProducts, setYouMayAlsoLikeProducts] = useState([]);
 
     
     // Gift Packaging State
-    const [giftNote, setGiftNote] = useState('');
-    const [isNoteInputOpen, setIsNoteInputOpen] = useState(false);
+    const [giftNote] = useState('');
     
     // Review Modal State
     const [reviewModalOpen, setReviewModalOpen] = useState(false);
@@ -134,9 +136,19 @@ const ProductDetails = () => {
     useEffect(() => {
         if (!product) return;
         setRecommendedIds([]);
+
+        // The ML recommendation endpoint strictly requires an integer product ID
+        const isNumericId = Number.isInteger(Number(product.id));
+        if (!isNumericId) {
+            return;
+        }
+
         // Fetch ML recommendations
         const apiUrl = import.meta.env.VITE_ML_API_URL || 'https://embroidery-ml-api.onrender.com';
-        fetch(`${apiUrl}/api/recommendations/${product.id}`)
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 1500);
+
+        fetch(`${apiUrl}/api/recommendations/${product.id}`, { signal: controller.signal })
             .then(res => {
                 if(!res.ok) throw new Error("API not found");
                 return res.json();
@@ -147,18 +159,11 @@ const ProductDetails = () => {
                 }
             })
             .catch(() => {
-                console.log("ML Recommendations offline, falling back to basic recommendations");
-            });
+                // Render cold start or offline, fallback to basic recommendations
+            })
+            .finally(() => clearTimeout(timeoutId));
     }, [product]);
 
-    useEffect(() => {
-        if (products && products.length > 0 && product) {
-            setYouMayAlsoLikeProducts([...products]
-                .filter(p => p.id !== product.id)
-                .sort(() => 0.5 - Math.random())
-                .slice(0, 8));
-        }
-    }, [products, product]);
 
     const toggleSection = (section) => {
         setOpenSection(openSection === section ? null : section);
@@ -675,7 +680,7 @@ const ProductDetails = () => {
                 "name": "Is there a return policy?",
                 "acceptedAnswer": {
                     "@type": "Answer",
-                    "text": "Yes! We offer a 5-day return window from the date of delivery. If the item arrives damaged, we will replace it free of charge."
+                    "text": "No returns or refunds are accepted due to the custom handcrafted nature of our products. In the rare event that an item arrives damaged in transit, we provide a 5-day replacement with a mandatory unboxing video."
                 }
             }
         ]
@@ -747,8 +752,9 @@ const ProductDetails = () => {
                                         aria-hidden="true" 
                                         className="w-full h-full object-cover" 
                                         onError={(e) => {
-                                            if (product?.image && e.target.src !== product.image) {
-                                                e.target.src = product.image;
+                                            e.currentTarget.onerror = null;
+                                            if (product?.image && e.currentTarget.src !== product.image) {
+                                                e.currentTarget.src = product.image;
                                             }
                                         }}
                                     />
@@ -821,11 +827,13 @@ const ProductDetails = () => {
                                             }`}
                                         >
                                             <img 
-                                                src={img} 
+                                                src={getOptimizedImageUrl(img, { width: 120, height: 150, quality: 75 })} 
                                                 alt={`${product.name} - View ${idx + 1}`} 
                                                 className="w-full h-full object-cover object-top" 
-                                                width="800" 
-                                                height="800" 
+                                                width="72" 
+                                                height="90" 
+                                                loading="lazy"
+                                                decoding="async" 
                                                 onError={(e) => {
                                                     if (product?.image && e.target.src !== product.image) {
                                                         e.target.src = product.image;
@@ -848,12 +856,13 @@ const ProductDetails = () => {
                                         animate={{ opacity: 1, scale: 1 }}
                                         exit={{ opacity: 0, scale: 0.95 }}
                                         transition={{ duration: 0.4, ease: "easeOut" }}
-                                        src={selectedImage || displayImages[0] || product.image || 'https://via.placeholder.com/500'} 
+                                        src={getOptimizedImageUrl(selectedImage || displayImages[0] || product.image, { width: 800, quality: 80 }) || 'https://via.placeholder.com/500'} 
                                         alt={product.name} 
                                         className="w-full h-full object-cover object-top" 
                                         onError={(e) => {
-                                            if (product?.image && e.target.src !== product.image) {
-                                                e.target.src = product.image;
+                                            e.currentTarget.onerror = null;
+                                            if (product?.image && e.currentTarget.src !== product.image) {
+                                                e.currentTarget.src = product.image;
                                             }
                                         }}
                                     />
@@ -886,12 +895,20 @@ const ProductDetails = () => {
                                 {displayImages.map((img, idx) => (
                                     <div key={idx} className="w-full h-full flex-shrink-0 snap-center relative">
                                         <img 
-                                            src={img} 
+                                            src={getOptimizedImageUrl(img, { width: 600, quality: 80 })} 
+                                            srcSet={`${getOptimizedImageUrl(img, { width: 360, quality: 75 })} 360w, ${getOptimizedImageUrl(img, { width: 600, quality: 80 })} 600w`}
+                                            sizes="100vw"
+                                            width={600}
+                                            height={600}
+                                            loading={idx === 0 ? "eager" : "lazy"}
+                                            fetchPriority={idx === 0 ? "high" : "auto"}
+                                            decoding="async"
                                             alt={`${product.name} - View ${idx + 1}`} 
                                             className="w-full h-full object-cover object-top" 
                                             onError={(e) => {
-                                                if (product?.image && e.target.src !== product.image) {
-                                                    e.target.src = product.image;
+                                                e.currentTarget.onerror = null;
+                                                if (product?.image && e.currentTarget.src !== product.image) {
+                                                    e.currentTarget.src = product.image;
                                                 }
                                             }}
                                         />
@@ -1013,7 +1030,7 @@ const ProductDetails = () => {
                         {!shouldHideSizeSelector && Object.keys(sizes).length > 0 && (
                             <div className="space-y-3 mb-6" id="size-selector">
                                 <div className="flex justify-between items-center">
-                                    <h3 className="text-xs font-bold text-stone-900 uppercase tracking-widest">Select Size</h3>
+                                    <span className="text-xs font-bold text-stone-900 uppercase tracking-widest">Select Size</span>
                                     {info.sizeChart && (
                                         <button 
                                             onClick={() => setIsSizeChartOpen(true)}
@@ -1221,10 +1238,10 @@ const ProductDetails = () => {
 
                             {/* Perfect For */}
                             <div className="p-4 bg-white border border-stone-200 rounded-xl">
-                                <h4 className="text-xs font-bold uppercase tracking-wider text-stone-900 mb-2.5 flex items-center gap-1.5">
+                                <p className="text-xs font-bold uppercase tracking-wider text-stone-900 mb-2.5 flex items-center gap-1.5">
                                     <Gift className="w-3.5 h-3.5 text-rose-800" />
                                     Perfect For
-                                </h4>
+                                </p>
                                 <div className="flex flex-wrap gap-2">
                                     {(info.perfectFor ? info.perfectFor.split(',') : ["Birthday Gifts", "Best Friend Gifts", "Room Décor", "Bag Charms", "Anniversaries"]).map((tag, i) => (
                                         <span key={i} className="px-3 py-1 bg-stone-50 border border-stone-200 rounded-lg text-xs font-medium text-stone-700">
@@ -1237,10 +1254,10 @@ const ProductDetails = () => {
                             {/* Key Features */}
                             {info.keyFeatures && info.keyFeatures.length > 0 && (
                                 <div className="p-4 bg-white border border-stone-200 rounded-xl">
-                                    <h4 className="text-xs font-bold uppercase tracking-wider text-stone-900 mb-2.5 flex items-center gap-1.5">
+                                    <p className="text-xs font-bold uppercase tracking-wider text-stone-900 mb-2.5 flex items-center gap-1.5">
                                         <Sparkles className="w-3.5 h-3.5 text-amber-600" />
                                         Key Features
-                                    </h4>
+                                    </p>
                                     <ul className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-stone-700">
                                         {info.keyFeatures.map((feat, i) => (
                                             <li key={i} className="flex items-start gap-2">
@@ -1276,16 +1293,14 @@ const ProductDetails = () => {
                             </div>
                         </div>
 
-                        {/* 9. Return policy exactly as set for that product */}
+                        {/* 9. Return & Replacement policy */}
                         <div className="mb-8 p-4 bg-white border border-stone-200 rounded-xl shadow-xs">
                             <div className="flex items-start gap-3">
                                 <Shield className="w-5 h-5 text-emerald-700 shrink-0 mt-0.5" />
                                 <div className="text-xs space-y-0.5">
-                                    <span className="font-bold uppercase tracking-wider text-stone-900 block">Return Policy</span>
+                                    <span className="font-bold uppercase tracking-wider text-stone-900 block">Return &amp; Replacement Policy</span>
                                     <p className="text-stone-600">
-                                        {info.returnAvailable === false
-                                            ? 'This product is not eligible for returns due to its custom handcrafted nature.'
-                                            : `${info.returnPeriod || 7}-day easy return policy. Item must be in original condition.`}
+                                        No returns. Damaged goods only: 5-day replacement with mandatory unboxing video.
                                     </p>
                                 </div>
                             </div>
@@ -1297,7 +1312,7 @@ const ProductDetails = () => {
                             <div className="flex flex-col gap-6 mb-8">
                                 <div className="flex items-start justify-between gap-4">
                                     <div>
-                                        <h3 className="font-heading text-2xl font-semibold text-stone-900">Customer Reviews</h3>
+                                        <h2 className="font-heading text-2xl font-semibold text-stone-900">Customer Reviews</h2>
                                         <p className="text-stone-500 text-sm mt-1">{reviews.length} verified purchase{reviews.length !== 1 ? 's' : ''}</p>
                                     </div>
                                     <button 
@@ -1377,7 +1392,7 @@ const ProductDetails = () => {
                                                     </div>
                                                     <div className="min-w-0">
                                                         <div className="flex items-center gap-2 flex-wrap">
-                                                            <h4 className="font-bold text-stone-900 text-sm truncate">{review.user_name}</h4>
+                                                            <p className="font-bold text-stone-900 text-sm truncate">{review.user_name}</p>
                                                             <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-full flex-shrink-0">Verified</span>
                                                         </div>
                                                         <span className="text-xs text-stone-600 font-medium">{new Date(review.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
@@ -1451,7 +1466,7 @@ const ProductDetails = () => {
                                         <div className="aspect-[2/3] overflow-hidden bg-stone-50 rounded-2xl mb-3 relative">
                                             <Link to={getProductUrl(p)}>
                                                 <img 
-                                                    src={p.image} 
+                                                    src={getOptimizedImageUrl(p.image, { width: 280, quality: 75 })} 
                                                     alt={p.name} 
                                                     loading="lazy"
                                                     decoding="async"
@@ -1510,7 +1525,7 @@ const ProductDetails = () => {
                     <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setIsSizeChartOpen(false)} />
                     <div className="relative bg-white rounded-xl shadow-2xl max-w-lg w-full overflow-hidden animate-in zoom-in-95">
                          <div className="p-4 border-b border-stone-100 flex justify-between items-center">
-                            <h3 className="font-heading font-bold px-2">Size Guide</h3>
+                            <h2 className="font-heading font-bold px-2">Size Guide</h2>
                             <button onClick={() => setIsSizeChartOpen(false)} className="p-2 hover:bg-stone-100 rounded-full"><X className="w-5 h-5" /></button>
                         </div>
                         <img src={info.sizeChart} alt="Size Chart" className="w-full h-auto max-h-[70vh] object-contain" />
@@ -1524,7 +1539,7 @@ const ProductDetails = () => {
                     <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => !submittingReview && setReviewModalOpen(false)} />
                     <div className="relative bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-in zoom-in-95 p-6 space-y-6">
                         <div className="flex justify-between items-center">
-                            <h3 className="font-heading font-bold text-xl text-stone-900">Write a Review</h3>
+                            <h2 className="font-heading font-bold text-xl text-stone-900">Write a Review</h2>
                             <button onClick={() => !submittingReview && setReviewModalOpen(false)} className="p-2 -mr-2 hover:bg-stone-100 rounded-full transition-colors text-stone-400 hover:text-stone-900">
                                 <X className="w-5 h-5" />
                             </button>
@@ -1599,7 +1614,7 @@ const ProductDetails = () => {
                                 <img src={selectedImage || displayImages[0] || product.image} alt={product.name} className="w-full h-full object-cover" width="800" height="800" />
                             </div>
                             <div>
-                                <h3 className="font-heading font-bold text-stone-900 text-lg line-clamp-1">{product.name}</h3>
+                                <p className="font-heading font-bold text-stone-900 text-lg line-clamp-1">{product.name}</p>
                                 <div className="text-rose-900 font-bold mt-1">₹{currentPrice.toLocaleString()}</div>
                             </div>
                         </div>
@@ -1610,7 +1625,7 @@ const ProductDetails = () => {
                                 <div className="space-y-3">
                                     <div className="flex justify-between items-center">
                                         <div className="flex items-center gap-1.5">
-                                            <h4 className="text-sm font-bold text-stone-900">Selected Color:</h4>
+                                            <span className="text-sm font-bold text-stone-900">Selected Color:</span>
                                             {selectedColor && <span className="text-sm text-stone-600 capitalize">{selectedColor}</span>}
                                         </div>
                                         {colorError && <span className="text-[10px] text-red-500 font-bold uppercase">Required</span>}
@@ -1643,7 +1658,7 @@ const ProductDetails = () => {
                             {!shouldHideSizeSelector && Object.keys(sizes).length > 0 && (
                                 <div className="space-y-3">
                                     <div className="flex justify-between items-center">
-                                        <h4 className="text-xs font-bold text-stone-900 uppercase tracking-widest">Size</h4>
+                                        <span className="text-xs font-bold text-stone-900 uppercase tracking-widest">Size</span>
                                         {sizeError && <span className="text-[10px] text-red-500 font-bold uppercase">Required</span>}
                                     </div>
                                     <div className="flex flex-wrap gap-2.5">

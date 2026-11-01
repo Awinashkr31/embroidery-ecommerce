@@ -324,7 +324,7 @@ class CartManager {
             </div>
             <div class="flex items-center">
               <i data-lucide="rotate-ccw" class="w-4 h-4 mr-1"></i>
-              Easy Returns
+              5-Day Replacement
             </div>
           </div>
         </div>

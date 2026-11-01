@@ -3,12 +3,23 @@ import { Link } from 'react-router-dom';
 import SEO from '../../components/SEO';
 import { supabase } from '../../config/supabase';
 import { ChevronRight, Loader } from 'lucide-react';
+import { getOptimizedImageUrl } from '../../utils/imageUtils';
 
 import { blogPosts as fallbackPosts } from './posts';
 
+const initialBlogPosts = [...fallbackPosts]
+    .sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0))
+    .map(p => ({
+        slug: p.slug,
+        title: p.title,
+        excerpt: p.excerpt,
+        image: p.image,
+        publish_date: p.date ? `${p.date}T00:00:00+05:30` : new Date().toISOString()
+    }));
+
 const BlogIndex = () => {
-    const [posts, setPosts] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [posts, setPosts] = useState(initialBlogPosts);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         const fetchPosts = async () => {
@@ -78,18 +89,23 @@ const BlogIndex = () => {
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        {posts.map((post) => (
+                        {posts.map((post, idx) => (
                             <Link 
                                 key={post.slug} 
                                 to={`/blog/${post.slug}`}
                                 className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow border border-stone-100 group flex flex-col"
                             >
-                                <div className="aspect-[16/10] overflow-hidden">
+                                <div className="aspect-[16/10] overflow-hidden bg-stone-100" style={{ aspectRatio: '16 / 10' }}>
                                     <img 
-                                        src={post.image} 
+                                        src={getOptimizedImageUrl(post.image, { width: 600, quality: 80 })} 
                                         alt={post.title} 
                                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                        loading="lazy"
+                                        style={{ aspectRatio: '16 / 10' }}
+                                        loading={idx === 0 ? "eager" : "lazy"}
+                                        fetchPriority={idx === 0 ? "high" : "auto"}
+                                        decoding="async"
+                                        width={600}
+                                        height={375}
                                     />
                                 </div>
                                 <div className="p-6 flex flex-col flex-grow">

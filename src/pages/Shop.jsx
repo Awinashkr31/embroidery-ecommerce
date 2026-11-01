@@ -222,6 +222,7 @@ const Shop = () => {
     const allFilteredProducts = useMemo(() => {
         // Problem 2 Fix: One card per product, not one card per colour variant
         const targetProductParam = searchParams.get('product') || searchParams.get('productId');
+        const targetColorParam = searchParams.get('color');
         const searchQuery = urlSearchQuery.toLowerCase();
 
         const uniqueProducts = products.map(prod => {
@@ -391,24 +392,91 @@ const Shop = () => {
         { id: 'above-499', label: 'Above ₹499' },
     ];
 
-    const pageSchema = [
-        {
-            "@context": "https://schema.org",
-            "@type": "CollectionPage",
-            "name": selectedCategories.length > 0 ? `${selectedCategories.map(c => c.charAt(0).toUpperCase() + c.slice(1)).join(', ')} | Crochet Wali` : "Shop All Handmade Crochet Gifts | Crochet Wali",
-            "description": "Browse our complete catalog of Handmade Crochet Gifts, customized embroidery hoops, and aesthetic accessories. Find the perfect customized handmade gift in India.",
-            "url": "https://www.crochetwali.in/shop"
-        },
-        {
+    // Default unfiltered product list for consistent ItemList schema
+    const defaultShopProducts = useMemo(() => {
+        if (!products || products.length === 0) return [];
+        return [...products].sort((a, b) => {
+            if (a.featured !== b.featured) {
+                return a.featured ? -1 : 1;
+            }
+            return String(a.id).localeCompare(String(b.id));
+        });
+    }, [products]);
+
+    const shopBreadcrumbSchema = useMemo(() => ({
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+            {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Home",
+                "item": "https://www.crochetwali.in/"
+            },
+            {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Shop",
+                "item": "https://www.crochetwali.in/shop"
+            }
+        ]
+    }), []);
+
+    const shopItemListSchema = useMemo(() => {
+        if (!defaultShopProducts || defaultShopProducts.length === 0) return null;
+        return {
             "@context": "https://schema.org",
             "@type": "ItemList",
-            "itemListElement": allFilteredProducts.map((product, index) => ({
-                "@type": "ListItem",
-                "position": index + 1,
-                "url": `https://www.crochetwali.in/product/${product.id}`
-            }))
-        },
-        {
+            "name": "Shop All Handmade Crochet Gifts | Crochet Wali",
+            "description": "Explore our complete collection of 100% handmade crochet flowers, bouquets, keychains, and hair accessories.",
+            "numberOfItems": defaultShopProducts.length,
+            "itemListElement": defaultShopProducts.map((product, index) => {
+                const productPath = getProductUrl(product);
+                const productUrl = `https://www.crochetwali.in${productPath}`;
+                const productImage = Array.isArray(product.images) && product.images.length > 0
+                    ? (product.images[0].startsWith('http') ? product.images[0] : `https://www.crochetwali.in${product.images[0].startsWith('/') ? '' : '/'}${product.images[0]}`)
+                    : (product.image || "https://www.crochetwali.in/hero-gift.png");
+                const price = product.price || (product.variants && product.variants[0]?.price) || 0;
+                const inStock = (product.stock_quantity === undefined || Number(product.stock_quantity) > 0);
+                return {
+                    "@type": "ListItem",
+                    "position": index + 1,
+                    "name": product.name,
+                    "url": productUrl,
+                    "item": {
+                        "@type": "Product",
+                        "name": product.name,
+                        "url": productUrl,
+                        "image": productImage,
+                        "offers": {
+                            "@type": "Offer",
+                            "price": String(price),
+                            "priceCurrency": "INR",
+                            "availability": inStock ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"
+                        }
+                    }
+                };
+            })
+        };
+    }, [defaultShopProducts]);
+
+    const pageSchema = useMemo(() => {
+        const schemas = [
+            shopBreadcrumbSchema,
+            {
+                "@context": "https://schema.org",
+                "@type": "CollectionPage",
+                "name": selectedCategories.length > 0 ? `${selectedCategories.map(c => c.charAt(0).toUpperCase() + c.slice(1)).join(', ')} | Crochet Wali` : "Shop All Handmade Crochet Gifts | Crochet Wali",
+                "description": "Browse our complete catalog of Handmade Crochet Gifts, customized embroidery hoops, and aesthetic accessories. Find the perfect customized handmade gift in India.",
+                "url": "https://www.crochetwali.in/shop"
+            }
+        ];
+
+        if (shopItemListSchema) {
+            schemas.push(shopItemListSchema);
+        }
+
+        schemas.push({
             "@context": "https://schema.org",
             "@type": "FAQPage",
             "mainEntity": [
@@ -437,8 +505,10 @@ const Shop = () => {
                     }
                 }
             ]
-        }
-    ];
+        });
+
+        return schemas;
+    }, [shopBreadcrumbSchema, selectedCategories, shopItemListSchema]);
 
     const getPaginationUrl = (pageNumber) => {
         const params = new URLSearchParams(searchParams);
@@ -486,7 +556,7 @@ const Shop = () => {
                 
                 {/* AEO Semantic Heading for AI context */}
                 <h1 className="sr-only">
-                    {activeCategoryMeta ? activeCategoryMeta.h1 : "Crochet Wali Shop – Buy Handmade Crochet Gifts, Flower Bouquets, Gajra & Hair Accessories Online India"}
+                    {activeCategoryMeta ? `Crochet Wali Shop – ${activeCategoryMeta.h1}` : "Crochet Wali Shop – Buy Handmade Crochet Gifts, Flower Bouquets, Gajra & Hair Accessories Online India"}
                 </h1>
 
                 {/* Mobile Search Bar */}
@@ -526,12 +596,14 @@ const Shop = () => {
                 </div>
 
                 {/* Mobile Category Header */}
-                {activeCategoryMeta && (
-                    <div className="lg:hidden mb-4 px-1">
-                        <h2 className="font-heading text-xl font-bold text-stone-900 mb-1">{activeCategoryMeta.h1}</h2>
-                        <p className="text-stone-600 text-xs leading-relaxed">{activeCategoryMeta.intro}</p>
-                    </div>
-                )}
+                <div className="lg:hidden mb-4 px-1">
+                    <h2 className="font-heading text-xl font-bold text-stone-900 mb-1">
+                        {activeCategoryMeta ? activeCategoryMeta.h1 : "All Handmade Creations"}
+                    </h2>
+                    <p className="text-stone-600 text-xs leading-relaxed">
+                        {activeCategoryMeta ? activeCategoryMeta.intro : "Explore our full range of handcrafted crochet products, lovingly stitched for gifts, decor, and personal style."}
+                    </p>
+                </div>
 
                 {/* Mobile Category Circles */}
                 <div className="lg:hidden mb-4 overflow-x-auto no-scrollbar py-2 -mx-4 px-4">
@@ -570,7 +642,8 @@ const Shop = () => {
                                             ) : (
                                                 <img 
                                                     src={getOptimizedImageUrl(catImage, { width: 100, quality: 70 })} 
-                                                    alt={cat.label} 
+                                                    alt="" 
+                                                    aria-hidden="true" 
                                                     loading="lazy" 
                                                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                                                 />
@@ -612,10 +685,10 @@ const Shop = () => {
 
                             {/* Header */}
                             <div className="flex items-center justify-between px-5 pb-4 border-b border-stone-100 shrink-0">
-                                <h3 className="font-heading font-bold text-xl text-stone-900 flex items-center gap-2">
+                                <h2 className="font-heading font-bold text-xl text-stone-900 flex items-center gap-2">
                                     <SlidersHorizontal className="w-5 h-5 text-rose-900" />
                                     Filters
-                                </h3>
+                                </h2>
                                 <button 
                                     onClick={() => setIsMobileFiltersOpen(false)}
                                     className="w-10 h-10 flex items-center justify-center rounded-full bg-stone-100 text-stone-500 hover:bg-rose-50 hover:text-rose-900 transition-colors"
@@ -647,7 +720,7 @@ const Shop = () => {
                                                 }`}
                                             >
                                                 {cat.id !== 'all' && (
-                                                    <img src={getOptimizedImageUrl(categoryImage, 40)} alt={cat.label} className="w-5 h-5 rounded-full object-cover shadow-sm" />
+                                                    <img src={getOptimizedImageUrl(categoryImage, 40)} alt="" aria-hidden="true" className="w-5 h-5 rounded-full object-cover shadow-sm" />
                                                 )}
                                                 {cat.label}
                                             </button>
@@ -771,7 +844,7 @@ const Shop = () => {
                                         }`}
                                     >
                                         {cat.id !== 'all' && (
-                                            <img src={getOptimizedImageUrl(categoryImage, 40)} alt={cat.label} className={`w-6 h-6 rounded-full object-cover transition-transform ${isSelected ? 'scale-110 shadow-sm' : ''}`} />
+                                            <img src={getOptimizedImageUrl(categoryImage, 40)} alt="" aria-hidden="true" className={`w-6 h-6 rounded-full object-cover transition-transform ${isSelected ? 'scale-110 shadow-sm' : ''}`} />
                                         )}
                                         {cat.label}
                                     </button>
@@ -900,7 +973,10 @@ const Shop = () => {
                                 
                                 {/* Sort */}
                                 <div className="relative group min-w-[150px]">
+                                    <label htmlFor="shop-sort-by" className="sr-only">Sort products</label>
                                     <select
+                                        id="shop-sort-by"
+                                        aria-label="Sort products"
                                         value={sortBy}
                                         onChange={(e) => setSortBy(e.target.value)}
                                         className="w-full appearance-none pl-3 pr-8 py-2 bg-stone-100/50 border border-stone-200 rounded-lg md:rounded-full text-sm font-medium text-stone-600 focus:outline-none focus:border-rose-900 focus:bg-white focus:ring-1 focus:ring-rose-900 cursor-pointer hover:border-stone-300 transition-all truncate"
@@ -956,9 +1032,14 @@ const Shop = () => {
                         ) : (
                             <>
                                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 4xl:grid-cols-7 gap-x-4 gap-y-8 md:gap-x-8 md:gap-y-14 xl:gap-x-10 xl:gap-y-16 3xl:gap-x-12 3xl:gap-y-20 animate-fade-in">
-                                    {paginatedProducts.map((product) => (
+                                    {paginatedProducts.map((product, index) => (
                                         <div key={product.uniqueId} className="animate-fade-up">
-                                            <ProductCardWithVariants product={product} toggleWishlist={toggleWishlist} isInWishlist={isInWishlist} />
+                                            <ProductCardWithVariants 
+                                                product={product} 
+                                                priority={index < 2}
+                                                toggleWishlist={toggleWishlist} 
+                                                isInWishlist={isInWishlist} 
+                                            />
                                         </div>
                                     ))}
                                 </div>

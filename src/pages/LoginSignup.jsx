@@ -15,7 +15,7 @@ const LoginSignup = () => {
   const PERKS = [
     { icon: Sparkles, text: 'Exclusive member-only deals' },
     { icon: Truck,    text: `Free shipping on orders ₹${settings?.shipping_free_delivery_threshold || FREE_SHIPPING_THRESHOLD}+` },
-    { icon: Shield,   text: 'Easy 7-day returns' },
+    { icon: Shield,   text: '5-day damaged item replacement' },
     { icon: RefreshCw,text: 'Real-time order tracking' },
   ];
 

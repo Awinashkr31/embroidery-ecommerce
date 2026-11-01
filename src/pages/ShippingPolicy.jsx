@@ -39,8 +39,8 @@ const ShippingPolicy = () => {
           <h2 className="text-xl font-heading font-semibold text-stone-900 mt-8 mb-4">4. Shipment Confirmation & Order Tracking</h2>
           <p>You will receive a Shipment Confirmation email once your order has shipped containing your tracking number(s). The tracking number will be active within 24 hours.</p>
 
-          <h2 className="text-xl font-heading font-semibold text-stone-900 mt-8 mb-4">5. Damages</h2>
-          <p>Crochet Wali is not liable for any products damaged or lost during shipping. However, if you received your order damaged, please contact us within 48 hours of delivery with photographic evidence, and we will do our best to assist you in filing a claim with the shipment carrier.</p>
+          <h2 className="text-xl font-heading font-semibold text-stone-900 mt-8 mb-4">5. Damaged Shipments & Replacements</h2>
+          <p>Due to the handcrafted nature of our products, all sales are final and we do not accept returns. However, in the rare event that your product arrives damaged or defective in transit, we offer a <strong>5-day replacement policy</strong>. A clear, continuous, unedited unboxing video recorded while opening the parcel is strictly required. Please contact our WhatsApp support at <a href="https://wa.me/917428013214" className="text-rose-600 hover:underline font-semibold">+91 74280 13214</a> or email <a href="mailto:support@crochetwali.in" className="text-rose-600 hover:underline font-semibold">support@crochetwali.in</a> within 5 days of delivery with your unboxing video to initiate your free replacement.</p>
 
           <h2 className="text-xl font-heading font-semibold text-stone-900 mt-8 mb-4">6. Contact Us</h2>
           <p>If you have any questions or concerns regarding your order's shipping, please reach out to our support team:</p>

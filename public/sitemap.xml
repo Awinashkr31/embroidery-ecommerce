@@ -81,17 +81,27 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.crochetwali.in/collections/personalized-gifts</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>https://www.crochetwali.in/collections/crochet-accessories</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://www.crochetwali.in/collections/crochet-gifts</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.crochetwali.in/collections/crochet-gift-hampers</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.crochetwali.in/collections/crochet-flower-pots</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://www.crochetwali.in/collections/crochet-plushies</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>

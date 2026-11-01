@@ -116,7 +116,7 @@ const Categories = () => {
                               ) : (
                                   <img 
                                       src={getOptimizedImageUrl(category.image, { width: 400, height: 400, quality: 80 })} 
-                                      alt={category.label} 
+                                      alt="" aria-hidden="true" 
                                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                                       loading="lazy"
                                   />

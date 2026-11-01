@@ -13,7 +13,7 @@ import { ToastProvider } from './context/ToastContext'
 import { WishlistProvider } from './context/WishlistContext'
 import { SettingsProvider } from './context/SettingsContext'
 import { CategoryProvider } from './context/CategoryContext'
-import { AdminProvider } from './context/AdminContext'
+const LazyAdminProvider = lazy(() => import('./context/AdminContext').then(m => ({ default: m.AdminProvider })));
 import { PincodeProvider } from './context/PincodeContext'
 
 // Lazy Load Page Components for Performance
@@ -26,7 +26,7 @@ const Wishlist = lazy(() => import('./pages/Wishlist'));
 const OrderSuccess = lazy(() => import('./pages/OrderSuccess'));
 const OrderConfirmation = lazy(() => import('./pages/OrderConfirmation'));
 const OrderDetails = lazy(() => import('./pages/OrderDetails'));
-const Home = lazy(() => import('./pages/Home'));
+import Home from './pages/Home';
 const ProductDetails = lazy(() => import('./pages/ProductDetails'));
 const About = lazy(() => import('./pages/About'));
 const Shop = lazy(() => import('./pages/Shop'));
@@ -106,8 +106,10 @@ const VercelSpeedInsights = lazy(() => {
 
 // Loading Component
 const PageLoader = () => (
-  <div className="flex items-center justify-center min-h-[60vh]">
-    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-stone-800"></div>
+  <div className="w-full py-12 px-4 flex flex-col items-center justify-center min-h-[30vh] animate-pulse">
+    <div className="h-3 w-28 bg-stone-200/70 rounded-full mb-3"></div>
+    <div className="h-7 w-52 bg-stone-200/60 rounded-xl mb-3"></div>
+    <div className="h-3 w-40 bg-stone-200/50 rounded-md"></div>
   </div>
 );
 
@@ -136,7 +138,7 @@ function App() {
           <Suspense fallback={<PageLoader />}>
             <Routes>
               {/* Admin Routes — wrapped in AdminProvider */}
-              <Route element={<AdminProvider><Outlet /></AdminProvider>}>
+              <Route element={<Suspense fallback={<PageLoader />}><LazyAdminProvider><Outlet /></LazyAdminProvider></Suspense>}>
                 <Route path="/sadmin/login" element={<AdminLogin />} />
                 <Route path="/sadmin/forgot-password" element={<AdminForgotPassword />} />
                 <Route path="/sadmin/update-password" element={<AdminUpdatePassword />} />
@@ -198,6 +200,7 @@ function App() {
                 <Route path="/collections/occasion-gifts" element={<Navigate to="/gifts" replace />} />
                 <Route path="/collections/embroidery-hoops" element={<Navigate to="/shop" replace />} />
                 <Route path="/collections/custom-embroidery-hoops" element={<Navigate to="/shop" replace />} />
+                <Route path="/collections/personalized-gifts" element={<Navigate to="/shop" replace />} />
                 <Route path="/collections/handmade" element={<Navigate to="/collections/handmade-gifts" replace />} />
                 <Route path="/collections/:slug" element={<Collection />} />
                 <Route path="/new-arrivals" element={<NewArrivals />} />

@@ -23,12 +23,15 @@ const Footer = () => {
             <Link to="/" className="inline-block">
                {/* Logo */}
               <picture>
+                <source srcSet="/logo.webp" type="image/webp" />
                 <img 
                   src="/logo.png" 
                   alt="Crochet Wali" 
                   className="h-16 lg:h-20 w-auto object-contain drop-shadow-sm opacity-90 hover:opacity-100 transition-opacity" 
                   width={200}
                   height={80}
+                  loading="lazy"
+                  decoding="async"
                 />
               </picture>
             </Link>
@@ -49,9 +52,10 @@ const Footer = () => {
               <div className="lg:col-span-2 border-b border-stone-200 lg:border-0 py-4 lg:py-0">
                   <details className="group lg:hidden" name="footer-accordion">
                       <summary className="flex items-center justify-between font-heading font-bold text-stone-900 uppercase tracking-widest text-sm cursor-pointer list-none [&::-webkit-details-marker]:hidden">
-                          Explore <ChevronDown className="w-4 h-4 group-open:rotate-180 transition-transform text-stone-500" />
+                          Explore <ChevronDown className="w-4 h-4 group-open:rotate-180 transition-transform text-stone-600" />
                       </summary>
                       <ul className="space-y-3 mt-4 text-sm pb-2">
+                          <FooterLink to="/categories" label="All Collections" />
                           <FooterLink to="/gifts" label="Gift Guide" />
                           <FooterLink to="/shop" label="Shop Collection" />
                           <FooterLink to="/blog" label="Journal & Blog" />
@@ -62,6 +66,7 @@ const Footer = () => {
                   <div className="hidden lg:block space-y-4">
                       <h3 className="font-heading text-base font-bold text-stone-900 uppercase tracking-widest">Explore</h3>
                       <ul className="space-y-3 text-sm">
+                          <FooterLink to="/categories" label="All Collections" />
                           <FooterLink to="/gifts" label="Gift Guide" />
                           <FooterLink to="/shop" label="Shop Collection" />
                           <FooterLink to="/blog" label="Journal & Blog" />
@@ -75,13 +80,12 @@ const Footer = () => {
               <div className="lg:col-span-2 border-b border-stone-200 lg:border-0 py-4 lg:py-0">
                   <details className="group lg:hidden" name="footer-accordion">
                       <summary className="flex items-center justify-between font-heading font-bold text-stone-900 uppercase tracking-widest text-sm cursor-pointer list-none [&::-webkit-details-marker]:hidden">
-                          Help <ChevronDown className="w-4 h-4 group-open:rotate-180 transition-transform text-stone-500" />
+                          Help <ChevronDown className="w-4 h-4 group-open:rotate-180 transition-transform text-stone-600" />
                       </summary>
                       <ul className="space-y-3 mt-4 text-sm pb-2">
                           <FooterLink to="/about" label="About" />
                           <FooterLink to="/support" label="Support" />
                           <FooterLink to="/profile" label="Order History" />
-                          <FooterExternalLink href="/sitemap.xml" label="Sitemap" />
                       </ul>
                   </details>
                   <div className="hidden lg:block space-y-4">
@@ -90,7 +94,6 @@ const Footer = () => {
                           <FooterLink to="/about" label="About" />
                           <FooterLink to="/support" label="Support" />
                           <FooterLink to="/profile" label="Order History" />
-                          <FooterExternalLink href="/sitemap.xml" label="Sitemap" />
                       </ul>
                   </div>
               </div>
@@ -99,10 +102,10 @@ const Footer = () => {
               <div className="lg:col-span-2 border-b border-stone-200 lg:border-0 py-4 lg:py-0">
                   <details className="group lg:hidden" name="footer-accordion">
                       <summary className="flex items-center justify-between font-heading font-bold text-stone-900 uppercase tracking-widest text-sm cursor-pointer list-none [&::-webkit-details-marker]:hidden">
-                          Policies <ChevronDown className="w-4 h-4 group-open:rotate-180 transition-transform text-stone-500" />
+                          Policies <ChevronDown className="w-4 h-4 group-open:rotate-180 transition-transform text-stone-600" />
                       </summary>
                       <ul className="space-y-3 mt-4 text-sm pb-2">
-                          <FooterLink to="/return-policy" label="Returns & Refunds" />
+                          <FooterLink to="/return-policy" label="Returns & Replacements" />
                           <FooterLink to="/shipping-policy" label="Shipping Policy" />
                           <FooterLink to="/privacy-policy" label="Privacy Policy" />
                           <FooterLink to="/terms-of-service" label="Terms of Service" />
@@ -111,7 +114,7 @@ const Footer = () => {
                   <div className="hidden lg:block space-y-4">
                       <h3 className="font-heading text-base font-bold text-stone-900 uppercase tracking-widest">Policies</h3>
                       <ul className="space-y-3 text-sm">
-                          <FooterLink to="/return-policy" label="Returns & Refunds" />
+                          <FooterLink to="/return-policy" label="Returns & Replacements" />
                           <FooterLink to="/shipping-policy" label="Shipping Policy" />
                           <FooterLink to="/privacy-policy" label="Privacy Policy" />
                           <FooterLink to="/terms-of-service" label="Terms of Service" />
@@ -123,21 +126,21 @@ const Footer = () => {
               <div className="lg:col-span-2 py-4 lg:py-0">
                   <details className="group lg:hidden" name="footer-accordion">
                       <summary className="flex items-center justify-between font-heading font-bold text-stone-900 uppercase tracking-widest text-sm cursor-pointer list-none [&::-webkit-details-marker]:hidden">
-                          Visit Us <ChevronDown className="w-4 h-4 group-open:rotate-180 transition-transform text-stone-500" />
+                          Visit Us <ChevronDown className="w-4 h-4 group-open:rotate-180 transition-transform text-stone-600" />
                       </summary>
-                      <ul className="space-y-3 mt-4 text-sm text-stone-500 pb-2">
+                      <ul className="space-y-3 mt-4 text-sm text-stone-700 pb-2">
                           <li className="flex items-start gap-2">
                               <MapPin className="w-4 h-4 text-rose-900 shrink-0 mt-0.5" />
-                              <span>Based in India,<br/>Shipping Worldwide</span>
+                              <span>Hauz Khas Village, Near Fort, New Delhi, Delhi 110016</span>
                           </li>
                       </ul>
                   </details>
                   <div className="hidden lg:block space-y-4">
                       <h3 className="font-heading text-base font-bold text-stone-900 uppercase tracking-widest">Visit Us</h3>
-                      <ul className="space-y-3 text-sm text-stone-500">
+                      <ul className="space-y-3 text-sm text-stone-700">
                           <li className="flex items-start gap-2">
                               <MapPin className="w-5 h-5 text-rose-900 shrink-0 mt-0.5" />
-                              <span>Based in India,<br/>Shipping Worldwide</span>
+                              <span>Hauz Khas Village, Near Fort, New Delhi, Delhi 110016</span>
                           </li>
                       </ul>
                   </div>
@@ -147,13 +150,44 @@ const Footer = () => {
 
         {/* SEO-rich Footer Description */}
         <div className="mt-8 pt-6 border-t border-stone-200">
+          {/* Handcrafted Collections Links */}
+          <div className="text-center mb-5">
+            <h4 className="font-heading text-xs font-bold text-stone-900 tracking-wider mb-3">Popular Handcrafted Collections</h4>
+            <div className="flex flex-wrap justify-center items-center gap-x-3 gap-y-1.5 text-xs font-medium max-w-4xl mx-auto">
+              <Link to="/collections/crochet-bouquets" className="text-stone-600 hover:text-rose-900 transition-colors">Crochet Bouquets</Link>
+              <span className="text-stone-300">•</span>
+              <Link to="/collections/crochet-flowers" className="text-stone-600 hover:text-rose-900 transition-colors">Crochet Flowers & Pots</Link>
+              <span className="text-stone-300">•</span>
+              <Link to="/collections/reusable-bridal-gajra" className="text-stone-600 hover:text-rose-900 transition-colors">Reusable Bridal Gajra</Link>
+              <span className="text-stone-300">•</span>
+              <Link to="/collections/crochet-keychains" className="text-stone-600 hover:text-rose-900 transition-colors">Keychains & Bag Charms</Link>
+              <span className="text-stone-300">•</span>
+              <Link to="/collections/crochet-claw-clips" className="text-stone-600 hover:text-rose-900 transition-colors">Hair Claw Clips</Link>
+              <span className="text-stone-300">•</span>
+              <Link to="/collections/crochet-parandi" className="text-stone-600 hover:text-rose-900 transition-colors">Handmade Parandi</Link>
+              <span className="text-stone-300">•</span>
+              <Link to="/collections/crochet-rose-bouquet" className="text-stone-600 hover:text-rose-900 transition-colors">Rose Bouquets</Link>
+              <span className="text-stone-300">•</span>
+              <Link to="/collections/crochet-sunflower" className="text-stone-600 hover:text-rose-900 transition-colors">Sunflower Pots</Link>
+              <span className="text-stone-300">•</span>
+              <Link to="/collections/crochet-tulip" className="text-stone-600 hover:text-rose-900 transition-colors">Pastel Tulips</Link>
+              <span className="text-stone-300">•</span>
+              <Link to="/collections/gifts-for-girlfriend" className="text-stone-600 hover:text-rose-900 transition-colors">Gifts for Girlfriend</Link>
+              <span className="text-stone-300">•</span>
+              <Link to="/collections/anniversary-gifts" className="text-stone-600 hover:text-rose-900 transition-colors">Anniversary Keepsakes</Link>
+              <span className="text-stone-300">•</span>
+              <Link to="/collections/gifts-under-500" className="text-stone-600 hover:text-rose-900 transition-colors">Gifts Under ₹500</Link>
+              <span className="text-stone-300">•</span>
+              <Link to="/collections/gifts-under-1000" className="text-stone-600 hover:text-rose-900 transition-colors">Gifts Under ₹1000</Link>
+            </div>
+          </div>
           <p className="text-xs leading-relaxed text-stone-600 max-w-4xl mx-auto text-center mb-6">
             <strong className="font-semibold text-stone-800">Crochet Wali</strong> is India's premier handmade crochet gift shop. Shop forever crochet flower bouquets, handmade gajra, crochet hair clips, crochet keychains, crochet parandi, crochet claw clips, flower pots, and personalized gift boxes. Every product at Crochet Wali is 100% handmade with premium yarn. Crochet Wali delivers aesthetic handmade gifts across India — perfect for birthdays, anniversaries, rakhi, and special occasions. Buy handmade crochet gifts online at Crochet Wali.
           </p>
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-stone-600">
                <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-3 gap-y-1">
                  <p>&copy; {currentYear} Crochet Wali. All rights reserved.</p>
-                 <span className="hidden md:inline text-stone-500">•</span>
+                 <span className="hidden md:inline text-stone-600">•</span>
                  <a 
                    href="/sitemap.xml" 
                    target="_blank" 
@@ -192,7 +226,7 @@ const FooterLink = ({ to, label }) => (
     <li>
         <Link 
             to={to} 
-            className="group flex items-center gap-2 text-stone-500 hover:text-rose-900 transition-colors"
+            className="group flex items-center gap-2 text-stone-700 hover:text-rose-900 transition-colors"
         >
             <span className="w-0 overflow-hidden group-hover:w-3 transition-all duration-300">
                 <ArrowRight size={12} />
@@ -208,7 +242,7 @@ const FooterExternalLink = ({ href, label }) => (
             href={href} 
             target="_blank" 
             rel="noopener noreferrer"
-            className="group flex items-center gap-2 text-stone-500 hover:text-rose-900 transition-colors"
+            className="group flex items-center gap-2 text-stone-700 hover:text-rose-900 transition-colors"
         >
             <span className="w-0 overflow-hidden group-hover:w-3 transition-all duration-300">
                 <ArrowRight size={12} />

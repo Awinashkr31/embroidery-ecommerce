@@ -49,10 +49,10 @@ const mapProductRecord = (p) => {
 };
 
 export const ProductProvider = ({ children }) => {
-    // Instant hydration from sessionStorage if available
+    // Instant hydration from localStorage/sessionStorage if available
     const [products, setProducts] = useState(() => {
         try {
-            const cached = sessionStorage.getItem(CACHE_KEY);
+            const cached = localStorage.getItem(CACHE_KEY) || sessionStorage.getItem(CACHE_KEY);
             return cached ? JSON.parse(cached) : [];
         } catch {
             return [];
@@ -60,7 +60,7 @@ export const ProductProvider = ({ children }) => {
     });
     const [loading, setLoading] = useState(() => {
         try {
-            return !sessionStorage.getItem(CACHE_KEY);
+            return !(localStorage.getItem(CACHE_KEY) || sessionStorage.getItem(CACHE_KEY));
         } catch {
             return true;
         }
@@ -69,13 +69,13 @@ export const ProductProvider = ({ children }) => {
     const productsRef = useRef(products);
     productsRef.current = products;
 
-    const lastFetchTime = useRef(() => {
+    const lastFetchTime = useRef((() => {
         try {
-            return Number(sessionStorage.getItem(CACHE_TIME_KEY)) || 0;
+            return Number(localStorage.getItem(CACHE_TIME_KEY) || sessionStorage.getItem(CACHE_TIME_KEY)) || 0;
         } catch {
             return 0;
         }
-    });
+    })());
     const isFetching = useRef(false);
 
     // Fetch Products (with SWR cache check)
@@ -114,10 +114,13 @@ export const ProductProvider = ({ children }) => {
             lastFetchTime.current = now;
 
             try {
-                sessionStorage.setItem(CACHE_KEY, JSON.stringify(mappedProducts));
+                const serialized = JSON.stringify(mappedProducts);
+                localStorage.setItem(CACHE_KEY, serialized);
+                localStorage.setItem(CACHE_TIME_KEY, String(now));
+                sessionStorage.setItem(CACHE_KEY, serialized);
                 sessionStorage.setItem(CACHE_TIME_KEY, String(now));
             } catch {
-                // SessionStorage may fail on quota exceeded, gracefully ignore
+                // Storage may fail on quota exceeded, gracefully ignore
             }
 
             return mappedProducts;

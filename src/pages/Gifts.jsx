@@ -4,8 +4,8 @@ import { ProductCard as ProductCardWithVariants } from '../components/ProductCar
 import SEO from '../components/SEO';
 import { Gift, Heart, Sparkles, Star, ArrowRight, Truck, ShieldCheck, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { isDuplicateProduct } from '../utils/productSanitizer';
 
-const slugify = (str) => (str || '').toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
 const Gifts = () => {
     const { products, fetchProducts, loading } = useProducts();
@@ -16,29 +16,14 @@ const Gifts = () => {
     }, [fetchProducts]);
 
     const allFilteredProducts = useMemo(() => {
-        let flattened = [];
-        products.forEach(prod => {
-            const validVariants = prod.variants?.filter(v => v.color && v.images && v.images.length > 0) || [];
-            if (validVariants.length > 0) {
-                validVariants.forEach(v => {
-                    flattened.push({
-                        ...prod,
-                        uniqueId: `${prod.id}-${slugify(v.color)}`,
-                        preselectedVariant: v,
-                        price: v.price ? Number(v.price) : prod.price,
-                        randomOrder: Math.random(),
-                    });
-                });
-            } else {
-                flattened.push({
-                    ...prod,
-                    uniqueId: prod.id,
-                    preselectedVariant: null,
-                    randomOrder: Math.random(),
-                });
-            }
-        });
-        return flattened.sort((a, b) => a.randomOrder - b.randomOrder);
+        return (products || [])
+            .filter(prod => !isDuplicateProduct(prod))
+            .map(prod => ({
+                ...prod,
+                uniqueId: String(prod.id),
+                preselectedVariant: null,
+                price: Number(prod.price),
+            }));
     }, [products]);
 
     // Curated Collections
@@ -62,7 +47,6 @@ const Gifts = () => {
         p.category?.toLowerCase().includes('embroidery')
     ).slice(0, 4);
 
-    const under999 = allFilteredProducts.filter(p => p.price < 999).slice(0, 4);
 
     if (loading) {
         return (
@@ -128,7 +112,7 @@ const Gifts = () => {
                     <div className="flex flex-col md:flex-row items-center gap-8 md:gap-12">
                         {/* Mobile Image */}
                         <div className="w-full md:hidden relative rounded-2xl overflow-hidden aspect-[4/5] shadow-lg mt-4">
-                            <img src="/hero-gift.png" alt="Handmade Crochet Bouquet" className="absolute inset-0 w-full h-full object-cover" />
+                            <picture className="absolute inset-0 w-full h-full"><source srcSet="/hero-gift.webp" type="image/webp" /><img src="/hero-gift.png" alt="Handmade Crochet Bouquet" className="w-full h-full object-cover" fetchPriority="high" loading="eager" decoding="async" /></picture>
                         </div>
 
                         <div className="w-full md:w-1/2 flex flex-col justify-center text-center md:text-left px-4 md:px-0">
@@ -163,7 +147,7 @@ const Gifts = () => {
 
                         {/* Desktop Image */}
                         <div className="hidden md:block w-full md:w-1/2 relative rounded-[32px] overflow-hidden min-h-[520px] shadow-2xl">
-                            <img src="/hero-gift.png" alt="Beautiful crochet bouquet" className="absolute inset-0 w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
+                            <picture className="absolute inset-0 w-full h-full"><source srcSet="/hero-gift.webp" type="image/webp" /><img src="/hero-gift.png" alt="Beautiful crochet bouquet" className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" loading="lazy" decoding="async" /></picture>
                         </div>
                     </div>
                     
@@ -193,7 +177,7 @@ const Gifts = () => {
                 <div className="container-custom">
                     <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 md:mb-12 gap-4 px-4 md:px-0">
                         <div className="max-w-2xl">
-                            <div className="flex items-center gap-2 text-[#d6336c] mb-3">
+                            <div className="flex items-center gap-2 text-rose-700 mb-3">
                                 <Heart className="w-5 h-5 fill-current" />
                                 <span className="text-xs font-bold uppercase tracking-widest">Audience: For Her &amp; Anniversaries</span>
                             </div>
@@ -202,7 +186,7 @@ const Gifts = () => {
                                 Thoughtful, everlasting floral keepsakes for girlfriends, wives, and best friends. Handcrafted with botanical milk cotton yarn.
                             </p>
                         </div>
-                        <Link to="/collections/gifts-for-girlfriend" className="text-[13px] md:text-sm font-bold text-[#d6336c] hover:text-rose-700 uppercase tracking-widest shrink-0 hidden md:flex items-center gap-1 group">
+                        <Link to="/collections/gifts-for-girlfriend" className="text-[13px] md:text-sm font-bold text-rose-700 hover:text-rose-900 uppercase tracking-widest shrink-0 hidden md:flex items-center gap-1 group">
                             View All Gifts For Her <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                         </Link>
                     </div>
@@ -223,7 +207,7 @@ const Gifts = () => {
                 <div className="container-custom px-4 md:px-0">
                     <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 md:mb-12 gap-4">
                         <div className="max-w-2xl">
-                            <div className="flex items-center gap-2 text-[#d6336c] mb-3">
+                            <div className="flex items-center gap-2 text-rose-700 mb-3">
                                 <Sparkles className="w-5 h-5 fill-current" />
                                 <span className="text-xs font-bold uppercase tracking-widest">Audience: Wedding &amp; Festive Shoppers</span>
                             </div>
@@ -232,7 +216,7 @@ const Gifts = () => {
                                 Reusable crochet gajra, floral hair claw clips, and parandi designed for Indian brides and bridesmaids. Never wilts, non-staining, and scent-sprayable.
                             </p>
                         </div>
-                        <Link to="/collections/reusable-bridal-gajra" className="text-[13px] md:text-sm font-bold text-[#d6336c] hover:text-rose-700 uppercase tracking-widest shrink-0 hidden md:flex items-center gap-1 group">
+                        <Link to="/collections/reusable-bridal-gajra" className="text-[13px] md:text-sm font-bold text-rose-700 hover:text-rose-900 uppercase tracking-widest shrink-0 hidden md:flex items-center gap-1 group">
                             Explore Bridal Gajra <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                         </Link>
                     </div>
@@ -250,7 +234,7 @@ const Gifts = () => {
                 <div className="container-custom px-4 md:px-0">
                     <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 md:mb-12 gap-4">
                         <div className="max-w-2xl">
-                            <div className="flex items-center gap-2 text-[#d6336c] mb-3">
+                            <div className="flex items-center gap-2 text-rose-700 mb-3">
                                 <Gift className="w-5 h-5 fill-current" />
                                 <span className="text-xs font-bold uppercase tracking-widest">Audience: Budget-Conscious Shoppers</span>
                             </div>
@@ -259,7 +243,7 @@ const Gifts = () => {
                                 Aesthetic amigurumi keychains, single flowers, and cute hair accessories starting at just ₹99. High-impact surprises on a budget.
                             </p>
                         </div>
-                        <Link to="/collections/gifts-under-500" className="text-[13px] md:text-sm font-bold text-[#d6336c] hover:text-rose-700 uppercase tracking-widest shrink-0 hidden md:flex items-center gap-1 group">
+                        <Link to="/collections/gifts-under-500" className="text-[13px] md:text-sm font-bold text-rose-700 hover:text-rose-900 uppercase tracking-widest shrink-0 hidden md:flex items-center gap-1 group">
                             View All Under ₹500 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                         </Link>
                     </div>
@@ -273,11 +257,11 @@ const Gifts = () => {
             </section>
 
             {/* 4. Personalized Gifts Section (Sentimental Shoppers) */}
-            <section id="personalized" className="scroll-mt-24 py-12 md:py-20 bg-gradient-to-b from-[#ffffff] to-[#fff7f8]">
+            <section id="personalized" className="scroll-mt-24 py-12 md:py-20 bg-[#fff7f8]">
                 <div className="container-custom px-4 md:px-0">
                     <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 md:mb-12 gap-4">
                         <div className="max-w-2xl">
-                            <div className="flex items-center gap-2 text-[#d6336c] mb-3">
+                            <div className="flex items-center gap-2 text-rose-700 mb-3">
                                 <Star className="w-5 h-5 fill-current" />
                                 <span className="text-xs font-bold uppercase tracking-widest">Audience: Sentimental &amp; Custom Art</span>
                             </div>
@@ -286,7 +270,7 @@ const Gifts = () => {
                                 Capture your most precious memories in thread. Custom hand-embroidery hoops make the perfect anniversary and wedding milestone gift.
                             </p>
                         </div>
-                        <Link to="/custom-design" className="text-[13px] md:text-sm font-bold text-[#d6336c] hover:text-rose-700 uppercase tracking-widest shrink-0 hidden md:flex items-center gap-1 group">
+                        <Link to="/custom-design" className="text-[13px] md:text-sm font-bold text-rose-700 hover:text-rose-900 uppercase tracking-widest shrink-0 hidden md:flex items-center gap-1 group">
                             Request Custom Design <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                         </Link>
                     </div>
@@ -302,15 +286,15 @@ const Gifts = () => {
             {/* 5. Bulk & Wedding Favors Callout Banner (Audience E) */}
             <section className="py-12 bg-white border-t border-stone-100">
                 <div className="container-custom px-4 md:px-0">
-                    <div className="flex flex-col md:flex-row items-center justify-between gap-6 bg-gradient-to-r from-stone-900 via-rose-950 to-stone-900 p-8 md:p-12 rounded-3xl border border-rose-900/40 text-white shadow-xl">
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-6 bg-stone-900 p-8 md:p-12 rounded-3xl border border-rose-900/40 text-white shadow-xl">
                         <div className="space-y-3 text-center md:text-left">
-                            <span className="text-[11px] uppercase font-bold tracking-widest text-rose-300 bg-rose-500/20 px-3.5 py-1 rounded-full border border-rose-400/30 inline-block">
+                            <span className="text-[11px] uppercase font-bold tracking-widest text-rose-200 bg-rose-950/60 px-3.5 py-1 rounded-full border border-rose-700/50 inline-block">
                                 Audience: Bulk &amp; Event Planners (10+ Units)
                             </span>
                             <h3 className="text-2xl md:text-3xl font-heading font-bold text-white">
                                 Planning Wedding Favors or Haldi Giveaways?
                             </h3>
-                            <p className="text-stone-300 text-sm max-w-xl leading-relaxed">
+                            <p className="text-stone-200 text-sm max-w-xl leading-relaxed">
                                 Order coordinated crochet gajras, bridesmaid floral hampers, or custom amigurumi keychains in bulk with special tiered pricing and dedicated artisan coordination.
                             </p>
                         </div>
@@ -325,7 +309,7 @@ const Gifts = () => {
                                 href="https://wa.me/917428013214?text=Hi%20Crochet%20Wali,%20I%20am%20inquiring%20about%20a%20bulk%20order%20(wedding%20favors/haldi/events)."
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="px-6 py-3.5 bg-[#25D366] hover:bg-[#20bd5a] text-white rounded-full font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-md"
+                                className="px-6 py-3.5 bg-[#075e54] hover:bg-[#05463e] text-white rounded-full font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-md"
                             >
                                 WhatsApp Inquiry
                             </a>
