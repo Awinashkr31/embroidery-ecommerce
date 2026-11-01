@@ -148,15 +148,10 @@ export function getCategorySeoData(categoryIdentifier, contextCategories = []) {
         }
     }
 
-    // 4. Fallback for any unknown category string: format proper name (never raw hyphenated slug)
-    const properName = toTitleCase(categoryIdentifier);
-    return {
-        slug: normalizedSlug,
-        label: properName,
-        title: `${properName} | Crochet Wali`,
-        h1: `${properName} — Handmade Crochet Gifts`,
-        metaDescription: `Shop handmade crochet ${properName.toLowerCase()} at Crochet Wali. Explore authentic artisanal creations handcrafted with love in India. Order online today!`.slice(0, 160),
-        subheading: `Handcrafted ${properName.toLowerCase()} creations tailored for you.`,
-        intro: `Explore our authentic range of handmade crochet ${properName.toLowerCase()} at Crochet Wali. Each item is individually crafted with high-quality yarn and attention to detail, making it a perfect gift or keepsake.`
-    };
+    // 4. Unmatched / unknown category string -> return null (never invent a category or title for arbitrary query params)
+    return null;
+}
+
+export function isValidCategory(categoryIdentifier, contextCategories = []) {
+    return getCategorySeoData(categoryIdentifier, contextCategories) !== null;
 }

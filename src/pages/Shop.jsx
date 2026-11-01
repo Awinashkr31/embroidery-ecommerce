@@ -4,7 +4,7 @@ import { Package, Heart, Search, ChevronDown, Sparkles, ChevronLeft, ChevronRigh
 import { useProducts } from '../context/ProductContext';
 import { useCategories } from '../context/CategoryContext';
 import { useWishlist } from '../context/WishlistContext';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams, useNavigate, Navigate } from 'react-router-dom';
 
 // Utility helper function extracted outside component to avoid recreation
 const slugify = (str) => (str || '').toLowerCase().trim().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
@@ -12,9 +12,10 @@ const slugify = (str) => (str || '').toLowerCase().trim().replace(/\s+/g, '-').r
 import { ProductCard as ProductCardWithVariants } from '../components/ProductCard';
 import { getProductUrl } from '../utils/urlUtils';
 import SEO from '../components/SEO';
-import { getCategorySeoData } from '../utils/categorySeo';
+import { getCategorySeoData, isValidCategory } from '../utils/categorySeo';
 
 const Shop = () => {
+    const navigate = useNavigate();
     const { products, loading: productsLoading, fetchProducts } = useProducts();
 
     // Fetch products explicitly since context no longer auto-fetches on mount
@@ -160,25 +161,22 @@ const Shop = () => {
         const targetProductParam = searchParams.get('product') || searchParams.get('productId');
 
         if (categoryParam && categoryParam !== 'all') {
-            const sParam = slugify(categoryParam);
-            const cleanParam = sParam.replace(/-+/g, '-');
-            const paramSingular = cleanParam.replace(/s$/, '');
-
-            const matched = contextCategories.find(c => {
-                const sId = slugify(c.id);
-                const sLabel = slugify(c.label);
-                const cleanId = sId.replace(/-+/g, '-');
-                const cleanLabel = sLabel.replace(/-+/g, '-');
-                return sId === sParam ||
-                    sLabel === sParam ||
-                    cleanId === cleanParam ||
-                    cleanLabel === cleanParam ||
-                    cleanLabel.includes(paramSingular) ||
-                    cleanId.includes(paramSingular) ||
-                    cleanParam.includes(cleanId.replace(/s$/, '')) ||
-                    cleanParam.includes(cleanLabel.replace(/s$/, ''));
-            });
-            setSelectedCategories([matched ? matched.id : categoryParam]);
+            const validCategory = getCategorySeoData(categoryParam, contextCategories);
+            if (validCategory) {
+                const matched = contextCategories.find(c => 
+                    slugify(c.id) === validCategory.slug || 
+                    slugify(c.label) === validCategory.slug ||
+                    c.id === validCategory.slug
+                );
+                setSelectedCategories([matched ? matched.id : validCategory.slug]);
+            } else {
+                setSelectedCategories([]);
+                const params = new URLSearchParams(searchParams);
+                params.delete('category');
+                params.delete('page');
+                const remaining = params.toString();
+                navigate(remaining ? `/shop?${remaining}` : '/shop', { replace: true });
+            }
         } else if (targetProductParam && products.length > 0) {
             const prod = products.find(p => 
                 String(p.id) === String(targetProductParam) || 
@@ -202,7 +200,7 @@ const Shop = () => {
         if (saleParam === 'true') {
             setIsSaleOnly(true);
         }
-    }, [searchParams, contextCategories, products]);
+    }, [searchParams, contextCategories, products, navigate]);
 
     useEffect(() => {
         setCurrentPage(1);
@@ -524,6 +522,12 @@ const Shop = () => {
     const prevUrl = currentPage > 1 ? getPaginationUrl(currentPage - 1) : null;
     const nextUrl = currentPage < totalPages ? getPaginationUrl(currentPage + 1) : null;
     const activeCategoryParam = searchParams.get('category');
+    const isInvalidCategoryParam = Boolean(
+        activeCategoryParam && 
+        activeCategoryParam !== 'all' && 
+        !isValidCategory(activeCategoryParam, contextCategories)
+    );
+
     const activeCategoryId = (selectedCategories.length === 1 
         ? selectedCategories[0] 
         : (activeCategoryParam && activeCategoryParam !== 'all' ? activeCategoryParam : null));
@@ -539,6 +543,10 @@ const Shop = () => {
         }
         return 'https://www.crochetwali.in/shop';
     }, [activeCategoryMeta, searchParams]);
+
+    if (isInvalidCategoryParam) {
+        return <Navigate to="/shop" replace />;
+    }
 
     return (
         <div className="bg-[#fdfbf7] min-h-screen pb-32 font-body selection:bg-rose-100 selection:text-rose-900">

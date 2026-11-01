@@ -248,21 +248,29 @@ export default async function handler(req, res) {
     const isSaleOnly = query.sale === 'true';
     const searchParam = (query.search || query.q || '').toLowerCase().trim();
 
+    // Validate category parameter against real categories before rendering
+    if (categoryParam && categoryParam !== 'all') {
+        const validMeta = getCategorySeoData(categoryParam, categories);
+        if (!validMeta) {
+            res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+            if (typeof res.redirect === 'function') {
+                return res.redirect(301, '/shop');
+            }
+            res.writeHead(301, { Location: '/shop' });
+            return res.end();
+        }
+    }
+
     // Filter products
     let filtered = products.filter(p => {
         if (categoryParam && categoryParam !== 'all') {
             const targetSlug = slugify(categoryParam);
             const pCat = p.category || '';
             const pSlug = slugify(pCat);
-            const matchedCat = categories.find(c => 
-                slugify(c.id) === targetSlug || 
-                slugify(c.label) === targetSlug ||
-                c.id === categoryParam ||
-                c.label === categoryParam
-            );
+            const validMeta = getCategorySeoData(categoryParam, categories);
             const matches = pSlug === targetSlug || 
                 pCat.toLowerCase() === categoryParam.toLowerCase() ||
-                (matchedCat && (slugify(pCat) === slugify(matchedCat.label) || slugify(pCat) === slugify(matchedCat.id)));
+                (validMeta && (pSlug === slugify(validMeta.label) || pSlug === slugify(validMeta.slug)));
             if (!matches) return false;
         }
         if (maxPriceParam && p.price > maxPriceParam) return false;
@@ -277,6 +285,16 @@ export default async function handler(req, res) {
         }
         return true;
     });
+
+    // If a category filter yields 0 results, 301 redirect to /shop to prevent empty soft-404 pages
+    if (categoryParam && categoryParam !== 'all' && filtered.length === 0) {
+        res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+        if (typeof res.redirect === 'function') {
+            return res.redirect(301, '/shop');
+        }
+        res.writeHead(301, { Location: '/shop' });
+        return res.end();
+    }
 
     const activeCategoryMeta = categoryParam && categoryParam !== 'all' 
         ? getCategorySeoData(categoryParam, categories)
