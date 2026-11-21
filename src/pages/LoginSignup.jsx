@@ -81,6 +81,7 @@ const LoginSignup = () => {
           <div className="flex justify-center mb-6">
             <Link to="/">
               <picture>
+                <source srcSet="/logo.webp" type="image/webp" />
                 <img src="/logo.png" alt="Crochet Wali" className="h-14 w-auto object-contain" width={140} height={56} />
               </picture>
             </Link>
@@ -161,6 +162,7 @@ const LoginSignup = () => {
 
           <Link to="/">
             <picture>
+              <source srcSet="/logo.webp" type="image/webp" />
               <img src="/logo.png" alt="Crochet Wali" className="h-12 w-auto object-contain brightness-0 invert" width={120} height={48} />
             </picture>
           </Link>

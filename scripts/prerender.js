@@ -104,7 +104,10 @@ function renderHeader() {
     <header style="background: rgba(255,255,255,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid #f5f5f4; position: sticky; top: 0; z-index: 50; padding: 12px 20px;">
       <div style="max-width: 1280px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between;">
         <a href="/" style="display: flex; align-items: center; text-decoration: none;" aria-label="Crochet Wali Home">
-          <img src="/logo.png" alt="Crochet Wali" style="height: 48px; width: auto; object-fit: contain;" width="120" height="48" />
+          <picture>
+            <source srcset="/logo.webp" type="image/webp" />
+            <img src="/logo.png" alt="Crochet Wali" style="height: 48px; width: auto; object-fit: contain;" width="120" height="48" fetchpriority="high" loading="eager" />
+          </picture>
         </a>
         <nav style="display: flex; gap: 24px; align-items: center; font-size: 14px; font-weight: 600;">
           <a href="/shop" style="color: #1c1917; text-decoration: none; text-transform: uppercase; letter-spacing: 0.05em;">Shop</a>
@@ -126,7 +129,10 @@ function renderFooter() {
       <div style="max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 32px;">
         <div>
           <a href="/" style="display: inline-block; margin-bottom: 12px;">
-            <img src="/logo.png" alt="Crochet Wali" style="height: 56px; width: auto;" width="140" height="56" />
+            <picture>
+              <source srcset="/logo.webp" type="image/webp" />
+              <img src="/logo.png" alt="Crochet Wali" style="height: 56px; width: auto;" width="140" height="56" loading="lazy" decoding="async" />
+            </picture>
           </a>
           <p style="font-size: 14px; line-height: 1.6; color: #78716c;">
             Weaving stories into fabric. Handcrafted crochet and detailed designs that bring elegance and warmth to your special moments. Made with love in India.
