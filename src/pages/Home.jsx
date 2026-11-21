@@ -17,10 +17,10 @@ import tempHeroCrochet from '../assets/temp_hero_crochet.webp';
 const HorizontalScroll = ({ children, title, actionText, actionLink }) => (
   <div className="py-3.5 sm:py-5">
     <div className="px-4 mb-2.5 sm:mb-3 flex items-end justify-between">
-      <h2 className="text-[17px] sm:text-[18px] font-bold text-stone-900 leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>{title}</h2>
+      <h2 className="text-[17px] sm:text-[18px] md:text-xl font-bold text-stone-900 leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>{title}</h2>
       {actionText && actionLink && (
-        <Link to={actionLink} className="text-rose-900 text-xs font-bold flex items-center mb-0.5 hover:underline">
-          {actionText} <ChevronRight size={14} />
+        <Link to={actionLink} className="text-rose-900 text-xs sm:text-sm font-bold flex items-center py-1.5 px-2.5 -mr-2 rounded-lg hover:underline active:bg-rose-50/50 transition-colors">
+          {actionText} <ChevronRight size={14} className="ml-0.5" />
         </Link>
       )}
     </div>
@@ -188,12 +188,12 @@ const Home = () => {
   };
 
   return (
-    <div className="bg-background text-stone-900 font-body pb-24 lg:pb-0 pt-[env(safe-area-inset-top)] antialiased relative">
+    <div className="bg-background text-stone-900 font-body pb-24 lg:pb-12 pt-[env(safe-area-inset-top)] antialiased relative overflow-x-hidden w-full max-w-full">
       <SEO title="Crochet Wali | Handmade Crochet Flowers & Artisanal Keepsakes" />
       <h1 className="sr-only">Crochet Wali – Handmade Crochet Flowers, Gajra, Hair Accessories & Aesthetic Gifts India</h1>
 
       {/* Search Bar */}
-      <div className="px-4 pt-1.5 pb-2">
+      <div className="px-4 pt-1.5 pb-2.5 max-w-7xl mx-auto w-full">
         <form onSubmit={handleSearch} className="flex items-center bg-white border border-stone-300 shadow-md rounded-full px-4 py-2.5 transition-all focus-within:border-rose-400 focus-within:ring-1 focus-within:ring-rose-200 focus-within:shadow-lg">
            <Search size={18} className="text-stone-500 mr-2 shrink-0" />
            <input 
@@ -201,13 +201,13 @@ const Home = () => {
              value={searchQuery}
              onChange={(e) => setSearchQuery(e.target.value)}
              placeholder="Search for bouquets, gifts..." 
-             className="flex-1 bg-transparent text-sm outline-none text-stone-900 placeholder:text-stone-500 w-full truncate"
+             className="flex-1 bg-transparent text-sm outline-none text-stone-900 placeholder:text-stone-500 w-full truncate py-0.5"
            />
         </form>
       </div>
 
       {/* Hero Banner (Screenshot Layout) */}
-      <section className="mb-4 sm:mb-6">
+      <section className="mb-4 sm:mb-6 max-w-7xl mx-auto w-full overflow-hidden">
         <div className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar gap-4 transform-gpu will-change-scroll">
           <div className="w-0 shrink-0" /> {/* Left Spacer */}
           {heroSlides.map((slide, idx) => (
@@ -248,14 +248,14 @@ const Home = () => {
                   <span className="leading-tight">FLAT 20% - 40% OFF •<br/>Festive Sale</span>
                 </div>
                 
-                <div className="flex items-center gap-2">
-                  <Link to="/shop" className="bg-rose-900 text-white text-xs font-bold px-5 py-2.5 rounded-full flex items-center justify-center gap-1 shadow-md hover:bg-rose-800 transition-colors whitespace-nowrap">
+                <div className="flex items-center gap-2.5">
+                  <Link to="/shop" className="min-h-[42px] bg-rose-900 text-white text-xs sm:text-sm font-bold px-5 sm:px-6 py-2.5 rounded-full flex items-center justify-center gap-1 shadow-md hover:bg-rose-800 active:scale-95 transition-all whitespace-nowrap">
                     Shop Now
                   </Link>
                   <Link 
                     to="/custom-design" 
                     aria-label="Order custom crochet gifts"
-                    className="bg-stone-950 text-white border border-stone-600 text-xs font-bold px-5 py-2.5 rounded-full shadow-md text-center hover:bg-stone-900 transition-colors whitespace-nowrap"
+                    className="min-h-[42px] bg-stone-950 text-white border border-stone-600 text-xs sm:text-sm font-bold px-5 sm:px-6 py-2.5 rounded-full shadow-md text-center hover:bg-stone-900 active:scale-95 transition-all whitespace-nowrap flex items-center justify-center"
                   >
                     Custom
                   </Link>
@@ -268,9 +268,9 @@ const Home = () => {
       </section>
 
       {/* Shop By Category - Editorial Grid & Custom Orders (Matching Reference Mockup) */}
-      <section className="mb-4 sm:mb-6 px-4">
+      <section className="mb-4 sm:mb-6 px-4 max-w-7xl mx-auto w-full">
         {/* Header */}
-        <div className="flex justify-between items-end mb-2 sm:mb-3">
+        <div className="flex justify-between items-end mb-2.5 sm:mb-3">
           <div>
             <h2 
               className="text-xl md:text-2xl font-bold text-stone-900 leading-tight" 
@@ -284,14 +284,14 @@ const Home = () => {
           </div>
           <Link 
             to="/shop" 
-            className="text-rose-900 text-xs md:text-sm font-bold flex items-center mb-0.5 hover:underline"
+            className="text-rose-900 text-xs md:text-sm font-bold flex items-center py-2 px-2.5 -mr-2 rounded-lg hover:underline active:bg-rose-50/50 transition-colors"
           >
-            See All <ChevronRight size={14} />
+            See All <ChevronRight size={14} className="ml-0.5" />
           </Link>
         </div>
 
         {/* All Categories Grid (2 Columns on Mobile, 4 Columns on Desktop - Compact Cards) */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-3.5">
           {allCategoryCards.map((cat) => (
             <Link
               key={cat.id}
@@ -335,10 +335,10 @@ const Home = () => {
 
       {/* 4. FRESH OFF THE HOOK CAROUSEL */}
       {newArrivals.length > 0 && (
-        <section className="bg-surface-blush/30">
+        <section className="bg-surface-blush/30 max-w-7xl mx-auto w-full overflow-hidden">
            <HorizontalScroll title="Fresh Off The Hook" actionText="Explore All" actionLink="/shop">
              {newArrivals.map((product) => (
-               <div key={product.id} className="min-w-[130px] w-[130px] md:min-w-[260px] md:w-[260px] snap-center">
+               <div key={product.id} className="min-w-[140px] w-[140px] sm:min-w-[180px] sm:w-[180px] md:min-w-[260px] md:w-[260px] snap-center">
                  <ProductCard product={product} isHome={true} showAddButton={false} />
                </div>
              ))}
@@ -349,14 +349,14 @@ const Home = () => {
 
       {/* 6. BESTSELLERS GRID / ARTISAN FAVORITES */}
       {bestsellers.length > 0 && (
-        <section className="px-4 py-4 sm:py-7 bg-[#fff8f6] rounded-t-2xl sm:rounded-t-[2.5rem]">
+        <section className="px-4 py-4 sm:py-7 bg-[#fff8f6] rounded-t-2xl sm:rounded-t-[2.5rem] max-w-7xl mx-auto w-full">
           <div className="text-center space-y-1 max-w-lg mx-auto mb-3.5 sm:mb-5">
             <div className="inline-flex items-center justify-center gap-2 text-rose-200 mb-0.5">
               <span className="h-[1px] w-8 bg-rose-200"></span>
               <Sparkles className="text-rose-900" size={16} />
               <span className="h-[1px] w-8 bg-rose-200"></span>
             </div>
-            <h2 className="text-[22px] sm:text-[28px] font-bold text-stone-900 tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>Artisan Favorites</h2>
+            <h2 className="text-[22px] sm:text-[28px] md:text-[32px] font-bold text-stone-900 tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>Artisan Favorites</h2>
             <p className="text-xs sm:text-sm text-stone-600 leading-relaxed px-2 font-medium">
               Our most cherished bespoke creations, lovingly crafted stitch by stitch for life's gentle moments.
             </p>
@@ -371,7 +371,7 @@ const Home = () => {
       )}
 
       {/* Custom Orders Banner */}
-      <div className="px-4 py-2 sm:py-3.5 bg-white">
+      <div className="px-4 py-2 sm:py-3.5 bg-white max-w-7xl mx-auto w-full">
         <Link
           to="/custom-design"
           className="group relative w-full aspect-[16/7] sm:aspect-[21/7] md:h-[180px] rounded-xl sm:rounded-2xl overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 block bg-stone-100"
@@ -410,8 +410,8 @@ const Home = () => {
             </div>
 
             {/* Circular Arrow Button */}
-            <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-full bg-white/20 backdrop-blur-xs border border-white/30 flex items-center justify-center text-white group-hover:bg-white group-hover:text-stone-900 group-hover:scale-110 transition-all duration-300 shadow-sm shrink-0 ml-2 sm:ml-3">
-              <ArrowRight className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
+            <div className="w-9 h-9 sm:w-11 sm:h-11 min-w-[36px] min-h-[36px] rounded-full bg-white/20 backdrop-blur-xs border border-white/30 flex items-center justify-center text-white group-hover:bg-white group-hover:text-stone-900 group-hover:scale-110 transition-all duration-300 shadow-sm shrink-0 ml-2 sm:ml-3">
+              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
           </div>
         </Link>
@@ -419,14 +419,14 @@ const Home = () => {
 
       {/* 7. FESTIVE SPECIALS */}
       {festiveSpecials.length > 0 && (
-        <section className="px-4 py-3.5 sm:py-6 bg-white">
+        <section className="px-4 py-3.5 sm:py-6 bg-white max-w-7xl mx-auto w-full">
            <div className="mb-2 sm:mb-3 flex justify-between items-end">
-             <h2 className="text-[17px] sm:text-[18px] font-bold text-stone-900 leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>Festive Specials</h2>
-             <Link to="/shop" className="p-1.5 bg-stone-100 rounded-full shadow-sm text-rose-900 hover:bg-rose-50 transition-colors" aria-label="Explore all Festive Specials in Shop">
-               <ChevronRight size={16} />
+             <h2 className="text-[17px] sm:text-[18px] md:text-xl font-bold text-stone-900 leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>Festive Specials</h2>
+             <Link to="/shop" className="w-9 h-9 sm:w-10 sm:h-10 min-w-[36px] min-h-[36px] flex items-center justify-center bg-stone-100 rounded-full shadow-xs text-rose-900 hover:bg-rose-50 active:scale-95 transition-all" aria-label="Explore all Festive Specials in Shop">
+               <ChevronRight size={18} />
              </Link>
            </div>
-           <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4">
+           <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5">
              {festiveSpecials.map((product) => (
                <ProductCard key={`festive-${product.id}`} product={product} isHome={true} showAddButton={false} />
              ))}
@@ -435,7 +435,7 @@ const Home = () => {
       )}
 
       {/* Free Shipping Banner */}
-      <div className="px-4 py-1.5 sm:py-2.5 bg-white">
+      <div className="px-4 py-1.5 sm:py-2.5 bg-white max-w-7xl mx-auto w-full">
         <div className="flex items-center justify-between bg-[#fff0f0] rounded-xl px-3.5 sm:px-4 py-2.5 sm:py-3 shadow-xs border border-rose-200 overflow-hidden relative">
           <div className="flex items-center gap-2.5 sm:gap-3 relative z-10">
             <span className="text-xl sm:text-2xl animate-[bounce_2s_ease-in-out_infinite]">🚚</span>
@@ -444,7 +444,7 @@ const Home = () => {
               <p className="text-[11px] sm:text-xs text-stone-600">on orders over <span className="font-bold text-rose-900">₹{FREE_SHIPPING_THRESHOLD}</span></p>
             </div>
           </div>
-          <Link to="/shop" className="bg-rose-900 text-white text-[11px] sm:text-xs font-bold px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full flex items-center gap-1 shadow-sm hover:bg-rose-800 transition-colors whitespace-nowrap relative z-10 hover:scale-105 active:scale-95 transition-transform">
+          <Link to="/shop" className="min-h-[38px] bg-rose-900 text-white text-[11px] sm:text-xs font-bold px-4 py-2 rounded-full flex items-center gap-1.5 shadow-sm hover:bg-rose-800 transition-colors whitespace-nowrap relative z-10 hover:scale-105 active:scale-95 transition-transform">
             Shop Now <ArrowRight size={12} />
           </Link>
         </div>
@@ -452,14 +452,14 @@ const Home = () => {
 
       {/* 8. PERFECT GIFTS */}
       {perfectGifts.length > 0 && (
-        <section className="px-4 py-3.5 sm:py-6 bg-[#fdfaf9]">
+        <section className="px-4 py-3.5 sm:py-6 bg-[#fdfaf9] max-w-7xl mx-auto w-full">
            <div className="mb-2 sm:mb-3 flex justify-between items-end">
-             <h2 className="text-[17px] sm:text-[18px] font-bold text-stone-900 leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>Perfect Gifts</h2>
-             <Link to="/shop" className="p-1.5 bg-stone-100 rounded-full shadow-sm text-rose-900 hover:bg-rose-50 transition-colors" aria-label="Explore all Perfect Gifts in Shop">
-               <ChevronRight size={16} />
+             <h2 className="text-[17px] sm:text-[18px] md:text-xl font-bold text-stone-900 leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>Perfect Gifts</h2>
+             <Link to="/shop" className="w-9 h-9 sm:w-10 sm:h-10 min-w-[36px] min-h-[36px] flex items-center justify-center bg-stone-100 rounded-full shadow-xs text-rose-900 hover:bg-rose-50 active:scale-95 transition-all" aria-label="Explore all Perfect Gifts in Shop">
+               <ChevronRight size={18} />
              </Link>
            </div>
-           <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4">
+           <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5">
              {perfectGifts.map((product) => (
                <ProductCard key={`gifts-${product.id}`} product={product} isHome={true} showAddButton={false} />
              ))}
@@ -469,14 +469,14 @@ const Home = () => {
 
       {/* 9. TRENDING NOW */}
       {trendingNow.length > 0 && (
-        <section className="px-4 pt-3.5 sm:pt-6 pb-6 sm:pb-12 bg-white">
+        <section className="px-4 pt-3.5 sm:pt-6 pb-6 sm:pb-12 bg-white max-w-7xl mx-auto w-full">
            <div className="mb-2 sm:mb-3 flex justify-between items-end">
-             <h2 className="text-[17px] sm:text-[18px] font-bold text-stone-900 leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>Trending Now</h2>
-             <Link to="/shop" className="p-1.5 bg-stone-100 rounded-full shadow-sm text-rose-900 hover:bg-rose-50 transition-colors" aria-label="Explore all Trending Now items in Shop">
-               <ChevronRight size={16} />
+             <h2 className="text-[17px] sm:text-[18px] md:text-xl font-bold text-stone-900 leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>Trending Now</h2>
+             <Link to="/shop" className="w-9 h-9 sm:w-10 sm:h-10 min-w-[36px] min-h-[36px] flex items-center justify-center bg-stone-100 rounded-full shadow-xs text-rose-900 hover:bg-rose-50 active:scale-95 transition-all" aria-label="Explore all Trending Now items in Shop">
+               <ChevronRight size={18} />
              </Link>
            </div>
-           <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4">
+           <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5">
              {trendingNow.map((product) => (
                <ProductCard key={`trending-${product.id}`} product={product} isHome={true} showAddButton={false} />
              ))}

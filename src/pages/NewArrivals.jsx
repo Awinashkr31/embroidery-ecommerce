@@ -45,13 +45,20 @@ const NewArrivals = () => {
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-            {newArrivals.map((product) => (
-              <div key={product.uniqueId}>
-                <Link to={`${getProductUrl(product)}${product.preselectedVariant ? `?color=${encodeURIComponent(product.preselectedVariant.color)}` : ''}`}>
-                  <ProductCard product={product} toggleWishlist={toggleWishlist} isInWishlist={isInWishlist} />
-                </Link>
-              </div>
-            ))}
+            {newArrivals.map((product) => {
+              const productLink = `${getProductUrl(product)}${product.preselectedVariant ? `?color=${encodeURIComponent(product.preselectedVariant.color)}` : ''}`;
+              return (
+                <div key={product.uniqueId}>
+                  <ProductCard 
+                    product={product} 
+                    toggleWishlist={toggleWishlist} 
+                    isInWishlist={isInWishlist} 
+                    showAddButton={false}
+                    targetUrl={productLink}
+                  />
+                </div>
+              );
+            })}
           </div>
         )}
       </div>

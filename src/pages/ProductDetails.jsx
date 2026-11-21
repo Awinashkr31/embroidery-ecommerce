@@ -811,7 +811,7 @@ const ProductDetails = () => {
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-10 xl:gap-16 mb-12 lg:mb-28">
                     {/* Image Section */}
-                    <div className="lg:col-span-5 relative h-fit lg:sticky lg:top-28 space-y-4 lg:space-y-0 lg:flex lg:gap-4 xl:max-w-lg">
+                    <div className="lg:col-span-5 relative h-fit lg:sticky lg:top-28 space-y-4 lg:space-y-0 lg:flex lg:gap-4 max-w-sm sm:max-w-md lg:max-w-none mx-auto w-full">
                         {/* Desktop Thumbnails (Left Side) */}
                         {displayImages && displayImages.length > 1 && (
                             <div className="hidden lg:flex flex-col gap-2.5 w-[72px] flex-shrink-0 max-h-[75vh] overflow-y-auto no-scrollbar py-1">
@@ -820,7 +820,7 @@ const ProductDetails = () => {
                                         <button 
                                             key={idx}
                                             onClick={() => setSelectedImage(img)}
-                                            className={`aspect-[2/3] lg:aspect-[4/5] rounded-2xl overflow-hidden border-2 transition-all duration-300 ${
+                                            className={`aspect-[4/5] rounded-xl overflow-hidden border-2 transition-all duration-300 ${
                                                 (selectedImage || displayImages[0]) === img 
                                                 ? 'border-stone-900 shadow-sm ring-2 ring-stone-900/10' 
                                                 : 'border-transparent opacity-60 hover:opacity-100 hover:border-stone-200'
@@ -847,7 +847,7 @@ const ProductDetails = () => {
                         )}
 
                         {/* Main Image Area */}
-                        <div className="flex-1 rounded-2xl overflow-hidden relative shadow-md group bg-white aspect-[2/3] lg:aspect-[4/5]">
+                        <div className="flex-1 rounded-2xl overflow-hidden relative shadow-md group bg-white aspect-[4/5] max-h-[440px] sm:max-h-[500px] lg:max-h-none">
                             <div className="hidden lg:block w-full h-full relative overflow-hidden"> 
                                 <AnimatePresence mode="wait">
                                     <motion.img 
@@ -1309,11 +1309,10 @@ const ProductDetails = () => {
                         {/* Reviews */}
                         <div id="reviews" className="border-t border-stone-100 pt-8 lg:pt-12 mt-8 lg:mt-12 mb-12 lg:mb-24">
                             {/* Reviews Header */}
-                            <div className="flex flex-col gap-6 mb-8">
+                            <div className={`flex flex-col gap-6 ${reviews.length > 0 ? 'mb-8' : ''}`}>
                                 <div className="flex items-start justify-between gap-4">
                                     <div>
                                         <h2 className="font-heading text-2xl font-semibold text-stone-900">Customer Reviews</h2>
-                                        <p className="text-stone-500 text-sm mt-1">{reviews.length} verified purchase{reviews.length !== 1 ? 's' : ''}</p>
                                     </div>
                                     <button 
                                         onClick={() => setReviewModalOpen(true)}
@@ -1356,30 +1355,7 @@ const ProductDetails = () => {
                                 )}
                             </div>
                             
-                            {reviews.length === 0 ? (
-                                <div className="text-center py-12 bg-rose-50/50 rounded-2xl border border-rose-100 shadow-sm">
-                                    <div className="flex justify-center mb-4">
-                                        <div className="flex -space-x-3">
-                                            {[1,2,3,4].map(i => (
-                                                <div key={i} className="w-10 h-10 rounded-full border-2 border-white bg-stone-300 overflow-hidden shadow-sm flex items-center justify-center text-xs font-bold text-stone-800" aria-hidden="true">
-                                                    U{i}
-                                                </div>
-                                            ))}
-                                            <div className="w-10 h-10 rounded-full border-2 border-white bg-rose-200 flex items-center justify-center text-xs font-bold text-rose-900 shadow-sm" aria-hidden="true">
-                                                +50
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <p className="text-stone-900 font-heading font-medium text-xl mb-1">Loved by handmade gift buyers</p>
-                                    <p className="text-stone-700 text-sm font-normal mb-5">Join our community of happy customers 💖</p>
-                                    <button 
-                                        onClick={() => setReviewModalOpen(true)}
-                                        className="text-sm font-bold text-rose-900 underline underline-offset-4 hover:text-rose-700 transition-colors"
-                                    >
-                                        Share your experience
-                                    </button>
-                                </div>
-                            ) : (
+                            {reviews.length > 0 && (
                                 <div className="space-y-4">
                                     {reviews.slice(0, visibleReviewsCount).map(review => (
                                         <div key={review.id} className="bg-white p-5 rounded-2xl border border-stone-100 shadow-sm hover:shadow-md transition-all duration-200">
@@ -1395,7 +1371,6 @@ const ProductDetails = () => {
                                                             <p className="font-bold text-stone-900 text-sm truncate">{review.user_name}</p>
                                                             <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-full flex-shrink-0">Verified</span>
                                                         </div>
-                                                        <span className="text-xs text-stone-600 font-medium">{new Date(review.created_at).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                                                     </div>
                                                 </div>
                                                 <div className="flex text-amber-400 flex-shrink-0 ml-3">
@@ -1743,27 +1718,27 @@ const ProductDetails = () => {
             )}
 
             {/* Mobile Sticky Action Bar */}
-            <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-stone-100 p-3 lg:hidden z-50 px-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-[0_-8px_20px_-10px_rgba(0,0,0,0.1)]">
-                <div className="flex items-center gap-3">
+            <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-stone-100 py-2 px-3 lg:hidden z-50 pb-[calc(0.5rem+env(safe-area-inset-bottom))] shadow-[0_-8px_20px_-10px_rgba(0,0,0,0.1)]">
+                <div className="flex items-center gap-2.5">
                     <Link 
                         to="/cart" 
                         aria-label={cartCount > 0 ? `Shopping cart with ${cartCount} items` : "Shopping cart"}
                         title="Shopping cart"
-                        className={`relative flex-shrink-0 flex items-center justify-center rounded-xl border border-stone-200 bg-white shadow-sm transition-all h-[52px] ${isInCart ? 'px-4' : 'w-[52px]'}`}
+                        className={`relative flex-shrink-0 flex items-center justify-center rounded-xl border border-stone-200 bg-white shadow-xs transition-all h-[44px] ${isInCart ? 'px-3' : 'w-[44px]'}`}
                     >
-                        <ShoppingCart className="w-5 h-5 text-stone-900 stroke-[2.5]" />
+                        <ShoppingCart className="w-[18px] h-[18px] text-stone-900 stroke-[2.5]" />
                         {isInCart && (
-                            <span className="ml-2 font-bold text-sm text-[#1a365d] whitespace-nowrap">View Cart</span>
+                            <span className="ml-1.5 font-bold text-xs text-[#1a365d] whitespace-nowrap">View Cart</span>
                         )}
                         {cartCount > 0 && (
-                            <span className={`absolute -top-1.5 -right-1.5 bg-[#e11d48] text-white text-[10px] font-bold w-[22px] h-[22px] rounded-full flex items-center justify-center shadow-sm`}>
+                            <span className={`absolute -top-1 -right-1 bg-[#e11d48] text-white text-[10px] font-bold w-[18px] h-[18px] rounded-full flex items-center justify-center shadow-xs`}>
                                 {cartCount}
                             </span>
                         )}
                     </Link>
                     
                     {isInCart ? (
-                        <div className="flex-1 h-[52px] bg-[#e11d48] rounded-xl flex items-center justify-between px-2 shadow-md">
+                        <div className="flex-1 h-[44px] bg-[#e11d48] rounded-xl flex items-center justify-between px-2 shadow-xs">
                             <button 
                                 onClick={(e) => {
                                     e.preventDefault();
@@ -1773,19 +1748,19 @@ const ProductDetails = () => {
                                         removeFromCart(cartItem.id, cartItem.selectedSize, cartItem.selectedColor, cartItem.variantId);
                                     }
                                 }}
-                                className="w-10 h-10 flex items-center justify-center text-white/90 hover:text-white transition-colors active:scale-95"
+                                className="w-8 h-8 flex items-center justify-center text-white/90 hover:text-white transition-colors active:scale-95"
                             >
-                                <Minus className="w-5 h-5" />
+                                <Minus className="w-4 h-4" />
                             </button>
-                            <span className="font-bold text-white text-base">{cartItem.quantity}</span>
+                            <span className="font-bold text-white text-sm">{cartItem.quantity}</span>
                             <button 
                                 onClick={(e) => {
                                     e.preventDefault();
                                     updateQuantity(cartItem.id, cartItem.quantity + 1, cartItem.selectedSize, cartItem.selectedColor, cartItem.variantId);
                                 }}
-                                className="w-10 h-10 flex items-center justify-center text-white/90 hover:text-white transition-colors active:scale-95"
+                                className="w-8 h-8 flex items-center justify-center text-white/90 hover:text-white transition-colors active:scale-95"
                             >
-                                <Plus className="w-5 h-5" />
+                                <Plus className="w-4 h-4" />
                             </button>
                         </div>
                     ) : (
@@ -1795,9 +1770,9 @@ const ProductDetails = () => {
                                 await addToCart({ ...product, selectedSize, selectedColor, price: currentPrice, variantId: selectedVariant?.id });
                             }}
                             disabled={!isStockAvailable}
-                            className={`flex-1 h-[52px] rounded-xl font-bold text-[15px] transition-all flex items-center justify-center gap-2 ${
+                            className={`flex-1 h-[44px] rounded-xl font-bold text-[14px] transition-all flex items-center justify-center gap-2 ${
                                 isStockAvailable
-                                ? 'bg-[#e11d48] text-white shadow-md active:scale-[0.98]'
+                                ? 'bg-[#e11d48] text-white shadow-xs active:scale-[0.98]'
                                 : 'bg-stone-200 text-stone-400 cursor-not-allowed'
                             }`}
                         >

@@ -28,11 +28,11 @@ export const GlobalPincodeHeader = () => {
         <>
             <button 
                 onClick={() => setIsOpen(true)}
-                className="flex items-center gap-1.5 hover:bg-stone-100 px-3 py-1.5 rounded-full transition-colors group"
+                className="flex items-center gap-2 hover:bg-stone-100 px-3.5 py-1.5 rounded-full transition-all group border border-stone-200/60 bg-stone-50/60 hover:border-stone-300 shadow-2xs whitespace-nowrap"
             >
                 <MapPin className="w-4 h-4 text-rose-900 shrink-0" />
-                <div className="hidden sm:flex flex-col items-start leading-tight min-h-[32px] justify-center">
-                    <span className="text-[10px] text-stone-500 font-medium">
+                <div className="hidden sm:flex flex-col items-start leading-snug justify-center pl-0.5">
+                    <span className="text-[10px] text-stone-500 font-medium tracking-wide">
                         {pincode ? 'Deliver to' : 'Select Location'}
                     </span>
                     <span className="text-xs font-bold text-stone-900 group-hover:text-rose-900 transition-colors">

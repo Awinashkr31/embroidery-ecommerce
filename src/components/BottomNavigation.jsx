@@ -10,8 +10,10 @@ const BottomNavigation = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
+  const path = location.pathname.replace(/\/$/, '') || '/';
+
   if (
-    ['/checkout', '/login', '/register', '/forgot-password', '/reset-password'].includes(location.pathname) ||
+    ['/checkout', '/login', '/register', '/forgot-password', '/reset-password', '/shop'].includes(path) ||
     location.pathname.startsWith('/product/') ||
     (location.pathname === '/cart' && cart.length > 0)
   ) {
@@ -31,9 +33,9 @@ const BottomNavigation = () => {
       {/* Navigation Bar */}
       <nav
         aria-label="Mobile navigation"
-        className="pointer-events-auto bg-[#faf8f5] border border-stone-200/80 shadow-[0_8px_32px_rgba(0,0,0,0.1)] w-full rounded-[2rem] overflow-hidden flex-shrink-0"
+        className="pointer-events-auto bg-[#faf8f5] border border-stone-200/80 shadow-[0_8px_32px_rgba(0,0,0,0.1)] w-full rounded-full overflow-hidden flex-shrink-0"
       >
-        <div className="flex items-stretch h-16 px-2">
+        <div className="flex items-stretch h-[50px] px-1.5">
           {navItems.map((item) => {
             const isProfile = item.id === 'profile';
             const isActive = location.pathname === item.to || (item.to !== '/' && location.pathname.startsWith(item.to));
@@ -62,22 +64,22 @@ const BottomNavigation = () => {
               >
                 <div className="relative flex flex-col items-center justify-center gap-0.5 h-full px-0 transition-all duration-150 active:scale-95">
                   {/* Icon wrapper */}
-                  <div className={`relative flex items-center justify-center w-[2.75rem] h-[1.75rem] rounded-2xl transition-all duration-300 ${
+                  <div className={`relative flex items-center justify-center w-10 h-6 rounded-full transition-all duration-300 ${
                     isActive ? 'bg-rose-900/10' : ''
                   }`}>
                     {isProfile && currentUser ? (
-                      <div className={`w-[22px] h-[22px] rounded-full overflow-hidden flex items-center justify-center ${isActive ? 'ring-2 ring-rose-900 ring-offset-1 ring-offset-white' : 'border border-stone-300'}`}>
+                      <div className={`w-[20px] h-[20px] rounded-full overflow-hidden flex items-center justify-center ${isActive ? 'ring-2 ring-rose-900 ring-offset-1 ring-offset-white' : 'border border-stone-300'}`}>
                         {currentUser.photoURL ? (
                           <img src={currentUser.photoURL} alt="Profile" className="w-full h-full object-cover" />
                         ) : (
                           <div className="w-full h-full bg-rose-900 text-white flex items-center justify-center text-[10px] font-bold uppercase">
-                            {currentUser.displayName ? currentUser.displayName.charAt(0) : <User size={14} />}
+                            {currentUser.displayName ? currentUser.displayName.charAt(0) : <User size={13} />}
                           </div>
                         )}
                       </div>
                     ) : (
                       <IconComp
-                        size={20}
+                        size={18}
                         strokeWidth={isActive ? 2.5 : 2}
                         className={`transition-colors duration-300 ${
                           isActive ? 'text-rose-900' : 'text-stone-500'
@@ -87,7 +89,7 @@ const BottomNavigation = () => {
 
                     {/* Badge */}
                     {item.badge > 0 && (
-                      <span className="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 bg-rose-900 text-white text-[10px] font-black flex items-center justify-center rounded-full border border-white leading-none animate-badge-pop" key={`bnav-badge-${item.badge}`}>
+                      <span className="absolute -top-1 -right-1 min-w-[15px] h-3.5 px-1 bg-rose-900 text-white text-[9px] font-black flex items-center justify-center rounded-full border border-white leading-none animate-badge-pop" key={`bnav-badge-${item.badge}`}>
                         {item.badge > 9 ? '9+' : item.badge}
                       </span>
                     )}

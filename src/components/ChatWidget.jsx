@@ -227,7 +227,7 @@ export default function ChatWidget() {
             <button
               type="button"
               onClick={() => setIsOpen(true)}
-              className="group relative flex items-center gap-2 bg-white/95 backdrop-blur-sm pl-2.5 pr-3.5 py-1.5 rounded-full border border-stone-200/90 shadow-[0_4px_16px_rgba(0,0,0,0.12)] hover:shadow-md hover:border-emerald-500/70 transition-all active:scale-95 cursor-pointer"
+              className="group relative flex items-center gap-2 bg-white/95 backdrop-blur-sm pl-3 pr-4 py-2 min-h-[38px] rounded-full border border-stone-200/90 shadow-[0_4px_16px_rgba(0,0,0,0.12)] hover:shadow-md hover:border-emerald-500/70 transition-all active:scale-95 cursor-pointer"
               aria-label={`WhatsApp quick query: ${ROTATING_MESSAGES[currentMsgIndex]}`}
             >
               {/* Green Live Indicator Ping Dot */}
@@ -255,7 +255,7 @@ export default function ChatWidget() {
           type="button"
           onClick={() => setIsOpen(!isOpen)}
           aria-label={isOpen ? "Close WhatsApp support" : "Open WhatsApp support with Crochet Wali"}
-          className="pointer-events-auto flex items-center justify-center w-11 h-11 md:w-12 md:h-12 rounded-full bg-[#075e54] hover:bg-[#05463e] text-white shadow-[0_4px_16px_rgba(7,94,84,0.4)] hover:shadow-[0_6px_24px_rgba(7,94,84,0.6)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
+          className="pointer-events-auto flex items-center justify-center w-12 h-12 md:w-13 md:h-13 min-w-[48px] min-h-[48px] rounded-full bg-[#075e54] hover:bg-[#05463e] text-white shadow-[0_4px_16px_rgba(7,94,84,0.4)] hover:shadow-[0_6px_24px_rgba(7,94,84,0.6)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
         >
           {isOpen ? (
             <X className="w-5 h-5 md:w-5.5 md:h-5.5" />

@@ -265,7 +265,7 @@ export const ProductCard = React.memo(({
                             e.stopPropagation();
                             if (toggleWishlist) toggleWishlist(product);
                         }}
-                        className="absolute top-2 right-2 p-1.5 bg-white/90 backdrop-blur rounded-full text-stone-500 hover:text-[#e11d48] transition-all z-30 flex items-center justify-center shadow-sm"
+                        className="absolute top-2 right-2 w-9 h-9 min-w-[36px] min-h-[36px] p-2 bg-white/90 backdrop-blur rounded-full text-stone-500 hover:text-[#e11d48] active:scale-90 transition-all z-30 flex items-center justify-center shadow-xs"
                         aria-label={isInWishlist && isInWishlist(product.id) ? `Remove ${product.name} from wishlist` : `Add ${product.name} to wishlist`}
                         title={isInWishlist && isInWishlist(product.id) ? `Remove ${product.name} from wishlist` : `Add ${product.name} to wishlist`}
                     >
@@ -324,7 +324,7 @@ export const ProductCard = React.memo(({
                                         e.preventDefault();
                                         setSelectedVariant(variant);
                                     }}
-                                    className="w-6 h-6 rounded-full flex items-center justify-center transition-all focus:outline-none p-0.5"
+                                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center transition-all focus:outline-none p-1 touch-manipulation"
                                     title={variant.color}
                                     aria-label={`Select color ${variant.color}`}
                                 >

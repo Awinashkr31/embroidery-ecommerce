@@ -5,7 +5,8 @@ import {
   MessageSquare, 
   Palette, 
   Scissors, 
-  Star, 
+  Star,
+  Truck, 
   Check, 
   Clock, 
   ChevronDown, 
@@ -74,19 +75,19 @@ const PROCESS_STEPS = [
     number: "02",
     icon: Palette,
     title: "We Design",
-    desc: "We customize your design and share the price & timeline."
+    desc: "We customize your design and share the upfront quote."
   },
   {
     number: "03",
     icon: Scissors,
-    title: "Confirm Your Order",
-    desc: "Approve the details and pay securely via UPI or Card."
+    title: "Crafted",
+    desc: "Handmade in 7–14 days based on product with love and care."
   },
   {
     number: "04",
-    icon: Star,
-    title: "Crafted & Delivered",
-    desc: "Handmade in 7–14 days based on product, then delivered across India in 4–7 business days."
+    icon: Truck,
+    title: "Delivered",
+    desc: "Delivered across India in 4–7 business days with live tracking."
   }
 ];
 
@@ -109,43 +110,49 @@ const CLIENT_STORIES = [
   }
 ];
 
-// ─── Custom Masterpieces (Owner's Authentic Products) ───
+// ─── Custom Masterpieces (6 Authentic Studio Products) ───
 const CUSTOM_MASTERPIECES = [
   {
-    src: "/custom-images/custom_rose_band.webp",
-    title: "Crochet Floral Rose Band",
-    category: "Hair & Wrist Accessories",
-    alt: "Handcrafted Multi-color Crochet Rose Floral Band with Pearls by Crochet Wali"
+    src: "https://yqtrlqkmitgnaehbawdm.supabase.co/storage/v1/object/public/images/products/1778557378262-05kqnn.webp",
+    title: "Crochet Rose Bouquet",
+    category: "Everlasting Floral Bouquets",
+    alt: "Handcrafted Crochet Rose Bouquet with Red and Pink Roses by Crochet Wali",
+    link: "/product/crochet-rose-bouquet-5a1292b6-9305-4cd1-8aa0-ebe5ca4f7352"
   },
   {
-    src: "/custom-images/custom_granny_bag.webp",
-    title: "Granny Square Crochet Bag",
-    category: "Artisanal Bags",
-    alt: "Handcrafted Floral Granny Square Crochet Shoulder Bag by Crochet Wali"
+    src: "https://yqtrlqkmitgnaehbawdm.supabase.co/storage/v1/object/public/images/products/1793066981494-ruyhd3.webp",
+    title: "Granny Square Bag",
+    category: "Artisanal Crochet Bags",
+    alt: "Handcrafted Floral Granny Square Crochet Shoulder Bag by Crochet Wali",
+    link: "/product/granny-square-bag-70f2e066-81dc-4f8d-bebf-93d066d4e999"
   },
   {
-    src: "/custom-images/custom_hair_barrette.webp",
-    title: "Floral Crochet Hair Barrette",
-    category: "Hair Accessories",
-    alt: "Handcrafted Multi-Floral Crochet Hair Clip Barrette by Crochet Wali"
+    src: "https://yqtrlqkmitgnaehbawdm.supabase.co/storage/v1/object/public/images/products/1778595840761-7awolk.webp",
+    title: "Crochet Wrist Gajra Bracelet",
+    category: "Bridal & Festive Keepsakes",
+    alt: "Handcrafted White and Rose Crochet Wrist Gajra Bracelet Pair by Crochet Wali",
+    link: "/product/crochet-wrist-gajra-bracelet-pair-f6439b6e-b495-4d17-95f2-7bcd7d7fdd26"
   },
   {
-    src: "/custom-images/custom_strawberry_pot.webp",
-    title: "Hanging Strawberry Plant Pot",
-    category: "Flower Pots & Decor",
-    alt: "Handcrafted Hanging Strawberry Crochet Plant Pot with Vines by Crochet Wali"
+    src: "https://yqtrlqkmitgnaehbawdm.supabase.co/storage/v1/object/public/images/products/1788871942005-ny3r2h.webp",
+    title: "Crochet Bunny",
+    category: "Amigurumi Soft Plushies",
+    alt: "Handcrafted Soft Crochet Bunny Plushie in Dress by Crochet Wali",
+    link: "/product/crochet-bunny-ea89c2ba-2dc9-4a8f-aab8-fbb3e4ea7bc7"
   },
   {
-    src: "/custom-images/custom_bunny_overalls.webp",
-    title: "Crochet Bunny in Red Overalls",
-    category: "Amigurumi Plushies",
-    alt: "Handcrafted White and Red Plush Crochet Bunny Doll in Overalls by Crochet Wali"
+    src: "https://yqtrlqkmitgnaehbawdm.supabase.co/storage/v1/object/public/images/products/1790941555578-bubzxo.webp",
+    title: "Strawberry Pot",
+    category: "Floral Pots & Room Decor",
+    alt: "Handcrafted Crochet Strawberry Plant Pot with Hanging Berries by Crochet Wali",
+    link: "/product/strawberry-pot-e3404716-4ad2-4d81-9a6f-b4d0efe18451"
   },
   {
-    src: "/custom-images/custom_floral_parandi.webp",
+    src: "https://yqtrlqkmitgnaehbawdm.supabase.co/storage/v1/object/public/images/products/1788879077093-l7a3x.webp",
     title: "Crochet Floral Parandi",
-    category: "Bridal & Ethnic Styling",
-    alt: "Handcrafted Traditional Red Crochet Floral Parandi for Braids by Crochet Wali"
+    category: "Traditional Hair & Braid Styling",
+    alt: "Handcrafted Red Floral Crochet Parandi for Hair Braids by Crochet Wali",
+    link: "/product/crochet-floral-parandi-8b20c804-ba2a-4293-af71-1cb4b88292b0"
   }
 ];
 
@@ -250,12 +257,12 @@ const CustomDesign = () => {
   };
 
   return (
-    <div className="bg-[#fdfbf7] min-h-screen font-body text-stone-900 pb-24 lg:pb-20 antialiased">
+    <div className="bg-[#fdfbf7] min-h-screen font-body text-stone-900 pb-32 lg:pb-28 antialiased">
       {/* ─── SEO Meta & Schema ─── */}
       <SEO 
         title="Custom Crochet Gifts India | Made to Order | Crochet Wali" 
         exactTitle={true}
-        description="Order custom crochet gifts India loves. From a custom crochet bouquet to personalized crochet gifts, we handcraft made to order designs by quotation in India."
+        description="Order custom crochet gifts India loves. From custom crochet bouquets to personalized and personalised crochet gifts, get made to order keepsakes by quotation."
         url="https://www.crochetwali.in/custom-design"
         image="https://www.crochetwali.in/custom-images/custom_bouquet.webp"
         schema={[serviceSchema, faqSchema, breadcrumbsSchema]}
@@ -267,7 +274,7 @@ const CustomDesign = () => {
           <img 
             src={bannerImage && bannerImage.trim() ? bannerImage : defaultHeroBanner} 
             alt="Handcrafted custom crochet & embroidery design workshop - Crochet Wali" 
-            className="w-full h-full object-cover opacity-80" 
+            className="w-full h-full object-cover opacity-95" 
             fetchPriority="high"
             loading="eager"
             decoding="async"
@@ -276,7 +283,7 @@ const CustomDesign = () => {
               e.currentTarget.src = defaultHeroBanner;
             }}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#1c1917]/90 via-[#1c1917]/55 to-[#1c1917]/35" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#1c1917]/75 via-[#1c1917]/40 to-[#1c1917]/20" />
         </div>
 
         <div className="relative z-10 pt-16 pb-12 px-5 text-center max-w-4xl mx-auto">
@@ -285,7 +292,7 @@ const CustomDesign = () => {
           </h1>
 
           <p className="font-sans text-sm sm:text-base text-stone-200 max-w-2xl mx-auto leading-relaxed mb-6 drop-shadow-sm font-normal">
-            Handcrafted bespoke crochet gifts made to order in India. Share your design idea or reference photo on WhatsApp for an upfront quotation (Handmade in 7–14 days based on product • pan-India delivery).
+            To order a custom crochet gift, simply share your reference photo or idea with Crochet Wali on WhatsApp for an upfront quotation. Each piece is made to order in India (handmade in 7–14 days based on product, plus 4–7 business days transit).
           </p>
 
           <div className="flex flex-col sm:flex-row justify-center items-center gap-3.5 mb-5">
@@ -306,21 +313,21 @@ const CustomDesign = () => {
             <button
               type="button"
               onClick={() => setShowGuide(!showGuide)}
-              className="inline-flex items-center gap-1.5 text-xs text-stone-200 hover:text-white bg-white/10 hover:bg-white/20 px-3.5 py-1.5 rounded-full transition-colors backdrop-blur-md border border-white/20 font-medium cursor-pointer"
+              className="inline-flex items-center gap-1 text-[10.5px] sm:text-[11px] text-rose-100 hover:text-white bg-rose-950/40 hover:bg-rose-900/60 px-2.5 py-0.5 rounded-full transition-colors backdrop-blur-md border border-rose-400/30 font-medium cursor-pointer shadow-2xs"
               aria-expanded={showGuide}
             >
               <span>{showGuide ? "Hide custom order guide" : "View custom ordering guide & gift ideas"}</span>
-              <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showGuide ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`w-3 h-3 transition-transform duration-200 ${showGuide ? 'rotate-180' : ''}`} />
             </button>
 
             <div 
               className={`font-sans text-xs sm:text-sm text-stone-200 max-w-2xl mx-auto leading-relaxed space-y-3 text-left sm:text-center mt-3.5 p-4 sm:p-5 rounded-2xl bg-stone-900/85 backdrop-blur-md border border-stone-700/80 shadow-lg ${showGuide ? 'block' : 'hidden'}`}
             >
               <p>
-                <strong>How do I order a custom crochet gift?</strong> Simply share your reference image, idea, or preferred colors with Crochet Wali via WhatsApp at <a href="https://wa.me/917428013214" className="text-white font-semibold underline hover:text-rose-200">+91 74280 13214</a>. We provide an upfront quotation based on design complexity, then handcraft your made to order crochet gifts (Handmade in 7–14 days based on product) with 4–7 business days pan-India shipping.
+                <strong>How do I order a custom crochet gift?</strong> Simply share your reference image, idea, or preferred colors with Crochet Wali via WhatsApp at <a href="https://wa.me/917428013214" className="text-white font-semibold underline hover:text-rose-200">+91 74280 13214</a>. We provide an upfront quotation based on design complexity, then handcraft your made to order crochet gifts (Handmade in 7–14 days based on product) with 4–7 business days <span className="whitespace-nowrap">pan-India</span> shipping.
               </p>
               <p className="text-xs sm:text-sm text-stone-300">
-                Whether you need <strong>customised crochet gifts</strong>, <strong>customized crochet gifts</strong>, or <strong>personalised crochet gifts</strong>, we create unique keepsakes for every milestone. From an everlasting <Link to="/collections/crochet-bouquets" className="text-white font-semibold underline hover:text-rose-200">custom crochet bouquet</Link>, a romantic <strong>custom crochet gift for girlfriend</strong>, or a lasting <strong>custom crochet gift for anniversary</strong> celebrations to a fun <strong>custom crochet gift for birthday</strong> surprises and matching <strong>custom crochet gift set</strong> boxes—each piece is crafted by quote. Planning an event? We also handcraft <strong>custom wedding favours</strong> by quotation, alongside <strong>personalized embroidery gifts</strong> as our secondary artisan offering.
+                Whether you need <strong>customised crochet gifts</strong>, <strong>customized crochet gifts</strong>, <strong>personalized crochet gifts</strong>, or <strong>personalised crochet gifts</strong>, we create unique keepsakes for every milestone. From an everlasting <Link to="/collections/crochet-bouquets" className="text-white font-semibold underline hover:text-rose-200">custom crochet bouquet</Link>, a romantic <strong>custom crochet gift for girlfriend</strong>, or a lasting <strong>custom crochet gift for anniversary</strong> celebrations to a fun <strong>custom crochet gift for birthday</strong> surprises and matching <strong>custom crochet gift set</strong> boxes—each piece is crafted by quote. Planning an event? We also handcraft <strong>custom wedding favours</strong> by quotation, alongside <strong>personalized embroidery gifts</strong> as our secondary artisan offering.
               </p>
             </div>
           </div>
@@ -367,31 +374,49 @@ const CustomDesign = () => {
         </div>
       </section>
 
-            {/* ─── Gallery / Custom Masterpieces ─── */}
+      {/* ─── Gallery / Custom Masterpieces (8 Clean Studio Tiles with Captions) ─── */}
       {CUSTOM_MASTERPIECES.length > 0 && (
         <section className="container-custom px-4 sm:px-6 mb-16">
-          <div className="text-center max-w-xl mx-auto mb-6">
+          <div className="text-center max-w-xl mx-auto mb-6 sm:mb-8">
             <span className="font-sans text-rose-900 text-xs font-bold tracking-widest uppercase mb-1 block">Portfolio</span>
             <h2 className="text-2xl sm:text-3xl font-heading font-bold text-stone-900 tracking-tight">Custom Masterpieces</h2>
+            <p className="font-sans text-stone-600 text-xs sm:text-sm mt-1">
+              Sample bespoke creations handcrafted for our clients. Available by quotation in custom shades and sizes.
+            </p>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 md:gap-5">
             {CUSTOM_MASTERPIECES.map((item, i) => (
               <div 
                 key={i} 
-                className="aspect-square bg-white rounded-2xl overflow-hidden group border border-stone-200/80 shadow-xs relative"
+                className="bg-white rounded-2xl overflow-hidden border border-stone-200/80 shadow-xs flex flex-col group hover:shadow-md hover:border-rose-200 transition-all duration-300"
               >
-                <img 
-                  src={getOptimizedImageUrl(item.src, { width: 360, quality: 75 })} 
-                  alt={item.alt} 
-                  loading="lazy"
-                  width="360"
-                  height="360"
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
-                />
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-stone-900/80 via-stone-900/40 to-transparent p-2.5 sm:p-3 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <p className="font-heading font-bold text-xs sm:text-sm leading-tight">{item.title}</p>
-                  <p className="font-sans text-[10px] text-stone-300">{item.category}</p>
+                <Link 
+                  to={item.link} 
+                  className="aspect-square bg-stone-50 overflow-hidden block relative"
+                  title={`View ${item.title}`}
+                >
+                  <img 
+                    src={getOptimizedImageUrl(item.src, { width: 400, quality: 80 })} 
+                    alt={item.alt} 
+                    loading="lazy"
+                    width="400"
+                    height="400"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                  />
+                </Link>
+                
+                {/* Visible Caption under each tile */}
+                <div className="p-3 sm:p-3.5 flex flex-col flex-1 justify-center bg-white">
+                  <Link 
+                    to={item.link} 
+                    className="font-heading font-bold text-xs sm:text-sm text-stone-900 hover:text-rose-900 transition-colors line-clamp-1 block leading-tight"
+                  >
+                    {item.title}
+                  </Link>
+                  <p className="font-sans text-[11px] text-stone-500 mt-0.5 line-clamp-1">
+                    {item.category}
+                  </p>
                 </div>
               </div>
             ))}
@@ -449,9 +474,9 @@ const CustomDesign = () => {
 
         <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
           {/* Pricing */}
-          <div className="bg-white p-4 rounded-xl border border-stone-200/80 shadow-xs">
-            <div className="flex items-center gap-2 text-rose-900 font-bold text-xs uppercase tracking-wide mb-1.5">
-              <Check className="w-4 h-4 text-emerald-700 shrink-0" />
+          <div className="bg-white p-5 rounded-2xl border border-stone-200/80 shadow-xs flex flex-col justify-start h-full">
+            <div className="flex items-center gap-2 text-rose-900 font-bold text-xs uppercase tracking-wide mb-2">
+              <Check className="w-4 h-4 text-rose-900 shrink-0" />
               <span>Transparent Quotation</span>
             </div>
             <p className="font-sans text-xs text-stone-600 leading-relaxed">
@@ -460,8 +485,8 @@ const CustomDesign = () => {
           </div>
 
           {/* Delivery */}
-          <div className="bg-white p-4 rounded-xl border border-stone-200/80 shadow-xs">
-            <div className="flex items-center gap-2 text-rose-900 font-bold text-xs uppercase tracking-wide mb-1.5">
+          <div className="bg-white p-5 rounded-2xl border border-stone-200/80 shadow-xs flex flex-col justify-start h-full">
+            <div className="flex items-center gap-2 text-rose-900 font-bold text-xs uppercase tracking-wide mb-2">
               <Clock className="w-4 h-4 text-rose-900 shrink-0" />
               <span>Timelines Across India</span>
             </div>
@@ -473,11 +498,11 @@ const CustomDesign = () => {
       </section>
 
             {/* ─── Client Stories (Preserves exact live wording) ─── */}
-      <section className="py-14 bg-white border-y border-stone-200/60 mb-14">
+      <section className="py-10 sm:py-12 bg-white border-y border-stone-200/60 mb-12">
         <div className="container-custom px-4 sm:px-6">
-          <div className="text-center max-w-xl mx-auto mb-10">
-            <span className="font-sans text-rose-900 text-xs font-bold tracking-widest uppercase mb-1.5 block">Client Stories</span>
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-heading font-bold text-stone-900 mb-2 tracking-tight">
+          <div className="text-center max-w-xl mx-auto mb-6 sm:mb-8">
+            <span className="font-sans text-rose-900 text-xs font-bold tracking-widest uppercase mb-1 block">Client Stories</span>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-heading font-bold text-stone-900 mb-1.5 tracking-tight">
               What Our Customers Say
             </h2>
             <p className="font-sans text-stone-600 text-xs sm:text-sm">
@@ -485,28 +510,28 @@ const CustomDesign = () => {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-3 gap-3.5 sm:gap-4 md:gap-5">
             {CLIENT_STORIES.map((t, i) => (
               <div 
                 key={i} 
-                className="bg-[#fdfbf7] p-6 sm:p-7 rounded-2xl shadow-xs border border-stone-200/70 flex flex-col justify-between"
+                className="bg-[#fdfbf7] p-4 sm:p-5 rounded-xl shadow-2xs border border-stone-200/70 flex flex-col h-full"
               >
-                <div>
-                  <div className="flex text-amber-400 mb-3.5">
+                <div className="flex-1">
+                  <div className="flex text-amber-400 mb-2">
                     {[...Array(5)].map((_, idx) => (
-                      <Star key={idx} className="w-4 h-4 fill-current" />
+                      <Star key={idx} className="w-3.5 h-3.5 fill-current" />
                     ))}
                   </div>
-                  <p className="font-sans text-stone-700 text-sm italic leading-relaxed mb-6">
+                  <p className="font-sans text-stone-700 text-xs sm:text-[13px] italic leading-relaxed">
                     "{t.text}"
                   </p>
                 </div>
-                <div className="border-t border-stone-200/60 pt-3.5 flex items-center justify-between">
+                <div className="border-t border-stone-200/60 pt-2.5 mt-3.5 flex items-center justify-between">
                   <div>
-                    <p className="font-sans font-bold text-stone-900 text-sm">{t.name}</p>
-                    <p className="font-sans text-xs text-stone-600">{t.location}</p>
+                    <p className="font-sans font-bold text-stone-900 text-xs sm:text-[13px]">{t.name}</p>
+                    <p className="font-sans text-[11px] text-stone-500">{t.location}</p>
                   </div>
-                  <span className="font-sans text-xs font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-100">
+                  <span className="font-sans text-[10px] font-semibold text-rose-900 bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200/70">
                     Verified
                   </span>
                 </div>

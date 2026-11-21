@@ -269,7 +269,7 @@ const Navbar = React.memo(() => {
 
           {/* 4. Right: Icons & Actions */}
           <div className="flex items-center gap-0 sm:gap-2">
-            <div className="hidden lg:block w-[400px] xl:w-[500px] mr-6">
+            <div className="hidden lg:block shrink-0 mr-3 xl:mr-5">
               <GlobalPincodeHeader />
             </div>
 

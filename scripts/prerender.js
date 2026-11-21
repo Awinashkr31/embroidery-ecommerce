@@ -1421,12 +1421,12 @@ export const viteAssets = {
     };
 
     const customMasterpieces = [
-      { src: "/custom-images/custom_rose_band.webp", title: "Crochet Floral Rose Band", category: "Hair & Wrist Accessories", alt: "Handcrafted Multi-color Crochet Rose Floral Band with Pearls by Crochet Wali" },
-      { src: "/custom-images/custom_granny_bag.webp", title: "Granny Square Crochet Bag", category: "Artisanal Bags", alt: "Handcrafted Floral Granny Square Crochet Shoulder Bag by Crochet Wali" },
-      { src: "/custom-images/custom_hair_barrette.webp", title: "Floral Crochet Hair Barrette", category: "Hair Accessories", alt: "Handcrafted Multi-Floral Crochet Hair Clip Barrette by Crochet Wali" },
-      { src: "/custom-images/custom_strawberry_pot.webp", title: "Hanging Strawberry Plant Pot", category: "Flower Pots & Decor", alt: "Handcrafted Hanging Strawberry Crochet Plant Pot with Vines by Crochet Wali" },
-      { src: "/custom-images/custom_bunny_overalls.webp", title: "Crochet Bunny in Red Overalls", category: "Amigurumi Plushies", alt: "Handcrafted White and Red Plush Crochet Bunny Doll in Overalls by Crochet Wali" },
-      { src: "/custom-images/custom_floral_parandi.webp", title: "Crochet Floral Parandi", category: "Bridal & Ethnic Styling", alt: "Handcrafted Traditional Red Crochet Floral Parandi for Braids by Crochet Wali" }
+      { src: "https://yqtrlqkmitgnaehbawdm.supabase.co/storage/v1/object/public/images/products/1778557378262-05kqnn.webp", title: "Crochet Rose Bouquet", category: "Everlasting Floral Bouquets", alt: "Handcrafted Crochet Rose Bouquet with Red and Pink Roses by Crochet Wali", link: "/product/crochet-rose-bouquet-5a1292b6-9305-4cd1-8aa0-ebe5ca4f7352" },
+      { src: "https://yqtrlqkmitgnaehbawdm.supabase.co/storage/v1/object/public/images/products/1793066981494-ruyhd3.webp", title: "Granny Square Bag", category: "Artisanal Crochet Bags", alt: "Handcrafted Floral Granny Square Crochet Shoulder Bag by Crochet Wali", link: "/product/granny-square-bag-70f2e066-81dc-4f8d-bebf-93d066d4e999" },
+      { src: "https://yqtrlqkmitgnaehbawdm.supabase.co/storage/v1/object/public/images/products/1778595840761-7awolk.webp", title: "Crochet Wrist Gajra Bracelet", category: "Bridal & Festive Keepsakes", alt: "Handcrafted White and Rose Crochet Wrist Gajra Bracelet Pair by Crochet Wali", link: "/product/crochet-wrist-gajra-bracelet-pair-f6439b6e-b495-4d17-95f2-7bcd7d7fdd26" },
+      { src: "https://yqtrlqkmitgnaehbawdm.supabase.co/storage/v1/object/public/images/products/1788871942005-ny3r2h.webp", title: "Crochet Bunny", category: "Amigurumi Soft Plushies", alt: "Handcrafted Soft Crochet Bunny Plushie in Dress by Crochet Wali", link: "/product/crochet-bunny-ea89c2ba-2dc9-4a8f-aab8-fbb3e4ea7bc7" },
+      { src: "https://yqtrlqkmitgnaehbawdm.supabase.co/storage/v1/object/public/images/products/1790941555578-bubzxo.webp", title: "Strawberry Pot", category: "Floral Pots & Room Decor", alt: "Handcrafted Crochet Strawberry Plant Pot with Hanging Berries by Crochet Wali", link: "/product/strawberry-pot-e3404716-4ad2-4d81-9a6f-b4d0efe18451" },
+      { src: "https://yqtrlqkmitgnaehbawdm.supabase.co/storage/v1/object/public/images/products/1788879077093-l7a3x.webp", title: "Crochet Floral Parandi", category: "Traditional Hair & Braid Styling", alt: "Handcrafted Red Floral Crochet Parandi for Hair Braids by Crochet Wali", link: "/product/crochet-floral-parandi-8b20c804-ba2a-4293-af71-1cb4b88292b0" }
     ];
 
     const customDesignContentHtml = `
@@ -1443,7 +1443,7 @@ export const viteAssets = {
           Custom Crochet Gifts Made to Order in India
         </h1>
         <p style="font-size: 16px; color: #57534e; line-height: 1.6; margin: 0 auto 24px; max-width: 680px;">
-          Handcrafted bespoke crochet gifts made to order in India. Share your design idea or reference photo on WhatsApp for an upfront quotation (Handmade in 7–14 days based on product • pan-India delivery).
+          To order a custom crochet gift, simply share your reference photo or idea with Crochet Wali on WhatsApp for an upfront quotation. Each piece is made to order in India (handmade in 7–14 days based on product, plus 4–7 business days transit).
         </p>
         <div style="display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; margin-bottom: 24px;">
           <a href="https://wa.me/917428013214?text=Hi%20Crochet%20Wali%2C%20I%20would%20like%20to%20enquire%20about%20a%20custom%20order%21" target="_blank" rel="noopener noreferrer" style="background: #25D366; color: #fff; padding: 14px 28px; border-radius: 9999px; font-weight: 700; text-decoration: none;">
@@ -1454,7 +1454,7 @@ export const viteAssets = {
           <summary style="font-weight: 700; color: #881337; cursor: pointer; font-size: 14px;">View custom ordering guide & gift ideas ▾</summary>
           <div style="font-size: 14px; color: #57534e; line-height: 1.7; margin-top: 12px; display: flex; flex-direction: column; gap: 10px;">
             <p style="margin: 0;"><strong>How do I order a custom crochet gift?</strong> Simply share your reference image, idea, or preferred colors with Crochet Wali via WhatsApp at <a href="https://wa.me/917428013214" style="color: #881337; font-weight: 600; text-decoration: underline;">+91 74280 13214</a>. We provide an upfront quotation based on design complexity, then handcraft your made to order crochet gifts (Handmade in 7–14 days based on product) with 4–7 business days pan-India shipping.</p>
-            <p style="margin: 0; color: #78716c;">Whether you need <strong>customised crochet gifts</strong>, <strong>customized crochet gifts</strong>, or <strong>personalised crochet gifts</strong>, we create unique keepsakes for every milestone. From an everlasting <a href="/collections/crochet-bouquets" style="color: #881337; font-weight: 600; text-decoration: underline;">custom crochet bouquet</a>, a romantic <strong>custom crochet gift for girlfriend</strong>, or a lasting <strong>custom crochet gift for anniversary</strong> celebrations to a fun <strong>custom crochet gift for birthday</strong> surprises and matching <strong>custom crochet gift set</strong> boxes—each piece is crafted by quote. Planning an event? We also handcraft <strong>custom wedding favours</strong> by quotation, alongside <strong>personalized embroidery gifts</strong> as our secondary artisan offering.</p>
+            <p style="margin: 0; color: #78716c;">Whether you need <strong>customised crochet gifts</strong>, <strong>customized crochet gifts</strong>, <strong>personalized crochet gifts</strong>, or <strong>personalised crochet gifts</strong>, we create unique keepsakes for every milestone. From an everlasting <a href="/collections/crochet-bouquets" style="color: #881337; font-weight: 600; text-decoration: underline;">custom crochet bouquet</a>, a romantic <strong>custom crochet gift for girlfriend</strong>, or a lasting <strong>custom crochet gift for anniversary</strong> celebrations to a fun <strong>custom crochet gift for birthday</strong> surprises and matching <strong>custom crochet gift set</strong> boxes—each piece is crafted by quote. Planning an event? We also handcraft <strong>custom wedding favours</strong> by quotation, alongside <strong>personalized embroidery gifts</strong> as our secondary artisan offering.</p>
           </div>
         </details>
       </section>
@@ -1478,13 +1478,13 @@ export const viteAssets = {
           </div>
           <div style="background: #fff; padding: 20px; border-radius: 16px; border: 1px solid #f5f5f4;">
             <span style="font-size: 20px; font-weight: 800; color: #881337; display: block; margin-bottom: 8px;">03</span>
-            <h3 style="font-size: 16px; font-weight: 700; color: #1c1917; margin: 0 0 6px;">Confirm Order</h3>
-            <p style="font-size: 13px; color: #57534e; margin: 0; line-height: 1.5;">Approve the specifications and pay securely via UPI, Card, or Net Banking.</p>
+            <h3 style="font-size: 16px; font-weight: 700; color: #1c1917; margin: 0 0 6px;">Crafted</h3>
+            <p style="font-size: 13px; color: #57534e; margin: 0; line-height: 1.5;">Handmade in 7–14 days based on product with love and care.</p>
           </div>
           <div style="background: #fff; padding: 20px; border-radius: 16px; border: 1px solid #f5f5f4;">
             <span style="font-size: 20px; font-weight: 800; color: #881337; display: block; margin-bottom: 8px;">04</span>
-            <h3 style="font-size: 16px; font-weight: 700; color: #1c1917; margin: 0 0 6px;">Crafted & Delivered</h3>
-            <p style="font-size: 13px; color: #57534e; margin: 0; line-height: 1.5;">Handmade in 7–14 days based on product, plus 4–7 business days shipping across India.</p>
+            <h3 style="font-size: 16px; font-weight: 700; color: #1c1917; margin: 0 0 6px;">Delivered</h3>
+            <p style="font-size: 13px; color: #57534e; margin: 0; line-height: 1.5;">Delivered across India in 4–7 business days with live tracking.</p>
           </div>
         </div>
       </section>
@@ -1497,11 +1497,13 @@ export const viteAssets = {
         </div>
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px;">
           ${customMasterpieces.map(item => `
-          <div style="background: #fff; border-radius: 16px; overflow: hidden; border: 1px solid #e7e5e4; text-align: center;">
-            <img src="${item.src}" alt="${escapeHtml(item.alt)}" width="360" height="360" loading="lazy" style="width: 100%; aspect-ratio: 1/1; object-fit: cover; display: block;" />
-            <div style="padding: 12px;">
-              <strong style="font-size: 13px; color: #1c1917; display: block;">${escapeHtml(item.title)}</strong>
-              <span style="font-size: 11px; color: #78716c;">${escapeHtml(item.category)}</span>
+          <div style="background: #fff; border-radius: 16px; overflow: hidden; border: 1px solid #e7e5e4; text-align: left; display: flex; flex-direction: column;">
+            <a href="${item.link}" style="text-decoration: none; display: block; aspect-ratio: 1/1; overflow: hidden; background: #fafaf9;">
+              <img src="${item.src}" alt="${escapeHtml(item.alt)}" width="360" height="360" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; display: block;" />
+            </a>
+            <div style="padding: 12px 14px; text-align: left;">
+              <a href="${item.link}" style="font-size: 13px; font-weight: 700; color: #1c1917; text-decoration: none; display: block; line-height: 1.3;">${escapeHtml(item.title)}</a>
+              <span style="font-size: 11px; color: #78716c; display: block; margin-top: 2px;">${escapeHtml(item.category)}</span>
             </div>
           </div>`).join('')}
         </div>
@@ -1582,7 +1584,7 @@ export const viteAssets = {
     const customDesignHtml = renderPageHtml({
         baseHtml,
         title: 'Custom Crochet Gifts India | Made to Order | Crochet Wali',
-        description: 'Order custom crochet gifts India loves. From a custom crochet bouquet to personalized crochet gifts, we handcraft made to order designs by quotation in India.',
+        description: 'Order custom crochet gifts India loves. From custom crochet bouquets to personalized and personalised crochet gifts, get made to order keepsakes by quotation.',
         canonicalUrl: 'https://www.crochetwali.in/custom-design',
         ogImage: 'https://www.crochetwali.in/custom-images/custom_bouquet.webp',
         schemas: [customServiceSchema, customFaqSchema, customBreadcrumbsSchema],

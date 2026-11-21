@@ -15,7 +15,7 @@ const Footer = () => {
   const location = useLocation();
 
   return (
-    <footer className={`bg-[#f0ece9] text-stone-600 border-t border-stone-200 font-sofia ${location.pathname === '/' ? 'block' : 'hidden md:block'}`}>
+    <footer className={`bg-[#f0ece9] text-stone-600 border-t border-stone-200 font-sofia pb-16 md:pb-20 ${location.pathname === '/' ? 'block' : 'hidden md:block'}`}>
       <div className="container-custom py-8 lg:py-10">
         <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-12 gap-x-4 gap-y-8 lg:gap-8">
           {/* 1. Brand Section - Full Width on Mobile */}
@@ -153,32 +153,20 @@ const Footer = () => {
           {/* Handcrafted Collections Links */}
           <div className="text-center mb-5">
             <h4 className="font-heading text-xs font-bold text-stone-900 tracking-wider mb-3">Popular Handcrafted Collections</h4>
-            <div className="flex flex-wrap justify-center items-center gap-x-3 gap-y-1.5 text-xs font-medium max-w-4xl mx-auto">
-              <Link to="/collections/crochet-bouquets" className="text-stone-600 hover:text-rose-900 transition-colors">Crochet Bouquets</Link>
-              <span className="text-stone-300">•</span>
-              <Link to="/collections/crochet-flowers" className="text-stone-600 hover:text-rose-900 transition-colors">Crochet Flowers & Pots</Link>
-              <span className="text-stone-300">•</span>
-              <Link to="/collections/reusable-bridal-gajra" className="text-stone-600 hover:text-rose-900 transition-colors">Reusable Bridal Gajra</Link>
-              <span className="text-stone-300">•</span>
-              <Link to="/collections/crochet-keychains" className="text-stone-600 hover:text-rose-900 transition-colors">Keychains & Bag Charms</Link>
-              <span className="text-stone-300">•</span>
-              <Link to="/collections/crochet-claw-clips" className="text-stone-600 hover:text-rose-900 transition-colors">Hair Claw Clips</Link>
-              <span className="text-stone-300">•</span>
-              <Link to="/collections/crochet-parandi" className="text-stone-600 hover:text-rose-900 transition-colors">Handmade Parandi</Link>
-              <span className="text-stone-300">•</span>
-              <Link to="/collections/crochet-rose-bouquet" className="text-stone-600 hover:text-rose-900 transition-colors">Rose Bouquets</Link>
-              <span className="text-stone-300">•</span>
-              <Link to="/collections/crochet-sunflower" className="text-stone-600 hover:text-rose-900 transition-colors">Sunflower Pots</Link>
-              <span className="text-stone-300">•</span>
-              <Link to="/collections/crochet-tulip" className="text-stone-600 hover:text-rose-900 transition-colors">Pastel Tulips</Link>
-              <span className="text-stone-300">•</span>
-              <Link to="/collections/gifts-for-girlfriend" className="text-stone-600 hover:text-rose-900 transition-colors">Gifts for Girlfriend</Link>
-              <span className="text-stone-300">•</span>
-              <Link to="/collections/anniversary-gifts" className="text-stone-600 hover:text-rose-900 transition-colors">Anniversary Keepsakes</Link>
-              <span className="text-stone-300">•</span>
-              <Link to="/collections/gifts-under-500" className="text-stone-600 hover:text-rose-900 transition-colors">Gifts Under ₹500</Link>
-              <span className="text-stone-300">•</span>
-              <Link to="/collections/gifts-under-1000" className="text-stone-600 hover:text-rose-900 transition-colors">Gifts Under ₹1000</Link>
+            <div className="flex flex-wrap justify-center items-center gap-2 sm:gap-2.5 max-w-4xl mx-auto">
+              <Link to="/collections/crochet-bouquets" className="inline-flex items-center justify-center px-3 py-2 sm:px-2.5 sm:py-1 rounded-full bg-white/70 hover:bg-white text-stone-700 hover:text-rose-900 border border-stone-200/90 hover:border-rose-300 text-xs font-medium transition-all shadow-xs active:scale-95">Crochet Bouquets</Link>
+              <Link to="/collections/crochet-flowers" className="inline-flex items-center justify-center px-3 py-2 sm:px-2.5 sm:py-1 rounded-full bg-white/70 hover:bg-white text-stone-700 hover:text-rose-900 border border-stone-200/90 hover:border-rose-300 text-xs font-medium transition-all shadow-xs active:scale-95">Crochet Flowers & Pots</Link>
+              <Link to="/collections/reusable-bridal-gajra" className="inline-flex items-center justify-center px-3 py-2 sm:px-2.5 sm:py-1 rounded-full bg-white/70 hover:bg-white text-stone-700 hover:text-rose-900 border border-stone-200/90 hover:border-rose-300 text-xs font-medium transition-all shadow-xs active:scale-95">Reusable Bridal Gajra</Link>
+              <Link to="/collections/crochet-keychains" className="inline-flex items-center justify-center px-3 py-2 sm:px-2.5 sm:py-1 rounded-full bg-white/70 hover:bg-white text-stone-700 hover:text-rose-900 border border-stone-200/90 hover:border-rose-300 text-xs font-medium transition-all shadow-xs active:scale-95">Keychains & Bag Charms</Link>
+              <Link to="/collections/crochet-claw-clips" className="inline-flex items-center justify-center px-3 py-2 sm:px-2.5 sm:py-1 rounded-full bg-white/70 hover:bg-white text-stone-700 hover:text-rose-900 border border-stone-200/90 hover:border-rose-300 text-xs font-medium transition-all shadow-xs active:scale-95">Hair Claw Clips</Link>
+              <Link to="/collections/crochet-parandi" className="inline-flex items-center justify-center px-3 py-2 sm:px-2.5 sm:py-1 rounded-full bg-white/70 hover:bg-white text-stone-700 hover:text-rose-900 border border-stone-200/90 hover:border-rose-300 text-xs font-medium transition-all shadow-xs active:scale-95">Handmade Parandi</Link>
+              <Link to="/collections/crochet-rose-bouquet" className="inline-flex items-center justify-center px-3 py-2 sm:px-2.5 sm:py-1 rounded-full bg-white/70 hover:bg-white text-stone-700 hover:text-rose-900 border border-stone-200/90 hover:border-rose-300 text-xs font-medium transition-all shadow-xs active:scale-95">Rose Bouquets</Link>
+              <Link to="/collections/crochet-sunflower" className="inline-flex items-center justify-center px-3 py-2 sm:px-2.5 sm:py-1 rounded-full bg-white/70 hover:bg-white text-stone-700 hover:text-rose-900 border border-stone-200/90 hover:border-rose-300 text-xs font-medium transition-all shadow-xs active:scale-95">Sunflower Pots</Link>
+              <Link to="/collections/crochet-tulip" className="inline-flex items-center justify-center px-3 py-2 sm:px-2.5 sm:py-1 rounded-full bg-white/70 hover:bg-white text-stone-700 hover:text-rose-900 border border-stone-200/90 hover:border-rose-300 text-xs font-medium transition-all shadow-xs active:scale-95">Pastel Tulips</Link>
+              <Link to="/collections/gifts-for-girlfriend" className="inline-flex items-center justify-center px-3 py-2 sm:px-2.5 sm:py-1 rounded-full bg-white/70 hover:bg-white text-stone-700 hover:text-rose-900 border border-stone-200/90 hover:border-rose-300 text-xs font-medium transition-all shadow-xs active:scale-95">Gifts for Girlfriend</Link>
+              <Link to="/collections/anniversary-gifts" className="inline-flex items-center justify-center px-3 py-2 sm:px-2.5 sm:py-1 rounded-full bg-white/70 hover:bg-white text-stone-700 hover:text-rose-900 border border-stone-200/90 hover:border-rose-300 text-xs font-medium transition-all shadow-xs active:scale-95">Anniversary Keepsakes</Link>
+              <Link to="/collections/gifts-under-500" className="inline-flex items-center justify-center px-3 py-2 sm:px-2.5 sm:py-1 rounded-full bg-white/70 hover:bg-white text-stone-700 hover:text-rose-900 border border-stone-200/90 hover:border-rose-300 text-xs font-medium transition-all shadow-xs active:scale-95">Gifts Under ₹500</Link>
+              <Link to="/collections/gifts-under-1000" className="inline-flex items-center justify-center px-3 py-2 sm:px-2.5 sm:py-1 rounded-full bg-white/70 hover:bg-white text-stone-700 hover:text-rose-900 border border-stone-200/90 hover:border-rose-300 text-xs font-medium transition-all shadow-xs active:scale-95">Gifts Under ₹1000</Link>
             </div>
           </div>
           <p className="text-xs leading-relaxed text-stone-600 max-w-4xl mx-auto text-center mb-6">
@@ -186,7 +174,7 @@ const Footer = () => {
           </p>
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-stone-600">
                <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-3 gap-y-1">
-                 <p>&copy; {currentYear} Crochet Wali. All rights reserved.</p>
+                 <p>© {currentYear} Crochet Wali. All rights reserved.</p>
                  <span className="hidden md:inline text-stone-600">•</span>
                  <a 
                    href="/sitemap.xml" 
@@ -197,7 +185,7 @@ const Footer = () => {
                    Sitemap
                  </a>
                </div>
-               <div className="flex items-center gap-1 text-stone-600">
+               <div className="flex items-center gap-1 text-stone-600 md:pr-28">
                   <span>Handcrafted with</span>
                   <Heart className="w-3 h-3 text-rose-900 fill-current" />
                   <span>in India</span>
