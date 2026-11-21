@@ -14,11 +14,12 @@ import {
   MapPin,
   ArrowLeft,
   Sparkles,
-  Truck
+  Truck,
+  Download
 } from 'lucide-react';
+import { usePWAInstall } from '../hooks/usePWAInstall';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
-import { supabase } from '../config/supabase';
 import { useToast } from '../context/ToastContext';
 import { useSettings } from '../context/SettingsContext';
 import { GlobalPincodeHeader } from './GlobalPincodeHeader';
@@ -40,9 +41,24 @@ const Navbar = React.memo(() => {
   const { cartCount, FREE_DELIVERY_THRESHOLD } = useCart();
   const { currentUser, logout, openLoginSheet } = useAuth();
   const { addToast } = useToast();
-  const { settings } = useSettings();
+  useSettings();
   const location = useLocation();
   const navigate = useNavigate();
+
+  const { promptInstall } = usePWAInstall();
+
+  const handleInstallClick = async () => {
+    const success = await promptInstall();
+    if (!success) {
+      const isIos = /ipad|iphone|ipod/.test(navigator.userAgent.toLowerCase());
+      if (isIos) {
+        addToast("To install, tap the Share icon in Safari and select 'Add to Home Screen'.", "info");
+      } else {
+        addToast("To install, open your browser menu (⋮) and tap 'Install app' or 'Add to Home Screen'.", "info");
+      }
+    }
+  };
+
 
   const handleSearch = (e) => {
       e.preventDefault();
@@ -132,20 +148,6 @@ const Navbar = React.memo(() => {
 
   const isHomePage = location.pathname === '/';
 
-  const getPageTitle = (pathname) => {
-      if (pathname.startsWith('/shop')) return 'Shop';
-      if (pathname.startsWith('/product')) return 'Product Details';
-      if (pathname.startsWith('/cart')) return 'Bag';
-      if (pathname.startsWith('/wishlist')) return 'Wishlist';
-      if (pathname.startsWith('/profile')) return 'Profile';
-      if (pathname.startsWith('/login')) return 'Login';
-      if (pathname.startsWith('/custom-design')) return 'Custom Design';
-
-      if (pathname.startsWith('/about')) return 'About';
-      if (pathname.startsWith('/support')) return 'Support';
-      return 'Crochet Wali';
-  };
-
   if (location.pathname === '/checkout') {
       return null;
   }
@@ -153,6 +155,7 @@ const Navbar = React.memo(() => {
   return (
     <>
     <header className={`sticky top-0 w-full z-50 flex flex-col transition-transform duration-300 ease-in-out ${scrollDirection === 'down' ? '-translate-y-full' : 'translate-y-0'} ${location.pathname === '/cart' ? 'hidden lg:flex' : ''}`}>
+
 
       <nav
         aria-label="Main navigation"
@@ -282,7 +285,20 @@ const Navbar = React.memo(() => {
               </button>
             )}
 
-             {/* Wishlist */}
+             {/* Get App Icon (Only on Home Page) */}
+            {isHomePage && (
+              <button
+                type="button"
+                onClick={handleInstallClick}
+                className="p-1.5 md:p-2 text-stone-600 hover:text-rose-900 transition-colors rounded-full hover:bg-stone-100 active:scale-90"
+                aria-label="Get App"
+                title="Get App"
+              >
+                <Download className="w-5 h-5" />
+              </button>
+            )}
+
+            {/* Wishlist */}
             <Link 
                 to="/wishlist" 
                 onClick={(e) => {

@@ -302,7 +302,7 @@
           "value": "(.*)(bot|crawler|spider|facebookexternalhit|WhatsApp|Twitterbot|Pinterest|LinkedInBot|Googlebot|bingbot|Baiduspider|YandexBot|curl|wget|slurp|DuckDuckBot|PostmanRuntime|Screaming|Lighthouse|HeadlessChrome|Google-InspectionTool)(.*)"
         }
       ],
-      "destination": "/api/product.js?slug=:slug*"
+      "destination": "/api/product?slug=:slug*"
     },
     {
       "source": "/product/:slug*",
@@ -312,7 +312,7 @@
           "key": "crawler"
         }
       ],
-      "destination": "/api/product.js?slug=:slug*"
+      "destination": "/api/product?slug=:slug*"
     },
     {
       "source": "/product/:slug*",
@@ -322,11 +322,11 @@
           "key": "bot"
         }
       ],
-      "destination": "/api/product.js?slug=:slug*"
+      "destination": "/api/product?slug=:slug*"
     },
     {
       "source": "/shop",
-      "destination": "/api/shop.js"
+      "destination": "/api/shop"
     },
     {
       "source": "/(.*)",

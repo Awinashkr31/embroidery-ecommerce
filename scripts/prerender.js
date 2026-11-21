@@ -44,6 +44,19 @@ function slugify(str) {
         .replace(/^-+|-+$/g, '');
 }
 
+function renderMarkdownTable(block) {
+    const lines = block.trim().split('\n').map(l => l.trim()).filter(Boolean);
+    if (lines.length < 2) return '';
+    const parseRow = (line) => line.split('|').slice(1, -1).map(c => c.trim());
+    const headerCols = parseRow(lines[0]);
+    const bodyRows = lines.slice(2).map(parseRow);
+
+    const thead = `<thead><tr style="background-color: #fff1f2; border-bottom: 2px solid #fecdd3;">${headerCols.map(c => `<th style="padding: 12px 16px; font-weight: 700; color: #881337; text-align: left;">${formatInline(c)}</th>`).join('')}</tr></thead>`;
+    const tbody = `<tbody>${bodyRows.map((r, i) => `<tr style="border-bottom: 1px solid #f5f5f4; background-color: ${i % 2 === 0 ? '#ffffff' : '#fafaf9'};">${r.map(c => `<td style="padding: 12px 16px; color: #44403c;">${formatInline(c)}</td>`).join('')}</tr>`).join('')}</tbody>`;
+
+    return `<div style="overflow-x: auto; margin: 24px 0; border: 1px solid #f5f5f4; border-radius: 12px;"><table style="width: 100%; border-collapse: collapse; font-size: 14px; text-align: left;">${thead}${tbody}</table></div>`;
+}
+
 function markdownToHtml(md) {
     if (!md) return '';
     const hasH2 = /^##\s+/m.test(md);
@@ -68,6 +81,9 @@ function markdownToHtml(md) {
             if (block.startsWith('## ')) {
                 const headingText = block.replace(/^##\s+/, '');
                 return `<h2 style="font-size: 24px; font-weight: 700; color: #1c1917; margin: 32px 0 16px;">${formatInline(headingText)}</h2>`;
+            }
+            if (block.includes('|') && /\|[\s-:]+\|/.test(block)) {
+                return renderMarkdownTable(block);
             }
             return `<p style="color: #44403c; line-height: 1.8; font-size: 16px; margin: 0 0 16px;">${formatInline(block)}</p>`;
         })
@@ -203,7 +219,7 @@ const COLLECTION_SEO_CONTENT = {
         text: 'Welcome to Crochet Wali, the premier place to buy crochet bouquet online India. If you are checking crochet bouquet price options, our handcrafted forever flower arrangements offer everlasting botanical charm starting from ₹99. Each bouquet is meticulously hand-knitted with premium milk cotton yarn to preserve its vibrant bloom forever without wilting. Explore our flower-specific collections including rose bouquets, sunflowers, and tulips. Handcrafted to order in India with confirmed delivery: 2–4 days crafting + 4–7 business days shipping across India.',
     },
     'crochet-bags': {
-        title: 'Handmade Crochet Bags India | Granny Square & Rose Bags | Crochet Wali',
+        title: 'Handmade Crochet Bags India | Artisanal Totes | Crochet Wali',
         description: 'Shop handmade crochet bags in India. Discover artisan granny square shoulder bags, round rose bags, and 3D floral handbags from ₹1,499. Handcrafted in India.',
         h1: 'Handmade Crochet Bags & Artisanal Totes',
         text: 'Discover our exclusive collection of handmade crochet bags in India. Handcrafted using premium soft yarn, our artisanal bag collection features retro granny square totes, 3D rose statement bags, and elegant round rose handbags with pearl and golden chain accents. Perfect for outings, festive styling, and thoughtful handmade gifts. Handcrafted to order in India: 2–4 days crafting + 4–7 business days shipping across India.'
@@ -692,7 +708,7 @@ export const viteAssets = {
     const homeHtml = renderPageHtml({
         baseHtml,
         title: 'Crochet Wali | Handmade Crochet Flowers & Artisanal Keepsakes',
-        description: 'Buy 100% handmade crochet flower bouquets, bridal gajras, hair accessories & personalized gift boxes starting at ₹99. Everlasting aesthetic gifts made with love in India. Free shipping over ₹999!',
+        description: 'Buy 100% handmade crochet flower bouquets, bridal gajras, hair accessories & personalized gifts from ₹99. Everlasting aesthetic keepsakes made in India.',
         canonicalUrl: 'https://www.crochetwali.in/',
         ogImage: 'https://www.crochetwali.in/hero-gift.png',
         contentHtml: homeContentHtml
@@ -746,7 +762,7 @@ export const viteAssets = {
         "@context": "https://schema.org",
         "@type": "CollectionPage",
         "name": "Shop All Handmade Crochet Gifts | Crochet Wali",
-        "description": "Shop Crochet Wali's complete collection of handmade crochet gifts — forever flower bouquets, gajra, hair clips, keychains, parandi, claw clips, and personalized gift boxes. Shipped across India.",
+        "description": "Shop handmade crochet gifts online in India. Discover forever flower bouquets, bridal gajras, keychains, hair clips, and personalized keepsake gift boxes.",
         "url": "https://www.crochetwali.in/shop"
     };
 
@@ -783,7 +799,7 @@ export const viteAssets = {
     const shopHtml = renderPageHtml({
         baseHtml,
         title: 'Shop All Handmade Crochet Gifts | Crochet Wali',
-        description: 'Shop Crochet Wali\'s complete collection of handmade crochet gifts — forever flower bouquets, gajra, hair clips, keychains, parandi, claw clips, and personalized gift boxes. Shipped across India.',
+        description: 'Shop handmade crochet gifts online in India. Discover forever flower bouquets, bridal gajras, keychains, hair clips, and personalized keepsake gift boxes.',
         canonicalUrl: 'https://www.crochetwali.in/shop',
         schemas: [shopBreadcrumbSchema, shopCollectionSchema, shopItemListSchema],
         contentHtml: shopContentHtml
@@ -1364,7 +1380,12 @@ export const viteAssets = {
       { question: "What is the minimum order?", answer: "MOQ is 1 piece for retail gifts; orders of 10+ pieces qualify for bulk wedding/event discounts." },
       { question: "How long does a custom order take?", answer: "Handmade in 7–14 days based on product plus 4–7 business days shipping across India." },
       { question: "What can I customise?", answer: "Custom names, dates, quotes, colour palettes, and bouquet combinations, with 30+ yarn shades to choose from." },
-      { question: "Do you deliver across India?", answer: "Yes, custom orders are shipped across India in rigid gift-ready packaging." }
+      { question: "Do you deliver across India?", answer: "Yes, custom orders are shipped across India in rigid gift-ready packaging." },
+      { question: "Can I share a reference image from Pinterest or Instagram?", answer: "Yes! You can share screenshots, Pinterest pins, or reference sketches directly through WhatsApp. Our team at Crochet Wali reviews the image to assess crochet feasibility and translates it into handmade yarn stitches." },
+      { question: "How is the price of a custom crochet order calculated?", answer: "Because every custom piece is unique, pricing is provided by upfront quotation based on design complexity, dimensions, yarn requirements, and quantity before you confirm your order." },
+      { question: "Can I request delivery before a specific birthday or anniversary?", answer: "Yes, please share your required delivery date during consultation. We will verify if your timeline fits within our crafting schedule (handmade in 7–14 days based on product) plus 4–7 business days transit." },
+      { question: "What payment methods are available?", answer: "We accept UPI (Google Pay, PhonePe, Paytm), Net Banking, and Debit/Credit Cards via secure payment links once your quotation and design details are confirmed." },
+      { question: "Will the finished handmade product look exactly like my reference image?", answer: "Handmade crochet and embroidery have authentic artisanal individuality. We replicate the reference style, colors, and proportions as closely as possible, and we share progress photos of your finished creation before dispatch." }
     ];
 
     const customServiceSchema = {
@@ -1377,6 +1398,37 @@ export const viteAssets = {
       "description": "Handcrafted custom crochet flower bouquets, plushies, amigurumi, keychains, bridal accessories, and personalized gifts made to order in India."
     };
 
+    const customFaqSchema = {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": customDesignFaqs.map(faq => ({
+        "@type": "Question",
+        "name": faq.question,
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": faq.answer
+        }
+      }))
+    };
+
+    const customBreadcrumbsSchema = {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.crochetwali.in/" },
+        { "@type": "ListItem", "position": 2, "name": "Custom Design", "item": "https://www.crochetwali.in/custom-design" }
+      ]
+    };
+
+    const customMasterpieces = [
+      { src: "/custom-images/custom_rose_band.webp", title: "Crochet Floral Rose Band", category: "Hair & Wrist Accessories", alt: "Handcrafted Multi-color Crochet Rose Floral Band with Pearls by Crochet Wali" },
+      { src: "/custom-images/custom_granny_bag.webp", title: "Granny Square Crochet Bag", category: "Artisanal Bags", alt: "Handcrafted Floral Granny Square Crochet Shoulder Bag by Crochet Wali" },
+      { src: "/custom-images/custom_hair_barrette.webp", title: "Floral Crochet Hair Barrette", category: "Hair Accessories", alt: "Handcrafted Multi-Floral Crochet Hair Clip Barrette by Crochet Wali" },
+      { src: "/custom-images/custom_strawberry_pot.webp", title: "Hanging Strawberry Plant Pot", category: "Flower Pots & Decor", alt: "Handcrafted Hanging Strawberry Crochet Plant Pot with Vines by Crochet Wali" },
+      { src: "/custom-images/custom_bunny_overalls.webp", title: "Crochet Bunny in Red Overalls", category: "Amigurumi Plushies", alt: "Handcrafted White and Red Plush Crochet Bunny Doll in Overalls by Crochet Wali" },
+      { src: "/custom-images/custom_floral_parandi.webp", title: "Crochet Floral Parandi", category: "Bridal & Ethnic Styling", alt: "Handcrafted Traditional Red Crochet Floral Parandi for Braids by Crochet Wali" }
+    ];
+
     const customDesignContentHtml = `
     ${renderHeader()}
     <main style="max-width: 1280px; margin: 0 auto; padding: 32px 20px;">
@@ -1385,10 +1437,8 @@ export const viteAssets = {
         <span style="color: #881337; font-weight: 600;">Custom Design</span>
       </nav>
 
+      <!-- Hero Section -->
       <section style="text-align: center; max-width: 860px; margin: 0 auto 48px;">
-        <span style="display: inline-block; background: #fff1f2; color: #881337; font-size: 12px; font-weight: 700; padding: 6px 16px; border-radius: 9999px; text-transform: uppercase; margin-bottom: 16px;">
-          ✨ Bespoke Handcrafted Artistry in India
-        </span>
         <h1 style="font-size: clamp(28px, 4.5vw, 44px); font-weight: 800; color: #1c1917; margin: 0 0 16px; font-family: 'Playfair Display', Georgia, serif;">
           Custom Crochet Gifts Made to Order in India
         </h1>
@@ -1396,9 +1446,6 @@ export const viteAssets = {
           Handcrafted bespoke crochet gifts made to order in India. Share your design idea or reference photo on WhatsApp for an upfront quotation (Handmade in 7–14 days based on product • pan-India delivery).
         </p>
         <div style="display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; margin-bottom: 24px;">
-          <a href="#custom-order" style="background: #881337; color: #fff; padding: 14px 28px; border-radius: 9999px; font-weight: 700; text-decoration: none;">
-            Create My Custom Design
-          </a>
           <a href="https://wa.me/917428013214?text=Hi%20Crochet%20Wali%2C%20I%20would%20like%20to%20enquire%20about%20a%20custom%20order%21" target="_blank" rel="noopener noreferrer" style="background: #25D366; color: #fff; padding: 14px 28px; border-radius: 9999px; font-weight: 700; text-decoration: none;">
             WhatsApp Us: +91 74280 13214
           </a>
@@ -1411,6 +1458,123 @@ export const viteAssets = {
           </div>
         </details>
       </section>
+
+      <!-- 4-Step Process -->
+      <section style="margin-bottom: 56px;">
+        <div style="text-align: center; margin-bottom: 28px;">
+          <span style="font-size: 12px; font-weight: 700; color: #881337; text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 6px;">How It Works</span>
+          <h2 style="font-size: 24px; font-weight: 800; color: #1c1917; margin: 0; font-family: 'Playfair Display', Georgia, serif;">Our 4-Step Custom Creation Process</h2>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px;">
+          <div style="background: #fff; padding: 20px; border-radius: 16px; border: 1px solid #f5f5f4;">
+            <span style="font-size: 20px; font-weight: 800; color: #881337; display: block; margin-bottom: 8px;">01</span>
+            <h3 style="font-size: 16px; font-weight: 700; color: #1c1917; margin: 0 0 6px;">Share Your Idea</h3>
+            <p style="font-size: 13px; color: #57534e; margin: 0; line-height: 1.5;">Send your reference photo, colors, or design vision directly on WhatsApp.</p>
+          </div>
+          <div style="background: #fff; padding: 20px; border-radius: 16px; border: 1px solid #f5f5f4;">
+            <span style="font-size: 20px; font-weight: 800; color: #881337; display: block; margin-bottom: 8px;">02</span>
+            <h3 style="font-size: 16px; font-weight: 700; color: #1c1917; margin: 0 0 6px;">We Design</h3>
+            <p style="font-size: 13px; color: #57534e; margin: 0; line-height: 1.5;">We assess feasibility, select yarn shades, and provide an upfront quotation.</p>
+          </div>
+          <div style="background: #fff; padding: 20px; border-radius: 16px; border: 1px solid #f5f5f4;">
+            <span style="font-size: 20px; font-weight: 800; color: #881337; display: block; margin-bottom: 8px;">03</span>
+            <h3 style="font-size: 16px; font-weight: 700; color: #1c1917; margin: 0 0 6px;">Confirm Order</h3>
+            <p style="font-size: 13px; color: #57534e; margin: 0; line-height: 1.5;">Approve the specifications and pay securely via UPI, Card, or Net Banking.</p>
+          </div>
+          <div style="background: #fff; padding: 20px; border-radius: 16px; border: 1px solid #f5f5f4;">
+            <span style="font-size: 20px; font-weight: 800; color: #881337; display: block; margin-bottom: 8px;">04</span>
+            <h3 style="font-size: 16px; font-weight: 700; color: #1c1917; margin: 0 0 6px;">Crafted & Delivered</h3>
+            <p style="font-size: 13px; color: #57534e; margin: 0; line-height: 1.5;">Handmade in 7–14 days based on product, plus 4–7 business days shipping across India.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Custom Masterpieces Portfolio Gallery -->
+      <section style="margin-bottom: 56px;">
+        <div style="text-align: center; margin-bottom: 28px;">
+          <span style="font-size: 12px; font-weight: 700; color: #881337; text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 6px;">Portfolio</span>
+          <h2 style="font-size: 24px; font-weight: 800; color: #1c1917; margin: 0; font-family: 'Playfair Display', Georgia, serif;">Custom Masterpieces</h2>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px;">
+          ${customMasterpieces.map(item => `
+          <div style="background: #fff; border-radius: 16px; overflow: hidden; border: 1px solid #e7e5e4; text-align: center;">
+            <img src="${item.src}" alt="${escapeHtml(item.alt)}" width="360" height="360" loading="lazy" style="width: 100%; aspect-ratio: 1/1; object-fit: cover; display: block;" />
+            <div style="padding: 12px;">
+              <strong style="font-size: 13px; color: #1c1917; display: block;">${escapeHtml(item.title)}</strong>
+              <span style="font-size: 11px; color: #78716c;">${escapeHtml(item.category)}</span>
+            </div>
+          </div>`).join('')}
+        </div>
+      </section>
+
+      <!-- Pricing & Delivery Quick Info -->
+      <section style="margin-bottom: 56px; max-width: 860px; margin-left: auto; margin-right: auto;">
+        <div style="text-align: center; margin-bottom: 24px;">
+          <span style="font-size: 12px; font-weight: 700; color: #881337; text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 6px;">Quick Overview</span>
+          <h2 style="font-size: 22px; font-weight: 800; color: #1c1917; margin: 0; font-family: 'Playfair Display', Georgia, serif;">Pricing & Delivery Expectations</h2>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px;">
+          <div style="background: #fff; padding: 20px; border-radius: 16px; border: 1px solid #e7e5e4;">
+            <strong style="font-size: 14px; color: #881337; display: block; margin-bottom: 6px;">Transparent Quotation (MOQ: 1 Pc)</strong>
+            <p style="font-size: 13px; color: #57534e; margin: 0; line-height: 1.6;">Every custom crochet design is priced upon review based on complexity, yarn volume, and dimensions before you confirm your order. Volume discounts available for 10+ piece wedding favors.</p>
+          </div>
+          <div style="background: #fff; padding: 20px; border-radius: 16px; border: 1px solid #e7e5e4;">
+            <strong style="font-size: 14px; color: #881337; display: block; margin-bottom: 6px;">Crafting & Shipping Timelines Across India</strong>
+            <p style="font-size: 13px; color: #57534e; margin: 0; line-height: 1.6;"><strong>7–14 days crafting</strong> by artisan + <strong>4–7 business days shipping</strong> with live tracking. Please consult 2–3 weeks in advance for special wedding and anniversary milestones.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Customer Testimonials -->
+      <section style="margin-bottom: 56px; background: #fff; border-radius: 20px; border: 1px solid #e7e5e4; padding: 32px 24px;">
+        <div style="text-align: center; margin-bottom: 28px;">
+          <span style="font-size: 12px; font-weight: 700; color: #881337; text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 6px;">Client Stories</span>
+          <h2 style="font-size: 24px; font-weight: 800; color: #1c1917; margin: 0; font-family: 'Playfair Display', Georgia, serif;">What Our Customers Say</h2>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px;">
+          <blockquote style="margin: 0; font-size: 13px; color: #57534e; line-height: 1.6; border-left: 3px solid #881337; padding-left: 14px;">
+            <p style="margin: 0 0 8px;">"I requested a custom embroidered denim jacket for my sister's wedding. The Crochet Wali team took my rough sketch and turned it into an absolute masterpiece!"</p>
+            <footer style="font-weight: 700; color: #1c1917;">— Sneha P., Delhi</footer>
+          </blockquote>
+          <blockquote style="margin: 0; font-size: 13px; color: #57534e; line-height: 1.6; border-left: 3px solid #881337; padding-left: 14px;">
+            <p style="margin: 0 0 8px;">"Unbelievable attention to detail. The custom hoop art with my parents' portrait was the perfect anniversary gift. They were in tears."</p>
+            <footer style="font-weight: 700; color: #1c1917;">— Rahul M., Mumbai</footer>
+          </blockquote>
+          <blockquote style="margin: 0; font-size: 13px; color: #57534e; line-height: 1.6; border-left: 3px solid #881337; padding-left: 14px;">
+            <p style="margin: 0 0 8px;">"The process was so smooth. They communicated at every step, sent me design mockups, and the final piece was stunning. Pure art."</p>
+            <footer style="font-weight: 700; color: #1c1917;">— Ananya T., Bengaluru</footer>
+          </blockquote>
+        </div>
+      </section>
+
+      <!-- Frequently Asked Questions -->
+      <section style="margin-bottom: 56px; max-width: 860px; margin-left: auto; margin-right: auto;">
+        <div style="text-align: center; margin-bottom: 28px;">
+          <span style="font-size: 12px; font-weight: 700; color: #881337; text-transform: uppercase; letter-spacing: 0.08em; display: block; margin-bottom: 6px;">FAQ</span>
+          <h2 style="font-size: 24px; font-weight: 800; color: #1c1917; margin: 0; font-family: 'Playfair Display', Georgia, serif;">Frequently Asked Questions</h2>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          ${customDesignFaqs.map(faq => `
+          <details style="background: #fff; border: 1px solid #e7e5e4; border-radius: 14px; padding: 14px 18px;">
+            <summary style="font-weight: 700; color: #1c1917; cursor: pointer; font-size: 14px;">${escapeHtml(faq.question)}</summary>
+            <p style="font-size: 13px; color: #57534e; line-height: 1.6; margin: 10px 0 0;">${escapeHtml(faq.answer)}</p>
+          </details>`).join('')}
+        </div>
+      </section>
+
+      <!-- Related Collections Linking Hub -->
+      <section style="margin-bottom: 48px; background: #fff1f2; border-radius: 20px; border: 1px solid #fecdd3; padding: 28px 20px; text-align: center;">
+        <h3 style="font-size: 18px; font-weight: 800; color: #881337; margin: 0 0 8px;">Explore Ready-to-Ship Handcrafted Collections</h3>
+        <p style="font-size: 14px; color: #57534e; margin: 0 auto 16px; max-width: 600px;">Prefer ready-made creations with instant dispatch? Explore our most loved collections handcrafted with love in India.</p>
+        <div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap;">
+          <a href="/collections/crochet-bouquets" style="background: #fff; color: #881337; border: 1px solid #fecdd3; padding: 8px 18px; border-radius: 9999px; text-decoration: none; font-weight: 600; font-size: 13px;">Crochet Bouquets</a>
+          <a href="/collections/reusable-bridal-gajra" style="background: #fff; color: #881337; border: 1px solid #fecdd3; padding: 8px 18px; border-radius: 9999px; text-decoration: none; font-weight: 600; font-size: 13px;">Bridal Gajra</a>
+          <a href="/collections/crochet-flower-pots" style="background: #fff; color: #881337; border: 1px solid #fecdd3; padding: 8px 18px; border-radius: 9999px; text-decoration: none; font-weight: 600; font-size: 13px;">Flower Pots</a>
+          <a href="/collections/gifts-under-500" style="background: #fff; color: #881337; border: 1px solid #fecdd3; padding: 8px 18px; border-radius: 9999px; text-decoration: none; font-weight: 600; font-size: 13px;">Gifts Under ₹500</a>
+          <a href="/collections/crochet-bags" style="background: #fff; color: #881337; border: 1px solid #fecdd3; padding: 8px 18px; border-radius: 9999px; text-decoration: none; font-weight: 600; font-size: 13px;">Handmade Bags</a>
+          <a href="/shop" style="background: #881337; color: #fff; padding: 8px 18px; border-radius: 9999px; text-decoration: none; font-weight: 700; font-size: 13px;">Shop All</a>
+        </div>
+      </section>
     </main>
     ${renderFooter()}
     `;
@@ -1420,11 +1584,12 @@ export const viteAssets = {
         title: 'Custom Crochet Gifts India | Made to Order | Crochet Wali',
         description: 'Order custom crochet gifts India loves. From a custom crochet bouquet to personalized crochet gifts, we handcraft made to order designs by quotation in India.',
         canonicalUrl: 'https://www.crochetwali.in/custom-design',
-        schemas: [customServiceSchema],
+        ogImage: 'https://www.crochetwali.in/custom-images/custom_bouquet.webp',
+        schemas: [customServiceSchema, customFaqSchema, customBreadcrumbsSchema],
         contentHtml: customDesignContentHtml
     });
     fs.writeFileSync(path.resolve(customDesignDir, 'index.html'), customDesignHtml, 'utf8');
-    console.log(`Pre-rendered dist/custom-design/index.html`);
+    console.log(`Pre-rendered dist/custom-design/index.html with full rich SEO HTML, 10 FAQs, and 3 schemas.`);
 
     // ==========================================
     // 8. PRE-RENDER STATIC PAGES IN SITEMAP
@@ -1478,17 +1643,33 @@ export const viteAssets = {
         },
         {
             slug: 'about',
-            title: 'About Us | Crochet Wali Artisanal Studio India',
+            title: 'About Crochet Wali | Handmade Artisan Studio India',
             description: 'Discover the story behind Sana\'s artisanal journey creating handmade crochet bouquets, accessories, and custom embroidery in India.',
             h1: 'About Crochet Wali Artisanal Studio',
             body: `
-            <p style="font-size: 16px; line-height: 1.8; color: #44403c; margin-bottom: 20px;">Welcome to Crochet Wali. Founded by Sana, our studio celebrates traditional fiber artistry with contemporary design aesthetics.</p>
-            <p style="font-size: 15px; line-height: 1.8; color: #57534e; margin-bottom: 20px;">From romantic forever flower bouquets to custom heirloom embroidery hoops, our mission is to deliver gifts that carry heartfelt meaning and endure forever.</p>
+            <p style="font-size: 16px; line-height: 1.8; color: #44403c; margin-bottom: 20px;">Welcome to Crochet Wali. Founded by Sana in New Delhi, our artisanal studio celebrates traditional Indian needlework and fiber artistry combined with contemporary aesthetic design.</p>
+            <p style="font-size: 15px; line-height: 1.8; color: #57534e; margin-bottom: 20px;">What began as an intimate passion project has grown into a beloved handmade gifting destination across India. We believe every knot holds a memory and every thread tells a story. From everlasting crochet flower bouquets that never wilt to traditional bridal gajras and custom heirloom embroidery hoops, our mission is to deliver gifts that carry heartfelt meaning and endure forever.</p>
+            
+            <h2 style="font-size: 22px; font-weight: 700; color: #1c1917; margin: 32px 0 16px;">Our Materials &amp; Ethical Craftsmanship</h2>
+            <p style="font-size: 15px; line-height: 1.8; color: #57534e; margin-bottom: 16px;">We exclusively select premium, multi-ply milk cotton yarn known for its velvety soft touch, subtle sheen, and vibrant colorfastness. Unlike mass-produced synthetic decor that frays or sheds, our milk cotton fibers retain their plush structure and vivid hues for decades. Our yarn is 100% hypoallergenic, non-toxic, and gentle against sensitive skin.</p>
+            <p style="font-size: 15px; line-height: 1.8; color: #57534e; margin-bottom: 20px;">Every flower stem is reinforced with flexible, posable internal floral wire, enabling recipients to arrange and bend petals naturally for any vase or display. Each piece is crafted slowly and with patience—one stitch at a time.</p>
+
+            <h2 style="font-size: 22px; font-weight: 700; color: #1c1917; margin: 32px 0 16px;">What We Craft</h2>
+            <ul style="font-size: 15px; line-height: 1.8; color: #57534e; margin-bottom: 24px; padding-left: 20px;">
+              <li><strong>Forever Crochet Bouquets:</strong> Sunflowers, roses, tulips, and daisies hand-crocheted from milk cotton yarn that never wilt or need watering.</li>
+              <li><strong>Bridal &amp; Ethnic Styling:</strong> Reusable crochet gajras and floral parandis designed for weddings, Haldi, Mehendi, and festive occasions.</li>
+              <li><strong>Everyday Accessories:</strong> Gentle floral claw clips, crochet bow barrettes, and cute amigurumi keychains.</li>
+              <li><strong>Personalized Keepsake Hoops:</strong> Bespoke portrait embroidery, anniversary date stitching, and custom name hoops made with fine cotton threads.</li>
+            </ul>
+
             <div style="background: #fafaf9; padding: 24px; border-radius: 16px; border: 1px solid #f5f5f4; margin: 32px 0;">
-              <h3 style="font-size: 18px; font-weight: 700; color: #1c1917; margin: 0 0 12px;">Contact Information</h3>
-              <p style="font-size: 14px; color: #57534e; margin: 0 0 8px;"><strong>Lead Artisan:</strong> Sana</p>
+              <h3 style="font-size: 18px; font-weight: 700; color: #1c1917; margin: 0 0 12px;">Studio &amp; Contact Information</h3>
+              <p style="font-size: 14px; color: #57534e; margin: 0 0 8px;"><strong>Founder &amp; Lead Artisan:</strong> Sana</p>
+              <p style="font-size: 14px; color: #57534e; margin: 0 0 8px;"><strong>Studio Location:</strong> New Delhi, India</p>
+              <p style="font-size: 14px; color: #57534e; margin: 0 0 8px;"><strong>WhatsApp Support:</strong> +91 74280 13214</p>
               <p style="font-size: 14px; color: #57534e; margin: 0 0 8px;"><strong>Email:</strong> support@crochetwali.in</p>
-              <p style="font-size: 14px; color: #57534e; margin: 0;"><strong>Studio Location:</strong> India (Pan-India Shipping)</p>
+              <p style="font-size: 14px; color: #57534e; margin: 0 0 8px;"><strong>Instagram:</strong> @crochetwali.in</p>
+              <p style="font-size: 14px; color: #57534e; margin: 0;"><strong>Delivery:</strong> Handcrafted to order in India with confirmed delivery: 2–4 days crafting + 4–7 business days shipping across India.</p>
             </div>
             `
         },

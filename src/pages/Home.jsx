@@ -15,16 +15,16 @@ import tempHeroCrochet from '../assets/temp_hero_crochet.webp';
 
 // Mobile-first horizontal scroll container
 const HorizontalScroll = ({ children, title, actionText, actionLink }) => (
-  <div className="py-6">
-    <div className="px-4 mb-4 flex items-end justify-between">
-      <h2 className="text-[18px] font-bold text-stone-900 leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>{title}</h2>
+  <div className="py-3.5 sm:py-5">
+    <div className="px-4 mb-2.5 sm:mb-3 flex items-end justify-between">
+      <h2 className="text-[17px] sm:text-[18px] font-bold text-stone-900 leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>{title}</h2>
       {actionText && actionLink && (
-        <Link to={actionLink} className="text-rose-900 text-xs font-bold flex items-center mb-1 hover:underline">
+        <Link to={actionLink} className="text-rose-900 text-xs font-bold flex items-center mb-0.5 hover:underline">
           {actionText} <ChevronRight size={14} />
         </Link>
       )}
     </div>
-    <div className="flex overflow-x-auto no-scrollbar gap-4 px-4 pb-2 snap-x snap-mandatory">
+    <div className="flex overflow-x-auto no-scrollbar gap-3 sm:gap-4 px-4 pb-1 snap-x snap-mandatory">
       {children}
     </div>
   </div>
@@ -44,16 +44,66 @@ const Home = () => {
 
   const homeProducts = products;
 
-  const dynamicCategories = useMemo(() => {
-    return categories.map(cat => {
-      const cleanName = cat.label.toLowerCase().trim().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
-      const localImage = `/category-images/${cleanName}.webp`;
-      const fallbackImage = `/category-images/${cat.id}.webp`;
+  const allCategoryCards = useMemo(() => {
+    const metaMap = {
+      'flower-pot': {
+        title: 'Flower Pots',
+        image: '/custom-images/custom_strawberry_pot.webp',
+        fallback: '/category-images/flower-pot.webp',
+      },
+      'bouquet': {
+        title: 'Bouquets',
+        image: '/custom-images/custom_bouquet.webp',
+        fallback: '/category-images/bouquet.webp',
+      },
+      'handmade-keychain': {
+        title: 'Keychains',
+        image: '/custom-images/custom_keychains.webp',
+        fallback: '/category-images/handmade-keychain.webp',
+      },
+      'handmade keychain': {
+        title: 'Keychains',
+        image: '/custom-images/custom_keychains.webp',
+        fallback: '/category-images/handmade-keychain.webp',
+      },
+      'hair-accessories': {
+        title: 'Hair Clips',
+        image: '/custom-images/custom_hairclips.webp',
+        fallback: '/category-images/hair-accessories.webp',
+      },
+      'toys': {
+        title: 'Plushies',
+        image: '/custom-images/custom_bunny_overalls.webp',
+        fallback: '/category-images/toys.webp',
+      },
+      'bags--pouches': {
+        title: 'Bags & Pouches',
+        image: '/custom-images/custom_granny_bag.webp',
+        fallback: '/category-images/bags--pouches.webp',
+      },
+      'gift-box': {
+        title: 'Gift Hampers',
+        image: '/category-images/gift-box.webp',
+        fallback: '/category-images/gift-hampers.webp',
+      },
+      'flowers': {
+        title: 'Forever Flowers',
+        image: '/category-images/flowers.webp',
+        fallback: '/assets/flower.webp',
+      },
+    };
+
+    return categories.map((cat) => {
+      const cleanSlug = String(cat.id || '').toLowerCase().trim().replace(/\s+/g, '-');
+      const meta = metaMap[cat.id] || metaMap[cleanSlug] || {};
+      const cleanName = String(cat.label || '').toLowerCase().trim().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-+|-+$/g, '');
+
       return {
         id: cat.id,
-        label: cat.label,
-        image: localImage,
-        fallbackImage: fallbackImage
+        title: meta.title || cat.label,
+        link: `/shop?category=${encodeURIComponent(cat.label)}`,
+        image: meta.image || `/category-images/${cleanName}.webp`,
+        fallback: meta.fallback || `/category-images/${cat.id}.webp`,
       };
     });
   }, [categories]);
@@ -143,7 +193,7 @@ const Home = () => {
       <h1 className="sr-only">Crochet Wali – Handmade Crochet Flowers, Gajra, Hair Accessories & Aesthetic Gifts India</h1>
 
       {/* Search Bar */}
-      <div className="px-4 pt-2 pb-3">
+      <div className="px-4 pt-1.5 pb-2">
         <form onSubmit={handleSearch} className="flex items-center bg-white border border-stone-300 shadow-md rounded-full px-4 py-2.5 transition-all focus-within:border-rose-400 focus-within:ring-1 focus-within:ring-rose-200 focus-within:shadow-lg">
            <Search size={18} className="text-stone-500 mr-2 shrink-0" />
            <input 
@@ -156,26 +206,8 @@ const Home = () => {
         </form>
       </div>
 
-      {/* Category Pills */}
-      <div className="flex overflow-x-auto no-scrollbar gap-2.5 pb-4 mb-2 snap-x">
-        <div className="w-1.5 shrink-0" /> {/* Left Spacer to equal px-4 total (gap 2.5 + 1.5 = 4) */}
-        <Link to="/shop" className="px-5 py-1.5 bg-rose-900 text-white text-xs font-semibold border border-rose-900 rounded-full shrink-0 snap-start shadow-sm ml-1">
-          All
-        </Link>
-        {dynamicCategories.map((cat, idx) => (
-          <Link 
-            key={idx}
-            to={`/shop?category=${encodeURIComponent(cat.label)}`}
-            className="px-5 py-1.5 bg-white text-stone-600 text-xs font-medium border border-stone-300 rounded-full shrink-0 snap-start shadow-sm hover:bg-rose-50 hover:text-rose-900 hover:border-rose-300 transition-all"
-          >
-            {cat.label}
-          </Link>
-        ))}
-        <div className="w-1.5 shrink-0" /> {/* Right Spacer */}
-      </div>
-
       {/* Hero Banner (Screenshot Layout) */}
-      <section className="mb-8">
+      <section className="mb-4 sm:mb-6">
         <div className="flex overflow-x-auto snap-x snap-mandatory no-scrollbar gap-4 transform-gpu will-change-scroll">
           <div className="w-0 shrink-0" /> {/* Left Spacer */}
           {heroSlides.map((slide, idx) => (
@@ -235,76 +267,69 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Free Shipping Banner */}
-      <div className="px-4 mb-6">
-        <div className="flex items-center justify-between bg-[#fff0f0] rounded-xl px-4 py-3 shadow-sm border border-rose-200 overflow-hidden relative">
-          <div className="flex items-center gap-3 relative z-10">
-            <span className="text-2xl animate-[bounce_2s_ease-in-out_infinite]">🚚</span>
-            <div>
-              <p className="text-sm font-bold text-stone-900">Free Shipping</p>
-              <p className="text-xs text-stone-600">on orders over <span className="font-bold text-rose-900">₹{FREE_SHIPPING_THRESHOLD}</span></p>
-            </div>
-          </div>
-          <Link to="/shop" className="bg-rose-900 text-white text-xs font-bold px-4 py-2 rounded-full flex items-center gap-1 shadow-sm hover:bg-rose-800 transition-colors whitespace-nowrap relative z-10 hover:scale-105 active:scale-95 transition-transform">
-            Shop Now <ArrowRight size={12} />
-          </Link>
-        </div>
-      </div>
-
-      {/* Shop By Category */}
-      <section className="mb-8">
-        <div className="px-4 flex justify-between items-end mb-4">
+      {/* Shop By Category - Editorial Grid & Custom Orders (Matching Reference Mockup) */}
+      <section className="mb-4 sm:mb-6 px-4">
+        {/* Header */}
+        <div className="flex justify-between items-end mb-2 sm:mb-3">
           <div>
-            <h2 className="text-[18px] font-bold text-stone-900 leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>Shop By Category</h2>
-            <p className="text-xs sm:text-sm text-stone-600 mt-1">Curated stitches for every celebration</p>
+            <h2 
+              className="text-xl md:text-2xl font-bold text-stone-900 leading-tight" 
+              style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+            >
+              Shop By Category
+            </h2>
+            <p className="text-xs sm:text-sm text-stone-600 mt-0.5">
+              Curated stitches for every celebration
+            </p>
           </div>
-          <Link to="/shop" className="text-rose-900 text-xs font-bold flex items-center mb-1 hover:underline">
+          <Link 
+            to="/shop" 
+            className="text-rose-900 text-xs md:text-sm font-bold flex items-center mb-0.5 hover:underline"
+          >
             See All <ChevronRight size={14} />
           </Link>
         </div>
-        
-        <div className="grid grid-cols-4 md:flex md:overflow-x-auto no-scrollbar gap-y-4 gap-x-2 md:gap-5 px-4 pb-2 snap-x transform-gpu will-change-scroll">
-          {dynamicCategories.slice(0, 9).map((cat, i) => (
-            <Link key={cat.id || i} to={`/shop?category=${encodeURIComponent(cat.label)}`} className="flex flex-col items-center gap-1.5 group w-full md:w-[76px] shrink-0 snap-start">
-              <div className="w-[15vw] h-[15vw] max-w-[64px] max-h-[64px] md:w-[76px] md:h-[76px] rounded-full p-[1px] md:p-[2px] bg-gradient-to-tr from-[#e5a0a6] to-[#f4d1d4] shadow-sm shrink-0">
-                <div className="w-full h-full rounded-full border-[2px] border-white overflow-hidden bg-rose-50/80">
-                  <img 
-                    src={cat.image} 
-                    loading="eager" 
-                    fetchPriority={i < 4 ? "high" : "auto"}
-                    decoding="async" 
-                    width={64}
-                    height={64}
-                    alt={cat.label} 
-                    className="w-full h-full object-cover transition-opacity duration-300" 
-                    onError={(e) => {
-                      if (e.currentTarget.src !== cat.fallbackImage) {
-                        e.currentTarget.src = cat.fallbackImage;
-                      } else {
-                        e.currentTarget.onerror = null;
-                        e.currentTarget.src = '/assets/hero_crochet_1.webp';
-                      }
-                    }}
-                  />
-                </div>
+
+        {/* All Categories Grid (2 Columns on Mobile, 4 Columns on Desktop - Compact Cards) */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
+          {allCategoryCards.map((cat) => (
+            <Link
+              key={cat.id}
+              to={cat.link}
+              className="group relative aspect-[4/3] rounded-xl sm:rounded-2xl overflow-hidden shadow-xs hover:shadow-lg transition-all duration-300 block bg-stone-100"
+            >
+              {/* Full-bleed Category Image */}
+              <img
+                src={cat.image}
+                alt={cat.title}
+                loading="lazy"
+                decoding="async"
+                className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-700 ease-out"
+                onError={(e) => {
+                  if (cat.fallback && e.currentTarget.src !== cat.fallback) {
+                    e.currentTarget.src = cat.fallback;
+                  }
+                }}
+              />
+
+              {/* Scrim Gradient Overlay for Contrast */}
+              <div 
+                className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 via-45% to-transparent pointer-events-none" 
+                aria-hidden="true"
+              />
+
+              {/* Bottom Label + Arrow */}
+              <div className="absolute bottom-0 inset-x-0 p-2 sm:p-2.5 flex items-center justify-between pointer-events-none">
+                <h3
+                  className="font-bold text-white text-xs sm:text-sm md:text-base leading-tight drop-shadow-sm tracking-tight truncate mr-1"
+                  style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+                >
+                  {cat.title}
+                </h3>
+                <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white/90 group-hover:translate-x-1 transition-transform duration-300 drop-shadow-sm shrink-0" />
               </div>
-              <span className="text-xs font-bold text-stone-900 text-center leading-tight whitespace-normal w-full px-0.5">
-                {cat.label}
-              </span>
             </Link>
           ))}
-          
-          {/* View All Circle */}
-          <Link to="/shop" className="flex flex-col items-center gap-1.5 group w-full md:w-[76px] shrink-0 snap-start" aria-label="View all categories in Shop">
-            <div className="w-[15vw] h-[15vw] max-w-[64px] max-h-[64px] md:w-[76px] md:h-[76px] rounded-full p-[1px] md:p-[2px] bg-gradient-to-tr from-[#e5a0a6] to-[#f4d1d4] shadow-sm shrink-0 flex items-center justify-center transition-transform group-hover:scale-105">
-              <div className="w-full h-full rounded-full border-[2px] border-white bg-rose-50 flex flex-col items-center justify-center text-rose-900">
-                <ArrowRight size={24} className="text-rose-900 mb-0.5" strokeWidth={2.5} />
-              </div>
-            </div>
-            <span className="text-xs font-bold text-stone-900 text-center leading-tight whitespace-normal w-full px-0.5">
-              View All
-            </span>
-          </Link>
         </div>
       </section>
 
@@ -324,39 +349,84 @@ const Home = () => {
 
       {/* 6. BESTSELLERS GRID / ARTISAN FAVORITES */}
       {bestsellers.length > 0 && (
-        <section className="px-4 py-10 bg-[#fff8f6] rounded-t-[2.5rem]">
-          <div className="text-center space-y-1.5 max-w-lg mx-auto mb-6">
-            <div className="inline-flex items-center justify-center gap-2 text-rose-200 mb-1">
+        <section className="px-4 py-4 sm:py-7 bg-[#fff8f6] rounded-t-2xl sm:rounded-t-[2.5rem]">
+          <div className="text-center space-y-1 max-w-lg mx-auto mb-3.5 sm:mb-5">
+            <div className="inline-flex items-center justify-center gap-2 text-rose-200 mb-0.5">
               <span className="h-[1px] w-8 bg-rose-200"></span>
-              <Sparkles className="text-rose-900" size={18} />
+              <Sparkles className="text-rose-900" size={16} />
               <span className="h-[1px] w-8 bg-rose-200"></span>
             </div>
-            <h2 className="text-[28px] font-bold text-stone-900 tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>Artisan Favorites</h2>
-            <p className="text-sm text-stone-600 leading-relaxed px-2 font-medium">
+            <h2 className="text-[22px] sm:text-[28px] font-bold text-stone-900 tracking-tight" style={{ fontFamily: "'Playfair Display', serif" }}>Artisan Favorites</h2>
+            <p className="text-xs sm:text-sm text-stone-600 leading-relaxed px-2 font-medium">
               Our most cherished bespoke creations, lovingly crafted stitch by stitch for life's gentle moments.
             </p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-5">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5">
              {bestsellers.map((product) => (
                <ProductCard key={`fav-${product.id}`} product={product} isHome={true} showAddButton={false} />
              ))}
           </div>
-          
-          
         </section>
       )}
 
+      {/* Custom Orders Banner */}
+      <div className="px-4 py-2 sm:py-3.5 bg-white">
+        <Link
+          to="/custom-design"
+          className="group relative w-full aspect-[16/7] sm:aspect-[21/7] md:h-[180px] rounded-xl sm:rounded-2xl overflow-hidden shadow-xs hover:shadow-xl transition-all duration-300 block bg-stone-100"
+        >
+          {/* Panoramic Image */}
+          <img
+            src="/custom-images/custom_hero_banner.webp"
+            alt="Custom Handmade Crochet Orders by Crochet Wali"
+            loading="lazy"
+            decoding="async"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = '/assets/hero_crochet_1.webp';
+            }}
+          />
+
+          {/* Scrim Gradient Overlay */}
+          <div 
+            className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 via-50% to-black/10 pointer-events-none" 
+            aria-hidden="true"
+          />
+
+          {/* Bottom Title & Action */}
+          <div className="absolute bottom-0 inset-x-0 p-3 sm:p-5 flex items-center justify-between pointer-events-none">
+            <div>
+              <h3
+                className="font-bold text-white text-sm sm:text-xl md:text-2xl leading-tight drop-shadow-sm tracking-tight"
+                style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+              >
+                Custom Orders
+              </h3>
+              <p className="text-[10px] sm:text-xs text-stone-200/90 mt-0.5 line-clamp-1">
+                Reference photo se banwaye apni pasand ka handmade crochet
+              </p>
+            </div>
+
+            {/* Circular Arrow Button */}
+            <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-full bg-white/20 backdrop-blur-xs border border-white/30 flex items-center justify-center text-white group-hover:bg-white group-hover:text-stone-900 group-hover:scale-110 transition-all duration-300 shadow-sm shrink-0 ml-2 sm:ml-3">
+              <ArrowRight className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
+            </div>
+          </div>
+        </Link>
+      </div>
+
       {/* 7. FESTIVE SPECIALS */}
       {festiveSpecials.length > 0 && (
-        <section className="px-4 py-8 bg-white">
-           <div className="mb-4 flex justify-between items-end">
-             <h2 className="text-[18px] font-bold text-stone-900 leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>Festive Specials</h2>
+        <section className="px-4 py-3.5 sm:py-6 bg-white">
+           <div className="mb-2 sm:mb-3 flex justify-between items-end">
+             <h2 className="text-[17px] sm:text-[18px] font-bold text-stone-900 leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>Festive Specials</h2>
              <Link to="/shop" className="p-1.5 bg-stone-100 rounded-full shadow-sm text-rose-900 hover:bg-rose-50 transition-colors" aria-label="Explore all Festive Specials in Shop">
-               <ChevronRight size={18} />
+               <ChevronRight size={16} />
              </Link>
            </div>
-           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+           <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4">
              {festiveSpecials.map((product) => (
                <ProductCard key={`festive-${product.id}`} product={product} isHome={true} showAddButton={false} />
              ))}
@@ -364,16 +434,32 @@ const Home = () => {
         </section>
       )}
 
+      {/* Free Shipping Banner */}
+      <div className="px-4 py-1.5 sm:py-2.5 bg-white">
+        <div className="flex items-center justify-between bg-[#fff0f0] rounded-xl px-3.5 sm:px-4 py-2.5 sm:py-3 shadow-xs border border-rose-200 overflow-hidden relative">
+          <div className="flex items-center gap-2.5 sm:gap-3 relative z-10">
+            <span className="text-xl sm:text-2xl animate-[bounce_2s_ease-in-out_infinite]">🚚</span>
+            <div>
+              <p className="text-xs sm:text-sm font-bold text-stone-900">Free Shipping</p>
+              <p className="text-[11px] sm:text-xs text-stone-600">on orders over <span className="font-bold text-rose-900">₹{FREE_SHIPPING_THRESHOLD}</span></p>
+            </div>
+          </div>
+          <Link to="/shop" className="bg-rose-900 text-white text-[11px] sm:text-xs font-bold px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full flex items-center gap-1 shadow-sm hover:bg-rose-800 transition-colors whitespace-nowrap relative z-10 hover:scale-105 active:scale-95 transition-transform">
+            Shop Now <ArrowRight size={12} />
+          </Link>
+        </div>
+      </div>
+
       {/* 8. PERFECT GIFTS */}
       {perfectGifts.length > 0 && (
-        <section className="px-4 py-8 bg-[#fdfaf9]">
-           <div className="mb-4 flex justify-between items-end">
-             <h2 className="text-[18px] font-bold text-stone-900 leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>Perfect Gifts</h2>
+        <section className="px-4 py-3.5 sm:py-6 bg-[#fdfaf9]">
+           <div className="mb-2 sm:mb-3 flex justify-between items-end">
+             <h2 className="text-[17px] sm:text-[18px] font-bold text-stone-900 leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>Perfect Gifts</h2>
              <Link to="/shop" className="p-1.5 bg-stone-100 rounded-full shadow-sm text-rose-900 hover:bg-rose-50 transition-colors" aria-label="Explore all Perfect Gifts in Shop">
-               <ChevronRight size={18} />
+               <ChevronRight size={16} />
              </Link>
            </div>
-           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+           <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4">
              {perfectGifts.map((product) => (
                <ProductCard key={`gifts-${product.id}`} product={product} isHome={true} showAddButton={false} />
              ))}
@@ -383,14 +469,14 @@ const Home = () => {
 
       {/* 9. TRENDING NOW */}
       {trendingNow.length > 0 && (
-        <section className="px-4 pt-8 pb-12 bg-white">
-           <div className="mb-4 flex justify-between items-end">
-             <h2 className="text-[18px] font-bold text-stone-900 leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>Trending Now</h2>
+        <section className="px-4 pt-3.5 sm:pt-6 pb-6 sm:pb-12 bg-white">
+           <div className="mb-2 sm:mb-3 flex justify-between items-end">
+             <h2 className="text-[17px] sm:text-[18px] font-bold text-stone-900 leading-tight" style={{ fontFamily: "'Playfair Display', serif" }}>Trending Now</h2>
              <Link to="/shop" className="p-1.5 bg-stone-100 rounded-full shadow-sm text-rose-900 hover:bg-rose-50 transition-colors" aria-label="Explore all Trending Now items in Shop">
-               <ChevronRight size={18} />
+               <ChevronRight size={16} />
              </Link>
            </div>
-           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+           <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 sm:gap-4">
              {trendingNow.map((product) => (
                <ProductCard key={`trending-${product.id}`} product={product} isHome={true} showAddButton={false} />
              ))}

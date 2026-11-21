@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import SEO from '../../components/SEO';
 import { supabase } from '../../config/supabase';
 import { ArrowLeft, Loader } from 'lucide-react';
@@ -178,7 +179,7 @@ const BlogPost = () => {
                 </div>
 
                 <div className="prose prose-stone prose-rose max-w-none prose-headings:font-heading prose-headings:font-bold prose-h2:text-2xl prose-h3:text-xl prose-a:text-rose-700 prose-a:no-underline hover:prose-a:underline prose-img:rounded-xl">
-                    <ReactMarkdown>{normalizedContent}</ReactMarkdown>
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{normalizedContent}</ReactMarkdown>
                 </div>
 
                 {/* Author / Artisan Bio for E-E-A-T */}

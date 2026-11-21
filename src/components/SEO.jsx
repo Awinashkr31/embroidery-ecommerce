@@ -8,7 +8,7 @@ const SEO = ({ title, description, keywords, schema, url, image, noIndex, exactT
         : (title 
             ? (title.includes('Crochet Wali') ? title : `${title} | Crochet Wali`) 
             : siteTitle);
-    const metaDescription = description || "Buy 100% handmade crochet flower bouquets, bridal gajras, hair accessories & personalized gift boxes starting at ₹99. Everlasting aesthetic gifts made with love in India. Free shipping over ₹999! Order now.";
+    const metaDescription = description || "Buy 100% handmade crochet flower bouquets, bridal gajras, hair accessories & personalized gifts from ₹99. Everlasting aesthetic keepsakes made in India.";
     const metaUrl = url || (typeof window !== 'undefined' ? `https://www.crochetwali.in${window.location.pathname}` : "https://www.crochetwali.in");
     const metaImage = image || "https://www.crochetwali.in/hero-gift.png";
 
@@ -87,6 +87,7 @@ const SEO = ({ title, description, keywords, schema, url, image, noIndex, exactT
         <Helmet>
             {children}
             <meta name="description" content={metaDescription} />
+            {keywords && <meta name="keywords" content={keywords} />}
             <meta name="robots" content={noIndex ? "noindex, follow" : "index, follow"} />
             <link rel="canonical" href={metaUrl} />
             

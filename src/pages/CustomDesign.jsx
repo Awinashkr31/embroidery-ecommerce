@@ -1,24 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { 
-  Sparkles, 
   MessageCircle, 
   MessageSquare, 
   Palette, 
   Scissors, 
   Star, 
-  Camera, 
   Check, 
   Clock, 
   ChevronDown, 
-  ArrowRight, 
-  ShieldCheck, 
-  Heart, 
-  Send, 
-  AlertCircle, 
-  Gift, 
-  Calendar,
-  CheckCircle2
+  Send
 } from 'lucide-react';
 import { fetchSetting } from '../utils/settingsUtils';
 import SEO from '../components/SEO';
@@ -121,18 +112,6 @@ const CLIENT_STORIES = [
 // ─── Custom Masterpieces (Owner's Authentic Products) ───
 const CUSTOM_MASTERPIECES = [
   {
-    src: "/custom-images/custom_chick_flower.webp",
-    title: "Crochet Chick with Flower",
-    category: "Handmade Plushies",
-    alt: "Handcrafted Yellow Crochet Chick Plushie with Flower by Crochet Wali"
-  },
-  {
-    src: "/custom-images/custom_evil_eye.webp",
-    title: "Crochet Evil Eye Hanging",
-    category: "Charms & Hangings",
-    alt: "Handcrafted Blue Crochet Evil Eye Hanging Charm with Tassel by Crochet Wali"
-  },
-  {
     src: "/custom-images/custom_rose_band.webp",
     title: "Crochet Floral Rose Band",
     category: "Hair & Wrist Accessories",
@@ -175,13 +154,47 @@ const CustomDesign = () => {
   const [bannerImage, setBannerImage] = useState(defaultHeroBanner);
   const [openFaqIndex, setOpenFaqIndex] = useState(0);
   const [showGuide, setShowGuide] = useState(false);
+  const [isPillVisible, setIsPillVisible] = useState(false);
+
+  // Cycle: Appear -> Stay 3.8s -> Disappear with animation -> Wait 4.5s -> Re-appear with animation
+  useEffect(() => {
+    let timeoutId;
+    let isMounted = true;
+
+    const showDuration = 3800; // Stay visible for 3.8s
+    const hideDuration = 4500; // Stay hidden for 4.5s
+
+    const runCycle = () => {
+      if (!isMounted) return;
+      setIsPillVisible(true);
+
+      timeoutId = setTimeout(() => {
+        if (!isMounted) return;
+        setIsPillVisible(false);
+
+        timeoutId = setTimeout(() => {
+          if (!isMounted) return;
+          runCycle();
+        }, hideDuration);
+      }, showDuration);
+    };
+
+    timeoutId = setTimeout(runCycle, 1500);
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timeoutId);
+    };
+  }, []);
 
   useEffect(() => {
     window.scrollTo(0, 0);
     const loadSettings = async () => {
       try {
         const image = await fetchSetting('custom_design_banner_image');
-        if (image) setBannerImage(image);
+        if (image && typeof image === 'string' && image.trim().length > 0) {
+          setBannerImage(image.trim());
+        }
       } catch {
         // Fallback to default banner
       }
@@ -252,9 +265,9 @@ const CustomDesign = () => {
       <section className="relative w-full min-h-[520px] md:min-h-[580px] overflow-hidden flex items-center justify-center bg-stone-900">
         <div className="absolute inset-0 z-0">
           <img 
-            src={bannerImage || defaultHeroBanner} 
+            src={bannerImage && bannerImage.trim() ? bannerImage : defaultHeroBanner} 
             alt="Handcrafted custom crochet & embroidery design workshop - Crochet Wali" 
-            className="w-full h-full object-cover opacity-35" 
+            className="w-full h-full object-cover opacity-80" 
             fetchPriority="high"
             loading="eager"
             decoding="async"
@@ -263,15 +276,10 @@ const CustomDesign = () => {
               e.currentTarget.src = defaultHeroBanner;
             }}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#1c1917] via-[#1c1917]/85 to-[#1c1917]/75" />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#1c1917]/90 via-[#1c1917]/55 to-[#1c1917]/35" />
         </div>
 
         <div className="relative z-10 pt-16 pb-12 px-5 text-center max-w-4xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 bg-stone-900/80 backdrop-blur-md rounded-full border border-stone-700 text-stone-200 text-xs font-semibold tracking-wide mb-6 shadow-sm">
-            <Sparkles className="w-3.5 h-3.5 text-rose-200" />
-            <span>Handmade in India • Bespoke Creations</span>
-          </div>
-
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-heading font-bold text-white mb-3 sm:mb-4 leading-[1.15] drop-shadow-md">
             Custom Crochet Gifts Made to Order in India
           </h1>
@@ -281,22 +289,6 @@ const CustomDesign = () => {
           </p>
 
           <div className="flex flex-col sm:flex-row justify-center items-center gap-3.5 mb-5">
-            <button 
-              type="button"
-              onClick={() => {
-                if (enquirySectionRef.current) {
-                  enquirySectionRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                } else {
-                  document.getElementById('whatsapp-hub')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-              }}
-              aria-label="Scroll to custom design order section"
-              className="w-full sm:w-auto bg-rose-900 hover:bg-rose-800 text-white px-8 py-3.5 rounded-full font-sans font-bold text-sm tracking-wide shadow-xl hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <Palette className="w-4 h-4" />
-              <span>Create My Custom Design</span>
-            </button>
-
             <a 
               href={getWhatsAppUrl("Hi Crochet Wali, I want to discuss a custom handmade order with you!")}
               target="_blank"
@@ -383,7 +375,7 @@ const CustomDesign = () => {
             <h2 className="text-2xl sm:text-3xl font-heading font-bold text-stone-900 tracking-tight">Custom Masterpieces</h2>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 gap-3 sm:gap-4">
             {CUSTOM_MASTERPIECES.map((item, i) => (
               <div 
                 key={i} 
@@ -393,8 +385,14 @@ const CustomDesign = () => {
                   src={getOptimizedImageUrl(item.src, { width: 360, quality: 75 })} 
                   alt={item.alt} 
                   loading="lazy"
+                  width="360"
+                  height="360"
                   className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
                 />
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-stone-900/80 via-stone-900/40 to-transparent p-2.5 sm:p-3 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <p className="font-heading font-bold text-xs sm:text-sm leading-tight">{item.title}</p>
+                  <p className="font-sans text-[10px] text-stone-300">{item.category}</p>
+                </div>
               </div>
             ))}
           </div>
@@ -442,126 +440,33 @@ const CustomDesign = () => {
         </div>
       </section>
 
-            {/* ─── Personalization Options & Materials ─── */}
-      <section className="py-12 bg-[#fafaf9] border-y border-stone-200/70 mb-14">
-        <div className="container-custom px-4 sm:px-6 max-w-4xl">
-          <div className="text-center max-w-xl mx-auto mb-8">
-            <span className="font-sans text-rose-900 text-xs font-bold tracking-widest uppercase mb-1.5 block">Tailored To You</span>
-            <h2 className="text-2xl sm:text-3xl font-heading font-bold text-stone-900">Personalization Options</h2>
-            <p className="font-sans text-stone-600 text-xs sm:text-sm mt-1.5 leading-relaxed">
-              We combine traditional Indian handcraft with your personal aesthetic preferences.
-            </p>
-          </div>
-
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div className="bg-white p-5 rounded-2xl border border-stone-200/80 shadow-xs space-y-2">
-              <div className="flex items-center gap-2 text-rose-900 font-bold text-sm">
-                <Palette className="w-4 h-4" />
-                <span>30+ Milk Cotton Yarn Shades</span>
-              </div>
-              <p className="font-sans text-xs text-stone-600 leading-relaxed">
-                Choose pastels, bold jewel tones, or subtle earthy aesthetics. We match color swatches to your wedding attire, room palette, or favorite flowers.
-              </p>
-            </div>
-
-            <div className="bg-white p-5 rounded-2xl border border-stone-200/80 shadow-xs space-y-2">
-              <div className="flex items-center gap-2 text-rose-900 font-bold text-sm">
-                <Scissors className="w-4 h-4" />
-                <span>Custom Dimensions &amp; Stem Count</span>
-              </div>
-              <p className="font-sans text-xs text-stone-600 leading-relaxed">
-                From a single preserved tulip stem to grand 12+ flower mixed bouquets and custom-sized amigurumi plushies built to your scale.
-              </p>
-            </div>
-
-            <div className="bg-white p-5 rounded-2xl border border-stone-200/80 shadow-xs space-y-2">
-              <div className="flex items-center gap-2 text-rose-900 font-bold text-sm">
-                <Heart className="w-4 h-4" />
-                <span>Personalized Embroidery Text</span>
-              </div>
-              <p className="font-sans text-xs text-stone-600 leading-relaxed">
-                Add embroidered anniversary dates, wedding couple names, personal initials, or heartfelt short quotes on fabric frames.
-              </p>
-            </div>
-
-            <div className="bg-white p-5 rounded-2xl border border-stone-200/80 shadow-xs space-y-2">
-              <div className="flex items-center gap-2 text-rose-900 font-bold text-sm">
-                <Gift className="w-4 h-4" />
-                <span>Gift-Ready Presentation</span>
-              </div>
-              <p className="font-sans text-xs text-stone-600 leading-relaxed">
-                Packed in sturdy rigid protective boxes with satin ribbon wrapping and complimentary handwritten calligraphy note cards.
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-6 p-4 bg-amber-50 rounded-xl border border-amber-200/70 text-xs text-amber-900 flex items-start gap-2.5">
-            <AlertCircle className="w-4 h-4 text-amber-900 shrink-0 mt-0.5" />
-            <p className="leading-relaxed">
-              <strong>Artisanal Note:</strong> Every handcrafted creation is stitched by hand and carries unique charm. Minor natural variations in stitch tension and petal shape are the hallmarks of genuine craftsmanship. We share preview photos before dispatch to ensure you are delighted.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── Transparent Quotation & Verified Timelines ─── */}
-      <section className="container-custom px-4 sm:px-6 max-w-4xl mb-14">
-        <div className="text-center max-w-xl mx-auto mb-8">
-          <span className="font-sans text-rose-900 text-xs font-bold tracking-widest uppercase mb-1.5 block">Clarity &amp; Confidence</span>
-          <h2 className="text-2xl sm:text-3xl font-heading font-bold text-stone-900">Pricing &amp; Delivery Expectations</h2>
+      {/* ─── Transparent Quotation & Verified Timelines (Compact) ─── */}
+      <section className="container-custom px-4 sm:px-6 max-w-3xl mb-12">
+        <div className="text-center mb-4">
+          <span className="font-sans text-rose-900 text-xs font-bold tracking-widest uppercase mb-1 block">Quick Overview</span>
+          <h2 className="text-xl sm:text-2xl font-heading font-bold text-stone-900">Pricing &amp; Delivery</h2>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-5 mb-6">
-          {/* Pricing Model */}
-          <div className="bg-white p-6 rounded-2xl border border-stone-200/80 shadow-xs space-y-3">
-            <div className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-900 uppercase tracking-wide">
-              <span>Transparent Quotation Process</span>
+        <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
+          {/* Pricing */}
+          <div className="bg-white p-4 rounded-xl border border-stone-200/80 shadow-xs">
+            <div className="flex items-center gap-2 text-rose-900 font-bold text-xs uppercase tracking-wide mb-1.5">
+              <Check className="w-4 h-4 text-emerald-700 shrink-0" />
+              <span>Transparent Quotation</span>
             </div>
-            <h3 className="font-heading font-bold text-lg text-stone-900">Custom Work Priced Upon Review</h3>
-            <p className="font-sans text-xs sm:text-sm text-stone-600 leading-relaxed">
-              Every custom crochet design is unique. Because complexity, dimensions, and yarn volume vary, each piece is individually quoted with no hidden surprises.
+            <p className="font-sans text-xs text-stone-600 leading-relaxed">
+              Every design is custom quoted based on complexity and yarn shades before you confirm. MOQ: 1 piece (bulk discounts on 10+ pcs).
             </p>
-            <ul className="text-xs text-stone-600 space-y-1.5 pt-1">
-              <li className="flex items-center gap-2">
-                <Check className="w-3.5 h-3.5 text-emerald-700" />
-                <span>Quotation provided before you confirm your order</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Check className="w-3.5 h-3.5 text-emerald-700" />
-                <span>MOQ of 1 piece for personalized retail gifts</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <Check className="w-3.5 h-3.5 text-emerald-700" />
-                <span>Volume discounts available for 10+ piece wedding favors</span>
-              </li>
-            </ul>
           </div>
 
-          {/* Verified Timelines */}
-          <div className="bg-white p-6 rounded-2xl border border-stone-200/80 shadow-xs space-y-3">
-            <div className="inline-flex items-center gap-1.5 text-xs font-bold text-rose-900 uppercase tracking-wide">
-              <Clock className="w-3.5 h-3.5" />
-              <span>Confirmed Timelines Across India</span>
+          {/* Delivery */}
+          <div className="bg-white p-4 rounded-xl border border-stone-200/80 shadow-xs">
+            <div className="flex items-center gap-2 text-rose-900 font-bold text-xs uppercase tracking-wide mb-1.5">
+              <Clock className="w-4 h-4 text-rose-900 shrink-0" />
+              <span>Timelines Across India</span>
             </div>
-            <h3 className="font-heading font-bold text-lg text-stone-900">Crafting &amp; Shipping Schedule</h3>
-            <div className="space-y-2.5 pt-1">
-              <div className="p-3 bg-[#fdfbf7] rounded-xl border border-stone-100 flex items-center justify-between">
-                <div>
-                  <strong className="text-stone-900 text-xs block font-bold">7–14 Days Crafting</strong>
-                  <span className="text-xs text-stone-600">Handmade based on product complexity</span>
-                </div>
-                <span className="text-xs font-bold text-rose-900 bg-rose-50 px-2 py-1 rounded-md">Artisan</span>
-              </div>
-              <div className="p-3 bg-[#fdfbf7] rounded-xl border border-stone-100 flex items-center justify-between">
-                <div>
-                  <strong className="text-stone-900 text-xs block font-bold">4–7 Business Days Transit</strong>
-                  <span className="text-xs text-stone-600">All India delivery with live tracking</span>
-                </div>
-                <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-md">Couriers</span>
-              </div>
-            </div>
-            <p className="text-xs text-stone-600 italic pt-1">
-              * Planning a wedding, anniversary, or birthday gift? Please consult 2–3 weeks in advance to ensure comfortable arrival.
+            <p className="font-sans text-xs text-stone-600 leading-relaxed">
+              <strong>7–14 days crafting</strong> by artisan + <strong>4–7 business days shipping</strong> with live tracking. Please order 2–3 weeks ahead for special dates.
             </p>
           </div>
         </div>
@@ -652,7 +557,7 @@ const CustomDesign = () => {
           })}
         </div>
 
-        <div className="mt-8 text-center p-5 bg-rose-50/50 rounded-2xl border border-rose-100/70">
+        <div className="mt-8 text-center p-6 bg-rose-50/50 rounded-2xl border border-rose-100/70 space-y-4">
           <p className="font-sans text-stone-700 text-xs sm:text-sm">
             Prefer ready-to-ship creations?{' '}
             <Link to="/shop" className="text-rose-900 font-bold underline underline-offset-4 hover:text-rose-800 transition-colors">
@@ -660,34 +565,77 @@ const CustomDesign = () => {
             </Link>
             .
           </p>
+          <div className="flex flex-wrap justify-center gap-2 pt-1 text-xs">
+            <Link to="/collections/crochet-bouquets" className="px-3 py-1.5 bg-white border border-rose-200/60 rounded-full text-stone-700 hover:text-rose-900 hover:border-rose-300 font-medium transition-colors">
+              Crochet Bouquets →
+            </Link>
+            <Link to="/collections/reusable-bridal-gajra" className="px-3 py-1.5 bg-white border border-rose-200/60 rounded-full text-stone-700 hover:text-rose-900 hover:border-rose-300 font-medium transition-colors">
+              Bridal Gajra →
+            </Link>
+            <Link to="/collections/crochet-flower-pots" className="px-3 py-1.5 bg-white border border-rose-200/60 rounded-full text-stone-700 hover:text-rose-900 hover:border-rose-300 font-medium transition-colors">
+              Flower Pots →
+            </Link>
+            <Link to="/collections/gifts-under-500" className="px-3 py-1.5 bg-white border border-rose-200/60 rounded-full text-stone-700 hover:text-rose-900 hover:border-rose-300 font-medium transition-colors">
+              Gifts Under ₹500 →
+            </Link>
+            <Link to="/collections/crochet-bags" className="px-3 py-1.5 bg-white border border-rose-200/60 rounded-full text-stone-700 hover:text-rose-900 hover:border-rose-300 font-medium transition-colors">
+              Handmade Bags →
+            </Link>
+          </div>
         </div>
       </section>
 
       {/* ─── Floating WhatsApp Action ─── */}
-      <aside aria-label="WhatsApp Contact" className="fixed bottom-20 md:bottom-8 right-4 md:right-8 z-40">
+      <aside aria-label="WhatsApp Contact" className="fixed bottom-20 md:bottom-8 right-4 md:right-8 z-40 flex flex-col items-end pointer-events-none">
+        {/* Animated Flash Message Pill: Chat on WhatsApp */}
+        <div 
+          className={`mb-2 relative transition-all duration-500 ease-out transform ${
+            isPillVisible 
+              ? 'opacity-100 translate-y-0 scale-100 pointer-events-auto' 
+              : 'opacity-0 translate-y-2 scale-95 pointer-events-none'
+          }`}
+        >
+          <a
+            href={getWhatsAppUrl("Hi Crochet Wali, I want to discuss a custom design order!")}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group relative flex items-center gap-2 bg-white/95 backdrop-blur-sm pl-2.5 pr-3.5 py-1.5 rounded-full border border-stone-200/90 shadow-[0_4px_16px_rgba(0,0,0,0.12)] hover:shadow-md hover:border-emerald-500/70 transition-all active:scale-95 cursor-pointer select-none"
+            aria-label="Chat on WhatsApp with Crochet Wali"
+          >
+            {/* Green Live Indicator Ping Dot */}
+            <span className="relative flex h-2 w-2 shrink-0">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+            </span>
+
+            {/* Flash Message Text */}
+            <span className="text-xs font-bold text-stone-800 tracking-tight">
+              Chat on WhatsApp
+            </span>
+
+            {/* Pointer Triangle pointing directly down to WhatsApp button */}
+            <div 
+              className="absolute -bottom-1 right-3.5 md:right-4 w-2 h-2 bg-white border-r border-b border-stone-200/90 rotate-45" 
+              aria-hidden="true"
+            />
+          </a>
+        </div>
+
+        {/* Clean Smaller WhatsApp Button */}
         <a
           href={getWhatsAppUrl("Hi Crochet Wali, I want to discuss a custom design order!")}
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Chat on WhatsApp with Crochet Wali support"
-          className="flex items-center gap-2 group"
+          className="pointer-events-auto flex items-center justify-center w-11 h-11 md:w-12 md:h-12 rounded-full bg-[#075e54] hover:bg-[#05463e] text-white shadow-[0_4px_16px_rgba(7,94,84,0.4)] hover:shadow-[0_6px_24px_rgba(7,94,84,0.6)] hover:scale-105 active:scale-95 transition-all duration-300 flex-shrink-0 cursor-pointer"
         >
-          {/* "Chat on WhatsApp" Message Bubble */}
-          <div className="bg-white text-stone-900 border border-stone-200/90 shadow-lg px-3.5 py-1.5 rounded-full text-xs font-bold whitespace-nowrap group-hover:bg-stone-50 transition-all flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-[#075e54]" />
-            <span>Chat on WhatsApp</span>
-          </div>
-
-          {/* Clean WhatsApp Button */}
-          <div className="flex items-center justify-center w-13 h-13 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-[#075e54] group-hover:bg-[#05463e] text-white shadow-[0_6px_24px_rgba(7,94,84,0.45)] group-hover:shadow-[0_8px_32px_rgba(7,94,84,0.65)] group-hover:scale-105 active:scale-95 transition-all duration-300 flex-shrink-0">
-            <svg
-              className="w-7 h-7 sm:w-7 sm:h-7 md:w-8 md:h-8 fill-white drop-shadow-xs"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.455 5.712 1.457h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
-            </svg>
-          </div>
+          <svg
+            className="w-5.5 h-5.5 md:w-6 md:h-6 fill-white drop-shadow-xs"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.455 5.712 1.457h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
+          </svg>
         </a>
       </aside>
     </div>

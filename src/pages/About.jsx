@@ -51,7 +51,7 @@ const About = () => {
     return (
         <div className="bg-[#fdfbf7] min-h-screen pb-24 font-body selection:bg-rose-100 selection:text-rose-900">
             <SEO 
-                title="About Us – The Handmade Journey"
+                title="About Crochet Wali | Handmade Artisan Studio India"
                 description="Learn the story behind Crochet Wali, founded by Sana in New Delhi. We create timeless handcrafted crochet flowers, custom embroidery hoops, and heartfelt artisanal gifts."
                 url="https://www.crochetwali.in/about"
                 schema={aboutSchema}
@@ -112,6 +112,34 @@ const About = () => {
                             <h3 className="font-heading text-lg font-bold text-stone-900 mb-3">Artisanal Accessories</h3>
                             <p className="text-stone-600 text-sm leading-relaxed">
                                 Traditional crochet gajras, floral claw clips, bow hair ties, and adorable amigurumi keychains crafted for everyday style.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Craftsmanship & Materials Section */}
+                <div className="mb-24">
+                    <h2 className="font-heading text-3xl font-bold text-stone-900 text-center mb-6">Our Materials &amp; Craftsmanship</h2>
+                    <p className="text-stone-600 text-center max-w-2xl mx-auto mb-12 text-sm leading-relaxed">
+                        Every single stitch in our studio is placed by human hands. We believe true luxury lies in patience, premium fibers, and honest craftsmanship that stands the test of time.
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-stone-100 space-y-3">
+                            <h3 className="font-heading text-xl font-bold text-stone-900">Premium Milk Cotton Yarn</h3>
+                            <p className="text-stone-600 text-sm leading-relaxed">
+                                We exclusively select premium, multi-ply milk cotton yarn known for its velvety soft touch, subtle natural sheen, and exceptional colorfastness. Unlike synthetic yarns that pill or fray, our milk cotton fibers retain their plush form and vivid hues for decades without fading.
+                            </p>
+                            <p className="text-stone-600 text-sm leading-relaxed">
+                                Our yarn is 100% hypoallergenic, non-toxic, and gentle against sensitive skin, making our floral bouquets, amigurumi plushies, and hair accessories safe for homes with children and pets.
+                            </p>
+                        </div>
+                        <div className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-stone-100 space-y-3">
+                            <h3 className="font-heading text-xl font-bold text-stone-900">Artisanal Workshop &amp; Packaging</h3>
+                            <p className="text-stone-600 text-sm leading-relaxed">
+                                Handcrafted in our dedicated creative studio in New Delhi, every order undergoes a thorough quality inspection before dispatch. Stems are reinforced with posable internal floral wire so you can reshape petals to your preferred bouquet layout.
+                            </p>
+                            <p className="text-stone-600 text-sm leading-relaxed">
+                                We package every creation in sturdy rigid protective boxes with satin ribbons and complimentary handwritten note cards. Handcrafted to order with confirmed delivery: 2–4 days crafting + 4–7 business days shipping across India.
                             </p>
                         </div>
                     </div>

@@ -1,302 +1,275 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { MessageSquare, X, Send, PackageSearch, Gift, Palette, Truck, MessageCircle } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
-import { useCart } from '../context/CartContext';
-import { Link, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import {
+  X,
+  MessageCircle,
+  MessageSquare,
+  FileText,
+  Package,
+  ArrowRight
+} from 'lucide-react';
+
+const WHATSAPP_NUMBER = "917428013214";
+
+const ROTATING_MESSAGES = [
+  "Help ?",
+  "Order on WhatsApp",
+  "Track Order"
+];
 
 export default function ChatWidget() {
-    const { currentUser } = useAuth();
-    const { CHATBOT_ENABLED } = useCart();
-    const location = useLocation();
-    const [isOpen, setIsOpen] = useState(false);
-    const [showBubble, setShowBubble] = useState(false);
-    
-    const [messages, setMessages] = useState(() => {
-        const stored = sessionStorage.getItem('chat_messages');
-        if (stored) {
-            try { return JSON.parse(stored); } catch {}
-        }
-        return []; // We'll initialize it in useEffect
-    });
-    const [input, setInput] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
-    const [sessionId, setSessionId] = useState('');
-    const messagesEndRef = useRef(null);
+  const location = useLocation();
+  const [isOpen, setIsOpen] = useState(false);
+  const [currentMsgIndex, setCurrentMsgIndex] = useState(0);
+  const [isPillVisible, setIsPillVisible] = useState(false);
 
-    // Only show the chatbot on the Home page ('/')
-    const shouldHide = location.pathname !== '/';
+  // Cycle: Appear -> Stay 3.8s -> Disappear with animation -> Wait 1.5s -> Next message appears
+  useEffect(() => {
+    if (isOpen) {
+      setIsPillVisible(false);
+      return;
+    }
 
-    // Calculate bottom padding based on mobile bottom nav visibility
-    const bottomNavHidden = ['/checkout'].includes(location.pathname) || location.pathname.startsWith('/product/');
+    let timeoutId;
+    let isMounted = true;
 
-    useEffect(() => {
-        let storedId = localStorage.getItem('chat_session_id');
-        if (!storedId) {
-            storedId = crypto.randomUUID();
-            localStorage.setItem('chat_session_id', storedId);
-        }
-        setSessionId(storedId);
-    }, []);
+    const showDuration = 3800; // Stay visible for 3.8 seconds
+    const hideDuration = 1500; // Wait 1.5 seconds while hidden
 
-    useEffect(() => {
-        let name = "";
-        if (currentUser) {
-            name = currentUser.user_metadata?.first_name || 
-                   currentUser.user_metadata?.full_name?.split(' ')[0] || 
-                   currentUser.displayName?.split(' ')[0] || 
-                   "";
-        }
-        
-        const greeting = name 
-            ? `👋 Hi ${name}!\nHow can I help you today?`
-            : `👋 Hi!\nHow can I help you today?`;
-            
-        setMessages(prev => {
-            if (prev.length === 0 || (prev.length === 1 && prev[0].sender === 'bot')) {
-                 return [{ sender: 'bot', text: greeting }];
-            }
-            return prev;
-        });
-    }, [currentUser]);
+    const runCycle = () => {
+      if (!isMounted) return;
+      setIsPillVisible(true);
 
-    useEffect(() => {
-        if (messagesEndRef.current && isOpen) {
-            messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-        }
-        sessionStorage.setItem('chat_messages', JSON.stringify(messages));
-    }, [messages, isOpen]);
+      timeoutId = setTimeout(() => {
+        if (!isMounted) return;
+        setIsPillVisible(false);
 
-    // Auto-open Bubble Logic
-    useEffect(() => {
-        if (shouldHide || !CHATBOT_ENABLED) return;
-
-        let bubbleTimer;
-        let hasShownBubble = sessionStorage.getItem('chat_bubble_shown') === 'true';
-
-        const showIt = () => {
-            if (!hasShownBubble && !isOpen) {
-                setShowBubble(true);
-                sessionStorage.setItem('chat_bubble_shown', 'true');
-                hasShownBubble = true;
-            }
-        };
-
-        // 1. Timer (15 seconds)
-        if (!hasShownBubble) {
-            bubbleTimer = setTimeout(() => {
-                showIt();
-            }, 15000);
-        }
-
-        // 2. Scroll (40%)
-        const handleScroll = () => {
-            if (hasShownBubble) return;
-            const scrollPercent = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
-            if (scrollPercent > 40) {
-                showIt();
-            }
-        };
-
-        window.addEventListener('scroll', handleScroll);
-
-        return () => {
-            clearTimeout(bubbleTimer);
-            window.removeEventListener('scroll', handleScroll);
-        };
-    }, [shouldHide, CHATBOT_ENABLED, isOpen]);
-
-    const submitMessage = async (msgText) => {
-        if (!msgText.trim() || isLoading) return;
-
-        const userMsg = msgText.trim();
-        setMessages(prev => [...prev, { sender: 'user', text: userMsg }]);
-        setInput('');
-        setIsLoading(true);
-        setShowBubble(false); // Hide tooltip if active
-
-        try {
-            const apiUrl = import.meta.env.VITE_ML_API_URL || 'https://embroidery-ml-api.onrender.com';
-            const res = await fetch(`${apiUrl}/api/chat/${sessionId}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: userMsg })
-            });
-            
-            if (!res.ok) {
-                const errorData = await res.json();
-                throw new Error(errorData.detail || "Server offline");
-            }
-            
-            const data = await res.json();
-            setMessages(prev => [...prev, { sender: 'bot', text: data.reply }]);
-        } catch (error) {
-            setMessages(prev => [...prev, { sender: 'bot', text: `Sorry, I encountered an error: ${error.message}` }]);
-        } finally {
-            setIsLoading(false);
-        }
+        timeoutId = setTimeout(() => {
+          if (!isMounted) return;
+          setCurrentMsgIndex((prev) => (prev + 1) % ROTATING_MESSAGES.length);
+          runCycle();
+        }, hideDuration);
+      }, showDuration);
     };
 
-    const handleSend = async (e) => {
-        e.preventDefault();
-        await submitMessage(input);
+    // First appearance 1.5s after page load
+    timeoutId = setTimeout(runCycle, 1500);
+
+    return () => {
+      isMounted = false;
+      clearTimeout(timeoutId);
     };
+  }, [isOpen]);
 
-    const quickReplies = [
-        { text: "Track Order", icon: <PackageSearch className="w-3.5 h-3.5 text-stone-500" /> },
-        { text: "Find Gift", icon: <Gift className="w-3.5 h-3.5 text-rose-500" /> },
-        { text: "Custom Embroidery", icon: <Palette className="w-3.5 h-3.5 text-fuchsia-500" /> },
-        { text: "Delivery Check", icon: <Truck className="w-3.5 h-3.5 text-blue-500" /> },
-        { text: "WhatsApp Support", icon: <MessageCircle className="w-3.5 h-3.5 text-emerald-500" />, isLink: true, url: "https://wa.me/917428013214" }
-    ];
+  // Render on Home page ('/'). Hide on /custom-design (which has dedicated action) and /checkout
+  const isHomePage = location.pathname === '/';
+  if (!isHomePage) return null;
 
-    const renderMessage = (text) => {
-        if (!text) return null;
-        const parts = text.split(/(\[[^\]]+\]\([^)]+\))/g);
-        return parts.map((part, i) => {
-            const match = part.match(/\[([^\]]+)\]\(([^)]+)\)/);
-            if (match) {
-                const label = match[1];
-                const url = match[2];
-                if (url.startsWith('http')) {
-                    return <a key={i} href={url} target="_blank" rel="noopener noreferrer" className="text-[#A0004F] hover:text-rose-800 underline font-medium cursor-pointer transition-colors">{label}</a>;
-                }
-                return (
-                    <Link key={i} to={url} onClick={() => setIsOpen(false)} className="text-[#A0004F] hover:text-rose-800 underline font-medium cursor-pointer transition-colors">
-                        {label}
-                    </Link>
-                );
-            }
-            return <span key={i}>{part}</span>;
-        });
-    };
+  const createWhatsAppUrl = (text) => {
+    return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
+  };
 
-    // Don't render on hidden routes or if disabled by admin
-    if (shouldHide || !CHATBOT_ENABLED) return null;
+  const actionItems = [
+    {
+      id: 'custom-help',
+      title: 'Help & Custom Queries',
+      badge: 'QUICK HELP',
+      badgeClass: 'bg-rose-100/80 text-rose-800',
+      description: 'Colors, custom sizes & design support',
+      icon: MessageSquare,
+      iconWrapperClass: 'bg-rose-50 text-rose-700 border border-rose-100',
+      arrowClass: 'text-stone-400 group-hover:text-rose-900 group-hover:bg-rose-100',
+      cardClass: 'border-stone-200/90 hover:border-rose-300 hover:shadow-md',
+      url: createWhatsAppUrl("Hi Crochet Wali, I need help with custom queries, colors, or design support!")
+    },
+    {
+      id: 'direct-order',
+      title: 'Order on WhatsApp',
+      badge: 'DIRECT ORDER',
+      badgeClass: 'bg-emerald-500 text-white font-bold',
+      description: 'Share reference photo to place direct order...',
+      icon: FileText,
+      iconWrapperClass: 'bg-gradient-to-br from-emerald-500 to-[#075e54] text-white shadow-xs',
+      arrowClass: 'bg-emerald-500 text-white shadow-xs group-hover:scale-105',
+      cardClass: 'border-2 border-emerald-500/80 bg-emerald-50/20 hover:border-emerald-600 hover:shadow-md',
+      url: createWhatsAppUrl("Hi Crochet Wali, I would like to place a direct order on WhatsApp. Here are my reference photos / details:")
+    },
+    {
+      id: 'track-order',
+      title: 'Track My Order',
+      badge: 'LIVE STATUS',
+      badgeClass: 'bg-amber-100 text-amber-800',
+      description: 'Check dispatch updates & courier AWB',
+      icon: Package,
+      iconWrapperClass: 'bg-amber-50 text-amber-700 border border-amber-100',
+      arrowClass: 'text-stone-400 group-hover:text-amber-700 group-hover:bg-amber-100',
+      cardClass: 'border-stone-200/90 hover:border-amber-300 hover:shadow-md',
+      url: createWhatsAppUrl("Hi Crochet Wali, I want to check my order dispatch status and courier tracking AWB updates.")
+    }
+  ];
 
-    return (
-        <>
-            {/* Background Blur Overlay (Mobile only) */}
-            <div 
-                className={`fixed inset-0 bg-stone-900/20 backdrop-blur-sm z-[55] md:hidden transition-opacity duration-300 ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'}`}
-                onClick={() => setIsOpen(false)}
-            />
+  return (
+    <>
+      {/* Mobile Backdrop Overlay when Popup is open */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/30 backdrop-blur-xs z-50 transition-opacity duration-300"
+          onClick={() => setIsOpen(false)}
+          aria-hidden="true"
+        />
+      )}
 
-            {/* Chat Window */}
-            <div 
-                className={`chatbot-container fixed bottom-0 left-0 right-0 md:inset-auto md:bottom-24 md:right-6 z-[60] flex flex-col md:w-[380px] h-[75vh] md:h-[500px] md:max-h-[80vh] bg-white rounded-t-[20px] md:rounded-2xl shadow-[0_-10px_40px_rgba(0,0,0,0.1)] overflow-hidden border-0 md:border md:border-stone-100 ${isOpen ? 'chatbot-open' : 'chatbot-close'}`}
+      {/* WhatsApp Popup Card */}
+      {isOpen && (
+        <div
+          className="fixed bottom-[84px] md:bottom-24 right-3 md:right-8 left-3 sm:left-auto sm:w-[370px] md:w-[380px] bg-white rounded-3xl shadow-[0_16px_48px_rgba(0,0,0,0.22)] overflow-hidden border border-stone-200/80 z-50 animate-in fade-in zoom-in-95 duration-200 max-h-[82vh] overflow-y-auto"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Crochet Wali WhatsApp Support"
+        >
+          {/* Header */}
+          <div className="bg-[#075e54] text-white p-4 flex items-center justify-between shadow-sm relative">
+            <div className="flex items-center gap-3">
+              {/* WhatsApp Icon with Live Online Ping */}
+              <div className="relative w-11 h-11 rounded-full bg-white/15 flex items-center justify-center shrink-0 border border-white/20">
+                <svg className="w-6 h-6 fill-white" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.455 5.712 1.457h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
+                </svg>
+                <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-400 border-2 border-[#075e54] rounded-full" />
+              </div>
+
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-heading font-bold text-base sm:text-lg leading-tight text-white">
+                    Crochet Wali
+                  </h3>
+                  <span className="text-[10px] font-semibold text-white/95 bg-white/20 px-2 py-0.5 rounded-full backdrop-blur-xs">
+                    Official
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 text-xs text-emerald-100/90 mt-0.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse" />
+                  <span>Typically replies in &lt; 1 hour</span>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setIsOpen(false)}
+              className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition-all active:scale-95 cursor-pointer"
+              aria-label="Close WhatsApp support menu"
             >
-                {/* Header */}
-                <div className="bg-[#A0004F] text-white p-4 flex items-center justify-between shadow-sm flex-shrink-0">
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                            <MessageSquare className="w-4 h-4 text-white" />
-                        </div>
-                        <div>
-                            <h3 className="font-heading font-semibold text-lg leading-tight">Embroidery Assistant</h3>
-                            <p className="text-rose-200 text-xs text-left">Typically replies instantly</p>
-                        </div>
-                    </div>
-                    <button onClick={() => setIsOpen(false)} className="hover:bg-rose-800/80 p-1.5 rounded-full transition-colors active:scale-95">
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
+              <X className="w-4 h-4" />
+            </button>
+          </div>
 
-                {/* Messages Body */}
-                <div className="flex-1 p-4 overflow-y-auto bg-[#FDFBF7] space-y-5">
-                    {messages.map((msg, i) => (
-                        <div 
-                            key={i}
-                            className={`flex animate-fade-in ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-                        >
-                            <div className={`max-w-[85%] rounded-2xl px-4 py-2.5 shadow-sm border ${msg.sender === 'user' ? 'bg-[#A0004F] text-white rounded-br-sm border-transparent' : 'bg-white border-stone-100 text-stone-800 rounded-bl-sm'}`}>
-                                <p className="text-sm break-words whitespace-pre-wrap leading-relaxed">{renderMessage(msg.text)}</p>
-                            </div>
-                        </div>
-                    ))}
-                    {isLoading && (
-                        <div className="flex justify-start animate-fade-in">
-                            <div className="bg-white border border-stone-100 rounded-2xl rounded-bl-sm px-4 py-3.5 shadow-sm flex gap-1.5 items-center">
-                                <div className="w-1.5 h-1.5 bg-rose-400 rounded-full typing-dot"></div>
-                                <div className="w-1.5 h-1.5 bg-rose-400 rounded-full typing-dot"></div>
-                                <div className="w-1.5 h-1.5 bg-rose-400 rounded-full typing-dot"></div>
-                            </div>
-                        </div>
-                    )}
-                    <div ref={messagesEndRef} />
-                </div>
-
-                {/* Input Area Group */}
-                <div className="bg-white border-t border-stone-100 flex flex-col flex-shrink-0" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-                    {/* Quick Replies */}
-                    <div className="px-3 pt-3 pb-1 flex gap-2 overflow-x-auto no-scrollbar" style={{ scrollbarWidth: 'none' }}>
-                        {quickReplies.map((chip, idx) => (
-                            chip.isLink ? (
-                                <a 
-                                    key={idx}
-                                    href={chip.url}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="whitespace-nowrap flex items-center gap-1.5 text-xs font-medium bg-stone-50 text-stone-700 border border-stone-200 shadow-sm px-3.5 py-1.5 rounded-full hover:bg-stone-100 active:scale-95 transition-all"
-                                >
-                                    {chip.icon}
-                                    {chip.text}
-                                </a>
-                            ) : (
-                                <button 
-                                    key={idx}
-                                    onClick={() => submitMessage(chip.text)}
-                                    disabled={isLoading}
-                                    className="whitespace-nowrap flex items-center gap-1.5 text-xs font-medium bg-rose-50/50 text-[#A0004F] border border-rose-100 shadow-sm px-3.5 py-1.5 rounded-full hover:bg-rose-50 hover:border-rose-200 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    {chip.icon}
-                                    {chip.text}
-                                </button>
-                            )
-                        ))}
-                    </div>
-
-                    {/* Text Input */}
-                    <form onSubmit={handleSend} className="p-3 flex items-center gap-2">
-                        <input
-                            type="text"
-                            value={input}
-                            onChange={(e) => setInput(e.target.value)}
-                            placeholder="Type your message..."
-                            className="flex-1 bg-stone-50 border border-stone-200 px-4 py-2.5 rounded-full text-sm focus:outline-none focus:border-[#A0004F] focus:ring-1 focus:ring-[#A0004F] transition-all"
-                        />
-                        <button 
-                            type="submit" 
-                            disabled={!input.trim() || isLoading}
-                            className="bg-[#A0004F] text-white p-2.5 rounded-full hover:bg-rose-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-sm"
-                        >
-                            <Send className="w-4 h-4" />
-                        </button>
-                    </form>
-                </div>
-            </div>
-
-            {/* Toggle Button — positioned above bottom nav on mobile */}
-            <div className={`fixed right-4 z-50 transition-all duration-300 ${bottomNavHidden ? 'bottom-4' : 'bottom-[75px]'}`}>
-                {/* Auto-open Bubble Tooltip */}
-                {showBubble && !isOpen && (
-                    <div className="absolute bottom-[70px] right-0 animate-fade-up">
-                        <div className="bg-white text-stone-800 text-sm font-medium px-4 py-2.5 rounded-2xl rounded-br-sm shadow-lg border border-stone-100 whitespace-nowrap flex items-center gap-2">
-                            Need help finding products?
-                            <button onClick={(e) => { e.stopPropagation(); setShowBubble(false); }} className="p-0.5 text-stone-400 hover:text-stone-600 rounded-full">
-                                <X className="w-3.5 h-3.5" />
-                            </button>
-                        </div>
-                    </div>
-                )}
-                
-                <button 
-                    onClick={() => { setIsOpen(!isOpen); setShowBubble(false); }}
-                    className={`w-[56px] h-[56px] bg-[#A0004F] text-white flex items-center justify-center rounded-full shadow-[0_4px_12px_rgba(160,0,79,0.4)] hover:shadow-[0_6px_16px_rgba(160,0,79,0.5)] transition-all active:scale-95 ${!isOpen && !showBubble ? 'animate-pulse' : ''}`}
-                    title={isOpen ? "Close chat" : "Chat with us"}
+          {/* Feature Actions List */}
+          <div className="p-3.5 space-y-2.5 bg-[#faf9f6]">
+            {actionItems.map((item) => {
+              const IconComponent = item.icon;
+              return (
+                <a
+                  key={item.id}
+                  href={item.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`bg-white rounded-2xl p-3 border shadow-xs transition-all flex items-center gap-3 group text-left cursor-pointer ${item.cardClass}`}
                 >
-                    {isOpen ? <X className="w-6 h-6" /> : <MessageCircle className="w-6 h-6" />}
-                </button>
+                  <div className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 ${item.iconWrapperClass}`}>
+                    <IconComponent className="w-5 h-5" />
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <strong className="text-xs sm:text-sm font-bold text-stone-900 leading-tight">
+                        {item.title}
+                      </strong>
+                      <span className={`text-[9px] sm:text-[10px] px-2 py-0.5 rounded-full uppercase tracking-wider font-bold ${item.badgeClass}`}>
+                        {item.badge}
+                      </span>
+                    </div>
+                    <p className="text-[11px] sm:text-xs text-stone-500 mt-0.5 leading-snug truncate">
+                      {item.description}
+                    </p>
+                  </div>
+
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-all ${item.arrowClass}`}>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </div>
+                </a>
+              );
+            })}
+          </div>
+
+          {/* Footer */}
+          <div className="px-4 py-2.5 bg-white border-t border-stone-100 flex items-center justify-between text-[11px]">
+            <div className="flex items-center gap-1.5 text-emerald-700 font-semibold">
+              <MessageCircle className="w-3.5 h-3.5" />
+              <span>WhatsApp Verified Support</span>
             </div>
-        </>
-    );
+            <div className="text-stone-500 font-medium">
+              Pan-India Delivery 🇮🇳
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Floating Action WhatsApp Button with Animated Cycling Message Pill */}
+      <aside aria-label="WhatsApp Crochet Wali Support" className="fixed bottom-20 md:bottom-8 right-4 md:right-8 z-50 flex flex-col items-end pointer-events-none">
+        {/* Animated Message Pill: Appear -> Wait -> Disappear -> Wait -> Next Message */}
+        {!isOpen && (
+          <div
+            className={`mb-2 relative transition-all duration-500 ease-out transform ${isPillVisible
+                ? 'opacity-100 translate-y-0 scale-100 pointer-events-auto'
+                : 'opacity-0 translate-y-2 scale-95 pointer-events-none'
+              }`}
+          >
+            <button
+              type="button"
+              onClick={() => setIsOpen(true)}
+              className="group relative flex items-center gap-2 bg-white/95 backdrop-blur-sm pl-2.5 pr-3.5 py-1.5 rounded-full border border-stone-200/90 shadow-[0_4px_16px_rgba(0,0,0,0.12)] hover:shadow-md hover:border-emerald-500/70 transition-all active:scale-95 cursor-pointer"
+              aria-label={`WhatsApp quick query: ${ROTATING_MESSAGES[currentMsgIndex]}`}
+            >
+              {/* Green Live Indicator Ping Dot */}
+              <span className="relative flex h-2 w-2 shrink-0">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+              </span>
+
+              {/* Cycling Text */}
+              <span className="text-xs font-bold text-stone-800 tracking-tight">
+                {ROTATING_MESSAGES[currentMsgIndex]}
+              </span>
+
+              {/* Pointer Triangle pointing directly down to WhatsApp button */}
+              <div
+                className="absolute -bottom-1 right-3.5 md:right-4 w-2 h-2 bg-white border-r border-b border-stone-200/90 rotate-45"
+                aria-hidden="true"
+              />
+            </button>
+          </div>
+        )}
+
+        {/* Compact Circular WhatsApp Button */}
+        <button
+          type="button"
+          onClick={() => setIsOpen(!isOpen)}
+          aria-label={isOpen ? "Close WhatsApp support" : "Open WhatsApp support with Crochet Wali"}
+          className="pointer-events-auto flex items-center justify-center w-11 h-11 md:w-12 md:h-12 rounded-full bg-[#075e54] hover:bg-[#05463e] text-white shadow-[0_4px_16px_rgba(7,94,84,0.4)] hover:shadow-[0_6px_24px_rgba(7,94,84,0.6)] hover:scale-105 active:scale-95 transition-all duration-300 cursor-pointer"
+        >
+          {isOpen ? (
+            <X className="w-5 h-5 md:w-5.5 md:h-5.5" />
+          ) : (
+            <svg
+              className="w-5.5 h-5.5 md:w-6 md:h-6 fill-white drop-shadow-xs"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L0 24l6.335-1.662c1.746.953 3.71 1.455 5.712 1.457h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z" />
+            </svg>
+          )}
+        </button>
+      </aside>
+    </>
+  );
 }

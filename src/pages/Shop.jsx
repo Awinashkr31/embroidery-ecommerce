@@ -552,7 +552,7 @@ const Shop = () => {
         <div className="bg-[#fdfbf7] min-h-screen pb-32 font-body selection:bg-rose-100 selection:text-rose-900">
             <SEO 
                 title={activeCategoryMeta ? activeCategoryMeta.title : "Shop All Handmade Crochet Gifts | Crochet Wali"} 
-                description={activeCategoryMeta ? activeCategoryMeta.metaDescription : "Shop Crochet Wali's complete collection of handmade crochet gifts — forever flower bouquets, gajra, hair clips, keychains, parandi, claw clips, and personalized gift boxes. 100% handmade in India. Buy crochet gifts online."}
+                description={activeCategoryMeta ? activeCategoryMeta.metaDescription : "Shop handmade crochet gifts online in India. Discover forever flower bouquets, bridal gajras, keychains, hair clips, and personalized keepsake gift boxes."}
                 keywords={activeCategoryMeta ? `${activeCategoryMeta.label.toLowerCase()}, crochet ${activeCategoryMeta.label.toLowerCase()}, buy crochet gifts online, crochet wali collection` : "crochet wali shop, buy crochet gifts online, crochet wali collection, handmade crochet gifts india, crochet flower bouquet, crochet hair clips, crochet keychain, crochet gajra"}
                 url={categoryCanonicalUrl}
                 schema={pageSchema} 

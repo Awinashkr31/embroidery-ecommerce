@@ -306,7 +306,7 @@ export default async function handler(req, res) {
 
     const pageDesc = activeCategoryMeta
         ? activeCategoryMeta.metaDescription
-        : "Shop Crochet Wali's complete collection of handmade crochet gifts — forever flower bouquets, gajra, hair clips, keychains, parandi, claw clips, and personalized gift boxes. 100% handmade in India.";
+        : "Shop handmade crochet gifts online in India. Discover forever flower bouquets, bridal gajras, keychains, hair clips, and personalized keepsake gift boxes.";
 
     const categoryCanonicalUrl = `https://www.crochetwali.in/shop${categoryParam && categoryParam !== 'all' ? `?category=${encodeURIComponent(categoryParam)}` : ''}`;
 
