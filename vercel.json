@@ -1,6 +1,4 @@
 {
-  "cleanUrls": true,
-  "trailingSlash": false,
   "functions": {
     "api/product.js": {
       "maxDuration": 5
@@ -86,6 +84,21 @@
       "source": "/collections/personalized-gifts",
       "destination": "https://www.crochetwali.in/shop",
       "permanent": true
+    },
+    {
+      "source": "/admin",
+      "destination": "/sadmin/login",
+      "permanent": false
+    },
+    {
+      "source": "/admin/:path*",
+      "destination": "/sadmin/login",
+      "permanent": false
+    },
+    {
+      "source": "/sadmin",
+      "destination": "/sadmin/login",
+      "permanent": false
     }
   ],
   "headers": [

@@ -1825,6 +1825,49 @@ export const viteAssets = {
         console.log(`Pre-rendered dist/${page.slug}/index.html`);
     }
 
+    // ==========================================
+    // 9. CLIENT-SIDE SPA SHELL PAGES
+    // Ensure all dynamic client routes (sadmin, cart, checkout, etc.)
+    // have a static index.html on disk so Vercel CDN serves them with 200 OK.
+    // ==========================================
+    const spaRoutes = [
+        'sadmin',
+        'sadmin/login',
+        'sadmin/register',
+        'sadmin/forgot-password',
+        'sadmin/update-password',
+        'sadmin/dashboard',
+        'sadmin/products',
+        'sadmin/orders',
+        'sadmin/returns-ndr',
+        'sadmin/bulk-shipments',
+        'sadmin/reviews',
+        'sadmin/users',
+        'sadmin/design-requests',
+        'sadmin/notifications',
+        'sadmin/messages',
+        'sadmin/coupons',
+        'sadmin/settings',
+        'sadmin/blog',
+        'cart',
+        'checkout',
+        'contact',
+        'track-order',
+        'wishlist',
+        'login',
+        'register',
+        'forgot-password',
+        'reset-password',
+        'profile'
+    ];
+
+    for (const route of spaRoutes) {
+        const routeDir = path.resolve(distDir, route);
+        fs.mkdirSync(routeDir, { recursive: true });
+        fs.writeFileSync(path.resolve(routeDir, 'index.html'), baseHtml, 'utf8');
+    }
+    console.log(`Generated static SPA shells for ${spaRoutes.length} client routes.`);
+
     console.log('✅ All 94 URLs and static pages pre-rendered successfully with 100% crawlable HTML, unique titles, single H1s, and self-referencing canonicals!');
 }
 
