@@ -107,23 +107,6 @@ function getUnifiedPriceData(product) {
         images: Array.isArray(v.images) ? v.images.filter(img => !isBrokenImageUrl(img)) : []
     }));
 
-    if (product.id === 'a3464d61-a5da-4471-93d4-b7615de02e8f') {
-        price = 119;
-        variants = variants.map(v => ({ ...v, price: '119' }));
-    }
-    if (product.id === 'f6439b6e-b495-4d17-95f2-7bcd7d7fdd26') {
-        price = 349;
-        variants = variants.map(v => ({ ...v, price: '349' }));
-    }
-    if (product.id === 'baa8e02e-b1a3-4b18-8006-f37ff660d575') {
-        price = 149;
-        variants = variants.map(v => ({ ...v, price: '149' }));
-    }
-    if (product.id === '289ef890-cabb-42b7-be84-e06cf1545d80') {
-        price = 499;
-        variants = variants.map(v => ({ ...v, price: '499' }));
-    }
-
     return { price, variants };
 }
 

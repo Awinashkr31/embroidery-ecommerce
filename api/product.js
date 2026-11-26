@@ -408,13 +408,6 @@ export default async function handler(req, res) {
     const name = sanitizeName(product?.name);
     let rawPrice = product?.price !== undefined && product?.price !== null ? Number(product.price) : 149;
     
-    // Unified prices for duplicate products
-    if (product?.id === 'a3464d61-a5da-4471-93d4-b7615de02e8f') rawPrice = 119;
-    if (product?.id === 'f6439b6e-b495-4d17-95f2-7bcd7d7fdd26') rawPrice = 349;
-    if (product?.id === 'baa8e02e-b1a3-4b18-8006-f37ff660d575') rawPrice = 149;
-    if (product?.id === '289ef890-cabb-42b7-be84-e06cf1545d80') rawPrice = 499;
-    if (product?.id === '79f79a0c-3ede-485b-b5a9-afff84b1e459') rawPrice = 299;
-
     const price = String(rawPrice);
     const { originalPrice, hasCompareAt } = getGenuineDiscount(rawPrice, product?.original_price);
     const inStock = product?.stock_quantity !== undefined && product?.stock_quantity !== null 
