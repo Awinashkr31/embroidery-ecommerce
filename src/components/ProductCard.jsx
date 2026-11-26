@@ -107,11 +107,12 @@ export const ProductCard = React.memo(({
 
     // Determine current display price
     const displayPrice = useMemo(() => {
-        if (selectedVariant && selectedVariant.price) {
+        const validVariants = (product.variants || []).filter(v => v && v.color);
+        if (validVariants.length > 1 && selectedVariant && selectedVariant.price && Number(selectedVariant.price) > 0) {
             return Number(selectedVariant.price);
         }
         return priceDisplayInfo.price;
-    }, [selectedVariant, priceDisplayInfo.price]);
+    }, [selectedVariant, priceDisplayInfo.price, product.variants]);
 
     // Price range for products whose variants genuinely differ in price:
     // Show lowest variant price as "₹X se" (from ₹X)

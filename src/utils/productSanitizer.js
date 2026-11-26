@@ -221,27 +221,36 @@ export function getProductPriceDisplay(product) {
     if (!product) return { text: '₹0', price: 0, isRange: false };
     const variants = Array.isArray(product.variants) ? product.variants : [];
     const validVariants = variants.filter(v => v && v.color);
+    const basePrice = Number(product.price) || 0;
 
-    if (validVariants.length > 1) {
-        const prices = validVariants
-            .map(v => (v.price !== undefined && v.price !== '' && v.price !== null) ? Number(v.price) : Number(product.price))
-            .filter(pr => !isNaN(pr) && pr > 0);
-        if (prices.length > 1) {
-            const min = Math.min(...prices);
-            const max = Math.max(...prices);
-            if (min !== max) {
-                return {
-                    text: `₹${min.toLocaleString('en-IN')} se`,
-                    price: min,
-                    isRange: true
-                };
-            }
+    // If single variant or no variants: base price is always the authoritative price
+    if (validVariants.length <= 1) {
+        const finalPrice = basePrice > 0 ? basePrice : (Number(validVariants[0]?.price) || 0);
+        return {
+            text: `₹${finalPrice.toLocaleString('en-IN')}`,
+            price: finalPrice,
+            isRange: false
+        };
+    }
+
+    // If multiple variants: check if prices genuinely differ
+    const prices = validVariants
+        .map(v => (v.price !== undefined && v.price !== '' && v.price !== null && Number(v.price) > 0) ? Number(v.price) : basePrice)
+        .filter(pr => !isNaN(pr) && pr > 0);
+
+    if (prices.length > 1) {
+        const min = Math.min(...prices);
+        const max = Math.max(...prices);
+        if (min !== max) {
+            return {
+                text: `₹${min.toLocaleString('en-IN')} se`,
+                price: min,
+                isRange: true
+            };
         }
     }
 
-    const fallbackPrice = (validVariants.length > 0 && validVariants[0].price)
-        ? Number(validVariants[0].price)
-        : (Number(product.price) || 0);
+    const fallbackPrice = basePrice > 0 ? basePrice : (prices.length > 0 ? prices[0] : 0);
 
     return {
         text: `₹${fallbackPrice.toLocaleString('en-IN')}`,

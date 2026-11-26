@@ -221,6 +221,13 @@ export const ProductProvider = ({ children }) => {
                 homepage_tags: data.homepage_tags || []
             };
             setProducts(prev => [newProduct, ...prev]);
+            try {
+                localStorage.removeItem(CACHE_KEY);
+                localStorage.removeItem(CACHE_TIME_KEY);
+                sessionStorage.removeItem(CACHE_KEY);
+                sessionStorage.removeItem(CACHE_TIME_KEY);
+            } catch (_) {}
+            lastFetchTime.current = 0;
             return data;
         } catch (error) {
             console.error('Error adding product:', error);
@@ -256,12 +263,23 @@ export const ProductProvider = ({ children }) => {
 
             if (error) throw error;
 
+            // Invalidate local storage cache immediately so subsequent reads get fresh prices
+            try {
+                localStorage.removeItem(CACHE_KEY);
+                localStorage.removeItem(CACHE_TIME_KEY);
+                sessionStorage.removeItem(CACHE_KEY);
+                sessionStorage.removeItem(CACHE_TIME_KEY);
+            } catch (_) {}
+            lastFetchTime.current = 0;
+
             setProducts(prev => prev.map(prod => {
                 if (prod.id === id) {
                     return {
                         ...prod,
                         ...data,
-                        // Ensure all frontend-specific mappings are updated
+                        // Ensure all frontend-specific mappings and variants are updated
+                        price: data.price !== undefined ? parseFloat(data.price) : prod.price,
+                        variants: data.variants !== undefined ? data.variants : prod.variants,
                         image: data.images?.[0] || prod.image,
                         images: data.images,
                         clothingInformation: data.clothing_information,
@@ -317,6 +335,14 @@ export const ProductProvider = ({ children }) => {
 
             if (error) throw error;
 
+            try {
+                localStorage.removeItem(CACHE_KEY);
+                localStorage.removeItem(CACHE_TIME_KEY);
+                sessionStorage.removeItem(CACHE_KEY);
+                sessionStorage.removeItem(CACHE_TIME_KEY);
+            } catch (_) {}
+            lastFetchTime.current = 0;
+
             setProducts(prev => prev.filter(prod => prod.id !== id));
         } catch (error) {
             console.error('Error deleting product:', error);
@@ -341,6 +367,14 @@ export const ProductProvider = ({ children }) => {
                 .single();
 
             if (error) throw error;
+
+            try {
+                localStorage.removeItem(CACHE_KEY);
+                localStorage.removeItem(CACHE_TIME_KEY);
+                sessionStorage.removeItem(CACHE_KEY);
+                sessionStorage.removeItem(CACHE_TIME_KEY);
+            } catch (_) {}
+            lastFetchTime.current = 0;
 
             setProducts(prev => prev.map(prod => 
                 prod.id === id ? { 

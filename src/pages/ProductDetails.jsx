@@ -42,9 +42,9 @@ const ProductDetails = () => {
     const id = extractProductIdFromSlug(slug);
     const { products, fetchProducts, fetchSingleProduct } = useProducts();
     
-    // Fetch products in background (cached via SWR)
+    // Fetch products in background (fresh from Supabase on mount)
     useEffect(() => {
-        fetchProducts();
+        fetchProducts(true);
     }, [fetchProducts]);
     const { addToCart, updateQuantity, removeFromCart, cart, FREE_DELIVERY_THRESHOLD, isGiftWrapped, cartCount } = useCart();
     const { toggleWishlist, isInWishlist } = useWishlist();
@@ -481,10 +481,13 @@ const ProductDetails = () => {
      const matrixData = matrixKey && info.variantStock ? info.variantStock[matrixKey] : null;
 
      let currentPrice = Number(product.price) || 0;
+     const validVariants = (product.variants || []).filter(v => v && v.color);
      if (matrixData && matrixData.price) {
          currentPrice = Number(matrixData.price);
-     } else if (selectedVariant && selectedVariant.price) {
+     } else if (validVariants.length > 1 && selectedVariant && selectedVariant.price && Number(selectedVariant.price) > 0) {
          currentPrice = Number(selectedVariant.price);
+     } else {
+         currentPrice = Number(product.price) || (selectedVariant && Number(selectedVariant.price)) || 0;
      }
 
      const genuineDiscount = getGenuineDiscount(currentPrice, product.originalPrice);

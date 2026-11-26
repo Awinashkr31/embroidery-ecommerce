@@ -39,6 +39,7 @@ const ProductManager = () => {
 
     // Editing State
     const [editingId, setEditingId] = useState(null);
+    const [editingProduct, setEditingProduct] = useState(null);
 
     const categories = categoryObjects.map(c => c.label);
 
@@ -175,6 +176,7 @@ const ProductManager = () => {
     const handleOpenModal = (product = null, type = 'standard') => {
         if (product) {
             setEditingId(product.id);
+            setEditingProduct(product);
             // Hydrate Form
             const clothing = product.clothingInformation || {};
             
@@ -262,6 +264,7 @@ const ProductManager = () => {
             });
         } else {
             setEditingId(null);
+            setEditingProduct(null);
             setFormData({
                 ...initialFormState,
                 isClothing: type === 'clothing',
@@ -383,6 +386,24 @@ const ProductManager = () => {
                 images: formData.images
             });
         }
+
+        // Synchronize variant prices with the main Selling Price:
+        // 1. If single variant or standard variant, its price MUST match formData.sellingPrice.
+        // 2. If multiple variants, any variant whose price is empty, 0, or matched the previous base price
+        //    gets updated so changing Selling Price updates the storefront price immediately.
+        const newSellingPrice = parseFloat(formData.sellingPrice) || 0;
+        const oldProductPrice = editingProduct ? (parseFloat(editingProduct.price) || 0) : null;
+
+        currentVariants = currentVariants.map(v => {
+            const vPrice = parseFloat(v.price);
+            if (currentVariants.length === 1 || (v.color && v.color.toLowerCase() === 'standard')) {
+                return { ...v, price: newSellingPrice };
+            }
+            if (!v.price || isNaN(vPrice) || vPrice === 0 || (oldProductPrice !== null && vPrice === oldProductPrice)) {
+                return { ...v, price: newSellingPrice };
+            }
+            return v;
+        });
 
         const finalData = {
             name: formData.name,
